@@ -4,13 +4,21 @@ Snapshot of where the generator is and what comes next. Working notes,
 not user documentation: see `README.md` for how to run it and
 `CLAUDE.md` for the rules that govern changes.
 
-Last updated: 2026-08-05, at commit `86c4e0e` "chibi / realistic mode".
+Last updated: 2026-08-05, uncommitted, on top of `b7ec2b5` "satoko and
+satoshi ref".
 
 ## Where it stands
 
-A front-facing character renders end-to-end as programmatic SVG. Every
-shape is computed from the `Skeleton`, nothing is composited from
-pre-made art, and no AI image generation is involved.
+All four PoC targets render: Satoko and Satoshi, each at `chibi` and
+`realistic`. Every shape is computed from the `Skeleton`, nothing is
+composited from pre-made art, and no AI image generation is involved.
+
+```bash
+./render.sh --out out/satoko  --preset satoko
+./render.sh --out out/satoko_real  --preset satoko  --build realistic
+./render.sh --out out/satoshi --preset satoshi
+./render.sh --out out/satoshi_real --preset satoshi --build realistic
+```
 
 What is parametrized:
 
@@ -18,43 +26,83 @@ What is parametrized:
   `realistic` (7.0). `--heads N` reaches anything in between. Both
   widths and where the landmarks sit along the body interpolate, so a
   chibi comes out nearly neckless with high hips and an adult does not.
-- **Colors.** Skin, hair, hair tips, eyes, outfit, boots.
-- **Hair.** Two-tone with a waved fade boundary, and a body-relative
-  `hair_length` (chin 0 to hip 1) so one haircut survives a change of
-  build.
+  `Skeleton.build` exposes where along that range a figure sits, so
+  parts that deform with the build read it instead of recomputing it.
+- **Frame.** `frame` scales shoulder against hip, -1 narrow-shouldered
+  and wide-hipped through +1 the other way. It rides on the build, so it
+  bites at `realistic` and all but vanishes at `chibi`, where the head
+  swamps the torso anyway.
+- **Garments.** `Outfit` carries one field per piece: tunic,
+  undersleeve, belt, apron, skirt, underskirt, trousers, boots, plus a
+  `skirt_length`. A garment is worn when its color is set, so a
+  character states only the layers it has. Satoko wears all but the
+  trousers, Satoshi swaps skirt and apron for trousers.
+- **Hair.** `HAIRSTYLES` names `long_blunt` and `short_layered`, each a
+  set of four outlines that agree with each other. Two-tone with a waved
+  fade boundary. `hair_length` spans whatever range the cut defines: the
+  long one measures the body, chin to hip, so it survives a change of
+  build; the short one measures the head, ear to chin, because the
+  body-relative range cannot express hair ending above the chin at all.
+- **Head.** Eight quadratics tracing a circle at the chibi end and
+  narrowing to a jaw and chin as the build gets taller.
+- **Colors.** Skin, hair, hair tips, eyes, and every garment above.
 - **Face.** `FaceStyle` carries the eye aperture (size, width,
   openness, lower lid, tilt, corner sharpness, iris size), brow tilt
   and weight, mouth curve and width, blush, and a cheek scar. Every
   default is neutral, so a character states only what it differs on.
-- **Characters.** `presets.py` holds named `CharacterParams`. `SATOKO`
-  is the only one so far.
+- **Characters.** `presets.py` holds `SATOKO` and `SATOSHI`, sharing a
+  palette through module constants because the two are meant to read as
+  related.
 
 Every knob above has a CLI flag, and flags override a preset one value
 at a time.
 
 ## What is weak right now
 
-- **The outfit is one dress shape.** This is the single biggest
-  problem. It runs shoulder to hem with no waist, which is tolerable on
-  a chibi and dominates the frame on a realistic build (`out/satoko_real.png`).
-  Everything else about the realistic mode is in reasonable shape; the
-  garment is what makes it look wrong.
-- **The head is a plain circle.** Fine at chibi scale, reads as a ball
-  on a stick at 7 heads. Needs a jaw before the realistic build is
-  presentable.
-- **Arms are capsules with circles for hands.** Acceptable at chibi,
-  crude at realistic.
-- **Hair is symmetric.** No side-swept part, so the mirrored point data
-  is doing all the work.
-- **Only one hairstyle, one outfit, one pose.** Variety has been
-  deliberately deferred until the base shapes are right; a template
-  with wrong proportions is wrong for every character built from it.
+- **Arms are capsules with circles for hands.** Now the most crude thing
+  left. Acceptable at chibi, and at `realistic` the straight tube and
+  ball hand are what stop the figure reading as a body. The tunic's
+  short sleeve is drawn in `_arms` rather than `_tunic`, so a rework has
+  to keep the sleeve lapping over the arm and the hands over every
+  garment.
+- **The chibi face has not been calibrated against `ref/girl-chibi.png`.**
+  The forehead is taller than the reference's and the hair mass flares
+  wider, so the head reads wider than tall. The width profile matches
+  from the chest down; it is the head that has not been checked.
+- **Hair is symmetric except for the short cut's fringe.** No
+  side-swept part on the long style, so the mirrored point data is
+  doing all the work there.
+- **No pose variety, one outfit family.** Deliberately deferred.
+- **Satoshi at chibi reads as a boy only through hair and trousers.**
+  That is by design, since a shoulder-to-hip ratio is invisible at 2.4
+  heads, but it does mean the two chibis are closer to each other than
+  the two realistic builds are.
 
-## Satoko recognizability
+## Acceptance criteria
 
-The working goal is a simplified chibi that reads as Satoko
-(`ref-local/satoko.png`, gitignored). Ranked by identity carried per
-pixel:
+Four targets: Satoko and Satoshi, each at `chibi` and `realistic`. The
+tables below are the definition of done. References are `ref/satoko.png`
+and `ref/satoshi.png` for identity, `ref/girl-chibi.png` for how much
+detail a chibi carries.
+
+### How much detail each build carries
+
+`ref/girl-chibi.png` sets the chibi bar, and it is much lower than the
+two character refs. It has no belt, no apron, no visible undersleeve and
+no underskirt: arms are plain tubes ending in circle hands, and the only
+hint of a second garment is a sliver of tan collar inside the green V
+neck. So a chibi reads through silhouette and color banding, nothing
+finer.
+
+Out of scope at chibi, in rough order of how tempting they are: belt
+buckle, pouch flaps, boot laces, the keyhole neckline's split, sleeve
+wrinkles, the apron's hanging strap. They do not survive chibification
+and attempting them adds noise. At realistic they become optional rather
+than wanted; the garment layering matters far more than any of them.
+
+### Satoko
+
+Ranked by identity carried per pixel.
 
 | Feature | State |
 | --- | --- |
@@ -63,32 +111,51 @@ pixel:
 | Guarded expression: narrow lidded eyes, level brows, no smile | done |
 | Cheek scar | done |
 | Muted green / leather palette | done |
-| Outfit color banding: green tunic, brown belt and apron, green skirt, dark underskirt | **not started** |
-| Tan long undersleeves under short green sleeves | **not started** |
+| Outfit color banding: green tunic, brown belt and apron, green skirt, dark underskirt | done |
+| Tan long undersleeves under short green sleeves | done |
+| Waist that reads: belt at the waist anchor, tunic taking in above it | done |
+| Ankle boots with a shaft rather than a brown block | done |
 | Side-swept parting | not started |
 
-Deliberately out of scope at this size: belt buckle, pouch flaps, boot
-laces, the keyhole neckline, sleeve wrinkles. They will not survive
-chibification and attempting them adds noise.
+### Satoshi
+
+Same palette and same tunic as Satoko, by design: they are meant to read
+as related, so what carries his identity is hair and lower body.
+
+| Feature | State |
+| --- | --- |
+| Short layered cut, same blonde fading to white | done |
+| Dark trousers instead of skirt and apron | done |
+| Green tunic, tan undersleeves, brown belt, brown boots (shared with Satoko) | done |
+| Level brows, no smile | done |
+| Slimmer frame: broader shoulder over narrower hip | done, realistic only |
+| Faint cheek mark | not started |
+
+The frame row is realistic-only on purpose. At 2.4 heads a shoulder to
+hip ratio is invisible, so a chibi Satoshi has to read as a boy on hair
+and trousers alone. If that turns out not to be enough, the answer is
+more contrast in those two, not skeleton work.
 
 ## Next steps
 
-1. **Layered outfit.** The next thing to build, and the one that
-   unblocks the realistic mode. New parts in z-order: undersleeves,
-   tunic, skirt, underskirt hem band, apron, belt. Needs
-   `CharacterParams` to stop being colors-plus-face and gain garment
-   selection, otherwise every new piece gets hardcoded into
-   `render_character`. Use the existing `waist_y` / `hip_y` /
-   `hip_half_w` anchors; they were added for this and are currently
-   unused by any part.
-2. **Head shape.** Replace the circle with a path that has a jaw,
-   tapering more as the build gets taller. The hair's crown points are
-   pinned to the head, so this touches `_hairline_shape` too.
-3. **Asymmetry.** Side-swept parting. Lowest value, highest
-   fiddliness, since it breaks the mirrored point data that
-   `_mirror` / `_reverse` currently rely on.
-4. **Then variety.** Alternate hairstyles and outfits, once the base
-   shapes hold up at both builds.
+1. **Arms.** The last crude shape. Taper them from shoulder to wrist and
+   give the hand a shape instead of a circle, the way
+   `_legs_and_boots` already tapers off `sk.build`. Two constraints the
+   current layering imposes: the short sleeve is drawn in `_arms` so it
+   laps over the top of the arm, and `_arms` is drawn last below the neck
+   so nothing clips the hands. The apron's edge sits about 3px inside the
+   hand at chibi, which is why that ordering exists.
+2. **Chibi face pass.** Calibrate the head against `ref/girl-chibi.png`:
+   the fringe peak sits higher than the reference's so the forehead is
+   too tall, and the hair mass flares wider so the head reads wide.
+   Satoko's expression itself is right and should not move.
+3. **Asymmetry.** Side-swept parting on the long style. Lowest value,
+   highest fiddliness, since it breaks the mirrored point data that
+   `_mirror` / `_reverse` rely on. The short cut's fringe is already
+   asymmetric without touching the silhouette, which is the cheaper trick
+   and may be enough.
+4. **Then variety.** More hairstyles and a second outfit family. The
+   hairstyle registry and `Outfit` are both built to take them now.
 
 ## Conventions worth remembering
 

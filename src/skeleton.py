@@ -34,6 +34,10 @@ class Skeleton:
     canvas_w: float
     canvas_h: float
     heads: float
+    # How far along the chibi-to-adult range this build sits: 0 at a 2-head
+    # chibi, 1 at a 7-head adult. Every lerp below rides on it, and parts that
+    # need to deform with the build read it rather than recomputing it.
+    build: float
     head_cx: float
     head_cy: float
     head_r: float
@@ -42,6 +46,7 @@ class Skeleton:
     shoulder_y: float
     shoulder_half_w: float
     waist_y: float
+    waist_half_w: float
     hip_y: float
     hip_half_w: float
     hem_y: float
@@ -60,6 +65,7 @@ def build_skeleton(
     canvas_w: float = 400,
     canvas_h: float = 500,
     heads: float = DEFAULT_HEADS,
+    frame: float = 0.0,
     top_margin: float = 0.035,
     bottom_margin: float = 0.03,
 ) -> Skeleton:
@@ -75,24 +81,40 @@ def build_skeleton(
     # neckless with its hips high in a short body, an adult is not.
     t = min(1.0, max(0.0, (heads - 2.0) / 5.0))
 
+    # Frame is the shoulder-against-hip ratio: -1 narrow-shouldered and wide in
+    # the hip, 0 the neutral figure every build gave before it existed, +1 the
+    # other way. It rides on t because a frame needs a body to show on. At 2.4
+    # heads the head swamps the torso and the whole difference comes to well under
+    # a percent of the width, so a chibi comes out the same whatever it is handed.
+    f = max(-1.0, min(1.0, frame)) * t
+
     return Skeleton(
         canvas_w=canvas_w,
         canvas_h=canvas_h,
         heads=heads,
+        build=t,
         head_cx=canvas_w / 2,
         head_cy=head_cy,
         head_r=head_r,
         neck_y=head_cy + head_r * 0.85,
         neck_half_w=head_r * _lerp(0.21, 0.40, t),
         shoulder_y=chin_y + body * _lerp(0.02, 0.042, t),
-        shoulder_half_w=head_r * _lerp(0.68, 1.55, t),
+        shoulder_half_w=head_r * _lerp(0.68, 1.55, t) * (1.0 + 0.09 * f),
         waist_y=chin_y + body * _lerp(0.46, 0.333, t),
+        # A chibi barely has a waist: it stays wider than its own shoulders and
+        # only a little narrower than its hips, which is what keeps it reading as
+        # a small child rather than a shrunken adult. An adult takes in sharply.
+        waist_half_w=head_r * _lerp(0.88, 1.00, t) * (1.0 + 0.03 * f),
         hip_y=chin_y + body * _lerp(0.58, 0.417, t),
-        hip_half_w=head_r * _lerp(0.95, 1.30, t),
+        hip_half_w=head_r * _lerp(0.95, 1.30, t) * (1.0 - 0.11 * f),
         hem_y=chin_y + body * _lerp(0.70, 0.58, t),
         hem_half_w=head_r * _lerp(1.11, 1.60, t),
         arm_half_w=head_r * _lerp(0.22, 0.33, t),
-        arm_x=head_r * _lerp(0.75, 1.20, t),
+        # Rides the frame with the shoulder it hangs off. Broadening the shoulder
+        # without moving the arm out leaves the garment's shoulder sticking out
+        # past the sleeve, and two characters on different frames then disagree
+        # about where the arm meets the body.
+        arm_x=head_r * _lerp(0.75, 1.20, t) * (1.0 + 0.09 * f),
         leg_half_w=head_r * _lerp(0.15, 0.42, t),
         knee_y=chin_y + body * _lerp(0.81, 0.708, t),
         ankle_y=chin_y + body * _lerp(0.93, 0.95, t),
