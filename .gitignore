@@ -209,6 +209,15 @@ tempCodeRunnerFile.py
 # PyPI configuration file
 .pypirc
 
+# macOS
+.DS_Store
+
+# JetBrains
+.idea/
+
+# Project-specific: generated renders (regenerate via src/generate.py)
+out/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
