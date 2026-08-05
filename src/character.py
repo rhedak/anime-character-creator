@@ -32,12 +32,36 @@ def _capsule(x1: float, y1: float, x2: float, y2: float, width: float, color: st
     )
 
 
+# Shared crown/temple boundary: the top-dome portion of the hair outline,
+# reused verbatim by both _back_hair and _front_hair so their strokes
+# coincide exactly where the two shapes meet, instead of leaving a seam.
+def _crown_dome_commands(cx: float, cy: float, r: float) -> str:
+    return (
+        f"M {cx - r * 0.95:.1f} {cy - r * 0.15:.1f} "
+        f"Q {cx - r * 0.5:.1f} {cy - r * 1.3:.1f} {cx:.1f} {cy - r * 1.15:.1f} "
+        f"Q {cx + r * 0.5:.1f} {cy - r * 1.3:.1f} {cx + r * 0.95:.1f} {cy - r * 0.15:.1f} "
+    )
+
+
 def _back_hair(sk: Skeleton, p: CharacterParams) -> str:
     cx, r = sk.head_cx, sk.head_r
-    cy = sk.head_cy + r * 1.35
-    rx, ry = r * 0.95, r * 1.7
+    cy = sk.head_cy
     fill = shade(p.hair_color, 0.88) if p.shaded else p.hair_color
-    return f'<ellipse cx="{cx:.1f}" cy="{cy:.1f}" rx="{rx:.1f}" ry="{ry:.1f}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
+
+    # One continuous silhouette: crown dome, bulging out to a wide fall
+    # past the temples and jaw, tapering to a soft wide hem over the
+    # chest. No separate side-lock shape, so there's nothing to seam
+    # against.
+    d = (
+        _crown_dome_commands(cx, cy, r)
+        + f"Q {cx + r * 1.05:.1f} {cy + r * 0.3:.1f} {cx + r * 0.92:.1f} {cy + r * 0.7:.1f} "
+        + f"Q {cx + r * 0.88:.1f} {cy + r * 1.6:.1f} {cx + r * 0.75:.1f} {cy + r * 2.1:.1f} "
+        + f"Q {cx:.1f} {cy + r * 2.25:.1f} {cx - r * 0.75:.1f} {cy + r * 2.1:.1f} "
+        + f"Q {cx - r * 0.88:.1f} {cy + r * 1.6:.1f} {cx - r * 0.92:.1f} {cy + r * 0.7:.1f} "
+        + f"Q {cx - r * 1.05:.1f} {cy + r * 0.3:.1f} {cx - r * 0.95:.1f} {cy - r * 0.15:.1f} "
+        + "Z"
+    )
+    return f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
 
 
 def _neck(sk: Skeleton, p: CharacterParams) -> str:
@@ -183,35 +207,32 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
 def _front_hair(sk: Skeleton, p: CharacterParams) -> str:
     cx, r = sk.head_cx, sk.head_r
     cy = sk.head_cy
-    outer = [
-        (cx - r * 0.98, cy - r * 0.2),
-        (cx - r * 0.55, cy - r * 1.05),
-        (cx, cy - r * 0.6),
-        (cx + r * 0.55, cy - r * 1.05),
-        (cx + r * 0.98, cy - r * 0.2),
-    ]
-    inner = [
-        (cx + r * 0.8, cy - r * 0.02),
-        (cx + r * 0.35, cy - r * 0.15),
-        (cx, cy - r * 0.32),
-        (cx - r * 0.35, cy - r * 0.15),
-        (cx - r * 0.8, cy - r * 0.02),
-    ]
-    d = f"M {outer[0][0]:.1f} {outer[0][1]:.1f} "
-    d += f"Q {outer[1][0]:.1f} {outer[1][1]:.1f} {outer[2][0]:.1f} {outer[2][1]:.1f} "
-    d += f"Q {outer[3][0]:.1f} {outer[3][1]:.1f} {outer[4][0]:.1f} {outer[4][1]:.1f} "
-    d += f"L {inner[0][0]:.1f} {inner[0][1]:.1f} "
-    d += f"Q {inner[1][0]:.1f} {inner[1][1]:.1f} {inner[2][0]:.1f} {inner[2][1]:.1f} "
-    d += f"Q {inner[3][0]:.1f} {inner[3][1]:.1f} {inner[4][0]:.1f} {inner[4][1]:.1f} "
-    d += "Z"
-    bangs = f'<path d="{d}" fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
 
-    lock_w = r * 0.34
-    lock_y2 = sk.shoulder_y + r * 0.5
-    locks = _capsule(cx - r * 0.85, cy - r * 0.1, cx - r * 1.0, lock_y2, lock_w, p.hair_color)
-    locks += _capsule(cx + r * 0.85, cy - r * 0.1, cx + r * 1.0, lock_y2, lock_w, p.hair_color)
+    # Outer edge reuses _back_hair's exact crown/temple curve so the two
+    # shapes' strokes coincide there instead of showing a seam. The inner
+    # edge is a shallow, gentle curve (not a sharp zigzag) suggesting the
+    # fringe hanging to eyebrow level.
+    d = (
+        _crown_dome_commands(cx, cy, r)
+        + f"L {cx + r * 0.78:.1f} {cy - r * 0.05:.1f} "
+        + f"Q {cx + r * 0.32:.1f} {cy - r * 0.28:.1f} {cx:.1f} {cy - r * 0.42:.1f} "
+        + f"Q {cx - r * 0.32:.1f} {cy - r * 0.28:.1f} {cx - r * 0.78:.1f} {cy - r * 0.05:.1f} "
+        + "Z"
+    )
+    fringe = f'<path d="{d}" fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
 
-    return locks + bangs
+    # Soft diagonal strand lines from the part, replacing a hard center
+    # crease, echoing the reference's gentle fringe styling.
+    strands = (
+        f'<path d="M {cx - r * 0.04:.1f} {cy - r * 0.85:.1f} '
+        f'Q {cx - r * 0.25:.1f} {cy - r * 0.5:.1f} {cx - r * 0.45:.1f} {cy - r * 0.12:.1f}" '
+        f'fill="none" stroke="{OUTLINE}" stroke-width="2" stroke-linecap="round" opacity="0.5" />'
+        f'<path d="M {cx + r * 0.04:.1f} {cy - r * 0.85:.1f} '
+        f'Q {cx + r * 0.25:.1f} {cy - r * 0.5:.1f} {cx + r * 0.45:.1f} {cy - r * 0.12:.1f}" '
+        f'fill="none" stroke="{OUTLINE}" stroke-width="2" stroke-linecap="round" opacity="0.5" />'
+    )
+
+    return fringe + strands
 
 
 def render_character(p: CharacterParams | None = None, sk: Skeleton | None = None) -> str:
