@@ -17,8 +17,12 @@ Proof of concept: a chibi (big head, short body) front-facing
 character renders end-to-end from `src/character.py`, fully
 parametrized by skin/hair/eye/outfit/boot color. See `out/` for
 example renders. Current shape set: head, face (eyes, brows, mouth,
-blush), front/back hair, dress-style outfit, arms, legs, boots; all
-flat cel-shaded (base color + one shadow tone).
+blush), shoulder-length hair (optionally fading to a second tone at
+the ends), dress-style outfit, arms, legs, boots; all flat cel-shaded
+(base color + one shadow tone).
+
+Named characters live in `src/presets.py`, so a character is a
+checked-in artifact that gets re-rendered as the shape code improves.
 
 Not yet built: alternate hairstyles/outfits/poses, non-chibi
 proportions, a picker UI. The plan is to "edge closer" to more
@@ -44,9 +48,13 @@ cd src
 python generate.py --out ../out/demo \
   --hair-color "#e8b84b" --eye-color "#4a9c6d" \
   --outfit-color "#4f7a52" --skin-tone "#f2c9a1" --boot-color "#5b4632"
+
+python generate.py --out ../out/satoko --preset satoko
 ```
 
-Add `--flat` to disable the cel-shading shadow shapes and see the flat
+`--preset` starts from a named character in `src/presets.py`; any
+color flag given alongside it overrides that one color. Add `--flat`
+to disable the cel-shading shadow shapes and see the flat
 silhouette only. Output is written as both `.svg` (inspect/edit
 directly in a browser or Inkscape) and `.png` (if cairosvg works).
 
@@ -63,6 +71,8 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   circles, capsule-strokes) positioned from the skeleton, then stacks
   them in z-order into one `<svg>` document. `CharacterParams` holds
   the color inputs; `render_character()` is the entry point.
+- `src/presets.py`: named characters as `CharacterParams` values, e.g.
+  `SATOKO`. Reachable from the CLI via `--preset`.
 - `src/generate.py`: CLI: renders one character to SVG, rasterizes to
   PNG via `cairosvg` if available.
 

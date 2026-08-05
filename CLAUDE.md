@@ -41,6 +41,8 @@ deformed proportions iteratively, starting from this simple base.
   `build_skeleton()`). Change here to adjust overall proportions.
 - `src/colorutil.py`: `shade()` derives shadow tones from a base
   color. Use this rather than hand-picking a second color per part.
+- `src/presets.py`: named characters as `CharacterParams` values
+  (`SATOKO`). Add a character here, not as a pile of CLI flags.
 - `src/character.py`: one private `_part_name()` function per body
   part, each returning an SVG snippet string; `render_character()`
   stacks them in z-order. `CharacterParams` is the public color/style

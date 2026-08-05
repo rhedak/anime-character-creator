@@ -2,35 +2,33 @@
 
 Usage:
     python src/generate.py --out out/demo --hair-color "#e8b84b" --eye-color "#4a9c6d"
+    python src/generate.py --out out/satoko --preset satoko
 """
 
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from pathlib import Path
 
 from character import CharacterParams, render_character
+from presets import PRESETS
+
+COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color", "outfit_color", "boot_color")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="out/character", help="output path prefix (no extension)")
-    ap.add_argument("--skin-tone", default=CharacterParams.skin_tone)
-    ap.add_argument("--hair-color", default=CharacterParams.hair_color)
-    ap.add_argument("--eye-color", default=CharacterParams.eye_color)
-    ap.add_argument("--outfit-color", default=CharacterParams.outfit_color)
-    ap.add_argument("--boot-color", default=CharacterParams.boot_color)
+    ap.add_argument("--preset", choices=sorted(PRESETS), help="start from a named character")
+    for name in COLOR_ARGS:
+        ap.add_argument(f"--{name.replace('_', '-')}", help="hex color, overrides the preset")
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
     args = ap.parse_args()
 
-    params = CharacterParams(
-        skin_tone=args.skin_tone,
-        hair_color=args.hair_color,
-        eye_color=args.eye_color,
-        outfit_color=args.outfit_color,
-        boot_color=args.boot_color,
-        shaded=not args.flat,
-    )
+    base = PRESETS[args.preset] if args.preset else CharacterParams()
+    overrides = {name: getattr(args, name) for name in COLOR_ARGS if getattr(args, name) is not None}
+    params = replace(base, shaded=not args.flat, **overrides)
 
     svg = render_character(params)
 
