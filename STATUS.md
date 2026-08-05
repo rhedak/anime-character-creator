@@ -4,8 +4,7 @@ Snapshot of where the generator is and what comes next. Working notes,
 not user documentation: see `README.md` for how to run it and
 `CLAUDE.md` for the rules that govern changes.
 
-Last updated: 2026-08-06, uncommitted, on top of `92736d0` "anime
-tuning".
+Last updated: 2026-08-06, at `159fc01` "iterate satoshi".
 
 ## Where it stands
 
@@ -32,6 +31,15 @@ What is parametrized:
   and wide-hipped through +1 the other way. It rides on the build, so it
   bites at `realistic` and all but vanishes at `chibi`, where the head
   swamps the torso anyway.
+- **Where the legs hang.** At the taller builds the outer edge of the
+  thigh lands on `hip_half_w`, which is what the tunic's hem is drawn to,
+  so the body's side carries straight on down into the leg rather than the
+  trousers overhanging it. That falls out of the frame for free: a
+  narrow-hipped figure's legs come in, a wider-hipped one's go out. It
+  also happens to land the crotch gap where `ref/satoshi.png` has it, each
+  inner edge about 0.09 head radii off centre. A chibi keeps its legs
+  tucked in close instead, since its hips are nearly as wide as an adult's
+  in head radii while its legs are less than half as thick.
 - **Garments.** `Outfit` carries one field per piece: tunic,
   undersleeve, belt, apron, skirt, underskirt, trousers, boots, plus a
   `skirt_length`. A garment is worn when its color is set, so a
@@ -52,7 +60,9 @@ What is parametrized:
   both chibis used to come out with the top of their hair sliced flat
   against the canvas edge.
 - **Head.** Eight quadratics tracing a circle at the chibi end and
-  narrowing to a jaw and chin as the build gets taller.
+  narrowing to a jaw and chin as the build gets taller. The short cut's
+  crown is a circular arc off the same construction, a shell 0.28 head radii
+  thick over it.
 - **Colors.** Skin, hair, hair tips, eyes, and every garment above.
 - **Face.** `FaceStyle` carries the eye aperture (size, width,
   openness, lower lid, tilt, corner sharpness, iris size), brow tilt
@@ -67,21 +77,32 @@ at a time.
 
 ## What is weak right now
 
+The bar is how it looks, not how closely it matches `ref/`. Those images are
+guides: they are drawn on a different figure, in `ref/satoshi.png`'s case on a
+wider hip and in a slightly turned pose, so numbers lifted off them come out
+heavy or splayed even when the arithmetic is right. Measure to find *what* is
+wrong, then choose by eye, and note in a comment where a shipped number departs
+from a measured one. A difference from a reference is not a defect on its own,
+so each entry below says whether it actually looks wrong or is only a
+measurement gap.
+
 - **The chibi's tan arms cover about a third of the tunic.** They are
   thick at that build and sit where they sit, so the visible green
   between them is narrower than in `ref/satoko.png`.
   `ref/girl-chibi.png` hides the same overlap by making the arms the
   dress colour, which Satoko's tan undersleeves cannot do.
 - **The waist is wider than the reference's, relative to the shoulder.**
-  Measured: the gap between forearm and waist is about 4px where
-  `ref/satoshi.png` has 21px. The arms are now right; it is
-  `waist_half_w` that is generous. Narrowing it is a skeleton change
-  touching both characters and both builds, so it has not been made.
+  *Measurement gap only, does not read as wrong.* The forearm-to-waist gap
+  is about 4px where `ref/satoshi.png` has 21px, but the arms hanging close
+  to the body looks fine, and narrowing `waist_half_w` is a skeleton change
+  touching both characters and both builds. Not worth doing on the
+  measurement alone.
 - **Eye placement has not been calibrated against `ref/girl-chibi.png`.**
-  They sit lower and closer together than the reference's, and smaller
-  relative to the head. The forehead half of this is fixed on both cuts:
-  the fringe now stops just above the brows rather than on top of the
-  skull.
+  *Unjudged, needs a look before anything is moved.* They sit lower and
+  closer together than the reference's and smaller relative to the head,
+  but that is a measurement, and whether it reads wrong has not been
+  decided. The forehead half is fixed on both cuts: the fringe now stops
+  just above the brows rather than on top of the skull.
 - **Hair is symmetric except for the short cut's fringe.** No
   side-swept part on the long style, so the mirrored point data is
   doing all the work there. The long cut has no strands either, so it is
@@ -93,11 +114,12 @@ at a time.
   reference's boot projects forward and this one is a rounded rectangle.
   It survives chibification precisely because it is that simple, so any
   fix has to ride on the build.
-- **The realistic figure is shorter-legged than the reference.** At 6
-  heads the trousers are right in width now but the leg is a smaller
-  fraction of the body than `ref/satoshi.png`, where the inseam runs to
-  about half the total height. That is `hip_y` and `knee_y`, so it is a
-  skeleton change touching both characters.
+- **The realistic figure is shorter-legged than the reference.** *Reads as
+  wrong, worth doing.* At 6 heads the trousers are right in width but the
+  figure comes out stubby: the leg is a smaller fraction of the body than
+  `ref/satoshi.png`, where the inseam runs to about half the total height.
+  That is `hip_y` and `knee_y`, so it moves both characters, and the skirt
+  hem and boot shaft ride on it.
 - **No pose variety, one outfit family.** Deliberately deferred.
 - **Satoshi at chibi reads as a boy only through hair and trousers.**
   That is by design, since a shoulder-to-hip ratio is invisible at 2.4
@@ -154,6 +176,7 @@ as related, so what carries his identity is hair and lower body.
 | Hair that reads as locks rather than as one mass | done |
 | Dark trousers instead of skirt and apron | done |
 | Trouser leg that fills out at the thigh then runs near straight | done |
+| Legs hanging under the hip, not overhanging the body's side | done |
 | Green tunic, tan undersleeves, brown belt, brown boots (shared with Satoko) | done |
 | Level brows, no smile | done |
 | Slimmer frame: broader shoulder over narrower hip | done, realistic only |
@@ -203,6 +226,14 @@ more contrast in those two, not skeleton work.
   actually applied before concluding the knob does not matter. One
   strand-weight comparison here was five copies of the same image,
   because the substitution it relied on never matched.
+- Anything meant to read as a smooth curve should be generated, not
+  hand-placed. `_arc` traces a circle about the head centre by putting each
+  control point on the bisector at `r / cos(half the segment angle)`, the
+  same construction `_head_shape` uses. Hand-placed anchors and controls
+  scallop instead: the crown peaked between its anchors and dipped at them,
+  and that wobble reads as a defect rather than as texture. The hair reads
+  as locks through the strands and the fringe, which is where the
+  irregularity belongs.
 - Check both builds after touching anything below the neck. Several
   rules that were correct at 4 heads broke the chibi (arm placement in
   particular), which is why `arm_x` is a skeleton anchor and not a

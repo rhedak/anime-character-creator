@@ -135,7 +135,8 @@ def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment]
 # the headroom `build_skeleton`'s `hair_margin` leaves above the skull, and
 # nothing derives the bound from the shapes here, so a taller crown silently
 # comes out sliced flat against the canvas edge, which is how both chibis
-# shipped before it was measured. The tallest crown below peaks near -1.29.
+# shipped before it was measured. The tallest crown below is the short cut's, at
+# exactly -_CROWN_R.
 #
 # Hair is described in two zones. Above the cheek line it is pinned to the
 # skull, so those points are literal head-radius units. Below it the shape is
@@ -145,6 +146,13 @@ def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment]
 _HAIR_CHEEK_Y = 0.72
 _HAIR_TIP_CLIP_ID = "hair-tips"
 _HAIR_FRONT_CLIP_ID = "hair-front"
+
+# The short cut's crown is an arc of a circle about the head centre, so 0.28 head
+# radii of hair over a skull of radius 1. It runs temple to temple, the temple
+# being the point on that circle at y = -0.30, below which the mass flares out to
+# the cheek and the side locks begin.
+_CROWN_R = 1.28
+_CROWN_TO_TEMPLE = math.degrees(math.acos(0.30 / _CROWN_R))
 
 
 def _fall(f: float, length: float) -> float:
@@ -165,6 +173,29 @@ def _reverse(start: Point, segments: list[Segment]) -> tuple[Point, list[Segment
     anchors = [start] + [end for _, end in segments]
     controls = [ctrl for ctrl, _ in segments]
     return anchors[-1], [(controls[i], anchors[i]) for i in range(len(controls) - 1, -1, -1)]
+
+
+def _arc(r: float, from_deg: float, to_deg: float, segments: int) -> tuple[Point, list[Segment]]:
+    """A circular arc about the head centre, as quadratics, in head-radius units.
+    Angles are degrees clockwise from straight up, so 0 is the top of the head.
+
+    A quadratic follows a circle closely enough at these spans if its control
+    point sits on the bisector at `r / cos(half the segment's angle)`, the same
+    construction `_head_shape` uses. Placing anchors and controls by hand instead
+    is what gives a crown that scallops between them: the wobble is not texture,
+    it is the segments failing to agree on a radius.
+    """
+
+    def pt(deg: float, radius: float) -> Point:
+        a = math.radians(deg)
+        return (radius * math.sin(a), -radius * math.cos(a))
+
+    step = (to_deg - from_deg) / segments
+    ctrl_r = r / math.cos(math.radians(step / 2))
+    return pt(from_deg, r), [
+        (pt(from_deg + step * (i + 0.5), ctrl_r), pt(from_deg + step * (i + 1), r))
+        for i in range(segments)
+    ]
 
 
 def _fall_edge(length: float) -> tuple[Point, list[Segment]]:
@@ -286,21 +317,23 @@ def _short_mass_shape(tip: float) -> tuple[Point, list[Segment]]:
     which measures a long fall down from the cheek line and so cannot describe
     hair that ends above the chin at all.
 
-    The mass stands well off the skull, out to 1.2 head radii at the temple and
-    1.34 at the cheek, so the locks hang beside the face rather than looking
-    painted onto it. It used to follow the skull at 1.00 to 1.08, which made hair
-    and head nearly the same shape and was half of why the result read as a pot
-    rather than as a haircut. The other half was the bottom edge: the lock ends
-    are points with notches between them now, where they used to be a shallow
-    wave that came out as a set of rounded paddles.
+    The mass stands well off the skull, a shell 0.28 head radii thick over the
+    crown and flaring to 1.34 at the cheek, so the locks hang beside the face
+    rather than looking painted onto it. It used to follow the skull at 1.00 to
+    1.08, which made hair and head nearly the same shape and was half of why the
+    result read as a pot rather than as a haircut. The other half was the bottom
+    edge: the lock ends are points with notches between them now, where they used
+    to be a shallow wave that came out as a set of rounded paddles.
+
+    The crown is one circular arc. Its points were placed by hand at first, which
+    scalloped it: peaks between the anchors and dips at them, a wobble that read
+    as a defect rather than as texture. The hair reads as locks through the
+    strands and the fringe, so the crown does not have to carry any of it and is
+    better off smooth.
     """
-    return (-1.20, -0.30), [
-        ((-1.20, -1.00), (-0.72, -1.20)),
-        ((-0.54, -1.38), (-0.30, -1.18)),
-        ((-0.12, -1.36), (0.24, -1.26)),
-        ((0.58, -1.36), (0.74, -1.16)),
-        ((0.94, -1.34), (1.20, -0.96)),
-        ((1.32, -0.72), (1.20, -0.30)),
+    left_temple, crown = _arc(_CROWN_R, -_CROWN_TO_TEMPLE, _CROWN_TO_TEMPLE, 4)
+    return left_temple, [
+        *crown,
         ((1.34, 0.16), (1.26, tip - 0.20)),
         ((1.22, tip + 0.06), (0.98, tip + 0.16)),
         ((0.92, tip - 0.12), (0.76, tip - 0.28)),
@@ -311,16 +344,19 @@ def _short_mass_shape(tip: float) -> tuple[Point, list[Segment]]:
         ((-0.66, tip + 0.02), (-0.76, tip - 0.28)),
         ((-0.92, tip - 0.12), (-0.98, tip + 0.16)),
         ((-1.22, tip + 0.06), (-1.26, tip - 0.20)),
-        ((-1.34, 0.16), (-1.20, -0.30)),
+        ((-1.34, 0.16), left_temple),
     ]
 
 
 def _short_fall_edge(tip: float) -> tuple[Point, list[Segment]]:
     """The side lock's outer edge, tip up to the temple. Traces the mass's own
-    outer edge in reverse, exactly, for the same reason `_fall_edge` does."""
+    outer edge in reverse, exactly, for the same reason `_fall_edge` does, which
+    is why it has to end on the same temple point the crown arc starts from."""
+    _, crown = _arc(_CROWN_R, -_CROWN_TO_TEMPLE, _CROWN_TO_TEMPLE, 4)
+    right_temple = crown[-1][1]
     return (0.98, tip + 0.16), [
         ((1.22, tip + 0.06), (1.26, tip - 0.20)),
-        ((1.34, 0.16), (1.20, -0.30)),
+        ((1.34, 0.16), right_temple),
     ]
 
 
@@ -367,15 +403,13 @@ def _short_hairline_shape(tip: float) -> tuple[Point, list[Segment], list[Segmen
     """
     _, right_edge = _short_fall_edge(tip)
     _, left_down = _reverse(*_mirror(*_short_fall_edge(tip)))
-    back: list[Segment] = [
-        *right_edge,
-        # Across the crown inside the mass, so the mass's own lock bumps show
-        # above this rather than being painted over, and outside the head circle,
-        # so the skull outline never shows through the hair.
-        ((0.96, -1.18), (0.00, -1.16)),
-        ((-0.96, -1.18), (-1.20, -0.30)),
-        *left_down,
-    ]
+    # Back across the crown on a smaller arc than the mass's, so the mass's own
+    # outline carries the silhouette rather than being painted over, and well
+    # outside the head circle, so the skull outline never shows through the hair.
+    # This edge is only ever a fill boundary, never stroked, so it can start from
+    # the outer temple the fall edge left off at without the radius change showing.
+    _, inner_crown = _arc(_CROWN_R - 0.10, _CROWN_TO_TEMPLE, -_CROWN_TO_TEMPLE, 4)
+    back: list[Segment] = [*right_edge, *inner_crown, *left_down]
     # Both ends land on the mass's own lock tips, which is what `back` starts and
     # finishes on, so the hairline never stops in mid-air wherever those move to.
     start: Point = back[-1][1]
@@ -944,24 +978,42 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     # two-to-one cone that read as fat thighs on stick shins, and the fix was
     # widening the shin rather than thinning the thigh. A plain untapered tube,
     # tried against this, beat the cone and lost to it.
+    #
+    # The thigh ships at 1.26 rather than the measured 1.42, by preference: the
+    # reference's leg is photographed on a hip wider than this skeleton's, so the
+    # full measurement came out heavy on it. The knee, calf and ankle are the
+    # measured values.
     taper = sk.build
     # Trousers are the outermost garment on the leg, so unlike bare skin they
     # need their own outline, they start at the hip rather than under a hem, and
     # they carry more thigh: a shin-width tube running up to the hip reads as a
     # stilt once there is no skirt covering the top of it.
     trousers = p.outfit.trouser_color
-    thigh = (1.15 + 0.27 * taper) if trousers else (1.00 + 0.18 * taper)
+    thigh = (1.10 + 0.16 * taper) if trousers else (1.00 + 0.12 * taper)
     w_top = sk.leg_half_w * thigh
     w_knee = sk.leg_half_w * (1.00 + 0.03 * taper)
     # Held, not bulged: the reference measures 72, 71, 71 pixels from knee through
     # calf before it takes in at the ankle.
     w_calf = sk.leg_half_w * (1.00 + 0.01 * taper)
     w_ankle = sk.leg_half_w * (0.92 - 0.07 * taper)
-    # Wide enough that the thigh paths do not meet. They are separately stroked
-    # filled paths drawn in a loop, so if they overlap the second one's fill
-    # covers the first one's outline and the crotch comes out as an asymmetric
-    # seam. The reference leaves each inner edge about 0.09 head radii off centre.
-    gap = sk.leg_half_w * (1.45 + 0.18 * taper)
+    # Where the legs hang. At a tall build the outer edge of the thigh lands on
+    # the hip, which is what the tunic's own hem is drawn to, so the body's side
+    # carries straight on down into the leg instead of the trousers overhanging
+    # it. Since the hip rides on `frame`, a narrow-hipped figure's legs come in
+    # and a wider-hipped one's go out, which is the frame doing its job.
+    #
+    # A chibi keeps its legs tucked in close instead: its hips are nearly as wide
+    # as an adult's in head radii while its legs are less than half as thick, so
+    # hanging them off the hip would splay them to the corners of the body.
+    tuck = sk.leg_half_w * 1.45
+    gap = tuck + (sk.hip_half_w - w_top - tuck) * taper
+    # The two legs are separately stroked filled paths drawn in a loop, so if they
+    # ever met, the second one's fill would cover the first one's outline and the
+    # crotch would come out as an asymmetric seam. This keeps a slot open no
+    # matter what frame widens the thigh or narrows the hip. The reference leaves
+    # each inner edge about 0.09 head radii off centre, which is where the
+    # presets land without the floor biting.
+    gap = max(gap, w_top + sk.leg_half_w * 0.2)
     # A bare leg has to start at or above whatever hem is going to cover its top,
     # and the skirt's hem moves with `skirt_length`. Pinning it to the skeleton's
     # own hem leaves a band of bare canvas across the hips as soon as a skirt is
