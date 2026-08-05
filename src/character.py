@@ -241,10 +241,16 @@ def _hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]
         ((-1.00, y(0.97)), (-0.94, y(0.85))),
         ((-0.88, y(0.60)), (-0.88, y(0.28))),
         ((-0.92, 0.70), (-0.88, 0.35)),
-        ((-0.86, -0.26), (-0.40, -0.72)),
-        ((-0.16, -0.88), (0.00, -0.94)),
-        ((0.16, -0.88), (0.40, -0.72)),
-        ((0.86, -0.26), (0.88, 0.35)),
+        # The fringe sits just above the brows, which are around -0.35. It used to
+        # peak at -0.94, all but on top of the skull, which left a forehead taller
+        # than the rest of the face and made the hair read as two curtains hung
+        # either side of a bare head rather than as a mass covering it. Both
+        # character refs and ref/girl-chibi.png cover the forehead down to the
+        # brow line.
+        ((-0.84, 0.08), (-0.46, -0.20)),
+        ((-0.22, -0.36), (0.00, -0.42)),
+        ((0.22, -0.36), (0.46, -0.20)),
+        ((0.84, 0.08), (0.88, 0.35)),
         ((0.92, 0.70), (0.88, y(0.28))),
         ((0.88, y(0.60)), (0.94, y(0.85))),
         ((1.00, y(0.97)), (1.06, y(1.00))),
@@ -466,15 +472,55 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+def _sleeve_hem_y(sk: Skeleton) -> float:
+    """Where the tunic's short sleeve ends, which is also where the arm starts.
+    Both parts read it, since the sleeve hem and the arm's top edge are the same
+    line and have to land on each other."""
+    return sk.shoulder_y + (sk.waist_y - sk.shoulder_y) * 0.42
+
+
+def _sleeve_half_w(sk: Skeleton) -> float:
+    """How far out the sleeve reaches.
+
+    It has to cover the arm, so it is the arm's own outer edge with a little
+    ease, and it can be wider than the anatomical shoulder: at chibi it has to
+    be, because the shoulders there are narrow while the arms are thick, so a
+    sleeve that stopped at `shoulder_half_w` would not reach the limb it is
+    supposed to be on.
+    """
+    return max(sk.shoulder_half_w, sk.arm_x + sk.arm_half_w * 1.10)
+
+
 def _tunic(sk: Skeleton, p: CharacterParams) -> str:
-    """The torso garment, shoulder to hip. Reads the waist anchor rather than
-    running straight from shoulder to hem, which is what stops a tall build from
-    coming out as a box: a chibi still widens all the way down, an adult takes in
-    and back out."""
+    """The torso garment, shoulder to hip, with its own short sleeves.
+
+    Reads the waist anchor rather than running straight from shoulder to hem,
+    which is what stops a tall build from coming out as a box: a chibi still
+    widens all the way down, an adult takes in and back out.
+
+    The sleeve is part of this silhouette rather than a shape laid over it. Drawn
+    as its own capsule with its own closed outline it read as a shoulder pad
+    bolted to the chest, because a garment's seam is not a contour. Here the
+    outline runs neck, down the sloped shoulder, out to the sleeve, down its
+    outside, then steps in at the hem and carries on down the torso, so the whole
+    upper body is one continuous edge.
+    """
     cx = sk.head_cx
     sw, ww, hw = sk.shoulder_half_w, sk.waist_half_w, sk.hip_half_w
     sy, wy, hy = sk.shoulder_y, sk.waist_y, sk.hip_y
     notch = sk.neck_half_w * 0.8
+    sleeve_w = _sleeve_half_w(sk)
+    cuff_y = _sleeve_hem_y(sk)
+    # Shoulders slope. A horizontal shoulder line is what made the sleeve look
+    # bolted on even once it was the right shape.
+    slope = (wy - sy) * 0.14
+    # The torso's own width where the sleeve leaves it. Measured up from the
+    # waist, not down from the shoulder: `shoulder_half_w` is the span across the
+    # deltoids, so a ribcage derived from it comes out wider than the arm hanging
+    # in front of it, and the arm then covers the body's side contour instead of
+    # standing clear of it. Both refs show the torso's side and the arm as two
+    # separate edges with daylight between them below the armpit.
+    torso_at_cuff = ww + (sw - ww) * 0.12
 
     # Control points sit at the shoulder's own width and the hip's own width, so
     # the curve leaves each landmark vertically and the taper reads as a body
@@ -482,22 +528,49 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     shoulder_ctrl_y = wy - (wy - sy) * 0.35
     hip_ctrl_y = hy - (hy - wy) * 0.45
 
+    def shoulder(s: int) -> str:
+        """Neck to the outer tip of the sleeve, then down the sleeve's outside."""
+        return (
+            f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} "
+            f"{cx + s * sleeve_w:.1f} {sy + slope:.1f} "
+            f"Q {cx + s * sleeve_w * 1.03:.1f} {sy + slope + (cuff_y - sy - slope) * 0.55:.1f} "
+            f"{cx + s * sleeve_w * 0.99:.1f} {cuff_y:.1f} "
+            f"L {cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
+        )
+
+    # Leaves the armpit vertically and curves in to the waist, rather than being
+    # pulled out toward the shoulder's own width on the way.
+    rib_ctrl_y = cuff_y + (wy - cuff_y) * 0.55
+
     def down(s: int) -> str:
         return (
-            f"Q {cx + s * sw:.1f} {shoulder_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
+            f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
             f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "
         )
 
     def up(s: int) -> str:
         return (
             f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
-            f"Q {cx + s * sw:.1f} {shoulder_ctrl_y:.1f} {cx + s * sw:.1f} {sy:.1f} "
+            f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
+        )
+
+    def shoulder_up(s: int) -> str:
+        """The mirror of `shoulder`, cuff back up to the neck."""
+        return (
+            f"L {cx + s * sleeve_w * 0.99:.1f} {cuff_y:.1f} "
+            f"Q {cx + s * sleeve_w * 1.03:.1f} {sy + slope + (cuff_y - sy - slope) * 0.55:.1f} "
+            f"{cx + s * sleeve_w:.1f} {sy + slope:.1f} "
+            f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + s * notch:.1f} {sy:.1f} "
         )
 
     d = (
         f"M {cx - notch:.1f} {sy:.1f} "
-        f"L {cx - sw:.1f} {sy:.1f} " + down(-1) + f"L {cx + hw:.1f} {hy:.1f} " + up(1) + f"L {cx + notch:.1f} {sy:.1f} "
-        f"L {cx:.1f} {sy + notch:.1f} "
+        + shoulder(-1)
+        + down(-1)
+        + f"L {cx + hw:.1f} {hy:.1f} "
+        + up(1)
+        + shoulder_up(1)
+        + f"L {cx:.1f} {sy + notch:.1f} "
         f"Z"
     )
     fill = p.outfit.tunic_color
@@ -506,8 +579,8 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         return shape
     # One shadow down the far side of the torso, turning under at the waist.
     shadow = (
-        f'<path d="M {cx + ww * 0.34:.1f} {sy:.1f} '
-        f"Q {cx + sw * 0.9:.1f} {wy - (wy - sy) * 0.3:.1f} {cx + ww:.1f} {wy:.1f} "
+        f'<path d="M {cx + ww * 0.34:.1f} {cuff_y:.1f} '
+        f"Q {cx + torso_at_cuff:.1f} {wy - (wy - sy) * 0.3:.1f} {cx + ww:.1f} {wy:.1f} "
         f"Q {cx + hw:.1f} {hy - (hy - wy) * 0.45:.1f} {cx + hw:.1f} {hy:.1f} "
         f"L {cx + ww * 0.34:.1f} {hy:.1f} Z\" "
         f'fill="{shade(fill)}" opacity="0.55" />'
@@ -672,49 +745,111 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
 
 
 def _arms(sk: Skeleton, p: CharacterParams) -> str:
-    """Shoulder to hand, and the tunic's short sleeve over the top of it.
+    """The arm from the sleeve hem down to the hand.
 
-    The sleeve belongs to the tunic to look at, but it is drawn here because the
-    arm has to sit under it while the hands have to sit over every garment: the
-    apron is only just narrower than the arm span, and a clipped hand is the one
-    collision that would show.
+    The tunic draws its own sleeve now, so this starts where the sleeve ends. The
+    arm's top edge is flat and sits exactly on the sleeve hem, at the same width,
+    so the two strokes land on each other and read as one line: the hem of the
+    garment and the top of the limb are the same edge, the way `_fall_edge` is
+    shared between the hair's mass and its front lock.
+
+    Still drawn last of everything below the neck, because the hands have to be
+    over every garment. The apron's edge sits about three pixels inside the hand
+    at chibi, and a clipped hand is the one collision that would show.
 
     Whatever the undersleeve is, it carries the arm's whole length. Against a
     green tunic a tan sleeve is what separates the arm from the torso; left bare,
     the arm is skin and does the same job.
     """
-    width = sk.arm_half_w * 2
-    y1 = sk.shoulder_y + sk.arm_half_w * 0.4
-    y2 = sk.hip_y + sk.arm_half_w * 0.8
+    cx = sk.head_cx
     sleeve = p.outfit.undersleeve_color or p.skin_tone
-    cap_color = p.outfit.tunic_color
-    # The short sleeve ends around mid-upper-arm, which on this skeleton is a
-    # third of the way from the shoulder to the hand.
-    cap_at = 0.34
+    top_y = _sleeve_hem_y(sk)
+    wrist_y = sk.hip_y + sk.arm_half_w * 0.8
+    elbow_y = sk.waist_y
+
+    # Tapers on the build, the way the leg does. A constant-width tube is right at
+    # chibi and matches ref/girl-chibi.png; at a taller build it reads as a pipe.
+    w_top = sk.arm_half_w
+    w_elbow = sk.arm_half_w * (1.0 - 0.15 * sk.build)
+    w_wrist = sk.arm_half_w * (1.0 - 0.34 * sk.build)
+    # The arm's outer edge picks up where the sleeve's did, so the silhouette runs
+    # on down the limb without a step at the hem.
+    out_top = _sleeve_half_w(sk) * 0.99
+    centre_top = out_top - w_top
+    # Arms drift outward on the way down, so daylight opens between forearm and
+    # waist. Measured off ref/satoshi.png rather than guessed: its silhouette is
+    # 0.98 head-widths across at the upper arm and 1.10 at the elbow, with clear
+    # gaps from the elbow down. A vertical arm gives a constant 0.98 and no gap,
+    # which is what fused the arm to the torso however the torso was shaped.
+    # Scaled by build, since ref/girl-chibi.png hangs its arms straight.
+    centre_wrist = centre_top + sk.arm_half_w * (0.10 + 0.72 * sk.build)
+    centre_elbow = centre_top + (centre_wrist - centre_top) * (elbow_y - top_y) / (wrist_y - top_y)
+
     parts = []
-    for side in (-1, 1):
-        x1 = sk.head_cx + side * sk.arm_x
-        x2 = sk.head_cx + side * (sk.arm_x + sk.arm_half_w * 0.35)
-        parts.append(_capsule(x1, y1, x2, y2, width + STROKE_W * 2, OUTLINE))
-        parts.append(_capsule(x1, y1, x2, y2, width, sleeve))
-        if p.shaded:
-            # Shadow down the inner half of the sleeve, so a bare arm and a
-            # clothed one both turn away from the light the way the torso does.
-            inner = x1 - side * sk.arm_half_w * 0.45
-            parts.append(_capsule(inner, y1, inner + (x2 - x1), y2, width * 0.45, shade(sleeve)))
-        hand_r = sk.arm_half_w * 0.9
-        parts.append(
-            f'<circle cx="{x2:.1f}" cy="{y2:.1f}" r="{hand_r:.1f}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="2" />'
+    for s in (-1, 1):
+        def x(offset: float) -> float:
+            return cx + s * offset
+
+        d = (
+            f"M {x(centre_top - w_top):.1f} {top_y:.1f} "
+            f"L {x(centre_top + w_top):.1f} {top_y:.1f} "
+            f"Q {x(centre_top + w_top * 1.03):.1f} {top_y + (elbow_y - top_y) * 0.55:.1f} "
+            f"{x(centre_elbow + w_elbow):.1f} {elbow_y:.1f} "
+            f"Q {x(centre_wrist + w_wrist * 1.06):.1f} {elbow_y + (wrist_y - elbow_y) * 0.5:.1f} "
+            f"{x(centre_wrist + w_wrist):.1f} {wrist_y:.1f} "
+            f"L {x(centre_wrist - w_wrist):.1f} {wrist_y:.1f} "
+            f"Q {x(centre_wrist - w_wrist * 1.06):.1f} {elbow_y + (wrist_y - elbow_y) * 0.5:.1f} "
+            f"{x(centre_elbow - w_elbow):.1f} {elbow_y:.1f} "
+            f"Q {x(centre_top - w_top * 1.03):.1f} {top_y + (elbow_y - top_y) * 0.55:.1f} "
+            f"{x(centre_top - w_top):.1f} {top_y:.1f} "
+            f"Z"
         )
-        # Sleeve last, so it laps over the top of the arm the way a garment does.
-        cx_end = x1 + (x2 - x1) * cap_at
-        cy_end = y1 + (y2 - y1) * cap_at
-        cap_w = width * 1.14
-        parts.append(_capsule(x1, y1, cx_end, cy_end, cap_w + STROKE_W * 2, OUTLINE))
-        parts.append(_capsule(x1, y1, cx_end, cy_end, cap_w, cap_color))
+        clip_id = f"arm-{'l' if s < 0 else 'r'}"
+        parts.append(f'<defs><clipPath id="{clip_id}"><path d="{d}" /></clipPath></defs>')
+        parts.append(f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />')
         if p.shaded:
-            off = side * cap_w * 0.30
-            parts.append(_capsule(x1 - off, y1, cx_end - off, cy_end, cap_w * 0.3, shade(cap_color)))
+            # A narrow turn down the inner side. Wide enough and it stops reading
+            # as a rounded limb and starts reading as a two-tone plank, which is
+            # what it did at chibi where the arm is short and thick.
+            inner = x(centre_top - w_top * 0.62)
+            parts.append(
+                f'<g clip-path="url(#{clip_id})">'
+                + _capsule(inner, top_y, inner + s * (centre_wrist - centre_top), wrist_y, w_top * 0.55, shade(sleeve))
+                + "</g>"
+            )
+        parts.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist))
+    return "".join(parts)
+
+
+def _hand(sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float) -> str:
+    """An open hand hanging at the side.
+
+    A circle is right at chibi and is what ref/girl-chibi.png draws, so the shape
+    only lengthens and narrows as the build does: at 2.4 heads this comes out very
+    nearly the circle it replaced.
+
+    No fingers. Both refs suggest them with a crease or two at most, and at this
+    size separate digits read as noise rather than as a hand.
+    """
+    hw = w_wrist * 1.02
+    length = sk.arm_half_w * (1.6 + 1.0 * sk.build)
+    tip = hw * (1.0 - 0.32 * sk.build)
+    d = (
+        f"M {cx - hw:.1f} {wrist_y:.1f} "
+        f"Q {cx - hw * 1.14:.1f} {wrist_y + length * 0.55:.1f} {cx - tip * 0.74:.1f} {wrist_y + length:.1f} "
+        f"Q {cx:.1f} {wrist_y + length * 1.16:.1f} {cx + tip * 0.74:.1f} {wrist_y + length:.1f} "
+        f"Q {cx + hw * 1.14:.1f} {wrist_y + length * 0.55:.1f} {cx + hw:.1f} {wrist_y:.1f} "
+        f"Z"
+    )
+    parts = [f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="2.5" />']
+    if p.shaded and sk.build > 0.5:
+        # One crease where the thumb sits, only once there is room for it.
+        parts.append(
+            f'<path d="M {cx - hw * 0.55:.1f} {wrist_y + length * 0.30:.1f} '
+            f"Q {cx - hw * 0.20:.1f} {wrist_y + length * 0.52:.1f} {cx - hw * 0.28:.1f} {wrist_y + length * 0.74:.1f}\" "
+            f'fill="none" stroke="{OUTLINE}" stroke-width="1.4" opacity="0.55" stroke-linecap="round" />'
+        )
+    return "".join(parts)
     return "".join(parts)
 
 

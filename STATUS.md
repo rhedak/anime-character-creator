@@ -59,16 +59,20 @@ at a time.
 
 ## What is weak right now
 
-- **Arms are capsules with circles for hands.** Now the most crude thing
-  left. Acceptable at chibi, and at `realistic` the straight tube and
-  ball hand are what stop the figure reading as a body. The tunic's
-  short sleeve is drawn in `_arms` rather than `_tunic`, so a rework has
-  to keep the sleeve lapping over the arm and the hands over every
-  garment.
-- **The chibi face has not been calibrated against `ref/girl-chibi.png`.**
-  The forehead is taller than the reference's and the hair mass flares
-  wider, so the head reads wider than tall. The width profile matches
-  from the chest down; it is the head that has not been checked.
+- **The chibi's tan arms cover about a third of the tunic.** They are
+  thick at that build and sit where they sit, so the visible green
+  between them is narrower than in `ref/satoko.png`.
+  `ref/girl-chibi.png` hides the same overlap by making the arms the
+  dress colour, which Satoko's tan undersleeves cannot do.
+- **The waist is wider than the reference's, relative to the shoulder.**
+  Measured: the gap between forearm and waist is about 4px where
+  `ref/satoshi.png` has 21px. The arms are now right; it is
+  `waist_half_w` that is generous. Narrowing it is a skeleton change
+  touching both characters and both builds, so it has not been made.
+- **Eye placement has not been calibrated against `ref/girl-chibi.png`.**
+  They sit lower and closer together than the reference's, and smaller
+  relative to the head. The forehead half of this is fixed: the fringe
+  now stops just above the brows rather than on top of the skull.
 - **Hair is symmetric except for the short cut's fringe.** No
   side-swept part on the long style, so the mirrored point data is
   doing all the work there.
@@ -138,23 +142,16 @@ more contrast in those two, not skeleton work.
 
 ## Next steps
 
-1. **Arms.** The last crude shape. Taper them from shoulder to wrist and
-   give the hand a shape instead of a circle, the way
-   `_legs_and_boots` already tapers off `sk.build`. Two constraints the
-   current layering imposes: the short sleeve is drawn in `_arms` so it
-   laps over the top of the arm, and `_arms` is drawn last below the neck
-   so nothing clips the hands. The apron's edge sits about 3px inside the
-   hand at chibi, which is why that ordering exists.
-2. **Chibi face pass.** Calibrate the head against `ref/girl-chibi.png`:
-   the fringe peak sits higher than the reference's so the forehead is
-   too tall, and the hair mass flares wider so the head reads wide.
-   Satoko's expression itself is right and should not move.
-3. **Asymmetry.** Side-swept parting on the long style. Lowest value,
+1. **Eye placement.** Against `ref/girl-chibi.png` the eyes sit lower and
+   closer together than the reference's, and smaller relative to the
+   head. Only the geometry the two share should move: Satoko's aperture
+   shape carries her expression and is right.
+2. **Asymmetry.** Side-swept parting on the long style. Lowest value,
    highest fiddliness, since it breaks the mirrored point data that
    `_mirror` / `_reverse` rely on. The short cut's fringe is already
    asymmetric without touching the silhouette, which is the cheaper trick
    and may be enough.
-4. **Then variety.** More hairstyles and a second outfit family. The
+3. **Then variety.** More hairstyles and a second outfit family. The
    hairstyle registry and `Outfit` are both built to take them now.
 
 ## Conventions worth remembering

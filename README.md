@@ -30,9 +30,8 @@ differ by which layers they have rather than by bespoke code.
 Named characters live in `src/presets.py`, so a character is a
 checked-in artifact that gets re-rendered as the shape code improves.
 
-Not yet built: arms are still capsules with circles for hands, which is
-the weak point at taller builds; also no pose variety, no second outfit
-family, no picker UI. See `STATUS.md`.
+Not yet built: no pose variety, no second outfit family, no picker UI.
+See `STATUS.md` for what is still weak.
 
 ## Setup
 
