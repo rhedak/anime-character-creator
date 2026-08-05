@@ -15,8 +15,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-CHIBI_HEADS = 2.4
-DEFAULT_HEADS = 4.0
+# Named builds. Most characters want one of these rather than a number, but
+# `heads` stays open for anything in between (4.0 is a common middle ground).
+BUILDS: dict[str, float] = {
+    "chibi": 2.4,
+    "realistic": 7.0,
+}
+DEFAULT_BUILD = "chibi"
+DEFAULT_HEADS = BUILDS[DEFAULT_BUILD]
 
 
 def _lerp(a: float, b: float, t: float) -> float:
@@ -64,9 +70,10 @@ def build_skeleton(
     chin_y = head_cy + head_r
     body = fig_h - head_h
 
-    # 0 at 2 heads, 1 at 6. Widths that read right on a chibi read wrong on a
-    # longer figure, so they slide along this instead of being fixed.
-    t = min(1.0, max(0.0, (heads - 2.0) / 4.0))
+    # 0 at a 2-head chibi, 1 at a 7-head adult. Both the widths and where the
+    # landmarks sit along the body slide along this: a chibi is nearly
+    # neckless with its hips high in a short body, an adult is not.
+    t = min(1.0, max(0.0, (heads - 2.0) / 5.0))
 
     return Skeleton(
         canvas_w=canvas_w,
@@ -76,18 +83,18 @@ def build_skeleton(
         head_cy=head_cy,
         head_r=head_r,
         neck_y=head_cy + head_r * 0.85,
-        neck_half_w=head_r * _lerp(0.22, 0.32, t),
-        shoulder_y=chin_y + body * 0.07,
-        shoulder_half_w=head_r * _lerp(0.72, 1.60, t),
-        waist_y=chin_y + body * 0.34,
-        hip_y=chin_y + body * 0.48,
-        hip_half_w=head_r * _lerp(1.00, 1.45, t),
-        hem_y=chin_y + body * 0.60,
-        hem_half_w=head_r * _lerp(1.15, 1.50, t),
-        arm_half_w=head_r * _lerp(0.23, 0.30, t),
-        arm_x=head_r * _lerp(0.84, 1.05, t),
-        leg_half_w=head_r * _lerp(0.16, 0.34, t),
-        knee_y=chin_y + body * 0.72,
-        ankle_y=chin_y + body * 0.90,
+        neck_half_w=head_r * _lerp(0.21, 0.40, t),
+        shoulder_y=chin_y + body * _lerp(0.02, 0.042, t),
+        shoulder_half_w=head_r * _lerp(0.68, 1.55, t),
+        waist_y=chin_y + body * _lerp(0.46, 0.333, t),
+        hip_y=chin_y + body * _lerp(0.58, 0.417, t),
+        hip_half_w=head_r * _lerp(0.95, 1.30, t),
+        hem_y=chin_y + body * _lerp(0.70, 0.58, t),
+        hem_half_w=head_r * _lerp(1.11, 1.60, t),
+        arm_half_w=head_r * _lerp(0.22, 0.33, t),
+        arm_x=head_r * _lerp(0.75, 1.20, t),
+        leg_half_w=head_r * _lerp(0.15, 0.42, t),
+        knee_y=chin_y + body * _lerp(0.81, 0.708, t),
+        ankle_y=chin_y + body * _lerp(0.93, 0.95, t),
         foot_y=chin_y + body,
     )

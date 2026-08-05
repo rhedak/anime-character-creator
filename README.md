@@ -15,8 +15,9 @@ possible later addition (they'd slot in as extra SVG layers).
 
 Proof of concept: a front-facing character renders end-to-end from
 `src/character.py`, fully parametrized by skin/hair/eye/outfit/boot
-color. Build height is a knob (`--heads`), running from the original
-2.4-head chibi up through the 4-head default. See `out/` for
+color. Build is a named mode, `--build chibi` (default) or
+`--build realistic`, with `--heads` open for anything in between. See
+`out/` for
 example renders. Current shape set: head, face (eyes, brows, mouth,
 blush), shoulder-length hair (optionally fading to a second tone at
 the ends), dress-style outfit, arms, legs, boots; all flat cel-shaded
@@ -50,6 +51,7 @@ python generate.py --out ../out/demo \
   --outfit-color "#4f7a52" --skin-tone "#f2c9a1" --boot-color "#5b4632"
 
 python generate.py --out ../out/satoko --preset satoko
+python generate.py --out ../out/satoko-tall --preset satoko --build realistic
 ```
 
 `--preset` starts from a named character in `src/presets.py`; any flag
@@ -73,10 +75,10 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   neck/shoulder/hip/hem/limb widths, and the y-coordinates (neck,
   shoulder, waist, hip, hem, knee, ankle, foot) every shape positions
   itself against. The whole thing derives from `heads`, how many
-  head-heights tall the figure stands. Vertical anchors are fractions
-  of the body so they hold at any height; widths interpolate, since a
-  2-head chibi is narrow-shouldered and wide-hipped in a way a 6-head
-  figure is not.
+  head-heights tall the figure stands, which `BUILDS` names as `chibi`
+  (2.4) and `realistic` (7.0). Both the widths and where the landmarks
+  sit along the body interpolate between the two: a chibi is nearly
+  neckless with high hips in a short body, an adult is not.
 - `src/colorutil.py`: `shade()` derives a darker/more-saturated
   "shadow" tone from a base color, so palettes for cel-shading are
   computed, not hand-picked per shape.

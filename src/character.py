@@ -54,9 +54,9 @@ class CharacterParams:
     hair_color: str = "#e8b84b"
     # Tone the hair fades into below the jaw. None means single-tone hair.
     hair_tip_color: str | None = None
-    # Where the hair ends, in head radii below the head center. Raise it when
-    # the figure gets taller, or the hair stays a bob.
-    hair_length: float = 2.35
+    # Where the hair ends, measured chin (0) to hip (1), so it stays the same
+    # haircut across builds. Roughly: 0.15 jaw, 0.45 chest, 1.0 hip.
+    hair_length: float = 0.45
     eye_color: str = "#4a9c6d"
     outfit_color: str = "#4f7a52"
     boot_color: str = "#5b4632"
@@ -229,6 +229,15 @@ def _hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]
     return start, line, back
 
 
+def _hair_fall(sk: Skeleton, p: CharacterParams) -> float:
+    """Convert a body-relative hair length into head radii below the head
+    center, which is the unit the hair shapes are built in. Doing the
+    conversion here is what lets one haircut survive a change of build."""
+    chin_y = sk.head_cy + sk.head_r
+    tip_y = chin_y + p.hair_length * (sk.hip_y - chin_y)
+    return (tip_y - sk.head_cy) / sk.head_r
+
+
 def _hair_tip_tone(p: CharacterParams) -> str | None:
     """The tone the hair fades into, or None when the hair is single-tone."""
     if p.hair_tip_color is None or p.hair_tip_color == p.hair_color:
@@ -239,7 +248,7 @@ def _hair_tip_tone(p: CharacterParams) -> str | None:
 def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
     if _hair_tip_tone(p) is None:
         return ""
-    start, segments = _hair_tip_edge(p.hair_length)
+    start, segments = _hair_tip_edge(_hair_fall(sk, p))
     d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     return f'<defs><clipPath id="{_HAIR_TIP_CLIP_ID}"><path d="{d}" /></clipPath></defs>'
 
@@ -256,7 +265,7 @@ def _two_tone_hair(d: str, p: CharacterParams) -> list[str]:
 
 
 def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
-    start, segments = _hair_mass_shape(p.hair_length)
+    start, segments = _hair_mass_shape(_hair_fall(sk, p))
     d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     parts = _two_tone_hair(d, p)
     parts.append(f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />')
@@ -329,16 +338,30 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
 
 
 def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
-    leg_w = sk.leg_half_w * 2
+    # A straight rectangle passes as a leg on a chibi and reads as a stick on
+    # a tall build, so the leg tapers from thigh to ankle with a calf bulge.
+    # How much it tapers rides on the build, via the skeleton's own widths.
+    taper = min(1.0, max(0.0, (sk.heads - 2.0) / 5.0))
+    w_top = sk.leg_half_w
+    w_knee = sk.leg_half_w * (0.95 - 0.17 * taper)
+    w_ankle = sk.leg_half_w * (0.85 - 0.30 * taper)
     gap = sk.leg_half_w * 1.45
+    top_y = sk.hem_y - 4
+    calf_y = sk.knee_y + (sk.ankle_y - sk.knee_y) * 0.35
     parts = []
     for side in (-1, 1):
-        lx = sk.head_cx + side * gap - leg_w / 2
-        parts.append(
-            f'<rect x="{lx:.1f}" y="{sk.hem_y - 4:.1f}" width="{leg_w:.1f}" height="{sk.ankle_y - sk.hem_y + 4:.1f}" fill="{p.skin_tone}" />'
+        cx = sk.head_cx + side * gap
+        d = (
+            f"M {cx - w_top:.1f} {top_y:.1f} L {cx + w_top:.1f} {top_y:.1f} "
+            f"Q {cx + w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx + w_knee:.1f} {sk.knee_y:.1f} "
+            f"Q {cx + w_knee * 1.14:.1f} {calf_y:.1f} {cx + w_ankle:.1f} {sk.ankle_y:.1f} "
+            f"L {cx - w_ankle:.1f} {sk.ankle_y:.1f} "
+            f"Q {cx - w_knee * 1.14:.1f} {calf_y:.1f} {cx - w_knee:.1f} {sk.knee_y:.1f} "
+            f"Q {cx - w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx - w_top:.1f} {top_y:.1f} Z"
         )
-        boot_w = leg_w * 1.5
-        bx = sk.head_cx + side * gap - boot_w / 2
+        parts.append(f'<path d="{d}" fill="{p.skin_tone}" />')
+        boot_w = w_ankle * 3.4
+        bx = cx - boot_w / 2
         boot_h = sk.foot_y - sk.ankle_y
         parts.append(
             f'<rect x="{bx:.1f}" y="{sk.ankle_y:.1f}" width="{boot_w:.1f}" height="{boot_h:.1f}" rx="{boot_w * 0.25:.1f}" '
@@ -502,7 +525,8 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     # Fringe and side locks are one shape in the same flat tone as the mass,
     # drawn without a stroke of its own. The only line added is the hairline,
     # so nothing divides the hair into separate pieces.
-    start, line, back = _hairline_shape(p.hair_length)
+    fall = _hair_fall(sk, p)
+    start, line, back = _hairline_shape(fall)
     fill_d = _curve(cx, cy, r, start, line + back)
     line_d = _curve(cx, cy, r, start, line, close=False)
     parts = _two_tone_hair(fill_d, p)
@@ -514,7 +538,7 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     # since it lands on the mass's own stroke, and the silhouette where it
     # doesn't.
     for side in (-1, 1):
-        edge = _fall_edge(p.hair_length)
+        edge = _fall_edge(fall)
         edge_start, edge_segments = edge if side > 0 else _mirror(*edge)
         edge_d = _curve(cx, cy, r, edge_start, edge_segments, close=False)
         parts.append(

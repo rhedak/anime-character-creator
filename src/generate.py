@@ -13,6 +13,7 @@ from pathlib import Path
 
 from character import CharacterParams, render_character
 from presets import PRESETS
+from skeleton import BUILDS
 
 COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color", "outfit_color", "boot_color")
 
@@ -47,14 +48,17 @@ def main() -> None:
         ap.add_argument(_flag(name), help="hex color, overrides the preset")
     for name, kind in FACE_ARGS.items():
         ap.add_argument(_flag(name), type=kind, help="expression knob, overrides the preset")
-    ap.add_argument("--hair-length", type=float, help="head radii below head center where hair ends")
-    ap.add_argument("--heads", type=float, help="head-heights tall (2.4 is the original chibi)")
+    ap.add_argument("--build", choices=sorted(BUILDS), help="named proportions (default chibi)")
+    ap.add_argument("--hair-length", type=float, help="hair end, chin 0 to hip 1")
+    ap.add_argument("--heads", type=float, help="head-heights tall, overrides --build")
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
     args = ap.parse_args()
 
     base = PRESETS[args.preset] if args.preset else CharacterParams()
     colors = {name: getattr(args, name) for name in COLOR_ARGS if getattr(args, name) is not None}
     face = {name: getattr(args, name) for name in FACE_ARGS if getattr(args, name) is not None}
+    if args.build is not None:
+        colors["heads"] = BUILDS[args.build]
     for extra in ("heads", "hair_length"):
         if getattr(args, extra) is not None:
             colors[extra] = getattr(args, extra)
