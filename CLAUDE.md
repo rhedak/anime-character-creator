@@ -62,3 +62,9 @@ deformed proportions iteratively, starting from this simple base.
   different from the defaults — confirms `shade()` derivations still
   look right outside the default hue range, not just coincidentally
   right for blonde/green.
+- do NOT commit unless asked
+- even if you commit do not write a "co-authored" trailer
+- no em dashes "—" (U+2014), double hyphens "--", or similar pause-substitutes in prose / comments;
+  hyphens are fine for compound words, prefixes, and ranges, but in running text prefer a period, comma, 
+  or restructured sentence instead
+- If you disagree (you don't think they add value) with any instructions given, push back once and ask for confirmation
