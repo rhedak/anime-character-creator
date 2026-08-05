@@ -54,9 +54,10 @@ python generate.py --out ../out/satoko --preset satoko
 
 `--preset` starts from a named character in `src/presets.py`; any flag
 given alongside it overrides that one value. Besides colors there are
-expression flags (`--eye-openness`, `--eye-size`, `--brow-tilt`,
-`--brow-weight`, `--mouth-curve`, `--mouth-width`, `--blush`,
-`--scar-side`), each of which is neutral at its default:
+expression flags, each neutral at its default: eye shape
+(`--eye-size`, `--eye-width`, `--eye-openness`, `--eye-lower-lid`,
+`--eye-tilt`, `--eye-corner`, `--iris-size`), plus `--brow-tilt`, `--brow-weight`,
+`--mouth-curve`, `--mouth-width`, `--blush`, `--scar-side`.
 
 ```bash
 python generate.py --out ../out/grumpy --mouth-curve -0.6 --blush 0 --brow-tilt 0.5
@@ -79,8 +80,10 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   circles, capsule-strokes) positioned from the skeleton, then stacks
   them in z-order into one `<svg>` document. `CharacterParams` holds
   the color inputs plus a `FaceStyle` of expression knobs (eye
-  openness/size, brow tilt/weight, mouth curve/width, blush, cheek
-  scar); `render_character()` is the entry point.
+  aperture shape, brow tilt/weight, mouth curve/width, blush, cheek
+  scar); `render_character()` is the entry point. The eye is an almond
+  built from four quadratics, so one set of knobs spans a tall round
+  chibi eye and a narrow lidded adult one.
 - `src/presets.py`: named characters as `CharacterParams` values, e.g.
   `SATOKO`. Reachable from the CLI via `--preset`.
 - `src/generate.py`: CLI: renders one character to SVG, rasterizes to

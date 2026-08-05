@@ -6,7 +6,6 @@ scales as one unit via the skeleton's head_r.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field
 
 from colorutil import shade
@@ -21,10 +20,23 @@ class FaceStyle:
     """Expression knobs. Every default reproduces the stock chibi face, so a
     character only states what it differs on."""
 
-    # 1.0 is a fully round eye; lower flattens the upper lid toward a
-    # half-lidded, more adult look.
-    eye_openness: float = 1.0
     eye_size: float = 1.0
+    # Aperture width against its height. Below 1 gives a tall eye, above 1 a
+    # long narrow one.
+    eye_width: float = 0.88
+    # How high the upper lid rides. 1.0 is wide open, lower is half-lidded.
+    # The iris keeps its size and gets cropped, which is what reads as lidded
+    # rather than simply small-eyed.
+    eye_openness: float = 1.0
+    # How far the lower lid drops. Below 1 flattens the underside.
+    eye_lower_lid: float = 1.0
+    # Raises the outer corner above the inner one.
+    eye_tilt: float = 0.10
+    # 0 is a rounded oval, 1 pulls all four corners out to sharp points.
+    eye_corner: float = 0.35
+    # Iris against the aperture's smaller half-axis. Below 1 leaves white
+    # sclera showing all the way around it.
+    iris_size: float = 0.72
     # 0 is level. Positive drops the inner ends (stern), negative raises them.
     brow_tilt: float = 0.0
     brow_weight: float = 1.0
@@ -284,50 +296,74 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     return circle + sd
 
 
-def _eye_shape(ex: float, ey: float, er: float, openness: float) -> tuple[str, str] | None:
-    """Sclera as a circle with its top taken off by the upper lid, plus the
-    lid on its own for redrawing as the lash line. None means fully open,
-    where a plain <circle> is exact and avoids a degenerate arc.
+def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tuple[str, str]:
+    """Eye aperture as a closed almond, plus its upper lid on its own so the
+    lash line can be redrawn heavier over the iris.
 
-    The lid bows upward rather than cutting straight across, otherwise the
-    eye reads as a flat-topped box instead of a lidded eye.
+    Four quadratics run inner corner, apex, outer corner, base, back to the
+    inner corner. Each control point sits at the extreme of its half and is
+    slid along x by `eye_corner`: sitting directly over a corner it gives an
+    elliptical quarter and the corner reads round, pulled toward the middle
+    the curve leaves the corner shallowly and reads pointed. Points are built
+    with x measured outward from the face center, then mirrored per side.
     """
-    if openness >= 0.995:
-        return None
-    lid_y = ey - er * openness
-    half = er * math.sqrt(max(0.0, 1.0 - openness * openness))
-    lid = f"Q {ex:.1f} {lid_y - er * 0.20:.1f} {ex - half:.1f} {lid_y:.1f}"
-    d = f"M {ex - half:.1f} {lid_y:.1f} A {er:.1f} {er:.1f} 0 1 0 {ex + half:.1f} {lid_y:.1f} {lid} Z"
-    return d, f"M {ex + half:.1f} {lid_y:.1f} {lid}"
+    w = er * f.eye_width
+    top = er * f.eye_openness
+    bot = er * f.eye_lower_lid
+    tilt = er * f.eye_tilt * 0.30
+    reach = 0.55 * f.eye_corner
+
+    inner = (-w, tilt)
+    apex = (w * 0.05, -top)
+    outer = (w, -tilt)
+    base = (-w * 0.10, bot)
+
+    def pt(p: Point) -> str:
+        return f"{ex + side * p[0]:.1f} {ey + p[1]:.1f}"
+
+    def ctrl(corner: Point, toward: Point, y: float) -> Point:
+        return (corner[0] + (toward[0] - corner[0]) * reach, y)
+
+    lid = (
+        f"M {pt(inner)} Q {pt(ctrl(inner, apex, -top))} {pt(apex)} "
+        f"Q {pt(ctrl(outer, apex, -top))} {pt(outer)}"
+    )
+    d = lid + f" Q {pt(ctrl(outer, base, bot))} {pt(base)} Q {pt(ctrl(inner, base, bot))} {pt(inner)} Z"
+    return d, lid
 
 
 def _eye(ex: float, ey: float, er: float, side: int, p: CharacterParams) -> str:
     f = p.face
-    shaped = _eye_shape(ex, ey, er, f.eye_openness)
+    d, lid = _eye_shape(ex, ey, er, side, f)
     clip_id = f"eye-{'l' if side < 0 else 'r'}"
-    shape = f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="{er:.1f}"' if shaped is None else f'<path d="{shaped[0]}"'
-    # A narrowed eye shows more iris and less white, so grow it as the lid drops.
-    iris_r = er * (0.72 + 0.22 * (1.0 - f.eye_openness))
 
-    # The iris is clipped to the sclera so it can't spill over a lowered lid.
-    parts = [f'<defs><clipPath id="{clip_id}">{shape} /></clipPath></defs>']
-    parts.append(f'{shape} fill="white" stroke="{OUTLINE}" stroke-width="2.5" />')
+    # Size the iris off whichever half-axis of the aperture is smaller, so a
+    # narrow or half-lidded eye keeps white at its corners instead of filling
+    # solid with color. Everything inside the eye is placed off the iris, and
+    # the iris off the aperture's own center rather than a fixed offset.
+    iris_r = f.iris_size * min(er * f.eye_width, er * (f.eye_openness + f.eye_lower_lid) / 2)
+    iris_cy = ey + er * (f.eye_lower_lid - f.eye_openness) / 2 + iris_r * 0.08
+
+    # Still clipped to the aperture, so a low lid crops the iris rather than
+    # letting it hang over the lash line.
+    parts = [f'<defs><clipPath id="{clip_id}"><path d="{d}" /></clipPath></defs>']
+    parts.append(f'<path d="{d}" fill="white" stroke="{OUTLINE}" stroke-width="2.5" />')
     parts.append(f'<g clip-path="url(#{clip_id})">')
-    parts.append(f'<circle cx="{ex:.1f}" cy="{ey + er * 0.05:.1f}" r="{iris_r:.1f}" fill="{p.eye_color}" />')
+    parts.append(f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{p.eye_color}" />')
     parts.append(
-        f'<circle cx="{ex:.1f}" cy="{ey + er * 0.12:.1f}" r="{iris_r * 0.47:.1f}" fill="{shade(p.eye_color, 0.35)}" />'
+        f'<circle cx="{ex:.1f}" cy="{iris_cy + iris_r * 0.14:.1f}" r="{iris_r * 0.45:.1f}" '
+        f'fill="{shade(p.eye_color, 0.35)}" />'
     )
-    parts.append(f'<circle cx="{ex - er * 0.28:.1f}" cy="{ey - er * 0.32:.1f}" r="{er * 0.22:.1f}" fill="white" />')
     parts.append(
-        f'<circle cx="{ex + er * 0.22:.1f}" cy="{ey + er * 0.28:.1f}" r="{er * 0.1:.1f}" fill="white" opacity="0.85" />'
+        f'<circle cx="{ex - iris_r * 0.42:.1f}" cy="{iris_cy - iris_r * 0.48:.1f}" r="{iris_r * 0.34:.1f}" fill="white" />'
+    )
+    parts.append(
+        f'<circle cx="{ex + iris_r * 0.35:.1f}" cy="{iris_cy + iris_r * 0.42:.1f}" r="{iris_r * 0.16:.1f}" '
+        f'fill="white" opacity="0.85" />'
     )
     parts.append("</g>")
-
-    if shaped is not None:
-        # Redraw the lid heavier, on top of the iris, as the lash line.
-        parts.append(
-            f'<path d="{shaped[1]}" fill="none" stroke="{OUTLINE}" stroke-width="4" stroke-linecap="round" />'
-        )
+    # The upper lash line carries more weight than the rest of the outline.
+    parts.append(f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="4" stroke-linecap="round" />')
     return "".join(parts)
 
 

@@ -19,8 +19,13 @@ COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color", "outfit_
 # Expression knobs, mirrored from FaceStyle. See character.FaceStyle for what
 # each one does and what the neutral value is.
 FACE_ARGS: dict[str, type] = {
-    "eye_openness": float,
     "eye_size": float,
+    "eye_width": float,
+    "eye_openness": float,
+    "eye_lower_lid": float,
+    "eye_tilt": float,
+    "eye_corner": float,
+    "iris_size": float,
     "brow_tilt": float,
     "brow_weight": float,
     "mouth_curve": float,
