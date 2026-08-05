@@ -47,12 +47,17 @@ def main() -> None:
         ap.add_argument(_flag(name), help="hex color, overrides the preset")
     for name, kind in FACE_ARGS.items():
         ap.add_argument(_flag(name), type=kind, help="expression knob, overrides the preset")
+    ap.add_argument("--hair-length", type=float, help="head radii below head center where hair ends")
+    ap.add_argument("--heads", type=float, help="head-heights tall (2.4 is the original chibi)")
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
     args = ap.parse_args()
 
     base = PRESETS[args.preset] if args.preset else CharacterParams()
     colors = {name: getattr(args, name) for name in COLOR_ARGS if getattr(args, name) is not None}
     face = {name: getattr(args, name) for name in FACE_ARGS if getattr(args, name) is not None}
+    for extra in ("heads", "hair_length"):
+        if getattr(args, extra) is not None:
+            colors[extra] = getattr(args, extra)
     params = replace(base, shaded=not args.flat, **colors)
     if face:
         params = replace(params, face=replace(params.face, **face))

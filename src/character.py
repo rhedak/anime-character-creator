@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from colorutil import shade
-from skeleton import Skeleton, build_skeleton
+from skeleton import DEFAULT_HEADS, Skeleton, build_skeleton
 
 OUTLINE = "#2b2b2b"
 STROKE_W = 3
@@ -54,10 +54,15 @@ class CharacterParams:
     hair_color: str = "#e8b84b"
     # Tone the hair fades into below the jaw. None means single-tone hair.
     hair_tip_color: str | None = None
+    # Where the hair ends, in head radii below the head center. Raise it when
+    # the figure gets taller, or the hair stays a bob.
+    hair_length: float = 2.35
     eye_color: str = "#4a9c6d"
     outfit_color: str = "#4f7a52"
     boot_color: str = "#5b4632"
     face: FaceStyle = field(default_factory=FaceStyle)
+    # Head-heights tall. Ignored when render_character is handed a skeleton.
+    heads: float = DEFAULT_HEADS
     shaded: bool = True
 
 
@@ -90,75 +95,138 @@ def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment]
     return " ".join(d)
 
 
-# The whole hair silhouette: crown, flaring out past the cheeks, then a
-# straight shoulder-length fall to blunt tips that flick outward. This one
-# shape carries the only outer contour the hair has.
-_HAIR_MASS_START: Point = (-1.02, -0.30)
-_HAIR_MASS: list[Segment] = [
-    ((-0.86, -1.26), (0.00, -1.20)),
-    ((0.86, -1.26), (1.02, -0.30)),
-    ((1.20, 0.20), (1.19, 0.72)),
-    ((1.26, 1.20), (1.28, 1.62)),
-    ((1.29, 1.82), (1.06, 1.90)),
-    ((0.55, 1.99), (0.00, 1.97)),
-    ((-0.55, 1.99), (-1.06, 1.90)),
-    ((-1.29, 1.82), (-1.28, 1.62)),
-    ((-1.26, 1.20), (-1.19, 0.72)),
-    ((-1.20, 0.20), (-1.02, -0.30)),
-]
-
-# Where hair fades to its tip tone. Only the part crossing the two side
-# falls is ever visible, the rest sits behind the head and body, but the
-# edge is waved along its whole length so the transition never reads as a
-# ruled line. Closes into a region covering everything below the wave.
-_HAIR_TIP_EDGE_START: Point = (-1.90, 0.80)
-_HAIR_TIP_EDGE: list[Segment] = [
-    ((-1.55, 0.72), (-1.30, 0.86)),
-    ((-1.12, 0.97), (-0.95, 0.84)),
-    ((-0.78, 0.72), (-0.55, 0.92)),
-    ((-0.28, 1.10), (0.00, 1.00)),
-    ((0.28, 1.10), (0.55, 0.92)),
-    ((0.78, 0.72), (0.95, 0.84)),
-    ((1.12, 0.97), (1.30, 0.86)),
-    ((1.55, 0.72), (1.90, 0.80)),
-    ((1.90, 2.00), (1.90, 3.20)),
-    ((0.00, 3.20), (-1.90, 3.20)),
-]
+# Hair is described in two zones. Above the cheek line it is pinned to the
+# skull, so those points are literal head-radius units. Below it the shape is
+# a fall whose points are given as a fraction of the way to the tips, so
+# `hair_length` restyles the whole thing without touching the crown, and the
+# hair keeps its relationship to the body when proportions change.
+_HAIR_CHEEK_Y = 0.72
 _HAIR_TIP_CLIP_ID = "hair-tips"
 
-# The hairline: up one lock in front of the cheek, across the fringe to the
-# parting at the crown, then back down the other side. This is the only
-# line drawn inside the mass, which is what lets front and back hair read
-# as a single object. Both ends land exactly on the mass's own tips, where
-# the silhouette stroke takes over, so the line never stops in mid-air.
-_HAIRLINE_START: Point = (-1.06, 1.90)
-_HAIRLINE: list[Segment] = [
-    ((-1.02, 1.87), (-0.95, 1.75)),
-    ((-0.86, 1.45), (-0.88, 1.05)),
-    ((-0.92, 0.70), (-0.88, 0.35)),
-    ((-0.86, -0.26), (-0.40, -0.72)),
-    ((-0.16, -0.88), (0.00, -0.94)),
-    ((0.16, -0.88), (0.40, -0.72)),
-    ((0.86, -0.26), (0.88, 0.35)),
-    ((0.92, 0.70), (0.88, 1.05)),
-    ((0.86, 1.45), (0.95, 1.75)),
-    ((1.02, 1.87), (1.06, 1.90)),
-]
 
-# Outer edge of the fringe and locks, closing the shape back to the start.
-# It stays just inside _HAIR_MASS the whole way, so the two fills overlap
-# rather than butt together, and stays outside the head circle so the skull
-# outline never shows through the hair.
-_HAIRLINE_BACK: list[Segment] = [
-    ((1.24, 1.79), (1.24, 1.62)),
-    ((1.22, 1.20), (1.15, 0.72)),
-    ((1.09, 0.10), (1.00, -0.30)),
-    ((0.84, -1.20), (0.00, -1.14)),
-    ((-0.84, -1.20), (-1.00, -0.30)),
-    ((-1.09, 0.10), (-1.15, 0.72)),
-    ((-1.22, 1.20), (-1.24, 1.62)),
-    ((-1.24, 1.79), (-1.06, 1.90)),
-]
+def _fall(f: float, length: float) -> float:
+    return _HAIR_CHEEK_Y + f * (length - _HAIR_CHEEK_Y)
+
+
+def _mirror(start: Point, segments: list[Segment]) -> tuple[Point, list[Segment]]:
+    def flip(q: Point) -> Point:
+        return (-q[0], q[1])
+
+    return flip(start), [(flip(c), flip(e)) for c, e in segments]
+
+
+def _reverse(start: Point, segments: list[Segment]) -> tuple[Point, list[Segment]]:
+    """Walk a quadratic chain backwards. Reversing a quadratic is just
+    swapping its endpoints and keeping the control point, so this is exact
+    and the two directions trace the same pixels."""
+    anchors = [start] + [end for _, end in segments]
+    controls = [ctrl for ctrl, _ in segments]
+    return anchors[-1], [(controls[i], anchors[i]) for i in range(len(controls) - 1, -1, -1)]
+
+
+def _fall_edge(length: float) -> tuple[Point, list[Segment]]:
+    """The mass's outer edge on the right side, tip up to the cheek. Both the
+    mass and the front lock are built from this, so their edges coincide
+    exactly: where the mass shows, the two strokes land on each other, and
+    where the body covers it, the lock's stroke carries the silhouette on."""
+
+    def y(f: float) -> float:
+        return _fall(f, length)
+
+    return (1.06, y(1.00)), [
+        ((1.29, y(0.93)), (1.28, y(0.76))),
+        ((1.26, y(0.41)), (1.19, _HAIR_CHEEK_Y)),
+    ]
+
+
+def _hair_mass_shape(length: float) -> tuple[Point, list[Segment]]:
+    """Crown, flaring out past the cheeks, then a straight fall to blunt tips
+    that flick outward. This one shape carries the hair's only outer contour."""
+
+    def y(f: float) -> float:
+        return _fall(f, length)
+
+    return (-1.02, -0.30), [
+        ((-0.86, -1.26), (0.00, -1.20)),
+        ((0.86, -1.26), (1.02, -0.30)),
+        ((1.20, 0.20), (1.19, _HAIR_CHEEK_Y)),
+        ((1.26, y(0.41)), (1.28, y(0.76))),
+        ((1.29, y(0.93)), (1.06, y(1.00))),
+        ((0.55, y(1.10)), (0.00, y(1.08))),
+        ((-0.55, y(1.10)), (-1.06, y(1.00))),
+        ((-1.29, y(0.93)), (-1.28, y(0.76))),
+        ((-1.26, y(0.41)), (-1.19, _HAIR_CHEEK_Y)),
+        ((-1.20, 0.20), (-1.02, -0.30)),
+    ]
+
+
+def _hair_tip_edge(length: float) -> tuple[Point, list[Segment]]:
+    """Where hair fades to its tip tone. Only the part crossing the two side
+    falls is ever visible, the rest sits behind the head and body, but the
+    edge is waved along its whole length so the transition never reads as a
+    ruled line. Closes into a region covering everything below the wave."""
+
+    def y(f: float) -> float:
+        return _fall(f, length)
+
+    floor = length + 1.5
+    return (-1.90, y(0.07)), [
+        ((-1.55, y(0.00)), (-1.30, y(0.12))),
+        ((-1.12, y(0.21)), (-0.95, y(0.10))),
+        ((-0.78, y(0.00)), (-0.55, y(0.17))),
+        ((-0.28, y(0.32)), (0.00, y(0.24))),
+        ((0.28, y(0.32)), (0.55, y(0.17))),
+        ((0.78, y(0.00)), (0.95, y(0.10))),
+        ((1.12, y(0.21)), (1.30, y(0.12))),
+        ((1.55, y(0.00)), (1.90, y(0.07))),
+        ((1.90, floor * 0.6), (1.90, floor)),
+        ((0.00, floor), (-1.90, floor)),
+    ]
+
+
+def _hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]:
+    """The hairline: up one lock in front of the cheek, across the fringe to
+    the parting at the crown, then back down the other side. This is the only
+    line drawn inside the mass, which is what lets front and back hair read as
+    a single object. Both ends land exactly on the mass's own tips, where the
+    silhouette stroke takes over, so the line never stops in mid-air.
+
+    The second list closes the fringe's fill back to the start. It stays just
+    inside the mass the whole way, so the two fills overlap rather than butt
+    together, and outside the head circle, so the skull outline never shows
+    through the hair.
+    """
+
+    def y(f: float) -> float:
+        return _fall(f, length)
+
+    start: Point = (-1.06, y(1.00))
+    line: list[Segment] = [
+        ((-1.00, y(0.97)), (-0.94, y(0.85))),
+        ((-0.88, y(0.60)), (-0.88, y(0.28))),
+        ((-0.92, 0.70), (-0.88, 0.35)),
+        ((-0.86, -0.26), (-0.40, -0.72)),
+        ((-0.16, -0.88), (0.00, -0.94)),
+        ((0.16, -0.88), (0.40, -0.72)),
+        ((0.86, -0.26), (0.88, 0.35)),
+        ((0.92, 0.70), (0.88, y(0.28))),
+        ((0.88, y(0.60)), (0.94, y(0.85))),
+        ((1.00, y(0.97)), (1.06, y(1.00))),
+    ]
+    # Down the fall the fringe's outer edge is the mass's own edge, so the
+    # lock can carry the silhouette where the body hides the mass. Above the
+    # cheek it tucks inside instead, which is what keeps the temple seamless.
+    _, right_edge = _fall_edge(length)
+    _, left_down = _reverse(*_mirror(*_fall_edge(length)))
+    back: list[Segment] = [
+        *right_edge,
+        ((1.09, 0.10), (1.00, -0.30)),
+        ((0.84, -1.20), (0.00, -1.14)),
+        ((-0.84, -1.20), (-1.00, -0.30)),
+        ((-1.09, 0.10), (-1.19, _HAIR_CHEEK_Y)),
+        *left_down,
+    ]
+    return start, line, back
 
 
 def _hair_tip_tone(p: CharacterParams) -> str | None:
@@ -171,7 +239,8 @@ def _hair_tip_tone(p: CharacterParams) -> str | None:
 def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
     if _hair_tip_tone(p) is None:
         return ""
-    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, _HAIR_TIP_EDGE_START, _HAIR_TIP_EDGE)
+    start, segments = _hair_tip_edge(p.hair_length)
+    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     return f'<defs><clipPath id="{_HAIR_TIP_CLIP_ID}"><path d="{d}" /></clipPath></defs>'
 
 
@@ -187,18 +256,19 @@ def _two_tone_hair(d: str, p: CharacterParams) -> list[str]:
 
 
 def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
-    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, _HAIR_MASS_START, _HAIR_MASS)
+    start, segments = _hair_mass_shape(p.hair_length)
+    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     parts = _two_tone_hair(d, p)
     parts.append(f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />')
     return "".join(parts)
 
 
 def _neck(sk: Skeleton, p: CharacterParams) -> str:
-    w = sk.head_r * 0.45
+    w = sk.neck_half_w * 2
     x = sk.head_cx - w / 2
     # Runs past the shoulder line so the dress's V notch, which is drawn
     # over it, opens onto skin rather than onto the hair behind the body.
-    h = sk.shoulder_y - sk.neck_y + sk.head_r * 0.25
+    h = sk.shoulder_y - sk.neck_y + sk.neck_half_w * 1.1
     rx = w * 0.35
     return f'<rect x="{x:.1f}" y="{sk.neck_y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx:.1f}" fill="{shade(p.skin_tone)}" />'
 
@@ -207,8 +277,8 @@ def _dress(sk: Skeleton, p: CharacterParams) -> str:
     cx = sk.head_cx
     sw, hw = sk.shoulder_half_w, sk.hem_half_w
     sy, hy = sk.shoulder_y, sk.hem_y
-    notch = sk.head_r * 0.18
-    flare_y = hy - sk.head_r * 0.15
+    notch = sk.neck_half_w * 0.8
+    flare_y = hy - (hy - sy) * 0.08
     d = (
         f"M {cx - notch:.1f} {sy:.1f} "
         f"L {cx - sw:.1f} {sy:.1f} "
@@ -241,17 +311,17 @@ def _dress(sk: Skeleton, p: CharacterParams) -> str:
 
 
 def _arms(sk: Skeleton, p: CharacterParams) -> str:
-    width = sk.head_r * 0.46
-    y1 = sk.shoulder_y + sk.head_r * 0.1
-    y2 = sk.waist_y + sk.head_r * 0.3
+    width = sk.arm_half_w * 2
+    y1 = sk.shoulder_y + sk.arm_half_w * 0.4
+    y2 = sk.hip_y + sk.arm_half_w * 0.8
     sleeve = shade(p.outfit_color, 1.08, 0.9)
     parts = []
     for side in (-1, 1):
-        x1 = sk.head_cx + side * sk.shoulder_half_w * 1.05
-        x2 = sk.head_cx + side * sk.shoulder_half_w * 1.2
+        x1 = sk.head_cx + side * sk.arm_x
+        x2 = sk.head_cx + side * (sk.arm_x + sk.arm_half_w * 0.35)
         parts.append(_capsule(x1, y1, x2, y2, width + STROKE_W * 2, OUTLINE))
         parts.append(_capsule(x1, y1, x2, y2, width, sleeve))
-        hand_r = sk.head_r * 0.2
+        hand_r = sk.arm_half_w * 0.9
         parts.append(
             f'<circle cx="{x2:.1f}" cy="{y2:.1f}" r="{hand_r:.1f}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="2" />'
         )
@@ -259,8 +329,8 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
 
 
 def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
-    leg_w = sk.head_r * 0.32
-    gap = sk.head_r * 0.22
+    leg_w = sk.leg_half_w * 2
+    gap = sk.leg_half_w * 1.45
     parts = []
     for side in (-1, 1):
         lx = sk.head_cx + side * gap - leg_w / 2
@@ -432,19 +502,31 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     # Fringe and side locks are one shape in the same flat tone as the mass,
     # drawn without a stroke of its own. The only line added is the hairline,
     # so nothing divides the hair into separate pieces.
-    fill_d = _curve(cx, cy, r, _HAIRLINE_START, _HAIRLINE + _HAIRLINE_BACK)
-    line_d = _curve(cx, cy, r, _HAIRLINE_START, _HAIRLINE, close=False)
+    start, line, back = _hairline_shape(p.hair_length)
+    fill_d = _curve(cx, cy, r, start, line + back)
+    line_d = _curve(cx, cy, r, start, line, close=False)
     parts = _two_tone_hair(fill_d, p)
     parts.append(
         f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
     )
+    # Outer edge of each lock. Redundant where the mass shows behind the body,
+    # since it lands on the mass's own stroke, and the silhouette where it
+    # doesn't.
+    for side in (-1, 1):
+        edge = _fall_edge(p.hair_length)
+        edge_start, edge_segments = edge if side > 0 else _mirror(*edge)
+        edge_d = _curve(cx, cy, r, edge_start, edge_segments, close=False)
+        parts.append(
+            f'<path d="{edge_d}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W}" '
+            f'stroke-linecap="round" />'
+        )
     return "".join(parts)
 
 
 def render_character(p: CharacterParams | None = None, sk: Skeleton | None = None) -> str:
     p = p or CharacterParams()
-    sk = sk or build_skeleton()
+    sk = sk or build_skeleton(heads=p.heads)
 
     layers = [
         _hair_defs(sk, p),

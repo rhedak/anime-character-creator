@@ -13,9 +13,10 @@ possible later addition (they'd slot in as extra SVG layers).
 
 ## Status
 
-Proof of concept: a chibi (big head, short body) front-facing
-character renders end-to-end from `src/character.py`, fully
-parametrized by skin/hair/eye/outfit/boot color. See `out/` for
+Proof of concept: a front-facing character renders end-to-end from
+`src/character.py`, fully parametrized by skin/hair/eye/outfit/boot
+color. Build height is a knob (`--heads`), running from the original
+2.4-head chibi up through the 4-head default. See `out/` for
 example renders. Current shape set: head, face (eyes, brows, mouth,
 blush), shoulder-length hair (optionally fading to a second tone at
 the ends), dress-style outfit, arms, legs, boots; all flat cel-shaded
@@ -24,10 +25,9 @@ the ends), dress-style outfit, arms, legs, boots; all flat cel-shaded
 Named characters live in `src/presets.py`, so a character is a
 checked-in artifact that gets re-rendered as the shape code improves.
 
-Not yet built: alternate hairstyles/outfits/poses, non-chibi
-proportions, a picker UI. The plan is to "edge closer" to more
-detailed, less deformed proportions iteratively once the chibi base
-looks right.
+Not yet built: layered outfits (the single dress shape is the weak
+point at taller builds, where a torso has room for real garment
+layers), alternate hairstyles/poses, a picker UI.
 
 ## Setup
 
@@ -69,10 +69,14 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
 
 ## How it works
 
-- `src/skeleton.py`: `Skeleton` dataclass: head center/radius,
-  shoulder/hip/hem width, and the y-coordinates (neck, shoulder,
-  waist, hem, knee, ankle, foot) every shape positions itself against.
-  Change proportions here and the whole figure rescales as one unit.
+- `src/skeleton.py`: `Skeleton` dataclass: head center/radius, the
+  neck/shoulder/hip/hem/limb widths, and the y-coordinates (neck,
+  shoulder, waist, hip, hem, knee, ankle, foot) every shape positions
+  itself against. The whole thing derives from `heads`, how many
+  head-heights tall the figure stands. Vertical anchors are fractions
+  of the body so they hold at any height; widths interpolate, since a
+  2-head chibi is narrow-shouldered and wide-hipped in a way a 6-head
+  figure is not.
 - `src/colorutil.py`: `shade()` derives a darker/more-saturated
   "shadow" tone from a base color, so palettes for cel-shading are
   computed, not hand-picked per shape.
