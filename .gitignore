@@ -226,4 +226,3 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 /ref-local/
-/CLAUDE.md
