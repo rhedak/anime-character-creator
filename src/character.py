@@ -32,42 +32,85 @@ def _capsule(x1: float, y1: float, x2: float, y2: float, width: float, color: st
     )
 
 
-# Shared crown/temple boundary: the top-dome portion of the hair outline,
-# reused verbatim by both _back_hair and _front_hair so their strokes
-# coincide exactly where the two shapes meet, instead of leaving a seam.
-def _crown_dome_commands(cx: float, cy: float, r: float) -> str:
-    return (
-        f"M {cx - r * 0.95:.1f} {cy - r * 0.15:.1f} "
-        f"Q {cx - r * 0.5:.1f} {cy - r * 1.3:.1f} {cx:.1f} {cy - r * 1.15:.1f} "
-        f"Q {cx + r * 0.5:.1f} {cy - r * 1.3:.1f} {cx + r * 0.95:.1f} {cy - r * 0.15:.1f} "
-    )
+Point = tuple[float, float]
+Segment = tuple[Point, Point]
 
 
-def _back_hair(sk: Skeleton, p: CharacterParams) -> str:
-    cx, r = sk.head_cx, sk.head_r
-    cy = sk.head_cy
-    fill = shade(p.hair_color, 0.88) if p.shaded else p.hair_color
+def _head_units(cx: float, cy: float, r: float, pt: Point) -> str:
+    """Map a point given in head-radius units (origin = head center) to
+    absolute canvas coordinates."""
+    return f"{cx + pt[0] * r:.1f} {cy + pt[1] * r:.1f}"
 
-    # One continuous silhouette: crown dome, bulging out to a wide fall
-    # past the temples and jaw, tapering to a soft wide hem over the
-    # chest. No separate side-lock shape, so there's nothing to seam
-    # against.
-    d = (
-        _crown_dome_commands(cx, cy, r)
-        + f"Q {cx + r * 1.05:.1f} {cy + r * 0.3:.1f} {cx + r * 0.92:.1f} {cy + r * 0.7:.1f} "
-        + f"Q {cx + r * 0.88:.1f} {cy + r * 1.6:.1f} {cx + r * 0.75:.1f} {cy + r * 2.1:.1f} "
-        + f"Q {cx:.1f} {cy + r * 2.25:.1f} {cx - r * 0.75:.1f} {cy + r * 2.1:.1f} "
-        + f"Q {cx - r * 0.88:.1f} {cy + r * 1.6:.1f} {cx - r * 0.92:.1f} {cy + r * 0.7:.1f} "
-        + f"Q {cx - r * 1.05:.1f} {cy + r * 0.3:.1f} {cx - r * 0.95:.1f} {cy - r * 0.15:.1f} "
-        + "Z"
-    )
-    return f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
+
+def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment], close: bool = True) -> str:
+    """Build a path 'd' from a start point plus quadratic segments, all in
+    head-radius units. Keeping the shapes as point data rather than format
+    strings means a silhouette can be reshaped without rewriting SVG."""
+    d = ["M " + _head_units(cx, cy, r, start)]
+    for ctrl, end in segments:
+        d.append("Q " + _head_units(cx, cy, r, ctrl) + " " + _head_units(cx, cy, r, end))
+    if close:
+        d.append("Z")
+    return " ".join(d)
+
+
+# The whole hair silhouette: crown, flaring out past the cheeks, falling
+# wider than the shoulders all the way to rounded tips beside the hands.
+# This one shape carries the only outer contour the hair has.
+_HAIR_MASS_START: Point = (-1.02, -0.30)
+_HAIR_MASS: list[Segment] = [
+    ((-0.86, -1.26), (0.00, -1.20)),
+    ((0.86, -1.26), (1.02, -0.30)),
+    ((1.22, 0.25), (1.28, 0.80)),
+    ((1.42, 1.50), (1.45, 2.05)),
+    ((1.46, 2.48), (1.24, 2.62)),
+    ((0.62, 2.78), (0.00, 2.76)),
+    ((-0.62, 2.78), (-1.24, 2.62)),
+    ((-1.46, 2.48), (-1.45, 2.05)),
+    ((-1.42, 1.50), (-1.28, 0.80)),
+    ((-1.22, 0.25), (-1.02, -0.30)),
+]
+
+# The hairline: up one lock in front of the cheek, across the fringe to the
+# parting at the crown, then back down the other side. This is the only
+# line drawn inside the mass, which is what lets front and back hair read
+# as a single object. Both ends stop on the sleeve's shoulder curve, so the
+# line continues into the arm outline instead of ending in mid-air.
+_HAIRLINE_START: Point = (-0.95, 0.95)
+_HAIRLINE: list[Segment] = [
+    ((-0.92, 0.62), (-0.88, 0.35)),
+    ((-0.86, -0.26), (-0.40, -0.72)),
+    ((-0.16, -0.88), (0.00, -0.94)),
+    ((0.16, -0.88), (0.40, -0.72)),
+    ((0.86, -0.26), (0.88, 0.35)),
+    ((0.92, 0.62), (0.95, 0.95)),
+]
+
+# Outer edge of the fringe and locks, closing the shape back to the start.
+# It stays just inside _HAIR_MASS the whole way, so the two fills overlap
+# rather than butt together, and stays outside the head circle so the skull
+# outline never shows through the hair.
+_HAIRLINE_BACK: list[Segment] = [
+    ((1.12, 0.96), (1.20, 0.80)),
+    ((1.09, 0.10), (1.00, -0.30)),
+    ((0.84, -1.20), (0.00, -1.14)),
+    ((-0.84, -1.20), (-1.00, -0.30)),
+    ((-1.09, 0.10), (-1.20, 0.80)),
+    ((-1.12, 0.96), (-0.95, 0.95)),
+]
+
+
+def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
+    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, _HAIR_MASS_START, _HAIR_MASS)
+    return f'<path d="{d}" fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
 
 
 def _neck(sk: Skeleton, p: CharacterParams) -> str:
     w = sk.head_r * 0.45
     x = sk.head_cx - w / 2
-    h = sk.shoulder_y - sk.neck_y + 6
+    # Runs past the shoulder line so the dress's V notch, which is drawn
+    # over it, opens onto skin rather than onto the hair behind the body.
+    h = sk.shoulder_y - sk.neck_y + sk.head_r * 0.25
     rx = w * 0.35
     return f'<rect x="{x:.1f}" y="{sk.neck_y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx:.1f}" fill="{shade(p.skin_tone)}" />'
 
@@ -204,35 +247,19 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
-def _front_hair(sk: Skeleton, p: CharacterParams) -> str:
-    cx, r = sk.head_cx, sk.head_r
-    cy = sk.head_cy
+def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
 
-    # Outer edge reuses _back_hair's exact crown/temple curve so the two
-    # shapes' strokes coincide there instead of showing a seam. The inner
-    # edge is a shallow, gentle curve (not a sharp zigzag) suggesting the
-    # fringe hanging to eyebrow level.
-    d = (
-        _crown_dome_commands(cx, cy, r)
-        + f"L {cx + r * 0.78:.1f} {cy - r * 0.05:.1f} "
-        + f"Q {cx + r * 0.32:.1f} {cy - r * 0.28:.1f} {cx:.1f} {cy - r * 0.42:.1f} "
-        + f"Q {cx - r * 0.32:.1f} {cy - r * 0.28:.1f} {cx - r * 0.78:.1f} {cy - r * 0.05:.1f} "
-        + "Z"
+    # Fringe and side locks are one shape in the same flat tone as the mass,
+    # drawn without a stroke of its own. The only line added is the hairline,
+    # so nothing divides the hair into separate pieces.
+    fill_d = _curve(cx, cy, r, _HAIRLINE_START, _HAIRLINE + _HAIRLINE_BACK)
+    line_d = _curve(cx, cy, r, _HAIRLINE_START, _HAIRLINE, close=False)
+    return (
+        f'<path d="{fill_d}" fill="{p.hair_color}" />'
+        f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W}" '
+        f'stroke-linecap="round" stroke-linejoin="round" />'
     )
-    fringe = f'<path d="{d}" fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
-
-    # Soft diagonal strand lines from the part, replacing a hard center
-    # crease, echoing the reference's gentle fringe styling.
-    strands = (
-        f'<path d="M {cx - r * 0.04:.1f} {cy - r * 0.85:.1f} '
-        f'Q {cx - r * 0.25:.1f} {cy - r * 0.5:.1f} {cx - r * 0.45:.1f} {cy - r * 0.12:.1f}" '
-        f'fill="none" stroke="{OUTLINE}" stroke-width="2" stroke-linecap="round" opacity="0.5" />'
-        f'<path d="M {cx + r * 0.04:.1f} {cy - r * 0.85:.1f} '
-        f'Q {cx + r * 0.25:.1f} {cy - r * 0.5:.1f} {cx + r * 0.45:.1f} {cy - r * 0.12:.1f}" '
-        f'fill="none" stroke="{OUTLINE}" stroke-width="2" stroke-linecap="round" opacity="0.5" />'
-    )
-
-    return fringe + strands
 
 
 def render_character(p: CharacterParams | None = None, sk: Skeleton | None = None) -> str:
@@ -240,14 +267,14 @@ def render_character(p: CharacterParams | None = None, sk: Skeleton | None = Non
     sk = sk or build_skeleton()
 
     layers = [
-        _back_hair(sk, p),
+        _hair_mass(sk, p),
+        _neck(sk, p),
         _dress(sk, p),
         _legs_and_boots(sk, p),
         _arms(sk, p),
-        _neck(sk, p),
         _head(sk, p),
         _face(sk, p),
-        _front_hair(sk, p),
+        _hair_front(sk, p),
     ]
 
     body = "\n  ".join(layers)
