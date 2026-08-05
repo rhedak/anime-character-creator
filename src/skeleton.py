@@ -8,7 +8,7 @@ The whole figure derives from one number, `heads`: how many head-heights
 tall it stands. Vertical anchors are fractions of the body (chin to floor),
 so they keep their relationship at any height, while widths interpolate
 between builds, since a 2-head chibi is narrow-shouldered and wide-hipped
-in a way a 6-head figure is not.
+in a way an adult figure is not.
 """
 
 from __future__ import annotations
@@ -17,9 +17,13 @@ from dataclasses import dataclass
 
 # Named builds. Most characters want one of these rather than a number, but
 # `heads` stays open for anything in between (4.0 is a common middle ground).
+# Above 6 the figure just gets longer; the widths are already at their limit.
 BUILDS: dict[str, float] = {
     "chibi": 2.4,
-    "realistic": 7.0,
+    # 6 rather than a life-drawing 8, and rather than the 7 this started at.
+    # Anime figures run shorter than real ones, and at 7 the head was small
+    # enough against the body that the result stopped reading as the style.
+    "realistic": 6.0,
 }
 DEFAULT_BUILD = "chibi"
 DEFAULT_HEADS = BUILDS[DEFAULT_BUILD]
@@ -35,8 +39,9 @@ class Skeleton:
     canvas_h: float
     heads: float
     # How far along the chibi-to-adult range this build sits: 0 at a 2-head
-    # chibi, 1 at a 7-head adult. Every lerp below rides on it, and parts that
-    # need to deform with the build read it rather than recomputing it.
+    # chibi, 1 at the 6-head adult `realistic` names. Every lerp below rides on
+    # it, and parts that need to deform with the build read it rather than
+    # recomputing it.
     build: float
     head_cx: float
     head_cy: float
@@ -76,10 +81,15 @@ def build_skeleton(
     chin_y = head_cy + head_r
     body = fig_h - head_h
 
-    # 0 at a 2-head chibi, 1 at a 7-head adult. Both the widths and where the
+    # 0 at a 2-head chibi, 1 at 6 heads and up. Both the widths and where the
     # landmarks sit along the body slide along this: a chibi is nearly
     # neckless with its hips high in a short body, an adult is not.
-    t = min(1.0, max(0.0, (heads - 2.0) / 5.0))
+    #
+    # The top of the range is where `realistic` sits, not some taller figure
+    # beyond it, so that the named build actually reaches the adult widths these
+    # lerps were tuned for. Anything above 6 heads clamps to the same anchors and
+    # only gets longer.
+    t = min(1.0, max(0.0, (heads - 2.0) / 4.0))
 
     # Frame is the shoulder-against-hip ratio: -1 narrow-shouldered and wide in
     # the hip, 0 the neutral figure every build gave before it existed, +1 the
@@ -98,7 +108,7 @@ def build_skeleton(
         head_r=head_r,
         neck_y=head_cy + head_r * 0.85,
         neck_half_w=head_r * _lerp(0.21, 0.40, t),
-        shoulder_y=chin_y + body * _lerp(0.02, 0.042, t),
+        shoulder_y=chin_y + body * _lerp(0.02, 0.028, t),
         shoulder_half_w=head_r * _lerp(0.68, 1.55, t) * (1.0 + 0.09 * f),
         waist_y=chin_y + body * _lerp(0.46, 0.333, t),
         # A chibi barely has a waist: it stays wider than its own shoulders and

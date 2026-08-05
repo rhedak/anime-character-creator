@@ -98,7 +98,7 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   shoulder, waist, hip, hem, knee, ankle, foot) every shape positions
   itself against. The whole thing derives from `heads`, how many
   head-heights tall the figure stands, which `BUILDS` names as `chibi`
-  (2.4) and `realistic` (7.0). Both the widths and where the landmarks
+  (2.4) and `realistic` (6.0). Both the widths and where the landmarks
   sit along the body interpolate between the two: a chibi is nearly
   neckless with high hips in a short body, an adult is not. `frame`
   scales shoulder against hip on top of that, and `Skeleton.build` hands

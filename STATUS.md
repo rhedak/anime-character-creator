@@ -23,7 +23,7 @@ composited from pre-made art, and no AI image generation is involved.
 What is parametrized:
 
 - **Build.** `BUILDS` names `chibi` (2.4 head-heights, the default) and
-  `realistic` (7.0). `--heads N` reaches anything in between. Both
+  `realistic` (6.0). `--heads N` reaches anything in between. Both
   widths and where the landmarks sit along the body interpolate, so a
   chibi comes out nearly neckless with high hips and an adult does not.
   `Skeleton.build` exposes where along that range a figure sits, so

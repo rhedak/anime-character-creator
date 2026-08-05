@@ -440,13 +440,30 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
 
 
 def _neck(sk: Skeleton, p: CharacterParams) -> str:
+    # Plain skin, not a shadow tone. The head's own outline already separates the
+    # jaw from the neck, so darkening it only made the throat look grubby; flat
+    # skin lets the two read as one piece with a line across it.
     w = sk.neck_half_w * 2
     x = sk.head_cx - w / 2
     # Runs past the shoulder line so the tunic's V notch, which is drawn
     # over it, opens onto skin rather than onto the hair behind the body.
     h = sk.shoulder_y - sk.neck_y + sk.neck_half_w * 1.1
     rx = w * 0.35
-    return f'<rect x="{x:.1f}" y="{sk.neck_y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx:.1f}" fill="{shade(p.skin_tone)}" />'
+    parts = [
+        f'<rect x="{x:.1f}" y="{sk.neck_y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx:.1f}" fill="{p.skin_tone}" />'
+    ]
+    # The throat's own contour, which is silhouette between the jaw and the
+    # shoulder and so carries full weight. Each line starts up inside the skull
+    # and is covered by the head drawn over it, so the throat comes out from under
+    # the jaw wherever the jaw happens to be at this build, without this having to
+    # know. The tunic covers the bottom end the same way.
+    for side in (-1, 1):
+        nx = sk.head_cx + side * sk.neck_half_w
+        parts.append(
+            f'<line x1="{nx:.1f}" y1="{sk.neck_y:.1f}" x2="{nx:.1f}" y2="{sk.neck_y + h:.1f}" '
+            f'stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
+        )
+    return "".join(parts)
 
 
 def _tunic(sk: Skeleton, p: CharacterParams) -> str:
@@ -816,7 +833,6 @@ def _belt(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
-_HEAD_CLIP_ID = "head"
 _HEAD_SEGMENTS = 8
 
 
@@ -853,30 +869,40 @@ def _head_shape(build: float) -> tuple[Point, list[Segment]]:
 
 
 def _head(sk: Skeleton, p: CharacterParams) -> str:
+    """The face is deliberately the one flat surface on the figure.
+
+    A shadow down the far cheek is what the cel-shaded look would call for, and
+    it was tried, but at this level of simplification it reads as a smudge or a
+    dirty mark rather than as a turn away from the light: there is no nose or
+    brow ridge for it to fall off, so it has nothing to explain it. The hair
+    already darkens one side of the head, which is enough.
+    """
     start, segments = _head_shape(sk.build)
-    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
-    shape = f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{STROKE_W}" />'
-    if not p.shaded:
-        return shape
-    # Clipped to the skull rather than described a second time, so the shadow
-    # follows the jaw at every build without the jaw being written down twice.
-    clip = f'<defs><clipPath id="{_HEAD_CLIP_ID}"><path d="{d}" /></clipPath></defs>'
-    band = _curve(
-        sk.head_cx,
-        sk.head_cy,
-        sk.head_r,
-        (0.10, -1.20),
-        [
-            ((0.30, -0.40), (0.16, 0.30)),
-            ((0.02, 0.85), (0.12, 1.25)),
-            ((1.40, 1.25), (1.40, -1.20)),
-        ],
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    fill = _curve(cx, cy, r, start, segments)
+    parts = [f'<path d="{fill}" fill="{p.skin_tone}" />']
+
+    # The outline is drawn in two weights rather than as one closed stroke. Around
+    # the skull and cheeks it is silhouette, so it carries full weight. Under the
+    # chin it is not: the throat stands in front of the underside of the jaw, so a
+    # full-weight line there reads as the whole jaw seen edge-on instead of as the
+    # front of it. Splitting at the two lower corners of the shape is what lets
+    # the same point data carry both.
+    anchors = [start] + [end for _, end in segments]
+    chin_from, chin_to = 3, 5  # the two segments either side of the chin
+    silhouette = _curve(
+        cx, cy, r, anchors[chin_to], segments[chin_to:] + segments[:chin_from], close=False
     )
-    shadow = (
-        f'<path d="{band}" fill="{shade(p.skin_tone, 0.93)}" opacity="0.7" '
-        f'clip-path="url(#{_HEAD_CLIP_ID})" />'
+    under_chin = _curve(cx, cy, r, anchors[chin_from], segments[chin_from:chin_to], close=False)
+    parts.append(
+        f'<path d="{silhouette}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W}" '
+        f'stroke-linecap="round" />'
     )
-    return clip + shape + shadow
+    parts.append(
+        f'<path d="{under_chin}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W * 0.6:.1f}" '
+        f'stroke-linecap="round" />'
+    )
+    return "".join(parts)
 
 
 def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tuple[str, str]:
