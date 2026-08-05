@@ -131,6 +131,12 @@ def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment]
     return " ".join(d)
 
 
+# No hair shape may reach above -1.36 head radii from the head centre. That is
+# the headroom `build_skeleton`'s `hair_margin` leaves above the skull, and
+# nothing derives the bound from the shapes here, so a taller crown silently
+# comes out sliced flat against the canvas edge, which is how both chibis
+# shipped before it was measured. The tallest crown below peaks near -1.29.
+#
 # Hair is described in two zones. Above the cheek line it is pinned to the
 # skull, so those points are literal head-radius units. Below it the shape is
 # a fall whose points are given as a fraction of the way to the tips, so
@@ -138,6 +144,7 @@ def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment]
 # hair keeps its relationship to the body when proportions change.
 _HAIR_CHEEK_Y = 0.72
 _HAIR_TIP_CLIP_ID = "hair-tips"
+_HAIR_FRONT_CLIP_ID = "hair-front"
 
 
 def _fall(f: float, length: float) -> float:
@@ -278,27 +285,42 @@ def _short_mass_shape(tip: float) -> tuple[Point, list[Segment]]:
     Its points are placed straight off `tip` instead of going through `_fall`,
     which measures a long fall down from the cheek line and so cannot describe
     hair that ends above the chin at all.
+
+    The mass stands well off the skull, out to 1.2 head radii at the temple and
+    1.34 at the cheek, so the locks hang beside the face rather than looking
+    painted onto it. It used to follow the skull at 1.00 to 1.08, which made hair
+    and head nearly the same shape and was half of why the result read as a pot
+    rather than as a haircut. The other half was the bottom edge: the lock ends
+    are points with notches between them now, where they used to be a shallow
+    wave that came out as a set of rounded paddles.
     """
-    return (-1.00, -0.34), [
-        ((-0.88, -1.26), (0.00, -1.20)),
-        ((0.88, -1.26), (1.00, -0.34)),
-        ((1.08, 0.02), (1.03, tip - 0.20)),
-        ((1.05, tip + 0.04), (0.84, tip)),
-        ((0.68, tip - 0.16), (0.46, tip + 0.02)),
-        ((0.24, tip - 0.22), (0.00, tip - 0.08)),
-        ((-0.24, tip - 0.22), (-0.46, tip + 0.02)),
-        ((-0.68, tip - 0.16), (-0.84, tip)),
-        ((-1.05, tip + 0.04), (-1.03, tip - 0.20)),
-        ((-1.08, 0.02), (-1.00, -0.34)),
+    return (-1.20, -0.30), [
+        ((-1.20, -1.00), (-0.72, -1.20)),
+        ((-0.54, -1.38), (-0.30, -1.18)),
+        ((-0.12, -1.36), (0.24, -1.26)),
+        ((0.58, -1.36), (0.74, -1.16)),
+        ((0.94, -1.34), (1.20, -0.96)),
+        ((1.32, -0.72), (1.20, -0.30)),
+        ((1.34, 0.16), (1.26, tip - 0.20)),
+        ((1.22, tip + 0.06), (0.98, tip + 0.16)),
+        ((0.92, tip - 0.12), (0.76, tip - 0.28)),
+        ((0.66, tip + 0.02), (0.48, tip + 0.08)),
+        ((0.36, tip - 0.24), (0.16, tip - 0.32)),
+        ((0.00, tip - 0.14), (-0.16, tip - 0.32)),
+        ((-0.36, tip - 0.24), (-0.48, tip + 0.08)),
+        ((-0.66, tip + 0.02), (-0.76, tip - 0.28)),
+        ((-0.92, tip - 0.12), (-0.98, tip + 0.16)),
+        ((-1.22, tip + 0.06), (-1.26, tip - 0.20)),
+        ((-1.34, 0.16), (-1.20, -0.30)),
     ]
 
 
 def _short_fall_edge(tip: float) -> tuple[Point, list[Segment]]:
     """The side lock's outer edge, tip up to the temple. Traces the mass's own
     outer edge in reverse, exactly, for the same reason `_fall_edge` does."""
-    return (0.84, tip), [
-        ((1.05, tip + 0.04), (1.03, tip - 0.20)),
-        ((1.08, 0.02), (1.00, -0.34)),
+    return (0.98, tip + 0.16), [
+        ((1.22, tip + 0.06), (1.26, tip - 0.20)),
+        ((1.34, 0.16), (1.20, -0.30)),
     ]
 
 
@@ -330,26 +352,70 @@ def _short_hairline_shape(tip: float) -> tuple[Point, list[Segment], list[Segmen
     above the brows, and down the other. Both ends land on the mass's own tips,
     same contract as the long style's hairline. The fringe's two halves are not
     mirror images, which is what gives it a sweep without the asymmetry having to
-    reach the silhouette."""
-    start: Point = (-0.84, tip)
-    line: list[Segment] = [
-        ((-0.94, tip - 0.18), (-0.92, tip - 0.38)),
-        ((-0.88, 0.10), (-0.82, -0.22)),
-        ((-0.66, -0.48), (-0.30, -0.56)),
-        ((-0.08, -0.62), (0.16, -0.52)),
-        ((0.48, -0.40), (0.82, -0.22)),
-        ((0.88, 0.10), (0.92, tip - 0.38)),
-        ((0.94, tip - 0.18), (0.84, tip)),
-    ]
+    reach the silhouette.
+
+    Brows sit at about -0.35, so the fringe bottoms out just above them, same
+    line the long style settled on. It used to stop around -0.55, which left the
+    tall bare forehead that had already been fixed on the long cut. The temples
+    come down to eye level too, where the fringe runs into the side locks.
+
+    The fringe is a row of overlapping wedge locks rather than one arc: tips dip
+    toward the brows and the notches between them rise only about a third as far,
+    so it reads as hair lying over hair. Rising the whole way between tips gives a
+    row of teeth instead, which is worth knowing because it was the first thing
+    tried. The locks lengthen away from the parting, which sits right of centre.
+    """
     _, right_edge = _short_fall_edge(tip)
     _, left_down = _reverse(*_mirror(*_short_fall_edge(tip)))
     back: list[Segment] = [
         *right_edge,
-        ((0.84, -1.20), (0.00, -1.14)),
-        ((-0.84, -1.20), (-1.00, -0.34)),
+        # Across the crown inside the mass, so the mass's own lock bumps show
+        # above this rather than being painted over, and outside the head circle,
+        # so the skull outline never shows through the hair.
+        ((0.96, -1.18), (0.00, -1.16)),
+        ((-0.96, -1.18), (-1.20, -0.30)),
         *left_down,
     ]
+    # Both ends land on the mass's own lock tips, which is what `back` starts and
+    # finishes on, so the hairline never stops in mid-air wherever those move to.
+    start: Point = back[-1][1]
+    line: list[Segment] = [
+        ((-1.12, tip - 0.14), (-1.08, tip - 0.36)),
+        ((-1.04, 0.14), (-0.94, -0.16)),
+        ((-0.88, -0.42), (-0.74, -0.40)),
+        ((-0.60, -0.28), (-0.46, -0.25)),
+        ((-0.36, -0.40), (-0.24, -0.42)),
+        ((-0.12, -0.33), (0.02, -0.30)),
+        ((0.16, -0.46), (0.30, -0.48)),
+        ((0.50, -0.38), (0.68, -0.24)),
+        ((0.84, -0.18), (0.94, -0.16)),
+        ((1.04, 0.14), (1.08, tip - 0.36)),
+        ((1.12, tip - 0.14), (0.98, tip + 0.16)),
+    ]
     return start, line, back
+
+
+def _short_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
+    """Lines dividing the short cut into locks: out from the parting over the
+    crown, each dying at a notch between two lock tips, plus a pair down each side
+    lock so the hanging part is divided too.
+
+    Without these the crown is one unbroken field of hair colour, which is what
+    made the cut read as an object rather than as hair: a render with the strands
+    suppressed and everything else in place still looks like a pot.
+    """
+    return [
+        ((-0.10, -1.14), [((-0.62, -0.86), (-0.80, -0.44))]),
+        ((0.06, -1.16), [((-0.30, -0.66), (-0.26, -0.44))]),
+        ((0.16, -1.14), [((0.24, -0.74), (0.31, -0.50))]),
+        ((0.26, -1.10), [((0.62, -0.82), (0.76, -0.40))]),
+        ((0.34, -1.04), [((0.86, -0.66), (1.06, -0.18))]),
+        ((-0.20, -1.06), [((-0.86, -0.70), (-1.06, -0.20))]),
+        ((1.14, -0.44), [((1.20, 0.04), (1.14, tip - 0.30))]),
+        ((-1.14, -0.44), [((-1.20, 0.04), (-1.14, tip - 0.30))]),
+        ((0.90, 0.10), [((0.96, tip - 0.50), (0.90, tip - 0.24))]),
+        ((-0.90, 0.10), [((-0.96, tip - 0.50), (-0.90, tip - 0.24))]),
+    ]
 
 
 @dataclass(frozen=True)
@@ -368,6 +434,11 @@ class Hairstyle:
     hairline: Callable[[float], tuple[Point, list[Segment], list[Segment]]]
     fall_edge: Callable[[float], tuple[Point, list[Segment]]]
     tip_edge: Callable[[float], tuple[Point, list[Segment]]]
+    # Open chains drawn inside the mass, dividing it into locks. One flat shape
+    # with no interior line reads as an object the colour of hair rather than as
+    # hair, which is the difference between a haircut and a helmet. None leaves
+    # the cut undivided, so a style that does not want them says nothing.
+    strands: Callable[[float], list[tuple[Point, list[Segment]]]] | None = None
     # What hair_length 0 and 1 mean for this cut, as depth below the head centre
     # in head radii. None measures the body instead, chin to hip, which is what
     # keeps a long haircut the same haircut across builds.
@@ -386,6 +457,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _short_hairline_shape,
         _short_fall_edge,
         _short_tip_edge,
+        strands=_short_strands,
         # Ear to chin: a crop at 0, locks brushing the jaw at 1.
         tip_range=(0.42, 1.00),
     ),
@@ -419,11 +491,22 @@ def _hair_tip_tone(p: CharacterParams) -> str | None:
 
 
 def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
-    if _hair_tip_tone(p) is None:
-        return ""
-    start, segments = HAIRSTYLES[p.hairstyle].tip_edge(_hair_fall(sk, p))
-    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
-    return f'<defs><clipPath id="{_HAIR_TIP_CLIP_ID}"><path d="{d}" /></clipPath></defs>'
+    style = HAIRSTYLES[p.hairstyle]
+    fall = _hair_fall(sk, p)
+    clips = []
+    if _hair_tip_tone(p) is not None:
+        start, segments = style.tip_edge(fall)
+        d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
+        clips.append(f'<clipPath id="{_HAIR_TIP_CLIP_ID}"><path d="{d}" /></clipPath>')
+    if style.strands is not None:
+        # Strands are open chains, so nothing stops one running out past the
+        # silhouette; clipping them to the shape they divide means a strand can be
+        # drawn long enough to reach its lock's tip without having to end exactly on
+        # the outline.
+        start, line, back = style.hairline(fall)
+        d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, line + back)
+        clips.append(f'<clipPath id="{_HAIR_FRONT_CLIP_ID}"><path d="{d}" /></clipPath>')
+    return f"<defs>{''.join(clips)}</defs>" if clips else ""
 
 
 def _two_tone_hair(d: str, p: CharacterParams) -> list[str]:
@@ -854,19 +937,31 @@ def _hand(sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: 
 
 
 def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
-    # A straight rectangle passes as a leg on a chibi and reads as a stick on
-    # a tall build, so the leg tapers from thigh to ankle with a calf bulge.
-    # How much it tapers rides on the build, via the skeleton's own widths.
+    # The taper belongs in the thigh, and nearly nowhere else. Measured off
+    # ref/satoshi.png, the trouser leg is 1.42 leg-half-widths at the thigh, 1.03
+    # at the knee, 1.01 through the calf and 0.85 at the ankle: it fills out under
+    # the hip, then runs close to straight. This used to run 1.55 down to 0.55, a
+    # two-to-one cone that read as fat thighs on stick shins, and the fix was
+    # widening the shin rather than thinning the thigh. A plain untapered tube,
+    # tried against this, beat the cone and lost to it.
     taper = sk.build
     # Trousers are the outermost garment on the leg, so unlike bare skin they
     # need their own outline, they start at the hip rather than under a hem, and
-    # they carry a thigh: a shin-width tube running up to the hip reads as a
+    # they carry more thigh: a shin-width tube running up to the hip reads as a
     # stilt once there is no skirt covering the top of it.
     trousers = p.outfit.trouser_color
-    w_top = sk.leg_half_w * (1.55 if trousers else 1.0)
-    w_knee = sk.leg_half_w * (0.95 - 0.17 * taper)
-    w_ankle = sk.leg_half_w * (0.85 - 0.30 * taper)
-    gap = sk.leg_half_w * 1.45
+    thigh = (1.15 + 0.27 * taper) if trousers else (1.00 + 0.18 * taper)
+    w_top = sk.leg_half_w * thigh
+    w_knee = sk.leg_half_w * (1.00 + 0.03 * taper)
+    # Held, not bulged: the reference measures 72, 71, 71 pixels from knee through
+    # calf before it takes in at the ankle.
+    w_calf = sk.leg_half_w * (1.00 + 0.01 * taper)
+    w_ankle = sk.leg_half_w * (0.92 - 0.07 * taper)
+    # Wide enough that the thigh paths do not meet. They are separately stroked
+    # filled paths drawn in a loop, so if they overlap the second one's fill
+    # covers the first one's outline and the crotch comes out as an asymmetric
+    # seam. The reference leaves each inner edge about 0.09 head radii off centre.
+    gap = sk.leg_half_w * (1.45 + 0.18 * taper)
     # A bare leg has to start at or above whatever hem is going to cover its top,
     # and the skirt's hem moves with `skirt_length`. Pinning it to the skeleton's
     # own hem leaves a band of bare canvas across the hips as soon as a skirt is
@@ -881,9 +976,9 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
         d = (
             f"M {cx - w_top:.1f} {top_y:.1f} L {cx + w_top:.1f} {top_y:.1f} "
             f"Q {cx + w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx + w_knee:.1f} {sk.knee_y:.1f} "
-            f"Q {cx + w_knee * 1.14:.1f} {calf_y:.1f} {cx + w_ankle:.1f} {sk.ankle_y:.1f} "
+            f"Q {cx + w_calf:.1f} {calf_y:.1f} {cx + w_ankle:.1f} {sk.ankle_y:.1f} "
             f"L {cx - w_ankle:.1f} {sk.ankle_y:.1f} "
-            f"Q {cx - w_knee * 1.14:.1f} {calf_y:.1f} {cx - w_knee:.1f} {sk.knee_y:.1f} "
+            f"Q {cx - w_calf:.1f} {calf_y:.1f} {cx - w_knee:.1f} {sk.knee_y:.1f} "
             f"Q {cx - w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx - w_top:.1f} {top_y:.1f} Z"
         )
         parts.append(f'<path d="{d}" fill="{fill}"{stroke} />')
@@ -904,12 +999,21 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, w_knee: f
     the one piece of detail worth having here; the laces are not, at either
     build."""
     color = p.outfit.boot_color
-    boot_w = w_ankle * 3.4
+    # A foot is a foot: measured off the leg rather than off the ankle, so it
+    # keeps its size when the shin's width is retuned. As a multiple of the ankle
+    # it doubled the moment the leg stopped tapering to a point. The reference's
+    # front-facing boot is 0.70 to 0.80 head radii across, which this lands in.
+    # The foot has to stay wider than the shaft above it, or the boot narrows on
+    # the way down and stops reading as a foot at all. The reference's
+    # front-facing boot is 0.38 head radii at the shaft against 0.40 at the sole.
+    boot_w = sk.leg_half_w * (2.90 - 0.90 * sk.build)
     foot_h = sk.foot_y - sk.ankle_y
     # The shaft climbs a third of the way to the knee, so it stays a boot rather
     # than becoming a waders as the shin gets longer at taller builds.
     top_y = sk.ankle_y - (sk.ankle_y - sk.knee_y) * 0.32
-    shaft_w = w_knee * 1.16
+    # Off the ankle it wraps, not off the knee above it, so the shaft cannot come
+    # out wider than the leg going into it.
+    shaft_w = w_ankle * 1.10
     instep_y = sk.ankle_y + foot_h * 0.30
     r = boot_w * 0.22
     d = (
@@ -1197,6 +1301,16 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
             f'<path d="{edge_d}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W}" '
             f'stroke-linecap="round" />'
         )
+    # Interior strands last, so they sit over the fill and the hairline both.
+    # Lighter than the silhouette, the same relation the jaw line has to the head
+    # outline: these divide one surface, they do not bound it.
+    if style.strands is not None:
+        for s_start, s_segments in style.strands(fall):
+            s_d = _curve(cx, cy, r, s_start, s_segments, close=False)
+            parts.append(
+                f'<path d="{s_d}" fill="none" stroke="{OUTLINE}" stroke-width="{STROKE_W * 0.55:.1f}" '
+                f'stroke-linecap="round" clip-path="url(#{_HAIR_FRONT_CLIP_ID})" />'
+            )
     return "".join(parts)
 
 

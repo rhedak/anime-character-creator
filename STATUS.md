@@ -4,8 +4,8 @@ Snapshot of where the generator is and what comes next. Working notes,
 not user documentation: see `README.md` for how to run it and
 `CLAUDE.md` for the rules that govern changes.
 
-Last updated: 2026-08-05, uncommitted, on top of `b7ec2b5` "satoko and
-satoshi ref".
+Last updated: 2026-08-06, uncommitted, on top of `92736d0` "anime
+tuning".
 
 ## Where it stands
 
@@ -38,11 +38,19 @@ What is parametrized:
   character states only the layers it has. Satoko wears all but the
   trousers, Satoshi swaps skirt and apron for trousers.
 - **Hair.** `HAIRSTYLES` names `long_blunt` and `short_layered`, each a
-  set of four outlines that agree with each other. Two-tone with a waved
-  fade boundary. `hair_length` spans whatever range the cut defines: the
-  long one measures the body, chin to hip, so it survives a change of
-  build; the short one measures the head, ear to chin, because the
-  body-relative range cannot express hair ending above the chin at all.
+  set of four outlines that agree with each other, plus an optional fifth
+  giving the strands that divide the mass into locks. Two-tone with a
+  waved fade boundary. `hair_length` spans whatever range the cut
+  defines: the long one measures the body, chin to hip, so it survives a
+  change of build; the short one measures the head, ear to chin, because
+  the body-relative range cannot express hair ending above the chin at
+  all.
+- **Headroom.** `hair_margin` is the space above the skull, measured in
+  head radii rather than as a fraction of the canvas, because that is
+  what it measures. As a canvas fraction it was generous at a tall build
+  and too small at a chibi, where the head is a third of the figure, so
+  both chibis used to come out with the top of their hair sliced flat
+  against the canvas edge.
 - **Head.** Eight quadratics tracing a circle at the chibi end and
   narrowing to a jaw and chin as the build gets taller.
 - **Colors.** Skin, hair, hair tips, eyes, and every garment above.
@@ -71,11 +79,25 @@ at a time.
   touching both characters and both builds, so it has not been made.
 - **Eye placement has not been calibrated against `ref/girl-chibi.png`.**
   They sit lower and closer together than the reference's, and smaller
-  relative to the head. The forehead half of this is fixed: the fringe
-  now stops just above the brows rather than on top of the skull.
+  relative to the head. The forehead half of this is fixed on both cuts:
+  the fringe now stops just above the brows rather than on top of the
+  skull.
 - **Hair is symmetric except for the short cut's fringe.** No
   side-swept part on the long style, so the mirrored point data is
-  doing all the work there.
+  doing all the work there. The long cut has no strands either, so it is
+  still one flat field of colour with a single hairline across it, which
+  is what the short cut looked like before this round.
+- **The boot still reads as a block at the taller builds.** The shaft and
+  the flare to the sole are both there and the foot is now wider than the
+  ankle it hangs off, which it briefly was not, but there is no toe: the
+  reference's boot projects forward and this one is a rounded rectangle.
+  It survives chibification precisely because it is that simple, so any
+  fix has to ride on the build.
+- **The realistic figure is shorter-legged than the reference.** At 6
+  heads the trousers are right in width now but the leg is a smaller
+  fraction of the body than `ref/satoshi.png`, where the inseam runs to
+  about half the total height. That is `hip_y` and `knee_y`, so it is a
+  skeleton change touching both characters.
 - **No pose variety, one outfit family.** Deliberately deferred.
 - **Satoshi at chibi reads as a boy only through hair and trousers.**
   That is by design, since a shoulder-to-hip ratio is invisible at 2.4
@@ -129,11 +151,14 @@ as related, so what carries his identity is hair and lower body.
 | Feature | State |
 | --- | --- |
 | Short layered cut, same blonde fading to white | done |
+| Hair that reads as locks rather than as one mass | done |
 | Dark trousers instead of skirt and apron | done |
+| Trouser leg that fills out at the thigh then runs near straight | done |
 | Green tunic, tan undersleeves, brown belt, brown boots (shared with Satoko) | done |
 | Level brows, no smile | done |
 | Slimmer frame: broader shoulder over narrower hip | done, realistic only |
 | Faint cheek mark | not started |
+| Off-centre parting in the silhouette, not only in the fringe | not started |
 
 The frame row is realistic-only on purpose. At 2.4 heads a shoulder to
 hip ratio is invisible, so a chibi Satoshi has to read as a boy on hair
@@ -146,12 +171,20 @@ more contrast in those two, not skeleton work.
    closer together than the reference's, and smaller relative to the
    head. Only the geometry the two share should move: Satoko's aperture
    shape carries her expression and is right.
-2. **Asymmetry.** Side-swept parting on the long style. Lowest value,
+2. **Strands on the long cut.** The short cut's are what took it from a
+   pot to a haircut, and the long one is now the undivided-mass style. It
+   wants a different set: falling with the hair rather than radiating from
+   a crown whorl.
+3. **Leg length at the taller builds.** The trousers are the right width
+   now but the leg is short against `ref/satoshi.png`. This is `hip_y` and
+   `knee_y` in the skeleton, so it moves both characters, and the skirt
+   hem and boot shaft ride on it.
+4. **Asymmetry.** Side-swept parting on the long style. Lowest value,
    highest fiddliness, since it breaks the mirrored point data that
    `_mirror` / `_reverse` rely on. The short cut's fringe is already
    asymmetric without touching the silhouette, which is the cheaper trick
    and may be enough.
-3. **Then variety.** More hairstyles and a second outfit family. The
+5. **Then variety.** More hairstyles and a second outfit family. The
    hairstyle registry and `Outfit` are both built to take them now.
 
 ## Conventions worth remembering
@@ -159,6 +192,17 @@ more contrast in those two, not skeleton work.
 - Render and *look* at the PNG before calling a shape change done.
   Coordinates that are right in the math are routinely wrong visually;
   most of the fixes so far came from looking, not from reasoning.
+- Render candidates side by side rather than one at a time. Monkeypatch
+  the shape functions from a throwaway script so several profiles can be
+  compared in one image without editing the source per guess, then write
+  the winner in. Suppressing a feature entirely is part of the set: a
+  render with the hair strands turned off is what proved they were
+  carrying the difference, and the untapered leg is what proved the old
+  taper was worse than no taper at all.
+- When a comparison shows no difference, check that the variant was
+  actually applied before concluding the knob does not matter. One
+  strand-weight comparison here was five copies of the same image,
+  because the substitution it relied on never matched.
 - Check both builds after touching anything below the neck. Several
   rules that were correct at 4 heads broke the chibi (arm placement in
   particular), which is why `arm_x` is a skeleton anchor and not a

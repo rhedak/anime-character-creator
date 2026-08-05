@@ -71,13 +71,26 @@ def build_skeleton(
     canvas_h: float = 500,
     heads: float = DEFAULT_HEADS,
     frame: float = 0.0,
-    top_margin: float = 0.035,
+    hair_margin: float = 0.36,
     bottom_margin: float = 0.03,
 ) -> Skeleton:
-    fig_h = canvas_h * (1.0 - top_margin - bottom_margin)
+    # Headroom above the skull, in head radii, so the hair has somewhere to go.
+    # It is head-relative rather than a fraction of the canvas because that is
+    # what it measures. As a canvas fraction it was generous at a tall build and,
+    # at a chibi, less than the crown of any hairstyle here needs: the head is a
+    # third of the figure, so the same 3.5% of canvas came to under a fifth of a
+    # head radius and every chibi came out with the top of its hair sliced flat
+    # against the canvas edge.
+    #
+    # This is the allowance a hairstyle's crown has to stay inside: no hair shape
+    # may reach above -(1 + hair_margin) head radii from the head centre, so with
+    # 0.36 here the ceiling is -1.36 and the tallest crown in character.py peaks
+    # at about -1.29. A new cut that goes higher needs this raised with it,
+    # because nothing computes the bound from the shapes.
+    fig_h = canvas_h * (1.0 - bottom_margin) / (1.0 + hair_margin / (2.0 * heads))
     head_h = fig_h / heads
     head_r = head_h / 2
-    head_cy = canvas_h * top_margin + head_r
+    head_cy = head_r * (1.0 + hair_margin)
     chin_y = head_cy + head_r
     body = fig_h - head_h
 

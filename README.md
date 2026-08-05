@@ -21,7 +21,8 @@ between. Renders are generated, not checked in;
 
 Current shape set: head (a circle at chibi scale, narrowing to a jaw as
 the build gets taller), face (eyes, brows, mouth, blush, scar), two
-hairstyles optionally fading to a second tone at the ends, and a layered
+hairstyles that optionally divide into locks and fade to a second tone at
+the ends, and a layered
 outfit of tunic, undersleeves, belt, apron, skirt, underskirt, trousers
 and boots, plus arms, legs and feet. All flat cel-shaded (base color plus
 one shadow tone). A garment is worn when its color is set, so characters
@@ -102,6 +103,9 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   neckless with high hips in a short body, an adult is not. `frame`
   scales shoulder against hip on top of that, and `Skeleton.build` hands
   parts the position along the range so they don't recompute it.
+  `hair_margin` is the headroom above the skull, in head radii, so hair
+  has somewhere to go at a build where the head fills a third of the
+  frame.
 - `src/colorutil.py`: `shade()` derives a darker/more-saturated
   "shadow" tone from a base color, so palettes for cel-shading are
   computed, not hand-picked per shape.
@@ -113,7 +117,8 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   scar); `render_character()` is the entry point. The eye is an almond
   built from four quadratics, so one set of knobs spans a tall round
   chibi eye and a narrow lidded adult one. `HAIRSTYLES` maps a name to
-  the four outlines a haircut needs, which is how a second cut gets added
+  the four outlines a haircut needs, plus an optional set of strands
+  dividing the mass into locks, which is how a second cut gets added
   without touching the parts that draw hair.
 - `src/presets.py`: named characters as `CharacterParams` values,
   `SATOKO` and `SATOSHI`. Reachable from the CLI via `--preset`. The two
