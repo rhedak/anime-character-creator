@@ -6,13 +6,34 @@ scales as one unit via the skeleton's head_r.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, field
 
 from colorutil import shade
 from skeleton import Skeleton, build_skeleton
 
 OUTLINE = "#2b2b2b"
 STROKE_W = 3
+
+
+@dataclass(frozen=True)
+class FaceStyle:
+    """Expression knobs. Every default reproduces the stock chibi face, so a
+    character only states what it differs on."""
+
+    # 1.0 is a fully round eye; lower flattens the upper lid toward a
+    # half-lidded, more adult look.
+    eye_openness: float = 1.0
+    eye_size: float = 1.0
+    # 0 is level. Positive drops the inner ends (stern), negative raises them.
+    brow_tilt: float = 0.0
+    brow_weight: float = 1.0
+    # 1.0 is the stock smile, 0 is a flat line, negative frowns.
+    mouth_curve: float = 1.0
+    mouth_width: float = 1.0
+    blush: float = 1.0
+    # -1 scars the left cheek, 1 the right, 0 none.
+    scar_side: int = 0
 
 
 @dataclass(frozen=True)
@@ -24,6 +45,7 @@ class CharacterParams:
     eye_color: str = "#4a9c6d"
     outfit_color: str = "#4f7a52"
     boot_color: str = "#5b4632"
+    face: FaceStyle = field(default_factory=FaceStyle)
     shaded: bool = True
 
 
@@ -262,41 +284,108 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     return circle + sd
 
 
+def _eye_shape(ex: float, ey: float, er: float, openness: float) -> tuple[str, str] | None:
+    """Sclera as a circle with its top taken off by the upper lid, plus the
+    lid on its own for redrawing as the lash line. None means fully open,
+    where a plain <circle> is exact and avoids a degenerate arc.
+
+    The lid bows upward rather than cutting straight across, otherwise the
+    eye reads as a flat-topped box instead of a lidded eye.
+    """
+    if openness >= 0.995:
+        return None
+    lid_y = ey - er * openness
+    half = er * math.sqrt(max(0.0, 1.0 - openness * openness))
+    lid = f"Q {ex:.1f} {lid_y - er * 0.20:.1f} {ex - half:.1f} {lid_y:.1f}"
+    d = f"M {ex - half:.1f} {lid_y:.1f} A {er:.1f} {er:.1f} 0 1 0 {ex + half:.1f} {lid_y:.1f} {lid} Z"
+    return d, f"M {ex + half:.1f} {lid_y:.1f} {lid}"
+
+
+def _eye(ex: float, ey: float, er: float, side: int, p: CharacterParams) -> str:
+    f = p.face
+    shaped = _eye_shape(ex, ey, er, f.eye_openness)
+    clip_id = f"eye-{'l' if side < 0 else 'r'}"
+    shape = f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="{er:.1f}"' if shaped is None else f'<path d="{shaped[0]}"'
+    # A narrowed eye shows more iris and less white, so grow it as the lid drops.
+    iris_r = er * (0.72 + 0.22 * (1.0 - f.eye_openness))
+
+    # The iris is clipped to the sclera so it can't spill over a lowered lid.
+    parts = [f'<defs><clipPath id="{clip_id}">{shape} /></clipPath></defs>']
+    parts.append(f'{shape} fill="white" stroke="{OUTLINE}" stroke-width="2.5" />')
+    parts.append(f'<g clip-path="url(#{clip_id})">')
+    parts.append(f'<circle cx="{ex:.1f}" cy="{ey + er * 0.05:.1f}" r="{iris_r:.1f}" fill="{p.eye_color}" />')
+    parts.append(
+        f'<circle cx="{ex:.1f}" cy="{ey + er * 0.12:.1f}" r="{iris_r * 0.47:.1f}" fill="{shade(p.eye_color, 0.35)}" />'
+    )
+    parts.append(f'<circle cx="{ex - er * 0.28:.1f}" cy="{ey - er * 0.32:.1f}" r="{er * 0.22:.1f}" fill="white" />')
+    parts.append(
+        f'<circle cx="{ex + er * 0.22:.1f}" cy="{ey + er * 0.28:.1f}" r="{er * 0.1:.1f}" fill="white" opacity="0.85" />'
+    )
+    parts.append("</g>")
+
+    if shaped is not None:
+        # Redraw the lid heavier, on top of the iris, as the lash line.
+        parts.append(
+            f'<path d="{shaped[1]}" fill="none" stroke="{OUTLINE}" stroke-width="4" stroke-linecap="round" />'
+        )
+    return "".join(parts)
+
+
+def _scar(sk: Skeleton, side: int) -> str:
+    """A nick with a short cross-tick on one cheek. One line alone reads as a
+    stray stroke at this size; two equal lines read as a cartoon X, so the
+    tick is kept short."""
+    r, cx, cy = sk.head_r, sk.head_cx, sk.head_cy
+
+    def line(x1: float, y1: float, x2: float, y2: float, w: float) -> str:
+        return (
+            f'<line x1="{cx + side * r * x1:.1f}" y1="{cy + r * y1:.1f}" '
+            f'x2="{cx + side * r * x2:.1f}" y2="{cy + r * y2:.1f}" '
+            f'stroke="{OUTLINE}" stroke-width="{w}" stroke-linecap="round" opacity="0.6" />'
+        )
+
+    return line(0.52, 0.56, 0.65, 0.35, 1.8) + line(0.55, 0.44, 0.63, 0.49, 1.4)
+
+
 def _face(sk: Skeleton, p: CharacterParams) -> str:
     r = sk.head_r
     cx, cy = sk.head_cx, sk.head_cy
+    f = p.face
     eye_y = cy + r * 0.08
     eye_dx = r * 0.42
-    eye_r = r * 0.26
+    eye_r = r * 0.26 * f.eye_size
     parts = []
 
     for side in (-1, 1):
         ex = cx + side * eye_dx
+        brow_y = eye_y - eye_r * 1.75
+        tilt = f.brow_tilt * eye_r * 0.28
         parts.append(
-            f'<line x1="{ex - eye_r * 0.9:.1f}" y1="{eye_y - eye_r * 1.7:.1f}" '
-            f'x2="{ex + eye_r * 0.9:.1f}" y2="{eye_y - eye_r * 1.85:.1f}" '
-            f'stroke="{OUTLINE}" stroke-width="3" stroke-linecap="round" />'
+            f'<line x1="{ex - side * eye_r * 0.9:.1f}" y1="{brow_y + tilt:.1f}" '
+            f'x2="{ex + side * eye_r * 0.9:.1f}" y2="{brow_y - tilt:.1f}" '
+            f'stroke="{OUTLINE}" stroke-width="{3 * f.brow_weight:.1f}" stroke-linecap="round" />'
         )
-        parts.append(
-            f'<circle cx="{ex:.1f}" cy="{eye_y:.1f}" r="{eye_r:.1f}" fill="white" stroke="{OUTLINE}" stroke-width="2.5" />'
-        )
-        iris_r = eye_r * 0.72
-        parts.append(f'<circle cx="{ex:.1f}" cy="{eye_y + eye_r * 0.05:.1f}" r="{iris_r:.1f}" fill="{p.eye_color}" />')
-        pupil_r = eye_r * 0.34
-        parts.append(f'<circle cx="{ex:.1f}" cy="{eye_y + eye_r * 0.12:.1f}" r="{pupil_r:.1f}" fill="{shade(p.eye_color, 0.35)}" />')
-        parts.append(f'<circle cx="{ex - eye_r * 0.28:.1f}" cy="{eye_y - eye_r * 0.32:.1f}" r="{eye_r * 0.22:.1f}" fill="white" />')
-        parts.append(f'<circle cx="{ex + eye_r * 0.22:.1f}" cy="{eye_y + eye_r * 0.28:.1f}" r="{eye_r * 0.1:.1f}" fill="white" opacity="0.85" />')
+        parts.append(_eye(ex, eye_y, eye_r, side, p))
 
     mouth_y = cy + r * 0.55
+    mouth_half = r * 0.12 * f.mouth_width
     parts.append(
-        f'<path d="M {cx - r * 0.12:.1f} {mouth_y:.1f} Q {cx:.1f} {mouth_y + r * 0.08:.1f} {cx + r * 0.12:.1f} {mouth_y:.1f}" '
+        f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
+        f'Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f}" '
         f'fill="none" stroke="{OUTLINE}" stroke-width="2.5" stroke-linecap="round" />'
     )
 
-    for side in (-1, 1):
-        bx = cx + side * r * 0.55
-        by = cy + r * 0.35
-        parts.append(f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{r * 0.09:.1f}" fill="#e8879a" opacity="0.45" />')
+    if f.blush > 0:
+        for side in (-1, 1):
+            bx = cx + side * r * 0.55
+            by = cy + r * 0.35
+            parts.append(
+                f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{r * 0.09:.1f}" '
+                f'fill="#e8879a" opacity="{0.45 * f.blush:.2f}" />'
+            )
+
+    if f.scar_side:
+        parts.append(_scar(sk, 1 if f.scar_side > 0 else -1))
 
     return "".join(parts)
 

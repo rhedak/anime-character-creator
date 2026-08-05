@@ -16,19 +16,41 @@ from presets import PRESETS
 
 COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color", "outfit_color", "boot_color")
 
+# Expression knobs, mirrored from FaceStyle. See character.FaceStyle for what
+# each one does and what the neutral value is.
+FACE_ARGS: dict[str, type] = {
+    "eye_openness": float,
+    "eye_size": float,
+    "brow_tilt": float,
+    "brow_weight": float,
+    "mouth_curve": float,
+    "mouth_width": float,
+    "blush": float,
+    "scar_side": int,
+}
+
+
+def _flag(name: str) -> str:
+    return f"--{name.replace('_', '-')}"
+
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="out/character", help="output path prefix (no extension)")
     ap.add_argument("--preset", choices=sorted(PRESETS), help="start from a named character")
     for name in COLOR_ARGS:
-        ap.add_argument(f"--{name.replace('_', '-')}", help="hex color, overrides the preset")
+        ap.add_argument(_flag(name), help="hex color, overrides the preset")
+    for name, kind in FACE_ARGS.items():
+        ap.add_argument(_flag(name), type=kind, help="expression knob, overrides the preset")
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
     args = ap.parse_args()
 
     base = PRESETS[args.preset] if args.preset else CharacterParams()
-    overrides = {name: getattr(args, name) for name in COLOR_ARGS if getattr(args, name) is not None}
-    params = replace(base, shaded=not args.flat, **overrides)
+    colors = {name: getattr(args, name) for name in COLOR_ARGS if getattr(args, name) is not None}
+    face = {name: getattr(args, name) for name in FACE_ARGS if getattr(args, name) is not None}
+    params = replace(base, shaded=not args.flat, **colors)
+    if face:
+        params = replace(params, face=replace(params.face, **face))
 
     svg = render_character(params)
 

@@ -52,9 +52,17 @@ python generate.py --out ../out/demo \
 python generate.py --out ../out/satoko --preset satoko
 ```
 
-`--preset` starts from a named character in `src/presets.py`; any
-color flag given alongside it overrides that one color. Add `--flat`
-to disable the cel-shading shadow shapes and see the flat
+`--preset` starts from a named character in `src/presets.py`; any flag
+given alongside it overrides that one value. Besides colors there are
+expression flags (`--eye-openness`, `--eye-size`, `--brow-tilt`,
+`--brow-weight`, `--mouth-curve`, `--mouth-width`, `--blush`,
+`--scar-side`), each of which is neutral at its default:
+
+```bash
+python generate.py --out ../out/grumpy --mouth-curve -0.6 --blush 0 --brow-tilt 0.5
+```
+
+Add `--flat` to disable the cel-shading shadow shapes and see the flat
 silhouette only. Output is written as both `.svg` (inspect/edit
 directly in a browser or Inkscape) and `.png` (if cairosvg works).
 
@@ -70,7 +78,9 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
 - `src/character.py`: builds each body part as an SVG shape (paths,
   circles, capsule-strokes) positioned from the skeleton, then stacks
   them in z-order into one `<svg>` document. `CharacterParams` holds
-  the color inputs; `render_character()` is the entry point.
+  the color inputs plus a `FaceStyle` of expression knobs (eye
+  openness/size, brow tilt/weight, mouth curve/width, blush, cheek
+  scar); `render_character()` is the entry point.
 - `src/presets.py`: named characters as `CharacterParams` values, e.g.
   `SATOKO`. Reachable from the CLI via `--preset`.
 - `src/generate.py`: CLI: renders one character to SVG, rasterizes to
