@@ -1030,9 +1030,10 @@ def _hand(sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: 
     hand.
     """
     hw = w_wrist * 1.02
-    # 1.05 at the chibi end, not the 1.6 it shipped with: measured, the old
-    # hand ran about 1.6x the canon's relative size and read as a paw.
-    length = sk.arm_half_w * (1.05 + 1.40 * sk.build)
+    # Sized to land the canon's hand, about 0.10 of head width at chibi. The
+    # factor absorbs the arm it hangs off: when the chibi arm slimmed from
+    # 0.22 to 0.14 head radii this went up to keep the hand itself the same.
+    length = sk.arm_half_w * (1.35 + 1.10 * sk.build)
     tip = hw * (1.0 - 0.32 * sk.build)
 
     def x(offset: float) -> float:
@@ -1093,7 +1094,7 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     # and a wider-hipped one's go out, which is the frame doing its job.
     #
     # A chibi keeps its legs tucked in close instead: its hips are nearly as wide
-    # as an adult's in head radii while its legs are less than half as thick, so
+    # as an adult's in head radii while its legs are notably thinner, so
     # hanging them off the hip would splay them to the corners of the body.
     tuck = sk.leg_half_w * 1.45
     gap = tuck + (sk.hip_half_w - w_top - tuck) * taper
@@ -1145,8 +1146,10 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, w_knee: f
     color = p.outfit.boot_color
     # A foot is a foot: measured off the leg rather than off the ankle, so it
     # keeps its size when the shin's width is retuned. As a multiple of the ankle
-    # it doubled the moment the leg stopped tapering to a point.
-    boot_w = sk.leg_half_w * (2.90 - 0.90 * sk.build)
+    # it doubled the moment the leg stopped tapering to a point. The multiplier
+    # was retuned when the chibi leg thickened from 0.15 to 0.22 head radii, so
+    # the boot itself, already sized to the canon, came out the same.
+    boot_w = sk.leg_half_w * (2.08 - 0.08 * sk.build)
     foot_h = sk.foot_y - sk.ankle_y
     # The shaft climbs a third of the way to the knee, so it stays a boot rather
     # than becoming a waders as the shin gets longer at taller builds.

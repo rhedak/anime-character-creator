@@ -132,7 +132,12 @@ def build_skeleton(
         hip_half_w=head_r * _lerp(0.95, 1.30, t) * (1.0 - 0.11 * f),
         hem_y=chin_y + body * _lerp(0.70, 0.58, t),
         hem_half_w=head_r * _lerp(1.11, 1.60, t),
-        arm_half_w=head_r * _lerp(0.22, 0.33, t),
+        # Legs run wider than arms at every build, the way limbs do. This
+        # started the other way around at chibi (arms 0.22, legs 0.15), which
+        # read as wrong the moment it was pointed at: measured off the canon
+        # chibis, sleeves come to about 0.155 head radii and legs about 0.23,
+        # an arm-to-leg ratio of roughly 0.7, the same as the adult's.
+        arm_half_w=head_r * _lerp(0.14, 0.33, t),
         # Rides the frame with the shoulder it hangs off. Broadening the shoulder
         # without moving the arm out leaves the garment's shoulder sticking out
         # past the sleeve, and two characters on different frames then disagree
@@ -142,7 +147,7 @@ def build_skeleton(
         # canon hangs a chibi's arms clear of the tunic's sides, and at 0.75
         # the thick chibi arm covered a third of the garment.
         arm_x=head_r * _lerp(0.85, 1.20, t) * (1.0 + 0.09 * f),
-        leg_half_w=head_r * _lerp(0.15, 0.42, t),
+        leg_half_w=head_r * _lerp(0.22, 0.42, t),
         knee_y=chin_y + body * _lerp(0.81, 0.708, t),
         ankle_y=chin_y + body * _lerp(0.93, 0.95, t),
         foot_y=chin_y + body,

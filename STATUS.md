@@ -10,8 +10,9 @@ eyes, long-cut locks, pouches and buckle, boot toes and laces, mitten
 hands, realistic polish, off-centre parting; tasks 35-43), the second
 for shape (high-part fringe with visible forehead, eyes lower and
 apart with brows on the lash line, bell hair silhouette, chibi arms
-clear of the tunic with canon-sized hands; tasks 44-47). Per-task
-snapshots are in `out/35` through `out/47`.
+clear of the tunic with canon-sized hands; tasks 44-47), plus a
+user-caught limb-width swap (chibi legs now wider than arms, task 48).
+Per-task snapshots are in `out/35` through `out/48`.
 
 ## Where it stands
 
@@ -52,7 +53,10 @@ What is parametrized:
   also happens to land the crotch gap where `ref/satoshi.png` has it, each
   inner edge about 0.09 head radii off centre. A chibi keeps its legs
   tucked in close instead, since its hips are nearly as wide as an adult's
-  in head radii while its legs are less than half as thick.
+  in head radii while its legs are notably thinner. Legs always run wider
+  than arms, though: the chibi shipped inverted (arms 1.3x the legs) until
+  it was pointed at, and the canon chibis measure the same arm-to-leg
+  ratio as the adult, about 0.7.
 - **Garments.** `Outfit` carries one field per piece: tunic,
   undersleeve, belt, apron, skirt, underskirt, trousers, pouches,
   boots, plus a `skirt_length`. A garment is worn when its color is
