@@ -4,11 +4,14 @@ Snapshot of where the generator is and what comes next. Working notes,
 not user documentation: see `README.md` for how to run it and
 `CLAUDE.md` for the rules that govern changes.
 
-Last updated: 2026-08-06, at `21850a5` "add new references", plus the
-uncommitted canon pass (stroke scaling, canon eyes, long-cut locks,
-pouches and buckle, boot toes and laces, mitten hands, realistic
-polish, off-centre parting). Per-task snapshots of that pass are in
-`out/35` through `out/43`.
+Last updated: 2026-08-06, at `21850a5` "add new references", plus two
+uncommitted canon passes: the first for language (stroke scaling, canon
+eyes, long-cut locks, pouches and buckle, boot toes and laces, mitten
+hands, realistic polish, off-centre parting; tasks 35-43), the second
+for shape (high-part fringe with visible forehead, eyes lower and
+apart with brows on the lash line, bell hair silhouette, chibi arms
+clear of the tunic with canon-sized hands; tasks 44-47). Per-task
+snapshots are in `out/35` through `out/47`.
 
 ## Where it stands
 
@@ -136,11 +139,6 @@ from a measured one. A difference from a reference is not a defect on its own,
 so each entry below says whether it actually looks wrong or is only a
 measurement gap.
 
-- **The chibi's tan arms cover about a third of the tunic.** They are
-  thick at that build and sit where they sit, so the visible green
-  between them is narrower than in the refs. `ref/satoko-chibi.jpg`
-  keeps the same tan sleeves but hangs the arms clear of the tunic's
-  sides, so its green stays wide.
 - **The waist is wider than the reference's, relative to the shoulder.**
   *Measurement gap only, does not read as wrong.* The forearm-to-waist gap
   is about 4px where `ref/satoshi.png` has 21px, but the arms hanging close
@@ -235,20 +233,23 @@ more contrast in those two, not skeleton work.
 
 ## Next steps
 
-The canon pass of 2026-08-06 cleared the previous list: stroke scaling,
-canon eyes, long-cut locks, pouches and buckle, boot toes and laces,
-mitten hands, nose and collar and elbow bend, off-centre parting. Leg
-length closed as already matching the canon. What remains, ranked:
+The two canon passes of 2026-08-06 cleared the previous list; leg
+length closed as already matching the canon, and the chibi arms now
+hang clear of the tunic. What remains, ranked:
 
-1. **Chibi arms hanging clear of the tunic.** The one canon gap left on
-   the weak list: the tan arms cover about a third of the green where
-   `ref/satoko-chibi.jpg` hangs them clear of the tunic's sides. That is
-   `arm_x` and sleeve width at the chibi end only, so it wants the
-   side-by-side lab treatment before anything ships.
-2. **Satoshi's faint cheek mark, or its removal.** The old identity refs
+1. **Realistic garment details the canon shows.** The belt with buckle
+   and hanging strap sits *over* the apron in `ref/satoko-real.jpg`, but
+   our no-buckle-under-apron rule (right at chibi) also erases it at the
+   taller build; the underskirt wants pleats there; and the short sleeve
+   wants a visible cap hem instead of blending into the tunic's
+   shoulder.
+2. **Palette resample from the canon.** Their green and skin run a
+   touch brighter and warmer; ours were sampled from the older refs.
+   One-time, low effort.
+3. **Satoshi's faint cheek mark, or its removal.** The old identity refs
    suggest one; the canon satoshi pair shows none. Decide first, then it
    is one `FaceStyle` value either way.
-3. **Then variety.** More hairstyles and a second outfit family. The
+4. **Then variety.** More hairstyles and a second outfit family. The
    hairstyle registry and `Outfit` are both built to take them now.
 
 ## Conventions worth remembering

@@ -137,7 +137,11 @@ def build_skeleton(
         # without moving the arm out leaves the garment's shoulder sticking out
         # past the sleeve, and two characters on different frames then disagree
         # about where the arm meets the body.
-        arm_x=head_r * _lerp(0.75, 1.20, t) * (1.0 + 0.09 * f),
+        #
+        # The chibi end sits at 0.85 rather than the 0.75 it started at: the
+        # canon hangs a chibi's arms clear of the tunic's sides, and at 0.75
+        # the thick chibi arm covered a third of the garment.
+        arm_x=head_r * _lerp(0.85, 1.20, t) * (1.0 + 0.09 * f),
         leg_half_w=head_r * _lerp(0.15, 0.42, t),
         knee_y=chin_y + body * _lerp(0.81, 0.708, t),
         ankle_y=chin_y + body * _lerp(0.93, 0.95, t),

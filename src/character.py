@@ -222,22 +222,28 @@ def _fall_edge(length: float) -> tuple[Point, list[Segment]]:
     def y(f: float) -> float:
         return _fall(f, length)
 
-    return (1.06, y(1.00)), [
-        ((1.29, y(0.93)), (1.28, y(0.76))),
-        ((1.26, y(0.41)), (1.19, _HAIR_CHEEK_Y)),
+    return (1.22, y(1.00)), [
+        ((1.52, y(0.82)), (1.44, y(0.62))),
+        ((1.30, y(0.30)), (1.16, _HAIR_CHEEK_Y)),
     ]
 
 
 def _hair_mass_shape(length: float) -> tuple[Point, list[Segment]]:
-    """Crown, flaring out past the cheeks, then a straight fall ending in
+    """Crown, then falls that flare outward on the way down, ending in
     pointed locks. This one shape carries the hair's only outer contour.
 
-    The bottom edge is tips and notches rather than the blunt curve it used to
-    be: the canon ends every fall in points, and the blunt curve was half of
-    what kept this cut reading as a helmet. Offsets around the tip line are
-    absolute head radii rather than fractions of the fall, so the points stay
-    the same size on the chibi's short fall as on the adult's long one, the
-    way the short cut's lock ends are sized.
+    The silhouette is a bell, not a curtain: slimmer where it passes the
+    face (1.16 at the cheek), widest below the shoulders (1.52 at the
+    controls), then tapering back to the tips. Widest at the skull it read
+    as a tall egg next to the canon, which flares every fall outward and
+    keeps the crown low. Chosen from a side-by-side lab over the straight
+    version and a half-bell; the full bell won at both builds.
+
+    The bottom edge is tips and notches rather than a blunt curve: the canon
+    ends every fall in points. Offsets around the tip line are absolute head
+    radii rather than fractions of the fall, so the points stay the same
+    size on the chibi's short fall as on the adult's long one, the way the
+    short cut's lock ends are sized.
     """
 
     def y(f: float) -> float:
@@ -245,22 +251,22 @@ def _hair_mass_shape(length: float) -> tuple[Point, list[Segment]]:
 
     tip = y(1.00)
     return (-1.02, -0.30), [
-        ((-0.86, -1.26), (0.00, -1.20)),
-        ((0.86, -1.26), (1.02, -0.30)),
-        ((1.20, 0.20), (1.19, _HAIR_CHEEK_Y)),
-        ((1.26, y(0.41)), (1.28, y(0.76))),
-        ((1.29, y(0.93)), (1.06, tip)),
-        ((0.94, tip + 0.04), (0.80, tip - 0.24)),
-        ((0.66, tip - 0.16), (0.52, tip + 0.10)),
-        ((0.38, tip + 0.02), (0.26, tip - 0.20)),
-        ((0.12, tip - 0.12), (0.00, tip + 0.06)),
-        ((-0.12, tip - 0.12), (-0.26, tip - 0.20)),
-        ((-0.38, tip + 0.02), (-0.52, tip + 0.10)),
-        ((-0.66, tip - 0.16), (-0.80, tip - 0.24)),
-        ((-0.94, tip + 0.04), (-1.06, tip)),
-        ((-1.29, y(0.93)), (-1.28, y(0.76))),
-        ((-1.26, y(0.41)), (-1.19, _HAIR_CHEEK_Y)),
-        ((-1.20, 0.20), (-1.02, -0.30)),
+        ((-0.86, -1.22), (0.00, -1.16)),
+        ((0.86, -1.22), (1.02, -0.30)),
+        ((1.12, 0.20), (1.16, _HAIR_CHEEK_Y)),
+        ((1.30, y(0.30)), (1.44, y(0.62))),
+        ((1.52, y(0.82)), (1.22, tip)),
+        ((1.08, tip + 0.04), (0.92, tip - 0.24)),
+        ((0.76, tip - 0.16), (0.60, tip + 0.10)),
+        ((0.44, tip + 0.02), (0.30, tip - 0.20)),
+        ((0.14, tip - 0.12), (0.00, tip + 0.06)),
+        ((-0.14, tip - 0.12), (-0.30, tip - 0.20)),
+        ((-0.44, tip + 0.02), (-0.60, tip + 0.10)),
+        ((-0.76, tip - 0.16), (-0.92, tip - 0.24)),
+        ((-1.08, tip + 0.04), (-1.22, tip)),
+        ((-1.52, y(0.82)), (-1.44, y(0.62))),
+        ((-1.30, y(0.30)), (-1.16, _HAIR_CHEEK_Y)),
+        ((-1.12, 0.20), (-1.02, -0.30)),
     ]
 
 
@@ -305,26 +311,28 @@ def _hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]
     def y(f: float) -> float:
         return _fall(f, length)
 
-    start: Point = (-1.06, y(1.00))
+    start: Point = (-1.22, y(1.00))
     line: list[Segment] = [
-        ((-1.00, y(0.97)), (-0.94, y(0.85))),
-        ((-0.88, y(0.60)), (-0.88, y(0.28))),
+        ((-1.18, y(0.97)), (-1.08, y(0.85))),
+        ((-0.98, y(0.60)), (-0.90, y(0.28))),
         ((-0.92, 0.70), (-0.88, 0.35)),
-        # The fringe sits just above the brows, which are around -0.35. It used to
-        # peak at -0.94, all but on top of the skull, which left a forehead taller
-        # than the rest of the face and made the hair read as two curtains hung
-        # either side of a bare head rather than as a mass covering it; the canon
-        # covers the forehead down to the brow line. The parting sits right of
-        # centre, where the crown strands already radiate from, and the two
+        # The fringe is a high part with two sweeps, not a curtain: the apex
+        # sits at -0.80, well up the forehead, and the sweeps descend toward
+        # the outer eye corners, so a wide triangle of skin shows. This is the
+        # canon's fringe. An earlier fix pulled the fringe down to the brow
+        # line to cure a bare-headed look, but the cure was the sweeps, not
+        # the coverage: hair can sit high as long as it visibly comes *from*
+        # the part and lies across the forehead on its way down. The part is
+        # right of centre, where the crown strands radiate from, and the two
         # sweeps are unequal, so the cut reads parted without the silhouette
-        # having to give up its mirrored point data.
-        ((-0.84, 0.08), (-0.50, -0.18)),
-        ((-0.20, -0.38), (0.12, -0.42)),
-        ((0.30, -0.34), (0.52, -0.16)),
-        ((0.86, 0.10), (0.88, 0.35)),
-        ((0.92, 0.70), (0.88, y(0.28))),
-        ((0.88, y(0.60)), (0.94, y(0.85))),
-        ((1.00, y(0.97)), (1.06, y(1.00))),
+        # giving up its mirrored point data.
+        ((-0.72, 0.12), (-0.52, -0.30)),
+        ((-0.22, -0.46), (0.12, -0.68)),
+        ((0.36, -0.46), (0.58, -0.32)),
+        ((0.78, 0.04), (0.88, 0.35)),
+        ((0.92, 0.70), (0.90, y(0.28))),
+        ((0.98, y(0.60)), (1.08, y(0.85))),
+        ((1.18, y(0.97)), (1.22, y(1.00))),
     ]
     # Down the fall the fringe's outer edge is the mass's own edge, so the
     # lock can carry the silhouette where the body hides the mass. Above the
@@ -333,10 +341,10 @@ def _hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]
     _, left_down = _reverse(*_mirror(*_fall_edge(length)))
     back: list[Segment] = [
         *right_edge,
-        ((1.09, 0.10), (1.00, -0.30)),
-        ((0.84, -1.20), (0.00, -1.14)),
-        ((-0.84, -1.20), (-1.00, -0.30)),
-        ((-1.09, 0.10), (-1.19, _HAIR_CHEEK_Y)),
+        ((1.05, 0.10), (1.00, -0.30)),
+        ((0.84, -1.16), (0.00, -1.10)),
+        ((-0.84, -1.16), (-1.00, -0.30)),
+        ((-1.05, 0.10), (-1.16, _HAIR_CHEEK_Y)),
         *left_down,
     ]
     return start, line, back
@@ -359,15 +367,15 @@ def _long_strands(length: float) -> list[tuple[Point, list[Segment]]]:
         ((-0.10, -1.08), [((-0.74, -0.72), (-0.96, -0.24))]),
         ((0.16, -1.10), [((0.48, -0.78), (0.62, -0.34))]),
         ((0.26, -1.02), [((0.80, -0.62), (1.00, -0.06))]),
-        # One long line down each fall, drifting with its curve, and a shorter
-        # inner one, so the fall divides into three unequal locks.
-        ((1.04, 0.10), [((1.16, y(0.28)), (1.12, y(0.58))), ((1.06, y(0.78)), (1.10, y(0.94)))]),
-        ((-1.04, 0.10), [((-1.16, y(0.28)), (-1.12, y(0.58))), ((-1.06, y(0.78)), (-1.10, y(0.94)))]),
-        ((0.94, 0.40), [((1.00, y(0.30)), (0.97, y(0.55)))]),
-        ((-0.94, 0.40), [((-1.00, y(0.30)), (-0.97, y(0.55)))]),
-        # Fringe flicks, ending just above the hairline.
-        ((0.30, -0.78), [((0.38, -0.56), (0.42, -0.34))]),
-        ((-0.24, -0.80), [((-0.30, -0.58), (-0.34, -0.36))]),
+        # One long line down each fall, drifting outward with the bell, and a
+        # shorter inner one, so the fall divides into three unequal locks.
+        ((1.04, 0.10), [((1.32, y(0.28)), (1.28, y(0.58))), ((1.22, y(0.78)), (1.26, y(0.94)))]),
+        ((-1.04, 0.10), [((-1.32, y(0.28)), (-1.28, y(0.58))), ((-1.22, y(0.78)), (-1.26, y(0.94)))]),
+        ((0.94, 0.40), [((1.08, y(0.30)), (1.05, y(0.55)))]),
+        ((-0.94, 0.40), [((-1.08, y(0.30)), (-1.05, y(0.55)))]),
+        # Fringe flicks following the sweeps, ending just above the hairline.
+        ((0.26, -0.74), [((0.36, -0.64), (0.42, -0.55))]),
+        ((-0.16, -0.76), [((-0.32, -0.64), (-0.46, -0.48))]),
     ]
 
 
@@ -970,9 +978,10 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
     # Arms drift outward on the way down, so daylight opens between forearm and
     # waist. The drift lives in the forearm: the upper arm hangs near vertical
     # and the bend happens at the elbow, which is what the canon's arms do and
-    # what a straight slant from shoulder to wrist failed to read as. Scaled by
-    # build, since a chibi hangs its arms straight.
-    centre_wrist = centre_top + sk.arm_half_w * (0.10 + 1.00 * sk.build)
+    # what a straight slant from shoulder to wrist failed to read as. The
+    # chibi keeps a modest drift of its own now: the canon's chibi hands hang
+    # beside the skirt, not against it.
+    centre_wrist = centre_top + sk.arm_half_w * (0.50 + 0.70 * sk.build)
     centre_elbow = centre_top + (centre_wrist - centre_top) * 0.35
 
     parts = []
@@ -1021,7 +1030,9 @@ def _hand(sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: 
     hand.
     """
     hw = w_wrist * 1.02
-    length = sk.arm_half_w * (1.6 + 1.0 * sk.build)
+    # 1.05 at the chibi end, not the 1.6 it shipped with: measured, the old
+    # hand ran about 1.6x the canon's relative size and read as a paw.
+    length = sk.arm_half_w * (1.05 + 1.40 * sk.build)
     tip = hw * (1.0 - 0.32 * sk.build)
 
     def x(offset: float) -> float:
@@ -1478,13 +1489,14 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             eye_lower_lid=f.eye_lower_lid * (1.0 - 0.10 * sk.build),
         )
     # Canon face geometry, shared by every character; what differs per
-    # character stays in FaceStyle. Eyes sit a touch below the head's centre
-    # line, and shrink relative to the head as the build climbs: the canon
-    # draws the realistic iris about a quarter smaller against the head than
-    # the chibi's, which is how an adult face avoids going saucer-eyed while
-    # the chibi stays big-eyed.
-    eye_y = cy + r * 0.11
-    eye_dx = r * 0.40
+    # character stays in FaceStyle. Eyes sit below the head's centre line and
+    # well apart (the canon puts them at about half the face's half-width,
+    # where they used to crowd the middle), and shrink relative to the head
+    # as the build climbs: the canon draws the realistic iris about a quarter
+    # smaller against the head than the chibi's, which is how an adult face
+    # avoids going saucer-eyed while the chibi stays big-eyed.
+    eye_y = cy + r * 0.16
+    eye_dx = r * 0.46
     eye_r = r * 0.26 * (1.0 - 0.22 * sk.build) * f.eye_size
     sw = _stroke_w(sk)
     # Brows are hair, so they carry the hair's own darker tone rather than the
@@ -1496,11 +1508,14 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
 
     for side in (-1, 1):
         ex = cx + side * eye_dx
-        brow_y = eye_y - eye_r * 1.75
+        # Just above the lash line, nearly touching it. The canon's sternness
+        # lives in that closeness: a brow floating high off the eye reads as
+        # mild surprise whatever its tilt says.
+        brow_y = eye_y - eye_r * 1.30
         tilt = f.brow_tilt * eye_r * 0.28
         parts.append(
-            f'<line x1="{ex - side * eye_r * 0.9:.1f}" y1="{brow_y + tilt:.1f}" '
-            f'x2="{ex + side * eye_r * 0.9:.1f}" y2="{brow_y - tilt:.1f}" '
+            f'<line x1="{ex - side * eye_r:.1f}" y1="{brow_y + tilt:.1f}" '
+            f'x2="{ex + side * eye_r:.1f}" y2="{brow_y - tilt:.1f}" '
             f'stroke="{brow_color}" stroke-width="{sw * f.brow_weight:.1f}" stroke-linecap="round" />'
         )
         parts.append(_eye(ex, eye_y, eye_r, side, p, sw))
@@ -1527,8 +1542,10 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
 
     if f.blush > 0:
         for side in (-1, 1):
-            bx = cx + side * r * 0.55
-            by = cy + r * 0.35
+            # Below and outside the eyes, which sit lower than they used to;
+            # at the old height the blush clipped under the lower lids.
+            bx = cx + side * r * 0.58
+            by = cy + r * 0.44
             parts.append(
                 f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{r * 0.09:.1f}" '
                 f'fill="#e8879a" opacity="{0.45 * f.blush:.2f}" />'
