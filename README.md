@@ -39,8 +39,8 @@ Everything else generated goes to `out/`, which is not checked in.
 
 Current shape set: head (a circle at chibi scale, narrowing to a jaw as
 the build gets taller), face (eyes, brows, mouth, blush, scar), two
-hairstyles that optionally divide into locks and fade to a second tone at
-the ends, and a layered
+hairstyles that optionally divide into locks and change to a second tone
+over their lower half, and a layered
 outfit of tunic, undersleeves, belt, apron, skirt, underskirt, trousers
 and boots, plus arms, legs and feet. All flat cel-shaded (base color plus
 one shadow tone). A garment is worn when its color is set, so characters

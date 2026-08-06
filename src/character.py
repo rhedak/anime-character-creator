@@ -162,6 +162,29 @@ _HAIR_CHEEK_Y = 0.72
 _HAIR_TIP_CLIP_ID = "hair-tips"
 _HAIR_FRONT_CLIP_ID = "hair-front"
 
+# Where a two-tone head of hair changes tone, as a fraction of its own height
+# from the crown down to its lowest tips. Half and half is the owner's ratio.
+#
+# A fraction of the whole silhouette, not of the fall: the fall lengthens with
+# the body while the crown stays pinned to the skull, so one fall fraction
+# comes out at different heights per build. The line that sat three quarters
+# of the way down the chibi's hair sat two thirds of the way down the adult's,
+# which is the same character coloured differently at each build. Stated this
+# way one number holds for both cuts at every build, and moving the fade is
+# moving this.
+_HAIR_FADE = 0.50
+# Top of the long cut's silhouette, which is the crown anchor in
+# `_hair_mass_shape`. The short cut's own top is its crown radius, `_CROWN_R`.
+_HAIR_CROWN_Y = -1.16
+
+
+def _fade_y(top: float, bottom: float) -> float:
+    """The two-tone boundary for hair running from `top` to `bottom`, both in
+    head radii. Cuts wave their own edge around this line rather than sitting
+    flat on it, since a level boundary reads as a painted band."""
+    return top + _HAIR_FADE * (bottom - top)
+
+
 # The short cut's crown is an arc of a circle about the head centre, so 0.28 head
 # radii of hair over a skull of radius 1. It runs temple to temple, the temple
 # being the point on that circle at y = -0.30, below which the mass flares out to
@@ -251,8 +274,8 @@ def _hair_mass_shape(length: float) -> tuple[Point, list[Segment]]:
 
     tip = y(1.00)
     return (-1.02, -0.30), [
-        ((-0.86, -1.22), (0.00, -1.16)),
-        ((0.86, -1.22), (1.02, -0.30)),
+        ((-0.86, _HAIR_CROWN_Y - 0.06), (0.00, _HAIR_CROWN_Y)),
+        ((0.86, _HAIR_CROWN_Y - 0.06), (1.02, -0.30)),
         ((1.12, 0.20), (1.16, _HAIR_CHEEK_Y)),
         ((1.30, y(0.30)), (1.44, y(0.62))),
         ((1.52, y(0.82)), (1.22, tip)),
@@ -276,20 +299,32 @@ def _hair_tip_edge(length: float) -> tuple[Point, list[Segment]]:
     scallops deeply, dipping toward the tips between anchors, so the fade
     follows the locks the way the canon's does instead of waving gently
     across them as one line. Closes into a region covering everything below.
-    """
 
-    def y(f: float) -> float:
-        return _fall(f, length)
+    Both the line and the scallops around it are placed as fractions of the
+    hair's own height rather than of the fall, so the ratio of the two tones
+    and the size of the wave hold at every build. See `_HAIR_FADE`.
+    """
+    span = length - _HAIR_CROWN_Y
+
+    # Above the line and below it, by a fraction of that height. Anchors ride
+    # high and the controls pull the curve down between them, so each scallop
+    # hangs from two points rather than arching over them, and the depths vary
+    # a little so the row does not come out as one repeated wave.
+    def hi(d: float) -> float:
+        return _fade_y(_HAIR_CROWN_Y, length) - span * d
+
+    def lo(d: float) -> float:
+        return _fade_y(_HAIR_CROWN_Y, length) + span * d
 
     floor = length + 1.5
-    return (-1.90, y(0.28)), [
-        ((-1.60, y(0.60)), (-1.24, y(0.30))),
-        ((-0.98, y(0.62)), (-0.72, y(0.28))),
-        ((-0.48, y(0.58)), (-0.24, y(0.32))),
-        ((0.00, y(0.64)), (0.24, y(0.32))),
-        ((0.48, y(0.58)), (0.72, y(0.28))),
-        ((0.98, y(0.62)), (1.24, y(0.30))),
-        ((1.60, y(0.60)), (1.90, y(0.28))),
+    return (-1.90, hi(0.045)), [
+        ((-1.60, lo(0.075)), (-1.24, hi(0.040))),
+        ((-0.98, lo(0.080)), (-0.72, hi(0.050))),
+        ((-0.48, lo(0.070)), (-0.24, hi(0.040))),
+        ((0.00, lo(0.085)), (0.24, hi(0.040))),
+        ((0.48, lo(0.070)), (0.72, hi(0.050))),
+        ((0.98, lo(0.080)), (1.24, hi(0.040))),
+        ((1.60, lo(0.075)), (1.90, hi(0.045))),
         ((1.90, floor * 0.6), (1.90, floor)),
         ((0.00, floor), (-1.90, floor)),
     ]
@@ -439,25 +474,41 @@ def _short_fall_edge(tip: float) -> tuple[Point, list[Segment]]:
 
 
 def _short_tip_edge(tip: float) -> tuple[Point, list[Segment]]:
-    """Where the crop fades to its tip tone: a waved band around tip - 0.28,
-    putting roughly the bottom third of the visible cut in the pale tone,
-    the lower half of each sideburn, every rim tip, the whole nape, while
-    the fringe and crown stay in the base color.
+    """Where the crop fades to its tip tone: a wave about the line half way
+    down the cut, so the sideburns, the rim tips, the nape and the lower part
+    of the fringe are all pale and the crown stays in the base colour. This is
+    what the canon shows, and it is the same ratio the long cut carries.
 
-    Two thirds base to one third pale is the owner's ratio. A per-spike
-    boundary hugging each tip was tried first and lost the two-tone look
-    almost entirely; the earlier flat band sat higher still and read as a
-    collar. This is between the two.
+    The wave is deep enough to cross the fringe's lock tips rather than run
+    level over them: a straight line there reads as a band painted across the
+    head, and the fringe is the one place on this cut where the boundary is
+    seen against a wide field of hair rather than down a narrow lock.
+
+    The offsets are absolute head radii rather than fractions of the height,
+    which the long cut needs: this cut's `tip` comes from a `tip_range`, so it
+    sits at the same depth whatever the build, and the whole silhouette with it.
+
+    Earlier passes put this band far lower, at a third of the way up from the
+    tips. A per-spike boundary hugging each tip was tried before that and lost
+    the two-tone look almost entirely.
     """
+    # Half way down what is seen of the crop rather than half way down its
+    # silhouette. The nape flick and the inner rim run behind the jaw and the
+    # shoulders at every build, so the height the ratio divides ends at the
+    # sideburn tips, not at the lowest point of the shape. Even then the line
+    # came out just under the fringe and the cut still read as a blonde head
+    # with pale sides, so it lifts another 0.07 head radii to cross the
+    # fringe's own tips, where the canon has it.
+    mid = _fade_y(-_CROWN_R, tip + 0.20) - 0.07
     floor = tip + 1.5
-    return (-1.90, tip - 0.34), [
-        ((-1.58, tip - 0.18), (-1.30, tip - 0.28)),
-        ((-1.06, tip - 0.14), (-0.86, tip - 0.26)),
-        ((-0.55, tip - 0.14), (-0.30, tip - 0.24)),
-        ((0.00, tip - 0.12), (0.30, tip - 0.24)),
-        ((0.55, tip - 0.14), (0.86, tip - 0.26)),
-        ((1.06, tip - 0.14), (1.30, tip - 0.28)),
-        ((1.58, tip - 0.18), (1.90, tip - 0.34)),
+    return (-1.90, mid - 0.10), [
+        ((-1.58, mid + 0.06), (-1.30, mid - 0.04)),
+        ((-1.06, mid + 0.10), (-0.86, mid - 0.02)),
+        ((-0.55, mid + 0.10), (-0.30, mid)),
+        ((0.00, mid + 0.12), (0.30, mid)),
+        ((0.55, mid + 0.10), (0.86, mid - 0.02)),
+        ((1.06, mid + 0.10), (1.30, mid - 0.04)),
+        ((1.58, mid + 0.06), (1.90, mid - 0.10)),
         ((1.90, floor * 0.6), (1.90, floor)),
         ((0.00, floor), (-1.90, floor)),
     ]

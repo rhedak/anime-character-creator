@@ -13,10 +13,11 @@ apart with brows on the lash line, bell hair silhouette, chibi arms
 clear of the tunic with canon-sized hands; tasks 44-47), plus a
 user-caught limb-width swap (chibi legs now wider than arms, task 48),
 plus the Satoshi hair pass (bob to shaggy crop: ear-level bulk, spiked
-rim, roughened fringe, fade rebalanced to two-thirds blonde over
-one-third white; crown cowlick flicks were tried and reverted on the
-owner's call, the crown stays a clean arc for now; tasks 49-54).
-Per-task snapshots are in `out/35` through `out/54`.
+rim, roughened fringe, fade rebalanced; crown cowlick flicks were tried
+and reverted on the owner's call, the crown stays a clean arc for now;
+tasks 49-54), plus the fade move (both cuts now change tone half way
+down the hair, at every build, off one shared `_HAIR_FADE`; task 55).
+Per-task snapshots are in `out/35` through `out/55`.
 
 ## Where it stands
 
@@ -72,7 +73,14 @@ What is parametrized:
 - **Hair.** `HAIRSTYLES` names `long_blunt` and `short_layered`, each a
   set of four outlines that agree with each other, plus an optional fifth
   giving the strands that divide the mass into locks. Two-tone with a
-  waved fade boundary. `hair_length` spans whatever range the cut
+  waved fade boundary, placed by `_HAIR_FADE` as a fraction of the hair's
+  own height rather than of the fall: the fall lengthens with the body
+  while the crown stays on the skull, so one fall fraction used to come
+  out at a different height per build and coloured the same character
+  differently at each. It is 0.5 now, half blonde over half white, and
+  moving the fade is moving that one number. The short cut measures its
+  half against the hair the eye sees, since its nape and inner rim sit
+  behind the jaw at every build. `hair_length` spans whatever range the cut
   defines: the long one measures the body, chin to hip, so it survives a
   change of build; the short one measures the head, a tight crop at 0 to
   a shaggy ear-length cut at 1, because the body-relative range cannot
@@ -128,7 +136,10 @@ What the canon language is, concretely:
   lowered lids. Smaller and slightly lidded at real.
 - Hair as wedge locks with pointed tips and interior strands, falls
   sitting in front of the shoulders, the tip fade following the locks
-  rather than waving smoothly across them.
+  rather than waving smoothly across them. *Where* that fade sits is
+  ours rather than the canon's: the canon changes tone about seven
+  tenths of the way down Satoko's hair and about a third of the way
+  down Satoshi's, and both are half and half here, on the owner's call.
 - Flat fills, hard shadow edges, no interior shading beyond the one
   shadow tone. Ears hidden under hair. Mitten-grade hands with a thumb
   notch at chibi.
@@ -199,7 +210,7 @@ Ranked by identity carried per pixel.
 
 | Feature | State |
 | --- | --- |
-| Blonde fading to white ends | done |
+| Blonde fading to white ends | done, half and half by height at both builds |
 | Shoulder-length blunt hair | done |
 | Guarded expression: level brows, no smile (carried by brows and mouth) | done |
 | Canon eye: open rounded aperture, heavy top lash, iris rim and pupil | done |
@@ -223,6 +234,7 @@ as related, so what carries his identity is hair and lower body.
 | --- | --- |
 | Short shaggy crop: bulk at the ear, spiked rim, nape showing | done |
 | Hair that reads as locks rather than as one mass | done |
+| Blonde fading to white ends | done, the pale tone crossing the fringe as the canon has it |
 | Dark trousers instead of skirt and apron | done |
 | Trouser leg that fills out at the thigh then runs near straight | done |
 | Legs hanging under the hip, not overhanging the body's side | done |
