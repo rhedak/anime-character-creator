@@ -31,9 +31,17 @@ deformed proportions iteratively, starting from this simple base.
   `Skeleton`'s anchor points (`head_r`, `shoulder_y`, `hem_y`, etc.),
   never hardcoded pixel coordinates, that's what lets proportions
   change globally later without rewriting every part.
-- **Flat color + one shadow tone per surface, hard-edged.** Matches
-  the target cel-shaded anime look. Don't add gradients/blur, they'd
-  break the flat-vector aesthetic that's the whole point.
+- **Flat color, hard-edged, and no shading plane across a garment.**
+  Matches the target cel-shaded anime look. Don't add gradients/blur,
+  they'd break the flat-vector aesthetic that's the whole point. A
+  second tone from `shade()` is for small elements, a pouch flap, a
+  boot cuff, the turn under a hem, where it reads as thickness; a
+  tunic, skirt, apron, sleeve or trouser leg stays one flat color and
+  gets its form from the outline and from line work. This was
+  originally "one shadow tone per surface", which drew shadow wedges
+  covering a third of the torso and most of the apron, up to 15% of
+  the figure's ink; the owner's call on 2026-08-06 was to drop them
+  (task 56, see `docs/gap-analysis.md`).
 
 ## Structure
 

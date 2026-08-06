@@ -17,7 +17,8 @@ figure and scaled to the same height, then measured and looked at. The
 `gap-analysis` skill in `.claude/skills/gap-analysis/` carries the
 procedure and the tooling, so a re-run after a shape pass reproduces
 these numbers the same way rather than measuring afresh. Strips
-regenerate into `out/56/`:
+regenerate into `out/gap-analysis/`, while each task that acted on a gap
+keeps its own `out/NN/` beside it:
 
 | File | What it shows |
 | --- | --- |
@@ -41,12 +42,12 @@ everything else is stated as what the strips show.
   all land within a few percent at both builds. Satoko's chin sits at
   about 0.46 H in the canon chibi against our 0.445, and at about 0.18 in
   the canon adult against our 0.184. The chibi figure was read off
-  `out/56/chin_probe.png` rather than inferred from a colour scan, which
-  is worth doing for any landmark in this zone: the mouth line at 0.38 H
-  and the jaw stroke spanning 0.45 to 0.47 are easy to mistake for each
-  other in a column of colour runs. The tunic's lower edge is at 0.99 H
-  in both. Nothing about the skeleton's proportions along the body needs
-  moving.
+  `out/gap-analysis/chin_probe.png` rather than inferred from a colour
+  scan, which is worth doing for any landmark in this zone: the mouth
+  line at 0.38 H and the jaw stroke spanning 0.45 to 0.47 are easy to
+  mistake for each other in a column of colour runs. The tunic's lower
+  edge is at 0.99 H in both. Nothing about the skeleton's proportions
+  along the body needs moving.
 - **Hair length.** Satoko's chibi hair ends at about 0.58 H in the canon
   and 0.571 in ours. The long cut is the right length; what is wrong with
   it is its width and its edge (gap 2).
@@ -111,8 +112,9 @@ lock lies in.
 
 Ours is a plain part-circle with a scalloped fringe row and a ring of
 pale teeth around its lower edge, and its strand lines all radiate from a
-single point at the crown. At 2x (`out/56/heads_satoshi.png`) it reads as
-an umbrella, and the radial lines are what make it read that way.
+single point at the crown. At 2x
+(`out/gap-analysis/heads_satoshi.png`) it reads as an umbrella, and the
+radial lines are what make it read that way.
 
 Measured: the canon crop is widest at 0.422 H at y 0.171, at the temples,
 and narrows below that, ending at 0.756 H with the sideburn locks. Ours
@@ -140,7 +142,47 @@ shorten the radial strand lines in `_short_strands`. They are carrying a
 large part of the umbrella impression on their own, and removing a
 feature is a legitimate column in a side-by-side.
 
+**That partial move was taken in task 58**, and it worked: the spokes are
+gone and the crop no longer reads as an umbrella. What is left is the dome
+itself, which is this gap with nothing else on top of it, so the
+side-by-side in `out/58/final.png` is the cleanest look anyone has had
+at what re-opening the tousle would actually be worth.
+
 ### 2. Satoko's falls pinch at the jaw and hook inward
+
+**Closed by task 59 on 2026-08-06**, with the fall's outer edge standing
+0.10 head radii further off the skull at the temple and the cheek
+(`_FALL_TEMPLE_X` 1.12 to 1.22, `_FALL_CHEEK_X` 1.16 to 1.26,
+`_FALL_MID_X` 1.30 to 1.36). The bell survives: it was chosen in an
+earlier side-by-side over a straight fall and a half-bell, and the canon
+does widen below the face too, from 0.054 H beside the cheek to 0.075 at
+the neck. Ours was 0.030 rising to 0.091, so the error was a pinch beside
+the face rather than the flare below it.
+
+Two things this turned up that are worth having written down:
+
+- **The fall's outer edge was defined in four places** and nothing tied
+  them together: the mass, `_fall_edge`, the hairline's closing path, and
+  the two strand lines down each fall. Widening the first two produced
+  exactly the double line the hair contract warns about, because the
+  hairline still met the old cheek and the strands still lay at their old
+  radii, so a sliver of mass showed outside the lock with a stroke down
+  each side. The first three now read shared `_FALL_*` constants; the
+  strands carry a matching offset with a comment saying so. That
+  extraction was verified behaviour-neutral before anything moved.
+- **Per-run width is the wrong measurement here.** A strand line inside
+  the fall splits it, so "one run" is a lock, not the fall, and the canon
+  splits in some rows and not others. The candidates were finally chosen
+  by eye against the reference (`out/59/try3_look_chibi.png`,
+  `try3_look_real.png`), which is what this repo says to do anyway.
+
+**Residual, not closed:** even with the wider fall, our face occupies more
+of the head's width than the canon's does, so the hair frames it less. That
+is a head-width question rather than a hair question, it shows at both
+builds, and it overlaps gap 7. Widening the fall further to compensate
+starts to read bulky, which is where 0.16 head radii went.
+
+The original finding follows.
 
 The canon's long hair is one curtain: two slabs of near-constant width
 hanging straight down past the shoulders, tips flicking slightly outward,
@@ -169,6 +211,40 @@ to keep retracing the mass exactly.
 
 ### 3. The fringe sits too high, so the forehead is bare
 
+**Closed by task 57 on 2026-08-06, with two corrections to the finding
+below.**
+
+First, it is not true that the fringe should come down to the brow. That
+was tried in an earlier pass and reverted on purpose, and
+`_hairline_shape` records why: the high part with two sweeps and a visible
+wedge of forehead is the canon's construction, and the cure for a
+bare-headed look is the sweeps, not blanket coverage. What was actually
+wrong was the amount. Down the centre line the canon's fringe reaches
+0.147 H and ours reached 0.109, so the apex sat about 0.19 head radii too
+high. The forehead run is now that much lower, blended to nothing at the
+temples so the side locks do not move, which leaves the part and the wedge
+intact: measured after, our centre line lands at 0.146 against the
+canon's 0.147. Candidates at 0.10, 0.19 and 0.28 head radii were rendered
+side by side (`out/57/lab_chibi.png`, `lab_real.png`); 0.28 closes the
+part and crowds the brows, which is where the reverted pass went wrong.
+
+Second, this was a long-cut change only. The claim below that it affects
+both characters was wrong: Satoshi's fringe already lands where the
+canon's does, at 0.185 H against 0.178 down the centre line and 0.171
+against 0.174 over the eye, so `_short_hairline_shape` was not touched.
+
+**Its other half, the strand lines, closed by task 58.** Both cuts drew
+their crown lines from the crown itself, so four lines on the long cut and
+six on the short one left the same patch a fifth of a head radius across:
+spokes off a hub, and on the short cut's part-circle mass that is a beach
+umbrella. Each line now starts part way along its own path, trimmed to its
+outer half, so they sit spread across the crown and read as the seams
+between locks. Trimming further, or dropping the short cut to four lines,
+empties the crown and it goes back to one smooth field
+(`out/58/lab_satoshi.png`, `lab_satoko.png`).
+
+The original finding follows.
+
 In every canon drawing the fringe comes down to just above the brow, and
 the brows sit partly under hair. It is built as two large swept locks
 meeting at an off-centre parting, their edges long smooth curves ending
@@ -186,6 +262,24 @@ eye catches after the hair silhouette. Fix in `_hairline_shape` and
 `_long_strands` and `_short_strands`.
 
 ### 4. Interior shadow *shapes* read as geometric wedges
+
+**Closed by task 56 on 2026-08-06.** The owner's call was to drop the
+garment tones entirely, which is what the canon shows, and `CLAUDE.md`'s
+flat-colour rule was reworded to match: a second tone is for small
+elements, not for a garment panel. Removed from `_tunic`, `_apron`,
+`_arms` and the trouser branch of `_legs_and_boots`; the skirt's two
+folds became thin lines rather than wedges. Kept where the canon does use
+a second tone: the pouch flaps, the boot cuff and laces, the belt's lower
+edge, and the underskirt's hem cap. Shadow-tone area went from 5.9% to
+0.9% of the chibi's ink and from 15.3% to 3.1% of the adult's, with
+Satoshi at 0.0% at both builds since everything he wears was a panel.
+
+Narrowing the wedges to edge turns was tried first and rejected by eye,
+recorded here because the reasoning generalises: it fixed the torso, but a
+stripe down something as long and thin as a sleeve or a trouser leg reads
+as two-tone whatever its width. Strips are in `out/56/`.
+
+The original finding follows.
 
 The canon does use a second tone, but only on small elements: pouch
 flaps, boot cuffs, the sleeve roll. What it never does is put a large
@@ -225,6 +319,28 @@ The shapes live in `_tunic`, `_skirt`, `_apron`, `_underskirt` and
 
 ### 5. Line colour and hierarchy
 
+**Closed by task 61 on 2026-08-06.** `OUTLINE` is `#0d0d0d` rather than
+`#2b2b2b`. The measurement that settled it: bucketing dark pixels by
+value, the canon piles 17% of its figure ink into the 0-9 bucket while
+ours piled 16% into 40-49. Same quantity of line, softer colour, and the
+whole figure read hazier for it. Below value 20 we now sit at 15.9% of ink
+against the canon's 17.5%. Not pure black, which is a shade harder than
+the canon and gains nothing.
+
+**The hierarchy half was re-examined afterwards and left alone.** The
+claim below, that the canon draws a stronger heavy-silhouette to
+thin-interior contrast than we do, came from looking at a hazier figure.
+With the line black, the existing `_stroke_w` fractions (0.85 for interior
+contours, 0.55 for hair strands, 0.45 for the nose, and opacity on the
+softest of them) read as the right hierarchy at 4x, so there was nothing
+to change. Strips in `out/61/`.
+
+One thing the dark-palette check turned up, inherent rather than a bug: a
+garment darker than the outline loses its own interior detail, since the
+detail is drawn in a tone derived from the garment. It would have done
+that at the old colour too, just less.
+
+
 The canon outline is effectively black: mean ink value 9 on the Satoko
 chibi and 19 on the Satoshi chibi, sampled at `#080808`. Ours is
 `#2b2b2b`, mean 47. Alongside that, the canon draws a stronger contrast
@@ -238,10 +354,33 @@ tip a flat palette toward harsh.
 
 ### 6. The chibi eye is too round
 
+**Closed by task 60 on 2026-08-06.** The aperture's half-width now carries
+a shared `_EYE_ASPECT = 1.28`, which lands its width on the canon's: mean
+0.1158 of figure height against 0.1111. A shared constant rather than a
+bigger `eye_width` per preset, because the roundness belonged to the house
+eye rather than to either character, and the two presets differ from each
+other on purpose. Candidates at 1.15, 1.28 and 1.40 were rendered side by
+side (`out/60/lab_tight_fit.png`); 1.40 matches the canon's aspect exactly
+but overshoots its width by a tenth and reads sleepy.
+
+The aspect still comes out at 1.44 against the canon's 1.52, because the
+canon's aperture is also about a tenth shorter than ours. That part lives
+in `eye_openness` and `eye_lower_lid`, per-character expression values the
+owner set deliberately, so it was left rather than tuned to a ratio.
+
+**Spacing needed nothing, which is why it was measured second.** The gap
+between apertures now reads 0.0659 H against the canon's 0.0781, so on its
+own it looks 16% too close, having looked 20% too far apart before. But
+centre to centre we are at 0.1817 against 0.1892, within 4%: the gap
+changed because the apertures grew, not because the eyes moved. `eye_dx`
+stays at the canon-derived `r * 0.46`. This is the same trap the original
+finding below fell into, in the opposite direction.
+
+
 Measured on Satoko's chibi, where the aperture detector agreed on both
 eyes:
 
-| | canon | ours |
+| measure | canon | ours |
 | --- | --- | --- |
 | aperture aspect (w/h) | 1.51 | 1.12 |
 | aperture width / H | 0.111 | 0.090 |
@@ -285,7 +424,7 @@ one function rather than an architectural change.
 ### 8. Garment construction detail the canon draws and we do not
 
 Individually small, collectively a lot of the "finished drawing" quality.
-From `out/56/torso_chibi.png`, `torso_real.png` and `legs.png`:
+From `out/gap-analysis/torso_chibi.png`, `torso_real.png` and `legs.png`:
 
 - **Sleeve over limb.** The canon's short sleeve ends in a curved hem and
   the undersleeve below it is visibly *narrower*, so a garment hangs over
@@ -330,16 +469,20 @@ does not extend past the skirt.
 
 ## Suggested order
 
-1. Gap 4 (reshape the shadow wedges, or ask about dropping the garment
-   tones). Smallest change, immediate effect, and it makes everything
-   else easier to judge.
-2. Gap 3 (fringe down to the brow). Affects all four renders.
-3. Gap 2 (Satoko's fall width).
-4. Gap 6 (flatten the chibi eye, then re-measure the spacing).
-5. Gap 5 (outline toward black), which is worth doing after 4 so the two
-   are judged separately.
+1. ~~Gap 4 (reshape the shadow wedges, or ask about dropping the garment
+   tones)~~. **Done, task 56**: dropped. Smallest change, immediate
+   effect, and it makes everything else easier to judge.
+2. ~~Gap 3 (fringe down to the brow)~~. **Done, task 57**: lowered by
+   0.19 head radii, long cut only, keeping the part.
+3. ~~Gap 2 (Satoko's fall width)~~. **Done, task 59.**
+4. ~~Gap 6 (flatten the chibi eye, then re-measure the spacing)~~.
+   **Done, task 60**: widened, and the spacing needed nothing.
+5. ~~Gap 5 (outline toward black)~~. **Done, task 61**, after 4 so the two
+   were judged separately.
 6. Gap 7 (adult head taper) and gap 8's sleeve step, which together are
-   most of what makes the realistic build read as an adult.
+   most of what makes the realistic build read as an adult. Gap 7 now also
+   carries gap 2's residual, the head being wide relative to the hair, so
+   do the two as one judgement.
 7. Gap 8's remaining detail and gap 9.
 8. Gap 1 only if the owner re-opens the crown, since it needs a change to
    the hair contract to do properly.

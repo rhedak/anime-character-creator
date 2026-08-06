@@ -20,13 +20,48 @@ rim, roughened fringe, fade rebalanced; crown cowlick flicks were tried
 and reverted on the owner's call, the crown stays a clean arc for now;
 tasks 49-54), plus the fade move (both cuts now change tone half way
 down the hair, at every build, off one shared `_HAIR_FADE`; task 55).
-Per-task snapshots are in `out/35` through `out/55`.
+Per-task snapshots are in `out/35` through `out/59`, one directory per
+task, with the gap analysis's own strips in `out/gap-analysis`.
 
 On top of that, one change that touches no shape: the code is now a
 proper package (`src/anime_character_creator/`, `pyproject.toml`, uv,
 ruff, a smoke test suite, `docs/`). Every render came out byte for byte
 identical, which is what `./refresh-ref-out.sh --check` was there to
 prove.
+
+Then the gap analysis (`docs/gap-analysis.md`, with the `gap-analysis`
+skill that carries its procedure and tooling), and the first pass off its
+ranked list. **Task 56, the garment shadows are gone.** The owner's call
+was to drop them rather than narrow them, so `CLAUDE.md`'s flat-colour
+rule now says a second tone is for small elements and never a plane
+across a panel. Shadow-tone area fell from 5.9% of the chibi's ink to
+0.9%, and from 15.3% to 3.1% at the taller build. **Task 57, the long
+cut's fringe sits 0.19 head radii lower**, which is the excess the
+analysis found rather than the brow-line coverage an earlier pass tried
+and reverted: the high part and the visible wedge of forehead stay, and
+the centre line now lands at 0.146 of figure height against the canon's
+0.147. Satoshi's crop was already right there and was left alone.
+**Task 58, the crown strand lines no longer converge**: every one of them
+used to start at the crown, so four lines on the long cut and six on the
+short one left the same small patch, and on the short cut's part-circle
+mass that read as a beach umbrella. Each starts part way along its own
+path now. What is left of the umbrella is the dome, which is the parked
+crown tousle and nothing else. **Task 59, the long fall stands 0.10 head
+radii further off the skull** at the temple and the cheek, so it holds a
+width past the face instead of pinching at the jaw and bulging below it.
+The bell stays, since the canon flares below the face too. That edge
+turned out to be defined in four places with nothing tying them together,
+and the first three now read shared `_FALL_*` constants. **Task 60, the
+eye aperture is a wide almond** rather than a near-circle: one shared
+`_EYE_ASPECT` puts its width on the canon's, 0.1158 of figure height
+against 0.1111, and `eye_width` goes on meaning one character's deviation
+from the house eye. Spacing turned out to need nothing once that landed:
+centre to centre we were already within 4%, and the gap only looked wrong
+because the apertures were narrow. **Task 61, `OUTLINE` is near black**,
+`#0d0d0d` rather than `#2b2b2b`: the canon piles 17% of its ink into the
+0-9 value bucket where ours sat at 40-49, same amount of line but softer,
+and the figure read hazier for it. The line-hierarchy half of that gap was
+looked at again afterwards and needed nothing.
 
 ## Where it stands
 
@@ -149,9 +184,13 @@ What the canon language is, concretely:
   ours rather than the canon's: the canon changes tone about seven
   tenths of the way down Satoko's hair and about a third of the way
   down Satoshi's, and both are half and half here, on the owner's call.
-- Flat fills, hard shadow edges, no interior shading beyond the one
-  shadow tone. Ears hidden under hair. Mitten-grade hands with a thumb
-  notch at chibi.
+- Flat fills, hard edges, and **no shading plane on a garment at all**:
+  measured in task 56, the canon's tunic, skirt, apron, sleeves and
+  trousers carry no second tone anywhere, and form is on the outline and
+  on line work. A second tone appears only on small elements, a pouch
+  flap, a boot cuff, the turn under a hem. Ears hidden under hair on
+  Satoko, though the satoshi pair does draw them. Mitten-grade hands with
+  a thumb notch at chibi.
 - Garment accents survive chibification: pouches with flap and button,
   a buckled belt band, boot cross-laces. (Rolled sleeve cuffs appear only
   in the satoshi pair, whose style is not the target, so they are out.)

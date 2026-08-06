@@ -13,7 +13,12 @@ from dataclasses import dataclass, field, replace
 from .colorutil import shade
 from .skeleton import DEFAULT_HEADS, Skeleton, build_skeleton
 
-OUTLINE = "#2b2b2b"
+# Every line on the figure. Near black rather than the dark grey this was: the
+# canon's outline samples at #080808 and its dark pixels pile up in the 0-9 value
+# bucket, 17% of the figure's ink, where ours sat at 43 and piled up in 40-49.
+# Same quantity of line, softer colour, and the whole figure read hazier for it.
+# Not pure black, which is a hair harder than the canon and gains nothing.
+OUTLINE = "#0d0d0d"
 
 
 def _stroke_w(sk: Skeleton) -> float:
@@ -250,6 +255,28 @@ def _arc(r: float, from_deg: float, to_deg: float, segments: int) -> tuple[Point
     ]
 
 
+# The long cut's fall, as the five x values its outer edge is built from, in head
+# radii. They live here because three separate places have to agree on them: the
+# mass draws this edge, `_fall_edge` hands the same edge to the front lock, and
+# the hairline's closing path meets it at the cheek. Moving one and not the others
+# opens a sliver of mass outside the lock with a stroke down each side of it,
+# which is the double line the hair contract warns about, and it is what happened
+# the first time this was tried.
+#
+# `_CHEEK` is the one that decides how much hair shows beside the face, which is
+# the fall's visible width where it matters most.
+# A fourth thing has to move with them, which is not expressible here: the two
+# strand lines down each fall sit at fixed head radii, so widening the edge
+# without pushing them out leaves one of them lying outside the new lock and
+# reading as the fall's boundary. `_long_strands` carries a matching offset.
+_FALL_TEMPLE_X = 1.22
+_FALL_CHEEK_X = 1.26
+_FALL_MID_X = 1.36
+_FALL_WIDE_X = 1.44
+_FALL_FLARE_X = 1.52
+_FALL_TIP_X = 1.22
+
+
 def _fall_edge(length: float) -> tuple[Point, list[Segment]]:
     """The mass's outer edge on the right side, tip up to the cheek. Both the
     mass and the front lock are built from this, so their edges coincide
@@ -259,9 +286,9 @@ def _fall_edge(length: float) -> tuple[Point, list[Segment]]:
     def y(f: float) -> float:
         return _fall(f, length)
 
-    return (1.22, y(1.00)), [
-        ((1.52, y(0.82)), (1.44, y(0.62))),
-        ((1.30, y(0.30)), (1.16, _HAIR_CHEEK_Y)),
+    return (_FALL_TIP_X, y(1.00)), [
+        ((_FALL_FLARE_X, y(0.82)), (_FALL_WIDE_X, y(0.62))),
+        ((_FALL_MID_X, y(0.30)), (_FALL_CHEEK_X, _HAIR_CHEEK_Y)),
     ]
 
 
@@ -290,9 +317,9 @@ def _hair_mass_shape(length: float) -> tuple[Point, list[Segment]]:
     return (-1.02, -0.30), [
         ((-0.86, _HAIR_CROWN_Y - 0.06), (0.00, _HAIR_CROWN_Y)),
         ((0.86, _HAIR_CROWN_Y - 0.06), (1.02, -0.30)),
-        ((1.12, 0.20), (1.16, _HAIR_CHEEK_Y)),
-        ((1.30, y(0.30)), (1.44, y(0.62))),
-        ((1.52, y(0.82)), (1.22, tip)),
+        ((_FALL_TEMPLE_X, 0.20), (_FALL_CHEEK_X, _HAIR_CHEEK_Y)),
+        ((_FALL_MID_X, y(0.30)), (_FALL_WIDE_X, y(0.62))),
+        ((_FALL_FLARE_X, y(0.82)), (_FALL_TIP_X, tip)),
         ((1.08, tip + 0.04), (0.92, tip - 0.24)),
         ((0.76, tip - 0.16), (0.60, tip + 0.10)),
         ((0.44, tip + 0.02), (0.30, tip - 0.20)),
@@ -300,10 +327,10 @@ def _hair_mass_shape(length: float) -> tuple[Point, list[Segment]]:
         ((-0.14, tip - 0.12), (-0.30, tip - 0.20)),
         ((-0.44, tip + 0.02), (-0.60, tip + 0.10)),
         ((-0.76, tip - 0.16), (-0.92, tip - 0.24)),
-        ((-1.08, tip + 0.04), (-1.22, tip)),
-        ((-1.52, y(0.82)), (-1.44, y(0.62))),
-        ((-1.30, y(0.30)), (-1.16, _HAIR_CHEEK_Y)),
-        ((-1.12, 0.20), (-1.02, -0.30)),
+        ((-1.08, tip + 0.04), (-_FALL_TIP_X, tip)),
+        ((-_FALL_FLARE_X, y(0.82)), (-_FALL_WIDE_X, y(0.62))),
+        ((-_FALL_MID_X, y(0.30)), (-_FALL_CHEEK_X, _HAIR_CHEEK_Y)),
+        ((-_FALL_TEMPLE_X, 0.20), (-1.02, -0.30)),
     ]
 
 
@@ -366,19 +393,28 @@ def _hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]
         ((-0.98, y(0.60)), (-0.90, y(0.28))),
         ((-0.92, 0.70), (-0.88, 0.35)),
         # The fringe is a high part with two sweeps, not a curtain: the apex
-        # sits at -0.80, well up the forehead, and the sweeps descend toward
-        # the outer eye corners, so a wide triangle of skin shows. This is the
-        # canon's fringe. An earlier fix pulled the fringe down to the brow
-        # line to cure a bare-headed look, but the cure was the sweeps, not
-        # the coverage: hair can sit high as long as it visibly comes *from*
-        # the part and lies across the forehead on its way down. The part is
-        # right of centre, where the crown strands radiate from, and the two
-        # sweeps are unequal, so the cut reads parted without the silhouette
-        # giving up its mirrored point data.
-        ((-0.72, 0.12), (-0.52, -0.30)),
-        ((-0.22, -0.46), (0.12, -0.68)),
-        ((0.36, -0.46), (0.58, -0.32)),
-        ((0.78, 0.04), (0.88, 0.35)),
+        # sits well up the forehead and the sweeps descend toward the outer eye
+        # corners, so a triangle of skin shows. That structure is the canon's
+        # and stays. An earlier pass pulled the whole fringe down to the brow
+        # line to cure a bare-headed look and was reverted, correctly: the cure
+        # is the sweeps, not blanket coverage, and hair can sit high as long as
+        # it visibly comes *from* the part and lies across the forehead on its
+        # way down. The part is right of centre, where the crown strands
+        # radiate from, and the two sweeps are unequal, so the cut reads parted
+        # without the silhouette giving up its mirrored point data.
+        #
+        # What was wrong was the amount, not the idea. Measured down the centre
+        # line, the canon's fringe reaches 0.147 of the figure's height and ours
+        # reached 0.109, so the apex sat about 0.19 head radii too high and the
+        # triangle it opened was half again too tall. The forehead run below is
+        # that much lower, blended to nothing at the temples so the side locks
+        # do not move, which leaves the part and the exposed wedge intact and
+        # only takes back the excess. Lowering it further closes the part and
+        # crowds the brows, which is where the reverted pass went wrong.
+        ((-0.72, 0.16), (-0.52, -0.18)),
+        ((-0.22, -0.31), (0.12, -0.49)),
+        ((0.36, -0.31), (0.58, -0.20)),
+        ((0.78, 0.10), (0.88, 0.35)),
         ((0.92, 0.70), (0.90, y(0.28))),
         ((0.98, y(0.60)), (1.08, y(0.85))),
         ((1.18, y(0.97)), (1.22, y(1.00))),
@@ -393,7 +429,11 @@ def _hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]
         ((1.05, 0.10), (1.00, -0.30)),
         ((0.84, -1.16), (0.00, -1.10)),
         ((-0.84, -1.16), (-1.00, -0.30)),
-        ((-1.05, 0.10), (-1.16, _HAIR_CHEEK_Y)),
+        # Meets the mirrored fall edge at the cheek, so this has to be the same
+        # x the mass and `_fall_edge` use. Hardcoded here it silently disagreed
+        # with them the first time the fall was widened, and the left fall came
+        # out with a sliver of mass outside the lock.
+        ((-1.05, 0.10), (-_FALL_CHEEK_X, _HAIR_CHEEK_Y)),
         *left_down,
     ]
     return start, line, back
@@ -413,22 +453,35 @@ def _long_strands(length: float) -> list[tuple[Point, list[Segment]]]:
     # The outer line down the right fall. Long enough that writing its mirror out
     # as a second row wraps, and a wrapped row no longer reads as the twin of the
     # one above it, so this pair is mirrored rather than spelled twice.
+    #
+    # These x values ride with `_FALL_CHEEK_X` and its neighbours, 0.10 head radii
+    # further out than they were when the fall was narrower. A strand that stays
+    # put while the edge moves out ends up outside its own lock, and then it is
+    # not a division inside the hair, it is a second boundary a hair's width in
+    # from the silhouette: two parallel lines down the fall, which is what the
+    # first attempt at widening this produced.
     outer_lock: tuple[Point, list[Segment]] = (
-        (1.04, 0.10),
-        [((1.32, y(0.28)), (1.28, y(0.58))), ((1.22, y(0.78)), (1.26, y(0.94)))],
+        (1.14, 0.10),
+        [((1.42, y(0.28)), (1.38, y(0.58))), ((1.32, y(0.78)), (1.36, y(0.94)))],
     )
     return [
-        # Crown sweeps, parting right of centre like the fringe's own peak.
-        ((0.06, -1.12), [((-0.42, -0.86), (-0.66, -0.50))]),
-        ((-0.10, -1.08), [((-0.74, -0.72), (-0.96, -0.24))]),
-        ((0.16, -1.10), [((0.48, -0.78), (0.62, -0.34))]),
-        ((0.26, -1.02), [((0.80, -0.62), (1.00, -0.06))]),
+        # Crown sweeps, following the parting right of centre like the fringe's
+        # own peak. They start part way down rather than at the crown itself: run
+        # all the way up, four lines converging inside a patch a fifth of a head
+        # radius across read as spokes off a hub, which is the same thing that
+        # made the short cut look like an umbrella. Cut back to the outer half of
+        # each sweep they read as the divisions between locks instead, which is
+        # what the canon draws, and it draws fewer of them than this.
+        ((-0.32, -0.87), [((-0.53, -0.70), (-0.66, -0.50))]),
+        ((-0.59, -0.73), [((-0.84, -0.50), (-0.96, -0.24))]),
+        ((0.41, -0.79), [((0.54, -0.58), (0.62, -0.34))]),
+        ((0.68, -0.63), [((0.89, -0.37), (1.00, -0.06))]),
         # One long line down each fall, drifting outward with the bell, and a
         # shorter inner one, so the fall divides into three unequal locks.
         outer_lock,
         _mirror(*outer_lock),
-        ((0.94, 0.40), [((1.08, y(0.30)), (1.05, y(0.55)))]),
-        ((-0.94, 0.40), [((-1.08, y(0.30)), (-1.05, y(0.55)))]),
+        ((1.04, 0.40), [((1.18, y(0.30)), (1.15, y(0.55)))]),
+        ((-1.04, 0.40), [((-1.18, y(0.30)), (-1.15, y(0.55)))]),
         # Fringe flicks following the sweeps, ending just above the hairline.
         ((0.26, -0.74), [((0.36, -0.64), (0.42, -0.55))]),
         ((-0.16, -0.76), [((-0.32, -0.64), (-0.46, -0.48))]),
@@ -588,22 +641,34 @@ def _short_hairline_shape(tip: float) -> tuple[Point, list[Segment], list[Segmen
 
 
 def _short_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
-    """Lines dividing the crop into locks: out from the parting over the
-    crown, each dying near a notch of the fringe, plus one line down each
-    sideburn. The sideburns used to carry a second line each, but the crop's
+    """Lines dividing the crop into locks: across the crown on the parting's own
+    lines, each dying near a notch of the fringe, plus one line down each
+    sideburn. They no longer reach the parting itself, for the reason below.
+    The sideburns used to carry a second line each, but the crop's
     side band is too narrow for two: they read as tram lines and were cut.
 
     Without these the crown is one unbroken field of hair colour, which is what
     made the cut read as an object rather than as hair: a render with the strands
     suppressed and everything else in place still looks like a pot.
     """
+    # Each crown line starts part way along its own path rather than at the
+    # crown. Drawn full length all six left the same patch at the top of the
+    # skull, and six lines from one point on a part-circle mass is a beach
+    # umbrella: the spokes were doing as much damage as the dome. Trimmed to
+    # their outer halves they sit spread across the crown, each still aimed at
+    # its notch of the fringe, and read as the seams between locks. Trimming
+    # further, or dropping to four lines, empties the crown and the cut goes back
+    # to reading as one smooth field.
+    #
+    # The dome itself is untouched here. That is the parked crown tousle, and
+    # what is left after this is exactly the shape of it.
     return [
-        ((-0.10, -1.14), [((-0.62, -0.86), (-0.74, -0.38))]),
-        ((0.06, -1.16), [((-0.30, -0.66), (-0.12, -0.44))]),
-        ((0.16, -1.14), [((0.24, -0.74), (0.36, -0.48))]),
-        ((0.26, -1.10), [((0.62, -0.82), (0.66, -0.36))]),
-        ((0.34, -1.04), [((0.86, -0.66), (1.06, -0.18))]),
-        ((-0.20, -1.06), [((-0.86, -0.70), (-1.06, -0.20))]),
+        ((-0.49, -0.85), [((-0.67, -0.64), (-0.74, -0.38))]),
+        ((-0.15, -0.77), [((-0.22, -0.56), (-0.12, -0.44))]),
+        ((0.24, -0.81), [((0.29, -0.62), (0.36, -0.48))]),
+        ((0.52, -0.81), [((0.64, -0.61), (0.66, -0.36))]),
+        ((0.74, -0.68), [((0.95, -0.44), (1.06, -0.18))]),
+        ((-0.70, -0.71), [((-0.95, -0.47), (-1.06, -0.20))]),
         ((1.14, -0.44), [((1.20, 0.04), (1.14, tip - 0.28))]),
         ((-1.14, -0.44), [((-1.20, 0.04), (-1.14, tip - 0.28))]),
     ]
@@ -752,6 +817,20 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# Garment panels carry no shadow tone at all. The canon draws the tunic, the
+# skirt, the apron, the sleeves and the trousers flat and puts their form on the
+# outline; a second tone appears only on small elements, a pouch flap or a boot
+# cuff or the turn under a hem, where it reads as a thickness rather than as
+# light. Ours used to shade a third of the torso, most of the apron and a stripe
+# down every limb, which came to 15% of the figure's ink at the taller build and
+# was the most artificial thing on it.
+#
+# Narrowing those planes to edge turns was tried first and rejected by eye: it
+# fixed the torso, but a stripe down something as long and thin as a sleeve or a
+# trouser leg reads as two-tone at any width. What is left below is line work,
+# which is what the canon uses for drape.
+
+
 def _sleeve_hem_y(sk: Skeleton) -> float:
     """Where the tunic's short sleeve ends, which is also where the arm starts.
     Both parts read it, since the sleeve hem and the arm's top edge are the same
@@ -864,17 +943,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             f'L {cx + notch_t:.1f} {sy + notch * 0.10:.1f}" fill="none" '
             f'stroke="{p.outfit.undersleeve_color}" stroke-width="{_stroke_w(sk) * 0.9:.1f}" />'
         )
-    if not p.shaded:
-        return shape
-    # One shadow down the far side of the torso, turning under at the waist.
-    shadow = (
-        f'<path d="M {cx + ww * 0.34:.1f} {cuff_y:.1f} '
-        f"Q {cx + torso_at_cuff:.1f} {wy - (wy - sy) * 0.3:.1f} {cx + ww:.1f} {wy:.1f} "
-        f"Q {cx + hw:.1f} {hy - (hy - wy) * 0.45:.1f} {cx + hw:.1f} {hy:.1f} "
-        f'L {cx + ww * 0.34:.1f} {hy:.1f} Z" '
-        f'fill="{shade(fill)}" opacity="0.55" />'
-    )
-    return shape + shadow
+    return shape
 
 
 def _skirt_half_w(sk: Skeleton, y: float) -> float:
@@ -997,16 +1066,7 @@ def _apron(sk: Skeleton, p: CharacterParams) -> str:
         f"L {cx + top_w:.1f} {top_y:.1f} "
         f"Z"
     )
-    shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
-    if not p.shaded:
-        return shape
-    shadow = (
-        f'<path d="M {cx + top_w * 0.30:.1f} {top_y:.1f} L {cx + top_w:.1f} {top_y:.1f} '
-        f"L {cx + bot_w:.1f} {bot_y - r:.1f} "
-        f"Q {cx + bot_w:.1f} {bot_y:.1f} {cx + bot_w - r:.1f} {bot_y:.1f} "
-        f'L {cx + bot_w * 0.34:.1f} {bot_y:.1f} Z" fill="{shade(color)}" opacity="0.5" />'
-    )
-    return shape + shadow
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
 
 
 def _skirt(sk: Skeleton, p: CharacterParams) -> str:
@@ -1021,16 +1081,18 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
     if not p.shaded:
         return shape
-    # Two folds, drawn as shadow wedges narrowing toward the waist, which is all
-    # the drape a flat garment needs to stop reading as a cut-out.
+    # Two folds, as thin lines rather than the shadow wedges they used to be. The
+    # canon suggests this garment's drape with a line: a wedge wide enough to see
+    # was a third plane on a figure that already had two, and on the chibi, where
+    # the skirt below the apron is only a band, it filled it.
     folds = []
     for s, at in ((-1, 0.52), (1, 0.30)):
         x0 = sk.head_cx + s * _skirt_half_w(sk, top_y) * at
-        x1 = sk.head_cx + s * _skirt_half_w(sk, hem_y) * (at + 0.30)
-        x2 = sk.head_cx + s * _skirt_half_w(sk, hem_y) * (at + 0.06)
+        x1 = sk.head_cx + s * _skirt_half_w(sk, hem_y) * (at + 0.06)
         folds.append(
-            f'<path d="M {x0:.1f} {top_y:.1f} L {x1:.1f} {hem_y:.1f} L {x2:.1f} {hem_y:.1f} Z" '
-            f'fill="{shade(color)}" opacity="0.45" />'
+            f'<line x1="{x0:.1f}" y1="{top_y + (hem_y - top_y) * 0.30:.1f}" '
+            f'x2="{x1:.1f}" y2="{hem_y:.1f}" stroke="{shade(color)}" '
+            f'stroke-width="{max(1.0, _stroke_w(sk) * 0.45):.1f}" opacity="0.7" />'
         )
     return shape + "".join(folds)
 
@@ -1099,28 +1161,13 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             f"{x(centre_top - w_top):.1f} {top_y:.1f} "
             f"Z"
         )
-        clip_id = f"arm-{'l' if s < 0 else 'r'}"
-        parts.append(f'<defs><clipPath id="{clip_id}"><path d="{d}" /></clipPath></defs>')
+        # No tone down the sleeve. It was a turn along the inner side, and a
+        # narrower one was tried, but a stripe running the length of something as
+        # long and thin as a sleeve reads as a two-tone plank at any width. The
+        # canon's are flat tan, separated from the torso by the outline alone.
         parts.append(
             f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
         )
-        if p.shaded:
-            # A narrow turn down the inner side. Wide enough and it stops reading
-            # as a rounded limb and starts reading as a two-tone plank, which is
-            # what it did at chibi where the arm is short and thick.
-            inner = x(centre_top - w_top * 0.62)
-            parts.append(
-                f'<g clip-path="url(#{clip_id})">'
-                + _capsule(
-                    inner,
-                    top_y,
-                    inner + s * (centre_wrist - centre_top),
-                    wrist_y,
-                    w_top * 0.55,
-                    shade(sleeve),
-                )
-                + "</g>"
-            )
         parts.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
     return "".join(parts)
 
@@ -1234,20 +1281,11 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
             f"Q {cx - w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx - w_top:.1f} {top_y:.1f} Z"
         )
         parts.append(f'<path d="{d}" fill="{fill}"{stroke} />')
-        if trousers and p.shaded:
-            # Shadow down the inner side of each leg, which is what separates the
-            # two of them when both are the same flat tone.
-            inner = cx - side * w_knee * 0.55
-            parts.append(
-                _capsule(
-                    inner,
-                    sk.knee_y - (sk.knee_y - top_y) * 0.5,
-                    inner,
-                    sk.ankle_y,
-                    w_knee * 0.7,
-                    shade(fill),
-                )
-            )
+        # No tone down the leg either. It was there to separate the two of them
+        # when both are the same flat colour, but each leg is a stroked path with a
+        # slot between them, so the outline was already doing that, and a stripe
+        # down a trouser leg reads the same way one down a sleeve does. The canon
+        # divides trousers with seams instead, which they do not have yet.
         parts.append(_boot(sk, p, cx, w_ankle, w_knee, side))
     return "".join(parts)
 
@@ -1505,6 +1543,25 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# How wide the aperture runs against its own height, shared by every character
+# so `FaceStyle.eye_width` stays what it says it is: one character's deviation
+# from the house eye, not the house eye itself. At 1.0 this is a no-op and
+# `eye_width` alone decides the shape, which is how it used to work.
+#
+# The canon eye is a wide almond and ours was nearly circular: measured on the
+# chibi, aperture width against height came to 1.12 where the canon draws 1.51.
+# 1.28 here lands the aperture's width on the canon's to within a pixel, 0.1137
+# of figure height against 0.111. It is a shared number rather than a bigger
+# `eye_width` per preset because the roundness was the house shape's, not either
+# character's, and the two presets' values differ from each other on purpose.
+#
+# The aspect still comes out at 1.41 rather than 1.51, because the canon's
+# aperture is also about a tenth shorter than ours. That part lives in
+# `eye_openness` and `eye_lower_lid`, which are per-character expression values
+# the owner set deliberately, so it is left alone rather than tuned to a ratio.
+_EYE_ASPECT = 1.28
+
+
 def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tuple[str, str]:
     """Eye aperture as a closed almond, plus its upper lid on its own so the
     lash line can be redrawn heavier over the iris.
@@ -1516,7 +1573,7 @@ def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tupl
     the curve leaves the corner shallowly and reads pointed. Points are built
     with x measured outward from the face center, then mirrored per side.
     """
-    w = er * f.eye_width
+    w = er * f.eye_width * _EYE_ASPECT
     top = er * f.eye_openness
     bot = er * f.eye_lower_lid
     tilt = er * f.eye_tilt * 0.30

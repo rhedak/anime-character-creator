@@ -84,9 +84,16 @@ anyway.
 
 ## Style rules the code enforces
 
-- **Flat colour plus one shadow tone per surface, hard-edged.** No
-  gradients, no blur, no second shadow. The shadow tone comes from
+- **Flat colour, hard-edged, and no shading plane across a garment.** No
+  gradients, no blur. Where a second tone does appear it comes from
   `shade()`, never hand-picked, so a palette change carries.
+  `shade()`'s output belongs on small elements, a pouch flap, a boot
+  cuff, the turn under a hem, where it reads as thickness. A garment
+  panel stays one flat colour: the tunic, skirt, apron, sleeve and
+  trouser shadows were all deleted in task 56 because a plane across a
+  panel reads as painted on rather than as light, and a stripe down
+  anything as long and thin as a limb reads as two-tone at any width.
+  Drape on the skirt is a line, not a tone.
 - **One outline colour** (`OUTLINE`) for every line on the figure.
 - **Line weight is figure-relative.** `_stroke_w(sk)` is the silhouette
   weight, measured off the canon at about 0.017 of head width at chibi
