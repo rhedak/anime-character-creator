@@ -82,11 +82,14 @@ def build_skeleton(
     # head radius and every chibi came out with the top of its hair sliced flat
     # against the canvas edge.
     #
-    # This is the allowance a hairstyle's crown has to stay inside: no hair shape
-    # may reach above -(1 + hair_margin) head radii from the head centre, so with
-    # 0.36 here the ceiling is -1.36 and the tallest crown in character.py peaks
-    # at about -1.29. A new cut that goes higher needs this raised with it,
-    # because nothing computes the bound from the shapes.
+    # This is the allowance a hairstyle's crown has to stay inside: no hair
+    # ink, including the outer half of the stroke, may reach above
+    # -(1 + hair_margin) head radii from the head centre. With 0.36 here the
+    # ceiling is -1.36 and the tallest crown in character.py paints to about
+    # -1.30. A new cut that goes higher needs this raised with it, because
+    # nothing computes the bound from the shapes: the short cut's cowlick
+    # flicks (tried and reverted) bled at exactly this boundary and needed
+    # 0.44 for the day they existed.
     fig_h = canvas_h * (1.0 - bottom_margin) / (1.0 + hair_margin / (2.0 * heads))
     head_h = fig_h / heads
     head_r = head_h / 2

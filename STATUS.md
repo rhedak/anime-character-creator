@@ -11,8 +11,12 @@ hands, realistic polish, off-centre parting; tasks 35-43), the second
 for shape (high-part fringe with visible forehead, eyes lower and
 apart with brows on the lash line, bell hair silhouette, chibi arms
 clear of the tunic with canon-sized hands; tasks 44-47), plus a
-user-caught limb-width swap (chibi legs now wider than arms, task 48).
-Per-task snapshots are in `out/35` through `out/48`.
+user-caught limb-width swap (chibi legs now wider than arms, task 48),
+plus the Satoshi hair pass (bob to shaggy crop: ear-level bulk, spiked
+rim, roughened fringe, fade rebalanced to two-thirds blonde over
+one-third white; crown cowlick flicks were tried and reverted on the
+owner's call, the crown stays a clean arc for now; tasks 49-54).
+Per-task snapshots are in `out/35` through `out/54`.
 
 ## Where it stands
 
@@ -70,9 +74,9 @@ What is parametrized:
   giving the strands that divide the mass into locks. Two-tone with a
   waved fade boundary. `hair_length` spans whatever range the cut
   defines: the long one measures the body, chin to hip, so it survives a
-  change of build; the short one measures the head, ear to chin, because
-  the body-relative range cannot express hair ending above the chin at
-  all.
+  change of build; the short one measures the head, a tight crop at 0 to
+  a shaggy ear-length cut at 1, because the body-relative range cannot
+  express hair ending above the chin at all.
 - **Headroom.** `hair_margin` is the space above the skull, measured in
   head radii rather than as a fraction of the canvas, because that is
   what it measures. As a canvas fraction it was generous at a tall build
@@ -149,11 +153,12 @@ measurement gap.
   to the body looks fine, and narrowing `waist_half_w` is a skeleton change
   touching both characters and both builds. Not worth doing on the
   measurement alone.
-- **Hair silhouettes are still mirrored point data.** Both cuts now
-  part off-centre in the fringe, divide into locks through strands and
-  end in points, which carries the asymmetry the canon shows; by eye
-  that is enough, so silhouette-level asymmetry stays deliberately
-  unattempted. Worth revisiting only if a future cut needs it.
+- **Hair silhouettes are mirrored point data, and stay that way.**
+  Both cuts part off-centre in the fringe, divide into locks through
+  strands and end in points, which carries the asymmetry the canon
+  shows. Crown cowlick flicks (silhouette-level asymmetry) were tried
+  on the short cut and reverted: they read as wobble, not tousle. If
+  that is revisited, the bar is beating the plain circle by eye.
 - **The realistic leg length is settled: it matches the canon.** The old
   short-legged judgment was made against `ref/satoshi.png` and does not
   survive the canon: measured, the canon's leg split sits at 0.565 of
@@ -216,7 +221,7 @@ as related, so what carries his identity is hair and lower body.
 
 | Feature | State |
 | --- | --- |
-| Short layered cut, same blonde fading to white | done |
+| Short shaggy crop: bulk at the ear, spiked rim, nape showing | done |
 | Hair that reads as locks rather than as one mass | done |
 | Dark trousers instead of skirt and apron | done |
 | Trouser leg that fills out at the thigh then runs near straight | done |
@@ -228,7 +233,7 @@ as related, so what carries his identity is hair and lower body.
 | Boot toe and cross-laces | done |
 | Slimmer frame: broader shoulder over narrower hip | done, realistic only |
 | Faint cheek mark | not started, and the canon satoshi pair shows none, so decide first whether it survives |
-| Off-centre parting in the silhouette, not only in the fringe | settled: fringe and strands carry it, silhouette stays mirrored |
+| Off-centre parting in the silhouette, not only in the fringe | settled: fringe and strands carry it; crown flicks tried and reverted |
 
 The frame row is realistic-only on purpose. At 2.4 heads a shoulder to
 hip ratio is invisible, so a chibi Satoshi has to read as a boy on hair

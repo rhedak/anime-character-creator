@@ -146,12 +146,12 @@ def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment]
     return " ".join(d)
 
 
-# No hair shape may reach above -1.36 head radii from the head centre. That is
-# the headroom `build_skeleton`'s `hair_margin` leaves above the skull, and
-# nothing derives the bound from the shapes here, so a taller crown silently
-# comes out sliced flat against the canvas edge, which is how both chibis
-# shipped before it was measured. The tallest crown below is the short cut's, at
-# exactly -_CROWN_R.
+# No hair ink may reach above -1.36 head radii from the head centre, and the
+# stroke's outer half counts as ink. That is the headroom `build_skeleton`'s
+# `hair_margin` leaves above the skull, and nothing derives the bound from the
+# shapes here, so a taller crown silently comes out sliced flat against the
+# canvas edge, which is how both chibis shipped before it was measured. The
+# tallest point below is the short cut's crown, painted edge about -1.30.
 #
 # Hair is described in two zones. Above the cheek line it is pinned to the
 # skull, so those points are literal head-radius units. Below it the shape is
@@ -387,34 +387,40 @@ def _short_mass_shape(tip: float) -> tuple[Point, list[Segment]]:
     which measures a long fall down from the cheek line and so cannot describe
     hair that ends above the chin at all.
 
-    The mass stands well off the skull, a shell 0.28 head radii thick over the
-    crown and flaring to 1.34 at the cheek, so the locks hang beside the face
-    rather than looking painted onto it. It used to follow the skull at 1.00 to
-    1.08, which made hair and head nearly the same shape and was half of why the
-    result read as a pot rather than as a haircut. The other half was the bottom
-    edge: the lock ends are points with notches between them now, where they used
-    to be a shallow wave that came out as a set of rounded paddles.
+    The silhouette is a crop, not a bob: the bulk ends around ear level,
+    hugging the skull at 1.26 past the cheek, and what reaches lower is only
+    ragged tips, a side spike flicking down and out, a second tip below it,
+    and a nape flick that shows beside the neck. It used to fall in two long
+    side locks framing the face to below the cheeks, which is a girl's bob in
+    miniature; every satoshi ref ends the bulk at the ear. The centre of the
+    rim tucks behind the skull, so only the outer tips are ever visible, and
+    more of the nape shows at taller builds as the jaw narrows off it.
 
-    The crown is one circular arc. Its points were placed by hand at first, which
-    scalloped it: peaks between the anchors and dips at them, a wobble that read
-    as a defect rather than as texture. The hair reads as locks through the
-    strands and the fringe, so the crown does not have to carry any of it and is
-    better off smooth.
+    The crown is one circular arc, kept deliberately clean. Hand-placed
+    points once scalloped it, and a later attempt at additive cowlick flicks
+    (bumps rising off the arc, tried 2026-08-06) read as wobble too and was
+    reverted on the owner's call; the tousle may be revisited, but any
+    version of it has to beat the plain circle by eye first. The hair reads
+    as locks through the strands, the fringe and the rim, so the crown does
+    not have to carry any of it.
     """
     left_temple, crown = _arc(_CROWN_R, -_CROWN_TO_TEMPLE, _CROWN_TO_TEMPLE, 4)
     return left_temple, [
         *crown,
-        ((1.34, 0.16), (1.26, tip - 0.20)),
-        ((1.22, tip + 0.06), (0.98, tip + 0.16)),
-        ((0.92, tip - 0.12), (0.76, tip - 0.28)),
-        ((0.66, tip + 0.02), (0.48, tip + 0.08)),
-        ((0.36, tip - 0.24), (0.16, tip - 0.32)),
-        ((0.00, tip - 0.14), (-0.16, tip - 0.32)),
-        ((-0.36, tip - 0.24), (-0.48, tip + 0.08)),
-        ((-0.66, tip + 0.02), (-0.76, tip - 0.28)),
-        ((-0.92, tip - 0.12), (-0.98, tip + 0.16)),
-        ((-1.22, tip + 0.06), (-1.26, tip - 0.20)),
-        ((-1.34, 0.16), left_temple),
+        ((1.30, -0.10), (1.26, 0.08)),
+        ((1.34, tip - 0.34), (1.31, tip - 0.08)),
+        ((1.16, tip - 0.28), (1.05, tip - 0.04)),
+        ((1.02, tip + 0.02), (0.97, tip + 0.20)),
+        ((0.88, tip - 0.04), (0.78, tip + 0.10)),
+        ((0.68, tip + 0.16), (0.54, tip + 0.44)),
+        ((0.30, tip + 0.16), (0.00, tip + 0.22)),
+        ((-0.30, tip + 0.16), (-0.54, tip + 0.44)),
+        ((-0.68, tip + 0.16), (-0.78, tip + 0.10)),
+        ((-0.88, tip - 0.04), (-0.97, tip + 0.20)),
+        ((-1.02, tip + 0.02), (-1.05, tip - 0.04)),
+        ((-1.16, tip - 0.28), (-1.31, tip - 0.08)),
+        ((-1.34, tip - 0.34), (-1.26, 0.08)),
+        ((-1.30, -0.10), left_temple),
     ]
 
 
@@ -424,30 +430,34 @@ def _short_fall_edge(tip: float) -> tuple[Point, list[Segment]]:
     is why it has to end on the same temple point the crown arc starts from."""
     _, crown = _arc(_CROWN_R, -_CROWN_TO_TEMPLE, _CROWN_TO_TEMPLE, 4)
     right_temple = crown[-1][1]
-    return (0.98, tip + 0.16), [
-        ((1.22, tip + 0.06), (1.26, tip - 0.20)),
-        ((1.34, 0.16), right_temple),
+    return (0.97, tip + 0.20), [
+        ((1.02, tip + 0.02), (1.05, tip - 0.04)),
+        ((1.16, tip - 0.28), (1.31, tip - 0.08)),
+        ((1.34, tip - 0.34), (1.26, 0.08)),
+        ((1.30, -0.10), right_temple),
     ]
 
 
 def _short_tip_edge(tip: float) -> tuple[Point, list[Segment]]:
-    """Where a short cut fades to its tip tone: across the bottom third of the
-    locks, measured up from the tips.
+    """Where the crop fades to its tip tone: a waved band around tip - 0.28,
+    putting roughly the bottom third of the visible cut in the pale tone,
+    the lower half of each sideburn, every rim tip, the whole nape, while
+    the fringe and crown stay in the base color.
 
-    Measuring from the tips is the whole point. The long style's boundary sits a
-    fixed fraction of the way down a fall that starts at the cheek line, and on
-    hair this short that puts the pale tone at the jaw, where it reads as a
-    collar rather than as hair going white at the ends.
+    Two thirds base to one third pale is the owner's ratio. A per-spike
+    boundary hugging each tip was tried first and lost the two-tone look
+    almost entirely; the earlier flat band sat higher still and read as a
+    collar. This is between the two.
     """
-    hi, lo = tip - 0.40, tip - 0.26
     floor = tip + 1.5
-    return (-1.90, hi), [
-        ((-1.58, lo), (-1.30, hi)),
-        ((-1.05, lo), (-0.80, hi)),
-        ((-0.42, lo), (0.00, hi)),
-        ((0.42, lo), (0.80, hi)),
-        ((1.05, lo), (1.30, hi)),
-        ((1.58, lo), (1.90, hi)),
+    return (-1.90, tip - 0.34), [
+        ((-1.58, tip - 0.18), (-1.30, tip - 0.28)),
+        ((-1.06, tip - 0.14), (-0.86, tip - 0.26)),
+        ((-0.55, tip - 0.14), (-0.30, tip - 0.24)),
+        ((0.00, tip - 0.12), (0.30, tip - 0.24)),
+        ((0.55, tip - 0.14), (0.86, tip - 0.26)),
+        ((1.06, tip - 0.14), (1.30, tip - 0.28)),
+        ((1.58, tip - 0.18), (1.90, tip - 0.34)),
         ((1.90, floor * 0.6), (1.90, floor)),
         ((0.00, floor), (-1.90, floor)),
     ]
@@ -484,41 +494,46 @@ def _short_hairline_shape(tip: float) -> tuple[Point, list[Segment], list[Segmen
     # finishes on, so the hairline never stops in mid-air wherever those move to.
     start: Point = back[-1][1]
     line: list[Segment] = [
-        ((-1.12, tip - 0.14), (-1.08, tip - 0.36)),
-        ((-1.04, 0.14), (-0.94, -0.16)),
-        ((-0.88, -0.42), (-0.74, -0.40)),
-        ((-0.60, -0.28), (-0.46, -0.25)),
-        ((-0.36, -0.40), (-0.24, -0.42)),
-        ((-0.12, -0.33), (0.02, -0.30)),
-        ((0.16, -0.46), (0.30, -0.48)),
-        ((0.50, -0.38), (0.68, -0.24)),
-        ((0.84, -0.18), (0.94, -0.16)),
-        ((1.04, 0.14), (1.08, tip - 0.36)),
-        ((1.12, tip - 0.14), (0.98, tip + 0.16)),
+        ((-1.06, tip - 0.02), (-1.02, tip - 0.30)),
+        ((-0.98, 0.10), (-0.92, -0.18)),
+        # The locks vary in width, depth and direction on purpose: a wide
+        # shallow one, a high notch showing a patch of forehead, a deep
+        # narrow tip reaching for the brow, a small crossing kink. The old
+        # row repeated one wedge and read as a pattern, and a fringe is the
+        # one place this style wants its irregularity.
+        ((-0.86, -0.46), (-0.70, -0.34)),
+        ((-0.58, -0.58), (-0.44, -0.52)),
+        ((-0.36, -0.24), (-0.28, -0.14)),
+        ((-0.20, -0.44), (-0.06, -0.40)),
+        ((0.04, -0.20), (0.14, -0.24)),
+        ((0.24, -0.52), (0.40, -0.46)),
+        ((0.52, -0.26), (0.62, -0.30)),
+        ((0.78, -0.16), (0.94, -0.16)),
+        ((0.98, 0.10), (1.02, tip - 0.30)),
+        ((1.06, tip - 0.02), (0.97, tip + 0.20)),
     ]
     return start, line, back
 
 
 def _short_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
-    """Lines dividing the short cut into locks: out from the parting over the
-    crown, each dying at a notch between two lock tips, plus a pair down each side
-    lock so the hanging part is divided too.
+    """Lines dividing the crop into locks: out from the parting over the
+    crown, each dying near a notch of the fringe, plus one line down each
+    sideburn. The sideburns used to carry a second line each, but the crop's
+    side band is too narrow for two: they read as tram lines and were cut.
 
     Without these the crown is one unbroken field of hair colour, which is what
     made the cut read as an object rather than as hair: a render with the strands
     suppressed and everything else in place still looks like a pot.
     """
     return [
-        ((-0.10, -1.14), [((-0.62, -0.86), (-0.80, -0.44))]),
-        ((0.06, -1.16), [((-0.30, -0.66), (-0.26, -0.44))]),
-        ((0.16, -1.14), [((0.24, -0.74), (0.31, -0.50))]),
-        ((0.26, -1.10), [((0.62, -0.82), (0.76, -0.40))]),
+        ((-0.10, -1.14), [((-0.62, -0.86), (-0.74, -0.38))]),
+        ((0.06, -1.16), [((-0.30, -0.66), (-0.12, -0.44))]),
+        ((0.16, -1.14), [((0.24, -0.74), (0.36, -0.48))]),
+        ((0.26, -1.10), [((0.62, -0.82), (0.66, -0.36))]),
         ((0.34, -1.04), [((0.86, -0.66), (1.06, -0.18))]),
         ((-0.20, -1.06), [((-0.86, -0.70), (-1.06, -0.20))]),
-        ((1.14, -0.44), [((1.20, 0.04), (1.14, tip - 0.30))]),
-        ((-1.14, -0.44), [((-1.20, 0.04), (-1.14, tip - 0.30))]),
-        ((0.90, 0.10), [((0.96, tip - 0.50), (0.90, tip - 0.24))]),
-        ((-0.90, 0.10), [((-0.96, tip - 0.50), (-0.90, tip - 0.24))]),
+        ((1.14, -0.44), [((1.20, 0.04), (1.14, tip - 0.28))]),
+        ((-1.14, -0.44), [((-1.20, 0.04), (-1.14, tip - 0.28))]),
     ]
 
 
@@ -564,8 +579,10 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _short_fall_edge,
         _short_tip_edge,
         strands=_short_strands,
-        # Ear to chin: a crop at 0, locks brushing the jaw at 1.
-        tip_range=(0.42, 1.00),
+        # Where the side tips end: a tight crop pinned to the skull at 0, a
+        # shaggy ear-length cut at 1. The old (0.42, 1.00) range described the
+        # bob this used to be, with locks reaching for the jaw.
+        tip_range=(0.25, 0.70),
     ),
 }
 DEFAULT_HAIRSTYLE = "long_blunt"

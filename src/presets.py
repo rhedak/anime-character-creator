@@ -76,10 +76,10 @@ SATOSHI = CharacterParams(
     hair_color=HAIR,
     hair_tip_color=HAIR_TIPS,
     hairstyle="short_layered",
-    # Within the short cut's own range, so this is locks reaching down toward the
-    # jaw rather than anything measured against the body. Shorter than this and
-    # the side locks stop at the cheekbone and read as sideburns; much longer and
-    # they pass the jaw and the cut starts reading as a bob.
+    # Within the crop's own range, so this is where the side tips flick, not
+    # anything measured against the body. 0.65 puts them past the ear with the
+    # nape showing beside the neck; shorter tightens to the skull, longer
+    # heads toward shaggy.
     hair_length=0.65,
     eye_color="#74905e",
     outfit=Outfit(
