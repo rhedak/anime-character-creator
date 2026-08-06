@@ -7,7 +7,7 @@ flags someone has to remember.
 
 from __future__ import annotations
 
-from character import CharacterParams, FaceStyle, Outfit
+from .character import CharacterParams, FaceStyle, Outfit
 
 # Satoko and Satoshi are meant to read as related, so the palette they share
 # lives here once rather than being duplicated per character. What tells them

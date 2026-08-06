@@ -215,7 +215,7 @@ tempCodeRunnerFile.py
 # JetBrains
 .idea/
 
-# Project-specific: generated renders (regenerate via src/generate.py)
+# Project-specific: generated renders (regenerate with ./render.sh)
 out/
 
 # Marimo

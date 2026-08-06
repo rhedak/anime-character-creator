@@ -1,8 +1,10 @@
 # Status
 
 Snapshot of where the generator is and what comes next. Working notes,
-not user documentation: see `README.md` for how to run it and
-`CLAUDE.md` for the rules that govern changes.
+not user documentation: see `README.md` for how to run it,
+`docs/architecture.md` for how the drawing code fits together,
+`docs/api.md` for the public surface, and `CLAUDE.md` for the rules that
+govern changes.
 
 Last updated: 2026-08-06, at `21850a5` "add new references", plus two
 uncommitted canon passes: the first for language (stroke scaling, canon
@@ -18,6 +20,12 @@ and reverted on the owner's call, the crown stays a clean arc for now;
 tasks 49-54), plus the fade move (both cuts now change tone half way
 down the hair, at every build, off one shared `_HAIR_FADE`; task 55).
 Per-task snapshots are in `out/35` through `out/55`.
+
+On top of that, one change that touches no shape: the code is now a
+proper package (`src/anime_character_creator/`, `pyproject.toml`, uv,
+ruff, a smoke test suite, `docs/`). Every render came out byte for byte
+identical, which is what `./refresh-ref-out.sh --check` was there to
+prove.
 
 ## Where it stands
 
@@ -307,3 +315,7 @@ hang clear of the tunic. What remains, ranked:
   formula in `character.py`.
 - Check a palette far from the defaults after touching `shade()`
   derivations.
+- Leave the tooling green: `uv run ruff check .`, `uv run ruff format .`,
+  `uv run pytest`. The tests are a smoke check (imports, every preset at
+  every build, `ref-out/` freshness), not a judge of whether a shape
+  looks right, which is still decided by eye.

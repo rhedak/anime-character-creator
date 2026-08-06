@@ -37,25 +37,31 @@ deformed proportions iteratively, starting from this simple base.
 
 ## Structure
 
-- `src/skeleton.py`: proportion anchors (`Skeleton` dataclass +
+An installed package under `src/anime_character_creator/`, so the
+modules below import each other relatively and the CLI is the
+`anime-character-creator` console script. `pyproject.toml` holds the
+metadata, the `uv` dependency groups and the `ruff` config; `docs/` holds
+the architecture notes and the API reference.
+
+- `src/anime_character_creator/skeleton.py`: proportion anchors (`Skeleton` dataclass +
   `build_skeleton()`). Change here to adjust overall proportions.
   Everything derives from `heads`; `BUILDS` names the chibi and
   realistic ends. A part that needs a measurement below the neck
   should read an anchor, not multiply `head_r` by a number that only
   happens to work on a chibi.
-- `src/colorutil.py`: `shade()` derives shadow tones from a base
+- `src/anime_character_creator/colorutil.py`: `shade()` derives shadow tones from a base
   color. Use this rather than hand-picking a second color per part.
-- `src/presets.py`: named characters as `CharacterParams` values
+- `src/anime_character_creator/presets.py`: named characters as `CharacterParams` values
   (`SATOKO`). Add a character here, not as a pile of CLI flags.
   Anything a character needs to differ on belongs in `CharacterParams`
   / `FaceStyle` with a neutral default, never hardcoded into a part
   function. The generator has to stay general, not become one
   character's renderer.
-- `src/character.py`: one private `_part_name()` function per body
+- `src/anime_character_creator/character.py`: one private `_part_name()` function per body
   part, each returning an SVG snippet string; `render_character()`
   stacks them in z-order. `CharacterParams` is the public color/style
   interface.
-- `src/generate.py`: CLI entry point, writes `.svg` and (if
+- `src/anime_character_creator/generate.py`: CLI entry point, writes `.svg` and (if
   `cairosvg`/system `cairo` available) `.png`.
 
 ## Working conventions
@@ -65,9 +71,14 @@ deformed proportions iteratively, starting from this simple base.
   `sk.*` anchors and `p.*` params, appended to the `layers` list in
   `render_character()` at the correct z-order.
 - After changing shape geometry, actually render it
-  (`python generate.py --out ../out/tmp`) and view the PNG before
+  (`./render.sh --out out/tmp --preset satoko`) and view the PNG before
   calling it done, coordinates that look right in the math are
   routinely wrong visually; this is an iterate-by-looking project.
+- Keep the tooling green in the same change: `uv run ruff check .`,
+  `uv run ruff format .`, `uv run pytest`. The test suite is a smoke
+  check, it renders every preset and compares `ref-out/`, so a failure
+  there after a deliberate shape change means running
+  `./refresh-ref-out.sh`, not editing the expectation.
 - Test color parametrization by rendering at least one palette very
   different from the defaults, confirms `shade()` derivations still
   look right outside the default hue range, not just coincidentally

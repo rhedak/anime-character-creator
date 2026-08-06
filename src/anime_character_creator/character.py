@@ -7,12 +7,11 @@ scales as one unit via the skeleton's head_r.
 from __future__ import annotations
 
 import math
-
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 
-from colorutil import shade
-from skeleton import DEFAULT_HEADS, Skeleton, build_skeleton
+from .colorutil import shade
+from .skeleton import DEFAULT_HEADS, Skeleton, build_skeleton
 
 OUTLINE = "#2b2b2b"
 
@@ -97,6 +96,19 @@ class Outfit:
 
 @dataclass(frozen=True)
 class CharacterParams:
+    """Everything about a character that is not its proportions.
+
+    The public interface of the package: colours, the garments in `outfit`, the
+    expression in `face`, which haircut and how long, plus the two skeleton knobs
+    (`heads`, `frame`) used when `render_character` is not handed a skeleton of
+    its own. Frozen, so a variant is `dataclasses.replace(base, ...)` and a
+    preset can be shared without anything downstream editing it.
+
+    Anything a character needs to differ on belongs here, on `Outfit` or on
+    `FaceStyle` with a neutral default, never hardcoded into a part function:
+    that is what keeps this a generator rather than one character's renderer.
+    """
+
     skin_tone: str = "#f2c9a1"
     hair_color: str = "#e8b84b"
     # Tone the hair fades into below the jaw. None means single-tone hair.
@@ -134,7 +146,9 @@ def _head_units(cx: float, cy: float, r: float, pt: Point) -> str:
     return f"{cx + pt[0] * r:.1f} {cy + pt[1] * r:.1f}"
 
 
-def _curve(cx: float, cy: float, r: float, start: Point, segments: list[Segment], close: bool = True) -> str:
+def _curve(
+    cx: float, cy: float, r: float, start: Point, segments: list[Segment], close: bool = True
+) -> str:
     """Build a path 'd' from a start point plus quadratic segments, all in
     head-radius units. Keeping the shapes as point data rather than format
     strings means a silhouette can be reshaped without rewriting SVG."""
@@ -396,6 +410,13 @@ def _long_strands(length: float) -> list[tuple[Point, list[Segment]]]:
     def y(f: float) -> float:
         return _fall(f, length)
 
+    # The outer line down the right fall. Long enough that writing its mirror out
+    # as a second row wraps, and a wrapped row no longer reads as the twin of the
+    # one above it, so this pair is mirrored rather than spelled twice.
+    outer_lock: tuple[Point, list[Segment]] = (
+        (1.04, 0.10),
+        [((1.32, y(0.28)), (1.28, y(0.58))), ((1.22, y(0.78)), (1.26, y(0.94)))],
+    )
     return [
         # Crown sweeps, parting right of centre like the fringe's own peak.
         ((0.06, -1.12), [((-0.42, -0.86), (-0.66, -0.50))]),
@@ -404,8 +425,8 @@ def _long_strands(length: float) -> list[tuple[Point, list[Segment]]]:
         ((0.26, -1.02), [((0.80, -0.62), (1.00, -0.06))]),
         # One long line down each fall, drifting outward with the bell, and a
         # shorter inner one, so the fall divides into three unequal locks.
-        ((1.04, 0.10), [((1.32, y(0.28)), (1.28, y(0.58))), ((1.22, y(0.78)), (1.26, y(0.94)))]),
-        ((-1.04, 0.10), [((-1.32, y(0.28)), (-1.28, y(0.58))), ((-1.22, y(0.78)), (-1.26, y(0.94)))]),
+        outer_lock,
+        _mirror(*outer_lock),
         ((0.94, 0.40), [((1.08, y(0.30)), (1.05, y(0.55)))]),
         ((-0.94, 0.40), [((-1.08, y(0.30)), (-1.05, y(0.55)))]),
         # Fringe flicks following the sweeps, ending just above the hairline.
@@ -698,7 +719,9 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
     start, segments = HAIRSTYLES[p.hairstyle].mass(_hair_fall(sk, p))
     d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     parts = _two_tone_hair(d, p)
-    parts.append(f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />')
+    parts.append(
+        f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    )
     return "".join(parts)
 
 
@@ -782,7 +805,6 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # Control points sit at the shoulder's own width and the hip's own width, so
     # the curve leaves each landmark vertically and the taper reads as a body
     # rather than as a cone.
-    shoulder_ctrl_y = wy - (wy - sy) * 0.35
     hip_ctrl_y = hy - (hy - wy) * 0.45
 
     def shoulder(s: int) -> str:
@@ -849,7 +871,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         f'<path d="M {cx + ww * 0.34:.1f} {cuff_y:.1f} '
         f"Q {cx + torso_at_cuff:.1f} {wy - (wy - sy) * 0.3:.1f} {cx + ww:.1f} {wy:.1f} "
         f"Q {cx + hw:.1f} {hy - (hy - wy) * 0.45:.1f} {cx + hw:.1f} {hy:.1f} "
-        f"L {cx + ww * 0.34:.1f} {hy:.1f} Z\" "
+        f'L {cx + ww * 0.34:.1f} {hy:.1f} Z" '
         f'fill="{shade(fill)}" opacity="0.55" />'
     )
     return shape + shadow
@@ -892,7 +914,9 @@ def _skirt_corner_y(sk: Skeleton, hem_y: float) -> float:
     return hem_y - (sk.ankle_y - sk.hip_y) * 0.07
 
 
-def _skirt_path(sk: Skeleton, top_y: float, hem_y: float, top_w: float | None = None, hem_w: float | None = None) -> str:
+def _skirt_path(
+    sk: Skeleton, top_y: float, hem_y: float, top_w: float | None = None, hem_w: float | None = None
+) -> str:
     """An A-line skirt panel. Widths default to the flare the skeleton implies,
     but a layer underneath can pass its own: an underskirt that kept flaring past
     the hem above it would stick out sideways as a shelf rather than hanging."""
@@ -1054,8 +1078,12 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
 
     parts = []
     for s in (-1, 1):
+        # Called only inside the iteration that defines it and never stored, so
+        # the late binding B023 warns about cannot bite. Taking `s` as a
+        # defaulted parameter to satisfy the check would show up in every call
+        # site below, which is noise for a closure two lines long.
         def x(offset: float) -> float:
-            return cx + s * offset
+            return cx + s * offset  # noqa: B023
 
         d = (
             f"M {x(centre_top - w_top):.1f} {top_y:.1f} "
@@ -1073,7 +1101,9 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         )
         clip_id = f"arm-{'l' if s < 0 else 'r'}"
         parts.append(f'<defs><clipPath id="{clip_id}"><path d="{d}" /></clipPath></defs>')
-        parts.append(f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />')
+        parts.append(
+            f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+        )
         if p.shaded:
             # A narrow turn down the inner side. Wide enough and it stops reading
             # as a rounded limb and starts reading as a two-tone plank, which is
@@ -1081,14 +1111,23 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             inner = x(centre_top - w_top * 0.62)
             parts.append(
                 f'<g clip-path="url(#{clip_id})">'
-                + _capsule(inner, top_y, inner + s * (centre_wrist - centre_top), wrist_y, w_top * 0.55, shade(sleeve))
+                + _capsule(
+                    inner,
+                    top_y,
+                    inner + s * (centre_wrist - centre_top),
+                    wrist_y,
+                    w_top * 0.55,
+                    shade(sleeve),
+                )
                 + "</g>"
             )
         parts.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
     return "".join(parts)
 
 
-def _hand(sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float, side: int) -> str:
+def _hand(
+    sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float, side: int
+) -> str:
     """A mitten hand hanging at the side, thumb on the inner edge.
 
     The canon's chibi hand is a mitten with one visible thumb, which is what
@@ -1118,12 +1157,14 @@ def _hand(sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: 
         f"Z"
     )
     sw = _stroke_w(sk)
-    parts = [f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />']
+    parts = [
+        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
+    ]
     if p.shaded and sk.build > 0.5:
         # One crease along the thumb's root, only once there is room for it.
         parts.append(
             f'<path d="M {x(-hw * 0.70):.1f} {wrist_y + length * 0.26:.1f} '
-            f"Q {x(-hw * 0.40):.1f} {wrist_y + length * 0.48:.1f} {x(-hw * 0.48):.1f} {wrist_y + length * 0.70:.1f}\" "
+            f'Q {x(-hw * 0.40):.1f} {wrist_y + length * 0.48:.1f} {x(-hw * 0.48):.1f} {wrist_y + length * 0.70:.1f}" '
             f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.55" stroke-linecap="round" />'
         )
     return "".join(parts)
@@ -1197,12 +1238,23 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
             # Shadow down the inner side of each leg, which is what separates the
             # two of them when both are the same flat tone.
             inner = cx - side * w_knee * 0.55
-            parts.append(_capsule(inner, sk.knee_y - (sk.knee_y - top_y) * 0.5, inner, sk.ankle_y, w_knee * 0.7, shade(fill)))
+            parts.append(
+                _capsule(
+                    inner,
+                    sk.knee_y - (sk.knee_y - top_y) * 0.5,
+                    inner,
+                    sk.ankle_y,
+                    w_knee * 0.7,
+                    shade(fill),
+                )
+            )
         parts.append(_boot(sk, p, cx, w_ankle, w_knee, side))
     return "".join(parts)
 
 
-def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, w_knee: float, side: int) -> str:
+def _boot(
+    sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, w_knee: float, side: int
+) -> str:
     """One boot: a shaft over the ankle, an instep, and a toe pointing a
     little outward, the pair standing in the canon's slight duck stance. The
     toe is what stopped this reading as a brown block: a symmetric rounded
@@ -1249,7 +1301,9 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, w_knee: f
         f"L {x(shaft_w):.1f} {top_y:.1f} "
         f"Z"
     )
-    parts = [f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />']
+    parts = [
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    ]
     if not p.shaded:
         return "".join(parts)
     sole_h = foot_h * 0.24
@@ -1408,7 +1462,9 @@ def _head_shape(build: float) -> tuple[Point, list[Segment]]:
     step = 360 / _HEAD_SEGMENTS
     anchors = [pt(i * step, 1.0) for i in range(_HEAD_SEGMENTS)]
     controls = [pt((i + 0.5) * step, k) for i in range(_HEAD_SEGMENTS)]
-    return anchors[0], [(controls[i], anchors[(i + 1) % _HEAD_SEGMENTS]) for i in range(_HEAD_SEGMENTS)]
+    return anchors[0], [
+        (controls[i], anchors[(i + 1) % _HEAD_SEGMENTS]) for i in range(_HEAD_SEGMENTS)
+    ]
 
 
 def _head(sk: Skeleton, p: CharacterParams) -> str:
@@ -1481,7 +1537,10 @@ def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tupl
         f"M {pt(inner)} Q {pt(ctrl(inner, apex, -top))} {pt(apex)} "
         f"Q {pt(ctrl(outer, apex, -top))} {pt(outer)}"
     )
-    d = lid + f" Q {pt(ctrl(outer, base, bot))} {pt(base)} Q {pt(ctrl(inner, base, bot))} {pt(inner)} Z"
+    d = (
+        lid
+        + f" Q {pt(ctrl(outer, base, bot))} {pt(base)} Q {pt(ctrl(inner, base, bot))} {pt(inner)} Z"
+    )
     return d, lid
 
 
@@ -1507,8 +1566,12 @@ def _eye(ex: float, ey: float, er: float, side: int, p: CharacterParams, sw: flo
     # Canon iris: a rim of the eye color's own darker tone around the color,
     # with a distinct near-dark pupil inside that. Three flat tones, which is
     # what makes the eye read at a glance where a single disc read as a bead.
-    parts.append(f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(p.eye_color, 0.45)}" />')
-    parts.append(f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{p.eye_color}" />')
+    parts.append(
+        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(p.eye_color, 0.45)}" />'
+    )
+    parts.append(
+        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{p.eye_color}" />'
+    )
     parts.append(
         f'<circle cx="{ex:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * 0.40:.1f}" '
         f'fill="{shade(p.eye_color, 0.18)}" />'
@@ -1524,7 +1587,9 @@ def _eye(ex: float, ey: float, er: float, side: int, p: CharacterParams, sw: flo
     # The upper lash line carries more weight than the rest of the outline,
     # noticeably so: it is the heaviest line on the figure, which is the one
     # thing every anime eye construction agrees on and what the canon leans on.
-    parts.append(f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * 1.6:.1f}" stroke-linecap="round" />')
+    parts.append(
+        f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * 1.6:.1f}" stroke-linecap="round" />'
+    )
     return "".join(parts)
 
 
@@ -1670,6 +1735,20 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
 
 
 def render_character(p: CharacterParams | None = None, sk: Skeleton | None = None) -> str:
+    """Draw one character and return the whole SVG document as a string.
+
+    `p` carries what the character *is* (colours, garments, face, haircut) and
+    `sk` what its proportions are. Passing no skeleton builds one from `p.heads`
+    and `p.frame`, which is the common case; passing one is how the same
+    character is rendered at another build, or on a canvas of another size:
+
+        render_character(PRESETS["satoko"])
+        render_character(PRESETS["satoko"], build_skeleton(heads=BUILDS["realistic"]))
+
+    Nothing is written to disk and nothing is rasterized here. The document is
+    deterministic: the same arguments give the same bytes, which is what lets
+    `ref-out/` be compared rather than eyeballed.
+    """
     p = p or CharacterParams()
     sk = sk or build_skeleton(heads=p.heads, frame=p.frame)
 

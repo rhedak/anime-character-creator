@@ -1,0 +1,97 @@
+[project]
+name = "anime-character-creator"
+version = "0.1.0"
+description = "Draws 2D anime characters as parametric SVG shapes, no pre-made art and no image models"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Henrik Hanssen" }]
+keywords = ["svg", "character", "generator", "anime", "vector"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Graphics",
+    "Typing :: Typed",
+]
+
+# The drawing itself has no dependencies at all: an SVG document is text, and
+# the package writes it with the standard library. Rasterizing that text to PNG
+# is what needs cairo, so it is an extra rather than a requirement, and
+# `generate.py` degrades to writing the SVG alone when it is missing.
+dependencies = []
+
+[project.optional-dependencies]
+png = ["cairosvg>=2.7"]
+
+[project.scripts]
+anime-character-creator = "anime_character_creator.generate:main"
+
+[project.urls]
+Repository = "https://github.com/hanssenhenrik/anime-character-creator"
+
+[dependency-groups]
+# Installed by a bare `uv sync`, unlike the optional extras. PNG export lands
+# here as well as in `png` because the checked-in renders under `ref-out/`
+# include the PNGs the README displays, so anyone changing a shape needs it.
+dev = [
+    "anime-character-creator[png]",
+    "pdoc>=15",
+    "pytest>=8",
+    "ruff>=0.14",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/anime_character_creator"]
+
+[tool.ruff]
+# Wider than the default 88. The shape code is tables of coordinate pairs, and
+# at 88 the rows that describe one lock of hair wrap into two lines each, which
+# costs more readability than the length does.
+line-length = 100
+src = ["src", "tests"]
+
+# Ruff reads the python blocks in markdown too. The examples in `docs/` and the
+# README are written to be read rather than to satisfy a formatter: a grouped
+# import that shows the whole surface at a glance turns into thirteen lines
+# under it. The code that ships is what these tools police.
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = [
+    "F",    # pyflakes: unused imports and names, real errors
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # import sorting
+    "UP",   # pyupgrade: modern syntax for the pinned Python floor
+    "B",    # bugbear: likely bugs, mutable defaults, loop-variable capture
+    "C4",   # comprehension rewrites
+    "SIM",  # obvious simplifications
+    "RUF",  # ruff's own rules
+]
+
+# Line length is the formatter's business, not the linter's. What E501 catches
+# that a formatter cannot split is string literals, and here that is every SVG
+# fragment: one line carries one path command or one element's attributes, and
+# breaking those mid-attribute to reach a column count reads worse than the
+# long line does. `line-length` above still shapes everything the formatter can
+# wrap, which is the code.
+ignore = ["E501"]
+
+# Deliberately not selected: `D` (pydocstyle). The docstrings here are prose
+# that explains why a number is what it is, often several paragraphs, and the
+# summary-line rules would rewrite the ones that carry the most information.
+
+[tool.ruff.format]
+# `ruff format .` is clean on the tree and meant to stay that way. The one thing
+# to watch when it is run after a shape edit: the coordinate tables are data laid
+# out in rows, one lock of hair per row, and a row long enough to wrap stops
+# reading as the twin of the mirrored row beside it. Shorten the row, or mirror
+# it with `_mirror` as `_long_strands` does, rather than leaving it wrapped.
+docstring-code-format = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

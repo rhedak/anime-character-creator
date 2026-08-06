@@ -1,8 +1,17 @@
-"""CLI: render a chibi character to SVG (and PNG, if cairosvg is available).
+"""CLI: render a character to SVG (and PNG, if cairosvg is available).
 
-Usage:
-    python src/generate.py --out out/demo --hair-color "#e8b84b" --eye-color "#4a9c6d"
-    python src/generate.py --out out/satoko --preset satoko
+Usage, in the three spellings that all reach `main()`:
+
+    ./render.sh --out out/satoko --preset satoko           # sets up cairo first
+    anime-character-creator --out out/demo --hair-color "#e8b84b"
+    python -m anime_character_creator --out out/demo --preset satoshi
+
+`render.sh` is the one to prefer on macOS: PNG export needs an environment
+variable set before the process starts. See the script for why.
+
+Every flag here mirrors a field of `CharacterParams`, `Outfit` or `FaceStyle`,
+generated from the tables below rather than written out one by one, so a new
+knob on those dataclasses becomes a flag by being named here.
 """
 
 from __future__ import annotations
@@ -11,9 +20,9 @@ import argparse
 from dataclasses import replace
 from pathlib import Path
 
-from character import HAIRSTYLES, CharacterParams, render_character
-from presets import PRESETS
-from skeleton import BUILDS
+from .character import HAIRSTYLES, CharacterParams, render_character
+from .presets import PRESETS
+from .skeleton import BUILDS
 
 COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color")
 
@@ -68,7 +77,9 @@ def main() -> None:
     for name in COLOR_ARGS:
         ap.add_argument(_flag(name), help="hex color, overrides the preset")
     for name, kind in OUTFIT_ARGS.items():
-        ap.add_argument(_flag(name), *ALIASES.get(name, ()), type=kind, help="garment, overrides the preset")
+        ap.add_argument(
+            _flag(name), *ALIASES.get(name, ()), type=kind, help="garment, overrides the preset"
+        )
     for name, kind in FACE_ARGS.items():
         ap.add_argument(_flag(name), type=kind, help="expression knob, overrides the preset")
     ap.add_argument("--build", choices=sorted(BUILDS), help="named proportions (default chibi)")
@@ -111,7 +122,9 @@ def main() -> None:
     except ImportError:
         print("cairosvg not installed; skipping PNG export (SVG is still valid, open it directly)")
     except OSError as e:
-        print(f"cairosvg needs the system cairo library, which isn't available ({e}); SVG was still written")
+        print(
+            f"cairosvg needs the system cairo library, which isn't available ({e}); SVG was still written"
+        )
 
 
 if __name__ == "__main__":

@@ -9,15 +9,15 @@
 #   ./refresh-ref-out.sh          re-render, report which files moved
 #   ./refresh-ref-out.sh --check  compare only, write nothing, exit 1 if stale
 #
-# Characters come from presets.PRESETS and builds from skeleton.BUILDS, so adding
-# a character here is adding it there. Nothing about the pair of names below is
-# baked in.
+# Characters come from `presets.PRESETS` and builds from `skeleton.BUILDS`, read
+# out of the installed package, so adding a character here is adding it there.
+# Nothing about the pair of names below is baked in.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 py="$root/.venv/bin/python"
 if [ ! -x "$py" ]; then
-    echo "no .venv here; create one with:  uv venv && uv pip install -r requirements.txt" >&2
+    echo "no .venv here; create one with:  uv sync" >&2
     exit 1
 fi
 
@@ -48,15 +48,14 @@ suffix_for() {
 # using `<<<` breaks wherever TMPDIR is not writable. Command substitution uses a
 # pipe and needs nothing on disk.
 listing() {
-    SRC="$root/src" MOD="$1" NAME="$2" "$py" -c '
+    MOD="anime_character_creator.$1" NAME="$2" "$py" -c '
 import importlib, os
 mod = importlib.import_module(os.environ["MOD"])
 print(" ".join(sorted(getattr(mod, os.environ["NAME"]))))
 ' 2>/dev/null || return 1
 }
-export PYTHONPATH="$root/src${PYTHONPATH:+:$PYTHONPATH}"
-presets=$(listing presets PRESETS) || { echo "could not read PRESETS from src/presets.py" >&2; exit 1; }
-builds=$(listing skeleton BUILDS) || { echo "could not read BUILDS from src/skeleton.py" >&2; exit 1; }
+presets=$(listing presets PRESETS) || { echo "could not read PRESETS; is the package installed?  uv sync" >&2; exit 1; }
+builds=$(listing skeleton BUILDS) || { echo "could not read BUILDS; is the package installed?  uv sync" >&2; exit 1; }
 
 for build in $builds; do
     if ! suffix_for "$build" >/dev/null; then
@@ -66,7 +65,7 @@ for build in $builds; do
 done
 
 # Render into a staging directory and only copy over ref-out/ once every file has
-# come out. generate.py's PNG export is best effort: it warns and carries on if
+# come out. The CLI's PNG export is best effort: it warns and carries on if
 # cairo is missing, so rendering straight into ref-out/ could refresh the SVGs and
 # leave the PNGs the README actually displays untouched and stale. Staging also
 # makes the change report unambiguous, since an unchanged file and a file that was

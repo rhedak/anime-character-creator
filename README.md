@@ -34,7 +34,7 @@ otherwise this table shows art the code no longer produces:
 ```
 
 It renders every character in `PRESETS` at every build in `BUILDS`, so
-adding a character means adding it to `src/presets.py` and nothing else.
+adding a character means adding it to `presets.py` and nothing else.
 Everything else generated goes to `out/`, which is not checked in.
 
 Current shape set: head (a circle at chibi scale, narrowing to a jaw as
@@ -46,8 +46,8 @@ and boots, plus arms, legs and feet. All flat cel-shaded (base color plus
 one shadow tone). A garment is worn when its color is set, so characters
 differ by which layers they have rather than by bespoke code.
 
-Named characters live in `src/presets.py`, so a character is a
-checked-in artifact that gets re-rendered as the shape code improves.
+Named characters live in `presets.py`, so a character is a checked-in
+artifact that gets re-rendered as the shape code improves.
 
 Not yet built: no pose variety, no second outfit family, no picker UI.
 See `STATUS.md` for what is still weak.
@@ -55,18 +55,23 @@ See `STATUS.md` for what is still weak.
 ## Setup
 
 ```bash
-uv venv
-uv pip install -r requirements.txt
-brew install cairo
+uv sync            # venv, dependencies, dev tools, and this package (editable)
+brew install cairo # for PNG export
 ```
 
-`cairosvg` (for PNG export) needs the system `cairo` library. If it's
-missing, generation still writes a valid `.svg`, you just don't get a
-`.png`.
+Drawing needs nothing but the standard library: an SVG document is text.
+`cairosvg` turns that text into a PNG and needs the system `cairo`
+library, so it is an extra rather than a requirement. Without it,
+rendering still writes a valid `.svg`, you just don't get a `.png`.
+
+```bash
+uv sync --no-dev --extra png   # just the package and PNG export
+pip install anime-character-creator[png]   # or without uv, from a checkout
+```
 
 ## Usage
 
-`render.sh` is the way in. It runs `src/generate.py` under the venv
+`render.sh` is the way in. It runs the CLI from the project's own venv
 with the one environment variable PNG export needs, since `cairosvg`
 loads `libcairo` through `dlopen`, which on macOS doesn't look in
 Homebrew's prefix.
@@ -81,8 +86,13 @@ Homebrew's prefix.
 ./render.sh --out out/satoshi --preset satoshi
 ```
 
-`--preset` starts from a named character in `src/presets.py`; any flag
-given alongside it overrides that one value.
+The same CLI is installed as `anime-character-creator` and as
+`python -m anime_character_creator`; both skip the cairo environment
+`render.sh` sets, so on macOS they write the SVG and report that PNG
+export is unavailable.
+
+`--preset` starts from a named character in `presets.py`; any flag given
+alongside it overrides that one value.
 
 Garment flags, one per layer: `--tunic-color` (also spelled
 `--outfit-color`), `--undersleeve-color`, `--belt-color`,
@@ -111,7 +121,11 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
 
 ## How it works
 
-- `src/skeleton.py`: `Skeleton` dataclass: head center/radius, the
+The package lives in `src/anime_character_creator/`. Longer notes on the
+machinery are in [docs/architecture.md](docs/architecture.md), and the
+public surface is written up in [docs/api.md](docs/api.md).
+
+- `skeleton.py`: `Skeleton` dataclass: head center/radius, the
   neck/shoulder/waist/hip/hem/limb widths, and the y-coordinates (neck,
   shoulder, waist, hip, hem, knee, ankle, foot) every shape positions
   itself against. The whole thing derives from `heads`, how many
@@ -124,10 +138,10 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   `hair_margin` is the headroom above the skull, in head radii, so hair
   has somewhere to go at a build where the head fills a third of the
   frame.
-- `src/colorutil.py`: `shade()` derives a darker/more-saturated
+- `colorutil.py`: `shade()` derives a darker/more-saturated
   "shadow" tone from a base color, so palettes for cel-shading are
   computed, not hand-picked per shape.
-- `src/character.py`: builds each body part as an SVG shape (paths,
+- `character.py`: builds each body part as an SVG shape (paths,
   circles, capsule-strokes) positioned from the skeleton, then stacks
   them in z-order into one `<svg>` document. `CharacterParams` holds the
   colors, an `Outfit` of garments, and a `FaceStyle` of expression knobs
@@ -138,12 +152,47 @@ directly in a browser or Inkscape) and `.png` (if cairosvg works).
   the four outlines a haircut needs, plus an optional set of strands
   dividing the mass into locks, which is how a second cut gets added
   without touching the parts that draw hair.
-- `src/presets.py`: named characters as `CharacterParams` values,
+- `presets.py`: named characters as `CharacterParams` values,
   `SATOKO` and `SATOSHI`. Reachable from the CLI via `--preset`. The two
   share a palette through module constants, since they are meant to read
   as related.
-- `src/generate.py`: CLI: renders one character to SVG, rasterizes to
-  PNG via `cairosvg` if available.
+- `generate.py`: CLI: renders one character to SVG, rasterizes to
+  PNG via `cairosvg` if available. Installed as the
+  `anime-character-creator` command.
+
+As a library, the whole thing is two calls:
+
+```python
+from dataclasses import replace
+from pathlib import Path
+
+from anime_character_creator import PRESETS, build_skeleton, render_character
+
+svg = render_character(PRESETS["satoko"], build_skeleton(heads=4.0))
+Path("out/satoko-mid.svg").write_text(svg)
+
+# a variant of a named character
+grumpier = replace(PRESETS["satoshi"], face=replace(PRESETS["satoshi"].face, brow_tilt=0.6))
+```
+
+## Development
+
+```bash
+uv sync                  # everything, including the dev tools
+uv run pytest            # imports, renders every preset, checks ref-out/ is current
+uv run ruff check .      # lint
+uv run ruff format .     # format
+uv run pdoc anime_character_creator -o out/apidocs   # generated API docs
+```
+
+The test suite is a smoke check, not a judge of whether a shape looks
+right: that is decided by eye against `ref/`. What it catches is a broken
+import, a part that stopped drawing, and a `ref-out/` that no longer
+matches the code.
+
+`CLAUDE.md` holds the rules a change to this repo has to respect, and
+`STATUS.md` is the running state: what is done, what is weak, what is
+next.
 
 ## Design principles
 
