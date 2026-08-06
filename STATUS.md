@@ -12,12 +12,18 @@ All four PoC targets render: Satoko and Satoshi, each at `chibi` and
 `realistic`. Every shape is computed from the `Skeleton`, nothing is
 composited from pre-made art, and no AI image generation is involved.
 
+`ref-out/` holds those four as checked-in `.png` and `.svg`, and the
+README displays them. It is the only generated output in version control,
+and it is the current state of the named characters rather than a
+snapshot of some past one, so **refresh it in the same change that alters
+a shape.** Miss it and the README shows art the code no longer produces:
+
 ```bash
-./render.sh --out out/satoko  --preset satoko
-./render.sh --out out/satoko_real  --preset satoko  --build realistic
-./render.sh --out out/satoshi --preset satoshi
-./render.sh --out out/satoshi_real --preset satoshi --build realistic
+./refresh-ref-out.sh          # re-render, report which characters moved
+./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
 ```
+
+Anything else goes to `out/`, which is ignored.
 
 What is parametrized:
 
@@ -226,6 +232,11 @@ more contrast in those two, not skeleton work.
   actually applied before concluding the knob does not matter. One
   strand-weight comparison here was five copies of the same image,
   because the substitution it relied on never matched.
+- Re-render `ref-out/` in the same change as any shape edit. It is
+  committed and the README shows it, so it is the one piece of output that
+  goes stale visibly and silently. The four commands are under "Where it
+  stands"; a mismatch is detectable by re-rendering to `out/` and comparing
+  the `.svg` files, which are deterministic.
 - Anything meant to read as a smooth curve should be generated, not
   hand-placed. `_arc` traces a circle about the head centre by putting each
   control point on the bisector at `r / cos(half the segment angle)`, the
