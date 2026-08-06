@@ -30,6 +30,7 @@ OUTFIT_ARGS: dict[str, type] = {
     "skirt_color": str,
     "underskirt_color": str,
     "trouser_color": str,
+    "pouch_color": str,
     "skirt_length": float,
 }
 

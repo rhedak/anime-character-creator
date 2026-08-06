@@ -87,7 +87,7 @@ given alongside it overrides that one value.
 Garment flags, one per layer: `--tunic-color` (also spelled
 `--outfit-color`), `--undersleeve-color`, `--belt-color`,
 `--apron-color`, `--skirt-color`, `--underskirt-color`,
-`--trouser-color`, `--boot-color`, plus `--skirt-length` (hip 0 to ankle
+`--trouser-color`, `--pouch-color`, `--boot-color`, plus `--skirt-length` (hip 0 to ankle
 1). A layer is worn when it has a color, so these add layers; to take one
 away, drop it from the preset, since the command line has no way to say
 "none".

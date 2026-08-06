@@ -4,7 +4,11 @@ Snapshot of where the generator is and what comes next. Working notes,
 not user documentation: see `README.md` for how to run it and
 `CLAUDE.md` for the rules that govern changes.
 
-Last updated: 2026-08-06, at `159fc01` "iterate satoshi".
+Last updated: 2026-08-06, at `21850a5` "add new references", plus the
+uncommitted canon pass (stroke scaling, canon eyes, long-cut locks,
+pouches and buckle, boot toes and laces, mitten hands, realistic
+polish, off-centre parting). Per-task snapshots of that pass are in
+`out/35` through `out/43`.
 
 ## Where it stands
 
@@ -47,10 +51,13 @@ What is parametrized:
   tucked in close instead, since its hips are nearly as wide as an adult's
   in head radii while its legs are less than half as thick.
 - **Garments.** `Outfit` carries one field per piece: tunic,
-  undersleeve, belt, apron, skirt, underskirt, trousers, boots, plus a
-  `skirt_length`. A garment is worn when its color is set, so a
-  character states only the layers it has. Satoko wears all but the
-  trousers, Satoshi swaps skirt and apron for trousers.
+  undersleeve, belt, apron, skirt, underskirt, trousers, pouches,
+  boots, plus a `skirt_length`. A garment is worn when its color is
+  set, so a character states only the layers it has. Satoko wears all
+  but the trousers, Satoshi swaps skirt, apron and pouches for
+  trousers. A belt without an apron over it shows a buckle; pouches
+  hang from the belt band, tucked inboard at chibi where the arms
+  would otherwise hide them.
 - **Hair.** `HAIRSTYLES` names `long_blunt` and `short_layered`, each a
   set of four outlines that agree with each other, plus an optional fifth
   giving the strands that divide the mass into locks. Two-tone with a
@@ -81,6 +88,43 @@ What is parametrized:
 Every knob above has a CLI flag, and flags override a preset one value
 at a time.
 
+## Style canon
+
+`ref/satoko-chibi.jpg` and `ref/satoko-real.jpg` are the style canon:
+the target drawing language at each end of the build range, chosen
+2026-08-06. They were made by feeding the original references and our
+renders to an image model and tuning toward the owner's vision, so they
+are guides in spirit as much as letter; visual appeal still beats exact
+match.
+
+The satoshi pair (`ref/satoshi-chibi.jpg`, `ref/satoshi-real.jpg`) is
+identity-only. It fixes his haircut, trousers and the lower-body garment
+detail the satoko refs barely show (belt buckle, simple trouser lines),
+but its drawing style is explicitly not the target: the per-lock
+highlight sweeps, ears, articulated fingers and skin shading there do
+not carry over. Render his features in the satoko language. The older
+`ref/satoko.png` and `ref/satoshi.png` stay identity sources, and the
+`ref/girl-chibi.png` that used to set the chibi detail bar is gone from
+`ref/`; the canon supersedes it and sets a higher bar.
+
+What the canon language is, concretely:
+
+- Bold uniform outline that scales with the figure: measured about
+  0.017 of head width at chibi and 0.023 at real. Thick silhouette over
+  thinner interior lines.
+- Big open rounded eyes at chibi: heavy top lash line, iris rim tone,
+  pupil, two highlights. Expression lives in brows and mouth, not in
+  lowered lids. Smaller and slightly lidded at real.
+- Hair as wedge locks with pointed tips and interior strands, falls
+  sitting in front of the shoulders, the tip fade following the locks
+  rather than waving smoothly across them.
+- Flat fills, hard shadow edges, no interior shading beyond the one
+  shadow tone. Ears hidden under hair. Mitten-grade hands with a thumb
+  notch at chibi.
+- Garment accents survive chibification: pouches with flap and button,
+  a buckled belt band, boot cross-laces. (Rolled sleeve cuffs appear only
+  in the satoshi pair, whose style is not the target, so they are out.)
+
 ## What is weak right now
 
 The bar is how it looks, not how closely it matches `ref/`. Those images are
@@ -94,38 +138,26 @@ measurement gap.
 
 - **The chibi's tan arms cover about a third of the tunic.** They are
   thick at that build and sit where they sit, so the visible green
-  between them is narrower than in `ref/satoko.png`.
-  `ref/girl-chibi.png` hides the same overlap by making the arms the
-  dress colour, which Satoko's tan undersleeves cannot do.
+  between them is narrower than in the refs. `ref/satoko-chibi.jpg`
+  keeps the same tan sleeves but hangs the arms clear of the tunic's
+  sides, so its green stays wide.
 - **The waist is wider than the reference's, relative to the shoulder.**
   *Measurement gap only, does not read as wrong.* The forearm-to-waist gap
   is about 4px where `ref/satoshi.png` has 21px, but the arms hanging close
   to the body looks fine, and narrowing `waist_half_w` is a skeleton change
   touching both characters and both builds. Not worth doing on the
   measurement alone.
-- **Eye placement has not been calibrated against `ref/girl-chibi.png`.**
-  *Unjudged, needs a look before anything is moved.* They sit lower and
-  closer together than the reference's and smaller relative to the head,
-  but that is a measurement, and whether it reads wrong has not been
-  decided. The forehead half is fixed on both cuts: the fringe now stops
-  just above the brows rather than on top of the skull.
-- **Hair is symmetric except for the short cut's fringe.** No
-  side-swept part on the long style, so the mirrored point data is
-  doing all the work there. The long cut has no strands either, so it is
-  still one flat field of colour with a single hairline across it, which
-  is what the short cut looked like before this round.
-- **The boot still reads as a block at the taller builds.** The shaft and
-  the flare to the sole are both there and the foot is now wider than the
-  ankle it hangs off, which it briefly was not, but there is no toe: the
-  reference's boot projects forward and this one is a rounded rectangle.
-  It survives chibification precisely because it is that simple, so any
-  fix has to ride on the build.
-- **The realistic figure is shorter-legged than the reference.** *Reads as
-  wrong, worth doing.* At 6 heads the trousers are right in width but the
-  figure comes out stubby: the leg is a smaller fraction of the body than
-  `ref/satoshi.png`, where the inseam runs to about half the total height.
-  That is `hip_y` and `knee_y`, so it moves both characters, and the skirt
-  hem and boot shaft ride on it.
+- **Hair silhouettes are still mirrored point data.** Both cuts now
+  part off-centre in the fringe, divide into locks through strands and
+  end in points, which carries the asymmetry the canon shows; by eye
+  that is enough, so silhouette-level asymmetry stays deliberately
+  unattempted. Worth revisiting only if a future cut needs it.
+- **The realistic leg length is settled: it matches the canon.** The old
+  short-legged judgment was made against `ref/satoshi.png` and does not
+  survive the canon: measured, the canon's leg split sits at 0.565 of
+  figure height against our 0.528, so ours are if anything the longer,
+  and side by side at equal height the two figures agree. `hip_y` and
+  `knee_y` stay where they are.
 - **No pose variety, one outfit family.** Deliberately deferred.
 - **Satoshi at chibi reads as a boy only through hair and trousers.**
   That is by design, since a shoulder-to-hip ratio is invisible at 2.4
@@ -135,24 +167,24 @@ measurement gap.
 ## Acceptance criteria
 
 Four targets: Satoko and Satoshi, each at `chibi` and `realistic`. The
-tables below are the definition of done. References are `ref/satoko.png`
-and `ref/satoshi.png` for identity, `ref/girl-chibi.png` for how much
-detail a chibi carries.
+tables below are the definition of done. Style comes from the canon
+(`ref/satoko-chibi.jpg`, `ref/satoko-real.jpg`); identity comes from
+`ref/satoko.png` and `ref/satoshi.png`, plus the satoshi pair for his
+haircut and lower body.
 
 ### How much detail each build carries
 
-`ref/girl-chibi.png` sets the chibi bar, and it is much lower than the
-two character refs. It has no belt, no apron, no visible undersleeve and
-no underskirt: arms are plain tubes ending in circle hands, and the only
-hint of a second garment is a sliver of tan collar inside the green V
-neck. So a chibi reads through silhouette and color banding, nothing
-finer.
+The canon sets the chibi bar, and it is higher than the old
+`ref/girl-chibi.png` one: pouches with a flap and button, a buckled
+belt band and boot cross-laces all survive chibification there, each
+drawn as a few flat shapes. A chibi still reads through silhouette and
+color banding first; these are accents on top of that, not texture.
 
-Out of scope at chibi, in rough order of how tempting they are: belt
-buckle, pouch flaps, boot laces, the keyhole neckline's split, sleeve
-wrinkles, the apron's hanging strap. They do not survive chibification
-and attempting them adds noise. At realistic they become optional rather
-than wanted; the garment layering matters far more than any of them.
+Still out of scope at chibi: articulated fingers (a mitten with a thumb
+notch is the bar), ears, skirt pleats, sleeve wrinkles, the apron's
+hanging strap. At realistic the canon adds pleats on the underskirt, a
+nose line, a visible neck and collar, and hinted fingers; the fingers
+are optional, hand detail is explicitly deprioritized.
 
 ### Satoko
 
@@ -162,14 +194,18 @@ Ranked by identity carried per pixel.
 | --- | --- |
 | Blonde fading to white ends | done |
 | Shoulder-length blunt hair | done |
-| Guarded expression: narrow lidded eyes, level brows, no smile | done |
+| Guarded expression: level brows, no smile (carried by brows and mouth) | done |
+| Canon eye: open rounded aperture, heavy top lash, iris rim and pupil | done |
 | Cheek scar | done |
 | Muted green / leather palette | done |
 | Outfit color banding: green tunic, brown belt and apron, green skirt, dark underskirt | done |
 | Tan long undersleeves under short green sleeves | done |
 | Waist that reads: belt at the waist anchor, tunic taking in above it | done |
+| Hair that reads as locks: pointed tips, strands, per-lock fade | done |
+| Pouches with flap and button on the belt band | done |
 | Ankle boots with a shaft rather than a brown block | done |
-| Side-swept parting | not started |
+| Boot toe and cross-laces | done |
+| Side-swept parting | done, fringe and crown strands part right of centre |
 
 ### Satoshi
 
@@ -185,9 +221,12 @@ as related, so what carries his identity is hair and lower body.
 | Legs hanging under the hip, not overhanging the body's side | done |
 | Green tunic, tan undersleeves, brown belt, brown boots (shared with Satoko) | done |
 | Level brows, no smile | done |
+| Canon eye construction (same geometry as Satoko's, his own knobs) | done |
+| Belt buckle | done |
+| Boot toe and cross-laces | done |
 | Slimmer frame: broader shoulder over narrower hip | done, realistic only |
-| Faint cheek mark | not started |
-| Off-centre parting in the silhouette, not only in the fringe | not started |
+| Faint cheek mark | not started, and the canon satoshi pair shows none, so decide first whether it survives |
+| Off-centre parting in the silhouette, not only in the fringe | settled: fringe and strands carry it, silhouette stays mirrored |
 
 The frame row is realistic-only on purpose. At 2.4 heads a shoulder to
 hip ratio is invisible, so a chibi Satoshi has to read as a boy on hair
@@ -196,24 +235,20 @@ more contrast in those two, not skeleton work.
 
 ## Next steps
 
-1. **Eye placement.** Against `ref/girl-chibi.png` the eyes sit lower and
-   closer together than the reference's, and smaller relative to the
-   head. Only the geometry the two share should move: Satoko's aperture
-   shape carries her expression and is right.
-2. **Strands on the long cut.** The short cut's are what took it from a
-   pot to a haircut, and the long one is now the undivided-mass style. It
-   wants a different set: falling with the hair rather than radiating from
-   a crown whorl.
-3. **Leg length at the taller builds.** The trousers are the right width
-   now but the leg is short against `ref/satoshi.png`. This is `hip_y` and
-   `knee_y` in the skeleton, so it moves both characters, and the skirt
-   hem and boot shaft ride on it.
-4. **Asymmetry.** Side-swept parting on the long style. Lowest value,
-   highest fiddliness, since it breaks the mirrored point data that
-   `_mirror` / `_reverse` rely on. The short cut's fringe is already
-   asymmetric without touching the silhouette, which is the cheaper trick
-   and may be enough.
-5. **Then variety.** More hairstyles and a second outfit family. The
+The canon pass of 2026-08-06 cleared the previous list: stroke scaling,
+canon eyes, long-cut locks, pouches and buckle, boot toes and laces,
+mitten hands, nose and collar and elbow bend, off-centre parting. Leg
+length closed as already matching the canon. What remains, ranked:
+
+1. **Chibi arms hanging clear of the tunic.** The one canon gap left on
+   the weak list: the tan arms cover about a third of the green where
+   `ref/satoko-chibi.jpg` hangs them clear of the tunic's sides. That is
+   `arm_x` and sleeve width at the chibi end only, so it wants the
+   side-by-side lab treatment before anything ships.
+2. **Satoshi's faint cheek mark, or its removal.** The old identity refs
+   suggest one; the canon satoshi pair shows none. Decide first, then it
+   is one `FaceStyle` value either way.
+3. **Then variety.** More hairstyles and a second outfit family. The
    hairstyle registry and `Outfit` are both built to take them now.
 
 ## Conventions worth remembering
@@ -234,9 +269,8 @@ more contrast in those two, not skeleton work.
   because the substitution it relied on never matched.
 - Re-render `ref-out/` in the same change as any shape edit. It is
   committed and the README shows it, so it is the one piece of output that
-  goes stale visibly and silently. The four commands are under "Where it
-  stands"; a mismatch is detectable by re-rendering to `out/` and comparing
-  the `.svg` files, which are deterministic.
+  goes stale visibly and silently. `./refresh-ref-out.sh` does it, and
+  `--check` detects a stale state without writing anything.
 - Anything meant to read as a smooth curve should be generated, not
   hand-placed. `_arc` traces a circle about the head centre by putting each
   control point on the bisector at `r / cos(half the segment angle)`, the

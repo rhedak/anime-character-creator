@@ -21,8 +21,9 @@ BOOTS = "#6d4c33"
 
 # Satoko: blonde fading to white at the ends, muted green eyes, green
 # working tunic, brown leather boots. Colors sampled from ref/satoko.png.
-# Guarded expression: half-lidded eyes, thin level-to-stern brows, no smile,
-# scar on her left cheek.
+# Guarded expression carried by stern brows and a flat mouth, per the canon,
+# which keeps chibi eyes big and open even on a wary character. Scar on her
+# left cheek.
 SATOKO = CharacterParams(
     skin_tone="#f6dbc2",
     hair_color=HAIR,
@@ -40,19 +41,26 @@ SATOKO = CharacterParams(
         apron_color="#6f5c4e",
         skirt_color="#53654b",
         underskirt_color="#54534f",
+        # Darker than both belt and apron so the pouches read against either,
+        # whichever one they happen to hang over.
+        pouch_color="#564737",
         skirt_length=0.70,
     ),
     # Slightly the narrower-shouldered of the two. Only bites at taller builds.
     frame=-0.3,
     face=FaceStyle(
         eye_size=0.95,
-        eye_width=1.10,
-        eye_openness=0.68,
-        eye_lower_lid=0.85,
-        eye_tilt=0.22,
-        eye_corner=0.70,
-        brow_tilt=0.35,
-        brow_weight=0.75,
+        eye_width=1.05,
+        eye_openness=0.95,
+        eye_lower_lid=0.95,
+        eye_tilt=0.15,
+        eye_corner=0.45,
+        # Bigger than the 0.62 the canon's measured 0.116-of-head-width iris
+        # implies: at that size the open aperture left a band of white above
+        # the iris and the face read startled. Chosen by eye.
+        iris_size=0.72,
+        brow_tilt=0.40,
+        brow_weight=0.85,
         mouth_curve=0.0,
         mouth_width=0.75,
         blush=0.0,
@@ -87,13 +95,16 @@ SATOSHI = CharacterParams(
     frame=1.0,
     face=FaceStyle(
         eye_size=0.92,
-        eye_width=1.12,
-        eye_openness=0.74,
-        eye_lower_lid=0.82,
-        eye_tilt=0.16,
-        eye_corner=0.72,
-        brow_tilt=0.20,
-        brow_weight=0.70,
+        eye_width=1.08,
+        eye_openness=0.90,
+        eye_lower_lid=0.92,
+        eye_tilt=0.12,
+        # A touch narrower and sharper-cornered than Satoko's, which is all
+        # that is left of the lidded look now the canon opens the aperture.
+        eye_corner=0.50,
+        iris_size=0.72,
+        brow_tilt=0.25,
+        brow_weight=0.80,
         mouth_curve=0.0,
         mouth_width=0.70,
         blush=0.0,
