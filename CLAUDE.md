@@ -74,6 +74,12 @@ the architecture notes and the API reference.
   (`./render.sh --out out/tmp --preset satoko`) and view the PNG before
   calling it done, coordinates that look right in the math are
   routinely wrong visually; this is an iterate-by-looking project.
+- To compare the renders against `ref/`, use the `gap-analysis` skill
+  (`.claude/skills/gap-analysis/`) rather than writing measuring code
+  from scratch. Its `probe.sh` builds the normalized side-by-side strips
+  and takes the measurements, and its `PITFALLS.md` records the ways
+  naive pixel measurement gave wrong answers here. The standing result
+  is `docs/gap-analysis.md`.
 - Keep the tooling green in the same change: `uv run ruff check .`,
   `uv run ruff format .`, `uv run pytest`. The test suite is a smoke
   check, it renders every preset and compares `ref-out/`, so a failure

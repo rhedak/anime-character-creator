@@ -36,6 +36,11 @@ Repository = "https://github.com/hanssenhenrik/anime-character-creator"
 dev = [
     "anime-character-creator[png]",
     "pdoc>=15",
+    # The gap-analysis skill's `probe.py` measures the rendered PNGs against the
+    # reference art with it. It already arrives underneath `cairosvg`, but a tool
+    # that imports it should say so rather than rely on someone else's
+    # dependency staying where it is.
+    "pillow>=10",
     "pytest>=8",
     "ruff>=0.14",
 ]

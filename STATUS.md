@@ -3,8 +3,9 @@
 Snapshot of where the generator is and what comes next. Working notes,
 not user documentation: see `README.md` for how to run it,
 `docs/architecture.md` for how the drawing code fits together,
-`docs/api.md` for the public surface, and `CLAUDE.md` for the rules that
-govern changes.
+`docs/api.md` for the public surface, `docs/gap-analysis.md` for a
+measured comparison of the current renders against the canon, and
+`CLAUDE.md` for the rules that govern changes.
 
 Last updated: 2026-08-06, at `21850a5` "add new references", plus two
 uncommitted canon passes: the first for language (stroke scaling, canon
@@ -261,6 +262,16 @@ and trousers alone. If that turns out not to be enough, the answer is
 more contrast in those two, not skeleton work.
 
 ## Next steps
+
+`docs/gap-analysis.md` (2026-08-06) measures all four renders against
+the canon and ranks what is left by how much of the style gap each
+item carries. It supersedes the ranking below, which it absorbs as its
+gap 8 (garment construction) and items 3 and 4 here. Its item 2, the
+palette resample, all but closes on that measurement: sampled exactly
+rather than from a quantised histogram, the canon's green, skin and
+leather come within four points a channel of ours, which is not
+visible. The one surface with anything left in it is the hair gold,
+where the canon is slightly less saturated.
 
 The two canon passes of 2026-08-06 cleared the previous list; leg
 length closed as already matching the canon, and the chibi arms now

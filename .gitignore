@@ -218,6 +218,10 @@ tempCodeRunnerFile.py
 # Project-specific: generated renders (regenerate with ./render.sh)
 out/
 
+# Claude Code scratch state. The skills under .claude/skills/ are checked in on
+# purpose, this is only the tool's own working directory.
+.claude/.cc-writes/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

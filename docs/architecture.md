@@ -192,6 +192,13 @@ def variant(k):
 When a comparison shows no difference at all, check that the variant was
 actually applied before concluding the knob does not matter.
 
+For the other half of the loop, comparing what comes out against the
+reference art, there is tooling: the `gap-analysis` skill under
+`.claude/skills/gap-analysis/`. `probe.py` there builds the normalised
+strips and takes the measurements, its `PITFALLS.md` records how naive
+pixel measurement went wrong here, and `gap-analysis.md` beside this file
+is the current result.
+
 ## Things that are easy to break
 
 - **Determinism.** Same params, same bytes. Anything that iterates a set,

@@ -16,6 +16,7 @@ png = [
 dev = [
     { name = "anime-character-creator", extra = ["png"] },
     { name = "pdoc" },
+    { name = "pillow" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -28,6 +29,7 @@ provides-extras = ["png"]
 dev = [
     { name = "anime-character-creator", extras = ["png"] },
     { name = "pdoc", specifier = ">=15" },
+    { name = "pillow", specifier = ">=10" },
     { name = "pytest", specifier = ">=8" },
     { name = "ruff", specifier = ">=0.14" },
 ]
