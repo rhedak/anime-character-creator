@@ -10,7 +10,9 @@ breaks silently.
 from __future__ import annotations
 
 import math
+import re
 import xml.etree.ElementTree as ET
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -189,6 +191,55 @@ def test_the_front_hair_adds_no_silhouette(hairstyle: str, build: str) -> None:
             f" ({x:.3f}, {y:.3f}), {gap(x, y):.3f} head radii outside the mass, so"
             " the fill paints past its own outline with no stroke to show it"
         )
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_a_tucked_tunic_and_its_trousers_meet_inside_the_belt(build: str) -> None:
+    """Both garments have to end under the belt band, and neither may stop short.
+
+    A tucked tunic and the trousers below it are two shapes that have to agree
+    on one line, and the belt is drawn over both, so a disagreement is invisible
+    until it is big enough to show past the band: then it is either a stripe of
+    canvas across the waist or a stripe of tunic below the belt, and neither
+    reads as a mistake in the code that caused it. This is the check that they
+    keep meeting when the belt or the waist anchor moves.
+    """
+    base = PRESETS["satoshi"]
+    # Built here rather than read off the preset, so this tests the feature and
+    # not one character's use of it: flipping Satoshi untucked should change what
+    # he looks like, not turn this check into a no-op.
+    p = replace(base, outfit=replace(base.outfit, tunic_tucked=True))
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    belt_y, belt_h = character._belt_band(sk)
+    svg = render_character(p, sk)
+
+    def hem(svg_fragment: str) -> float:
+        return max(float(v) for v in re.findall(r"[\d.]+ ([\d.]+)", svg_fragment))
+
+    def top(svg_fragment: str) -> float:
+        return min(float(v) for v in re.findall(r"[\d.]+ ([\d.]+)", svg_fragment))
+
+    tunic_hem = hem(character._tunic(sk, p))
+    trouser_top = top(character._legs_and_boots(sk, p))
+    assert belt_y <= tunic_hem <= belt_y + belt_h, (
+        f"{build}: the tucked tunic ends at {tunic_hem:.1f}, outside the belt band"
+        f" {belt_y:.1f}..{belt_y + belt_h:.1f}, so the hem shows past the belt"
+    )
+    assert belt_y <= trouser_top <= belt_y + belt_h, (
+        f"{build}: the trousers start at {trouser_top:.1f}, outside the belt band"
+        f" {belt_y:.1f}..{belt_y + belt_h:.1f}, so there is bare canvas at the waist"
+    )
+    assert svg.index(character._legs_and_boots(sk, p)) < svg.index(character._belt(sk, p)), (
+        f"{build}: the belt is under the trousers, so it cannot cover the join"
+    )
+
+    # And untucked, the two have to overlap the other way: the tunic hangs to the
+    # hip and the trousers start there, so neither garment is drawn where the
+    # other one is the only thing covering it.
+    loose = replace(base, outfit=replace(base.outfit, tunic_tucked=False))
+    # Both slack tolerances are the one decimal place the SVG is written to.
+    assert hem(character._tunic(sk, loose)) == pytest.approx(sk.hip_y, abs=0.05)
+    assert top(character._legs_and_boots(sk, loose)) == pytest.approx(sk.hip_y, abs=0.05)
 
 
 def _highest_ink(start: tuple[float, float], segments: list) -> float:

@@ -75,8 +75,12 @@ SATOKO = CharacterParams(
 )
 
 # Satoshi: the same palette and the same tunic as Satoko, deliberately. What
-# differs is a short layered cut, trousers instead of skirt and apron, and a
-# face that carries no scar. Colors sampled from ref/satoshi.png.
+# differs is a short layered cut and trousers instead of skirt and apron.
+# Colors sampled from ref/satoshi.png. He carries Satoko's scar, on the same
+# cheek: they are the male and female reading of one character, so the scar is
+# part of the face rather than something that tells them apart. It is absent
+# from ref/satoshi.png only because the model that drew that reference dropped
+# it, which makes this one of the few places the reference is not the target.
 SATOSHI = CharacterParams(
     skin_tone="#f2d4bb",
     hair_color=HAIR,
@@ -96,6 +100,10 @@ SATOSHI = CharacterParams(
         belt_color=BELT,
         trouser_color="#55574c",
         skirt_color=None,
+        # Both his references tuck it in, so the belt is the boundary between
+        # the tunic and the trousers rather than a band across the tunic with
+        # more tunic hanging below it.
+        tunic_tucked=True,
     ),
     # Broader across the shoulder and narrow in the hip, which is the whole of
     # what tells him from Satoko below the neck once the clothes match.
@@ -115,6 +123,7 @@ SATOSHI = CharacterParams(
         mouth_curve=0.0,
         mouth_width=0.70,
         blush=0.0,
+        scar_side=1,
     ),
 )
 

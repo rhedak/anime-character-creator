@@ -95,9 +95,11 @@ hips; the belt gained the knotted tie the canon hangs down the apron's
 front, and a keeper beside the buckle. The underskirt is pleated with
 lines and hangs at 0.86 of the skirt's hem width rather than 0.97, which
 with `hem_half_w` coming in to 1.02 at chibi took the hem rows from 13%
-to 20% wide of the canon to within 7%. The trousers are one garment:
-`_trouser_seat` joins the legs with a shallow crotch behind them and
-`_trouser_seams` draws the fly and hip pockets in front of them. The boot
+to 20% wide of the canon to within 7%. The trousers are one closed path
+starting inside the belt band, with the legs parting at a crotch a
+quarter of the way to the floor and `_trouser_seams` drawing the fly and
+hip pockets over it; `Outfit.tunic_tucked` ends the tunic at the belt to
+meet them, which is how both references wear it. The boot
 has a cuff band, a tongue under the laces and eyelets where they turn.
 The hand has two finger strokes above build 0.5.
 

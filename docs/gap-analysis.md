@@ -666,11 +666,53 @@ From `out/gap-analysis/torso_chibi.png`, `torso_real.png` and `legs.png`:
   scalloped hem is not done.
 - **Trousers.** The canon has pocket seams, a fly seam, hip shaping and a
   taper to the ankle. Ours are two rectangles with background visible
-  between them up to the hip. **Closed by task 67**: `_trouser_seat`
-  joins the two legs into one garment with a shallow crotch and is drawn
-  before them, so their strokes cover its sides and only the V between
-  them shows. `_trouser_seams` draws the fly and the two hip pockets, and
-  has to come *after* the legs or they paint over it.
+  between them up to the hip. **Task 67** joined them with a wedge drawn
+  behind the two legs, so only the V between them showed, and added the
+  fly and the hip pockets. **That wedge was not enough and is gone**: it
+  hung below the tunic's hem as a flap between two legs that still had a
+  slot of canvas running up between them, and it was the most obviously
+  wrong thing on Satoshi's lower body. Both references were measured
+  properly for the rebuild, off the silhouette rather than the garment's
+  colour, since the canon shades the cloth and the chibi is a JPEG:
+  - **The tunic is tucked in.** Its green ends 23px *above* the belt's
+    lower edge on both sheets, so the belt is the boundary between the
+    two garments. Ours hung a band of tunic below its own belt and
+    started the trousers at the hip, well below it.
+  - **The trousers are one garment with a notch, not two tubes.** The
+    silhouette below the belt is a single run until roughly a quarter of
+    the way to the floor, 0.28 on the chibi and 0.23 on the adult, where
+    background first appears between the legs; from there the slot opens
+    smoothly to about a third of the garment's width by the boot. So the
+    inseam above the crotch is a drawn line on solid cloth, and below it
+    it is the two edges of the notch.
+  - **The garment swells 8% from the belt to its widest**, 110.5px to
+    119.5px on the chibi, which is what `hip_half_w / waist_half_w`
+    already is at that build. **Measured but not drawn**: see the row
+    below. The outer edges run straight instead.
+  Rebuilt as one closed path in `_trousers`, top edge inside the belt
+  band, straight down the outer edges, across each cuff and up the inner
+  edges to meet at the crotch. `Outfit.tunic_tucked` shortens the tunic
+  to meet it. `_trouser_seams` still draws the fly and the pockets.
+- **Chibi legs are half the canon's width against the belt.** Found while
+  measuring the above and *not* acted on. Against its own belt's
+  half-width, the canon chibi's trouser leg is 0.39 and ours is 0.24; the
+  pair of legs plus the slot between them spans 1.17 belt-widths in the
+  canon and 0.62 in ours. So the canon's chibi wears its trousers as one
+  straight column, hips no wider than legs, where ours has to give up
+  40% of its width between the hip and the knee. This is `leg_half_w` at
+  the chibi end, not anything the trousers can fix, and it is a bigger
+  version of the standing "chibi 20% narrow at 0.75 H" row. The
+  boot-to-trouser ratio is *not* implicated: 1.41 in the canon and 1.41
+  in ours.
+
+  It is also why the trousers do not carry the hip's own width, which the
+  first rebuild had them do and which the canon's 8% swell would suggest.
+  A hip drawn at `hip_half_w` has to shed 40% of it before the knee, and
+  no distribution of that hides it: spend it low and each side grows a
+  saddlebag, spend it high and the leg comes out thick at the hip and
+  thin at the boot. The owner's call on 2026-08-07 was to put the
+  straight line back, which is what the canon draws at both builds
+  anyway. The flare is worth revisiting only after `leg_half_w`.
 - **Boots.** The canon boot has a cuff, a tongue, eyelets, a heel and a
   sole. Ours is a rounded blob with lace crosses. At the realistic build
   ours is also 17% to 27% narrower than the canon's through the foot.

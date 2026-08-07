@@ -102,6 +102,7 @@ piece.
 | `trouser_color` | `None` | Fills the legs, which are otherwise bare skin. |
 | `pouch_color` | `None` | A pouch on each hip. Needs a belt to hang from. |
 | `skirt_length` | `None` | Hem, hip `0` to ankle `1`. `None` uses the skeleton's hem anchor. |
+| `tunic_tucked` | `False` | Tunic ends inside the belt band instead of hanging to the hip, and trousers rise to meet it. |
 
 ## FaceStyle
 
