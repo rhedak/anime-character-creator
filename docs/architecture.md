@@ -265,9 +265,12 @@ is the current result.
 - **Determinism.** Same params, same bytes. Anything that iterates a set,
   reads a clock or hashes an object breaks `ref-out/` comparison and the
   test that guards it.
-- **`ref-out/` going stale.** It is committed and the README displays it.
+- **`ref-out/` going stale.** It is committed, and the README displays
+  its `on-white/` copies, which are the same drawings with a white card
+  behind them for a page whose background colour is not ours to set.
   Refresh it in the same change as any shape edit; `--check` and the test
-  suite both catch a miss.
+  suite both catch a miss, and `--check` counts a missing card as stale
+  too, since that breaks the README while the art itself is current.
 - **The hair ceiling**, above.
 - **Coordinate tables that wrap.** The shape data is rows, one lock per
   row, often a mirrored pair. A row long enough for the formatter to wrap

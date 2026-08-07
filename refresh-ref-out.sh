@@ -9,6 +9,15 @@
 #   ./refresh-ref-out.sh          re-render, report which files moved
 #   ./refresh-ref-out.sh --check  compare only, write nothing, exit 1 if stale
 #
+# Each character is rendered twice. The files at the top of ref-out/ are the art
+# itself and are transparent, which is what makes them usable as they are. The
+# copies under ref-out/on-white/ exist only because the README displays them on
+# a page whose colour we do not control: OUTLINE is #0d0d0d, GitHub's dark theme
+# is #0d1117, and a transparent figure on that loses its entire outer contour,
+# which is the hard-edged look the project is for. Interior line work survives
+# either way, since it sits on filled shapes. Same drawing, one paint behind it,
+# and nothing outside the README should reach for the on-white copies.
+#
 # Characters come from `presets.PRESETS` and builds from `skeleton.BUILDS`, read
 # out of the installed package, so adding a character here is adding it there.
 # Nothing about the pair of names below is baked in.
@@ -98,6 +107,10 @@ i=0
 while [ "$i" -lt "$count" ]; do
     stem=${stem_of[$i]}
     "$root/render.sh" --out "$stage/$stem" --preset "${preset_of[$i]}" --build "${build_of[$i]}" >/dev/null
+    # The README's copy. Rendered rather than composited afterwards, so it goes
+    # through exactly the same path as the art and cannot drift from it.
+    "$root/render.sh" --out "$stage/on-white/$stem" --preset "${preset_of[$i]}" \
+        --build "${build_of[$i]}" --background white >/dev/null
     for ext in svg png; do
         if [ ! -s "$stage/$stem.$ext" ]; then
             echo "render produced no $stem.$ext, leaving ref-out/ alone" >&2
@@ -107,6 +120,10 @@ while [ "$i" -lt "$count" ]; do
             exit 1
         fi
     done
+    if [ ! -s "$stage/on-white/$stem.png" ]; then
+        echo "render produced no on-white/$stem.png, leaving ref-out/ alone" >&2
+        exit 1
+    fi
     i=$((i + 1))
 done
 
@@ -117,7 +134,12 @@ while [ "$i" -lt "$count" ]; do
     i=$((i + 1))
     # The SVG decides. It is deterministic text, where a PNG can differ in bytes
     # for reasons that are not the drawing.
-    if cmp -s "$stage/$stem.svg" "$root/ref-out/$stem.svg"; then
+    #
+    # Its absence does not, though: an on-white copy that was never written, or
+    # deleted, leaves a broken image in the README while the drawing itself is
+    # perfectly current, so the SVG comparison alone would call that clean.
+    if cmp -s "$stage/$stem.svg" "$root/ref-out/$stem.svg" &&
+        [ -s "$root/ref-out/on-white/$stem.png" ]; then
         echo "  unchanged  $stem"
         continue
     fi
@@ -138,11 +160,12 @@ if $check_only; then
     exit 0
 fi
 
-mkdir -p "$root/ref-out"
+mkdir -p "$root/ref-out/on-white"
 i=0
 while [ "$i" -lt "$count" ]; do
     stem=${stem_of[$i]}
     cp "$stage/$stem.svg" "$stage/$stem.png" "$root/ref-out/"
+    cp "$stage/on-white/$stem.png" "$root/ref-out/on-white/"
     i=$((i + 1))
 done
 echo "wrote $count characters to ref-out/, $changed changed"

@@ -544,6 +544,17 @@ Anything else goes to `out/`, which is ignored, and which was emptied on
 2026-08-07: 128MB of per-task snapshots, with the scripts that measured
 them promoted to `harness/` first.
 
+`ref-out/on-white/` holds the same four on a white card. They exist for
+the README and for nothing else: the page's background colour is not
+ours to set, `OUTLINE` is `#0d0d0d`, and a dark theme is around
+`#0d1117`, so a transparent figure there loses its entire outer contour
+and keeps only the interior line work, which sits on filled shapes. They
+are rendered through the same path with `--background white` rather than
+composited afterwards, so they cannot drift from the art. Their absence
+counts as stale in `--check`, since a missing card leaves a broken image
+in the README while the drawing itself is perfectly current, and the SVG
+comparison alone would call that clean.
+
 **Those four render on transparency** as of 2026-08-07, the owner's call:
 a character gets composited onto a scene, so a white rectangle behind it
 was never part of the drawing, only something a caller then had to

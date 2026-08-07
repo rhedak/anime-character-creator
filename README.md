@@ -20,13 +20,23 @@ between.
 
 |  | chibi (2.4 heads) | realistic (6 heads) |
 | --- | --- | --- |
-| **Satoko** | <img src="ref-out/satoko.png" width="150" alt="Satoko at the chibi build"> | <img src="ref-out/satoko_real.png" width="150" alt="Satoko at the realistic build"> |
-| **Satoshi** | <img src="ref-out/satoshi.png" width="150" alt="Satoshi at the chibi build"> | <img src="ref-out/satoshi_real.png" width="150" alt="Satoshi at the realistic build"> |
+| **Satoko** | <img src="ref-out/on-white/satoko.png" width="150" alt="Satoko at the chibi build"> | <img src="ref-out/on-white/satoko_real.png" width="150" alt="Satoko at the realistic build"> |
+| **Satoshi** | <img src="ref-out/on-white/satoshi.png" width="150" alt="Satoshi at the chibi build"> | <img src="ref-out/on-white/satoshi_real.png" width="150" alt="Satoshi at the realistic build"> |
 
 Those four are the only renders checked in, and they live in `ref-out/`
-as both `.png` and `.svg`. They are the current state of the two named
-characters, so they have to be refreshed whenever a shape changes,
-otherwise this table shows art the code no longer produces:
+as both `.png` and `.svg`. **They are transparent**, so a render drops
+onto a scene as it is.
+
+The table above links `ref-out/on-white/` instead, which is the same four
+drawn on a white background. That exists for this page and nothing else:
+the outline is `#0d0d0d` and a dark theme here is about `#0d1117`, so a
+transparent figure on it loses its whole outer contour, which is the
+hard-edged look the project is for. Reach for the transparent ones for
+anything real.
+
+Both sets are the current state of the two named characters, so they have
+to be refreshed whenever a shape changes, otherwise this table shows art
+the code no longer produces:
 
 ```bash
 ./refresh-ref-out.sh          # re-render every named character, report what moved
