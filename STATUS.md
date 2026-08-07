@@ -231,12 +231,25 @@ was 1.36. The adult renders are byte-identical; the two chibis are 7%
 smaller in frame, which is what the headroom costs and is the price of
 the change. `out/trace/margin_effect.png` is the before and after.
 
-**Nothing points at `short_crop` yet**, on the owner's call to keep the
-options open until both builds have been seen. `out/trace/see_chibi.png`
+**`short_crop` is Satoshi's cut** (the owner's call, 2026-08-07, after
+seeing both builds). It replaces `short_layered`, which stays in
+`HAIRSTYLES` as a style anyone can ask for and is now referenced by no
+preset. `hair_length` 0.65 is unchanged and is the neutral value here:
+the cut's `tip_range` is set so that 0.65 *is* the size it was traced at.
+
+Promoting it does more than improve one render. Unreferenced, a cut is
+only ever exercised on default `CharacterParams`; pointed at a preset it
+comes under the `ref-out/` byte check and the four-render smoke test, at
+both builds and on Satoshi's own frame and palette. Checked outside the
+blonde range too, near-black on plum, teal on cream and a single-tone red
+(`out/trace/loud.py`).
+
+**What is shipped is one quarter of a cut, and the other three quarters
+are visibly borrowed.** `out/trace/see_chibi.png`
 and `see_realistic.png` are the canon, the traced crop and what ships
 today, side by side.
 
-What is traced is the silhouette and only the silhouette. The fringe is
+The traced part is the silhouette and only the silhouette. The fringe is
 still the short cut's scalloped locks, the tone boundary is still one
 wave rather than a region per lock, and the strand lines are still a
 regular fan; all three are visibly a different language from the traced

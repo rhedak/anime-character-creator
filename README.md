@@ -102,7 +102,8 @@ Garment flags, one per layer: `--tunic-color` (also spelled
 away, drop it from the preset, since the command line has no way to say
 "none".
 
-Shape flags: `--hairstyle` (`long_blunt` or `short_layered`),
+Shape flags: `--hairstyle` (`long_blunt`, `short_crop`, `short_layered`
+or `short_tousled`),
 `--hair-length`, `--frame` (shoulder against hip, -1 to 1, only bites at
 taller builds).
 

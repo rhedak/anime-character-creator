@@ -80,11 +80,12 @@ SATOSHI = CharacterParams(
     skin_tone="#f2d4bb",
     hair_color=HAIR,
     hair_tip_color=HAIR_TIPS,
-    hairstyle="short_layered",
+    hairstyle="short_crop",
     # Within the crop's own range, so this is where the side tips flick, not
-    # anything measured against the body. 0.65 puts them past the ear with the
-    # nape showing beside the neck; shorter tightens to the skull, longer
-    # heads toward shaggy.
+    # anything measured against the body. `short_crop`'s range is set so that
+    # 0.65 is the size the cut was traced at, which makes this the neutral
+    # value rather than a tuned one: shorter tightens the whole cut to the
+    # skull, longer heads toward shaggy.
     hair_length=0.65,
     eye_color="#74905e",
     outfit=Outfit(

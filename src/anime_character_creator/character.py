@@ -2816,7 +2816,6 @@ def render_character(p: CharacterParams | None = None, sk: Skeleton | None = Non
     # one place a collision would show.
     layers = [
         _hair_defs(sk, p),
-        _ears(sk, p),
         _hair_mass(sk, p),
         _neck(sk, p),
         _legs_and_boots(sk, p),
@@ -2828,6 +2827,7 @@ def render_character(p: CharacterParams | None = None, sk: Skeleton | None = Non
         _pouches(sk, p),
         _arms(sk, p),
         _head(sk, p),
+        _ears(sk, p),
         _face(sk, p),
         _hair_front(sk, p),
     ]

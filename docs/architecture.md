@@ -40,7 +40,8 @@ Two consequences worth knowing before changing anything:
     cut whose side locks live only in the mass cannot cover an ear,
     because the mass is behind the head and the ear is on it.
     `long_blunt` and `short_layered` are both like that, so a hint of ear
-    shows at their temples until they are re-authored.
+    shows at Satoko's temples until her cut is re-authored. `short_crop`
+    is the one that gets this right today.
 
 ## Modules
 

@@ -95,6 +95,26 @@ def test_the_ear_stays_welded_to_the_skull(build: str) -> None:
         prev = end
 
 
+@pytest.mark.parametrize("preset", sorted(PRESETS))
+def test_the_ear_is_over_the_head_and_under_the_front_hair(preset: str) -> None:
+    """The canon's own arrangement: back hair behind the ear, front locks over it.
+
+    A z-order is one line in a list and reads as housekeeping, so it is exactly
+    the kind of thing that gets moved back without anyone noticing. This one is
+    not housekeeping: put the ear under the hair mass and it vanishes completely,
+    put it over the front hair and it floats on top of locks that should hang in
+    front of it. Both look plausible in the code and only one is right.
+    """
+    p = PRESETS[preset]
+    sk = build_skeleton(heads=p.heads, frame=p.frame)
+    svg = render_character(p, sk)
+    head, ear, front = character._head(sk, p), character._ears(sk, p), character._hair_front(sk, p)
+    assert svg.index(head) < svg.index(ear), f"{preset}: the ear is behind the head, so it is gone"
+    assert svg.index(ear) < svg.index(front), (
+        f"{preset}: the ear is over the front hair, so it sits on locks that hang in front of it"
+    )
+
+
 def _walk(start: tuple[float, float], segments: list, per: int = 24) -> list:
     """A quadratic chain as a dense point list."""
     pts = [start]
