@@ -26,6 +26,16 @@ Two consequences worth knowing before changing anything:
 - **Ordering in the `layers` list is the z-order.** Legs go under the
   skirts so a hem covers the thigh; arms go over every garment so nothing
   can clip a hand. Moving a part in that list is a visual change.
+- **The ear's depth is temporary and is a statement about the hair.** The
+  canon draws it over the head and under the front locks, so back hair
+  passes behind it and front locks over it. It is not there yet: it sits
+  under `_hair_mass`, which hides it completely, because both cuts fill
+  the temple solidly and at the canon's depth a wedge of ear shows
+  through the hair's inner edge instead of an ear (90 to 630 px per
+  render; `out/ear/wedge.py` reproduces it). **Move `_ears` to just after
+  `_head` as part of rebuilding a cut**, once that cut leaves the ear
+  room, and treat any remaining wedge as the cut's problem rather than
+  the ear's.
 
 ## Modules
 
@@ -68,6 +78,25 @@ differently:
   down to the tips (`_fall(f, length)`). That is what lets `hair_length`
   restyle a cut without touching its crown, and what keeps a long cut in
   the same relationship to the body when the build changes.
+
+## The skull profile, and the ear on it
+
+`_head_pt(deg, radius, build)` is the single definition of where the
+skull's edge is. `_head_shape` walks it to lay the outline down, and
+`_head_edge_x(y, build)` samples it to answer "how far off centre is the
+head at this height", which is what a part welded to the head needs. It
+samples rather than inverting because the jaw taper moves a point in
+both axes at once, so there is no closed form; the point of routing both
+through one function is that the ear cannot drift off the head when the
+taper is retuned, and there is a test that says so.
+
+The ear is placed by `_ear_span(build)` and drawn by `_ear_outer(build)`,
+both in head-radius units on the right side, mirrored per side. Its
+span, `_EAR_TOP_Y` to `_EAR_BOT_Y`, is measured off the canon rather than
+taken from anatomy: the life-drawing rule of brow to nose put it 0.16
+head radii too high. **A hairstyle should read that span rather than
+guess where the side of the head is**, which is the reason it is stated
+as named constants at all.
 
 ## The build parameter
 

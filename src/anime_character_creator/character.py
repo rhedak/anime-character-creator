@@ -2008,6 +2008,48 @@ _JAW_START_Y = -0.25
 _JAW_EASE = 1.4
 
 
+def _head_pt(deg: float, radius: float, build: float) -> Point:
+    """One point on the skull's profile, in head radii, clockwise from the crown.
+
+    A bearing rather than a height, because the taper below `_JAW_START_Y` moves a
+    point in both axes at once and so cannot be inverted in closed form. This is
+    the single definition of where the skull's edge is: `_head_shape` walks it to
+    lay down the outline and `_head_edge_x` samples it to find the edge at a given
+    height, so a part welded to the head follows the taper for free.
+    """
+    narrow = 1.0 - _SKULL_NARROW * build
+    jaw_pull = 0.20 * build
+    chin_drop = 0.05 * build
+    th = math.radians(deg)
+    x, y = math.sin(th) * radius * narrow, -math.cos(th) * radius
+    if y > _JAW_START_Y:
+        # 0 where the taper starts, 1 at the chin.
+        lean = min(1.0, (y - _JAW_START_Y) / (1.0 - _JAW_START_Y))
+        x *= 1.0 - jaw_pull * lean**_JAW_EASE
+        y *= 1.0 + chin_drop * lean
+    return (x, y)
+
+
+def _head_edge_x(y: float, build: float) -> float:
+    """How far off centre the skull's edge sits at height `y`, in head radii.
+
+    Walks the right half of the profile a degree at a time and interpolates,
+    which is exact enough at this scale and, more to the point, cannot drift
+    away from the drawn outline the way a second formula would. Heights outside
+    the skull clamp to its ends rather than raising, since the callers are
+    placing a part against the head, not asking a question about geometry.
+    """
+    prev = _head_pt(0.0, 1.0, build)
+    for deg in range(1, 181):
+        cur = _head_pt(float(deg), 1.0, build)
+        if prev[1] <= y <= cur[1]:
+            span = cur[1] - prev[1]
+            f = (y - prev[1]) / span if span else 0.0
+            return prev[0] + (cur[0] - prev[0]) * f
+        prev = cur
+    return prev[0]
+
+
 def _head_shape(build: float) -> tuple[Point, list[Segment]]:
     """The skull: a circle at the chibi end, a narrower jawed oval at the adult end.
 
@@ -2030,28 +2072,146 @@ def _head_shape(build: float) -> tuple[Point, list[Segment]]:
     difference wearing a face's clothes. That half was judged on the strips
     (`out/62/round2_satoko.png`, `round2_satoshi.png`).
     """
-    narrow = 1.0 - _SKULL_NARROW * build
-    jaw_pull = 0.20 * build
-    chin_drop = 0.05 * build
     # Control-point radius that makes a quadratic chain trace a circle.
     k = 1 / math.cos(math.pi / _HEAD_SEGMENTS)
-
-    def pt(deg: float, radius: float) -> Point:
-        th = math.radians(deg)
-        x, y = math.sin(th) * radius * narrow, -math.cos(th) * radius
-        if y > _JAW_START_Y:
-            # 0 where the taper starts, 1 at the chin.
-            lean = min(1.0, (y - _JAW_START_Y) / (1.0 - _JAW_START_Y))
-            x *= 1.0 - jaw_pull * lean**_JAW_EASE
-            y *= 1.0 + chin_drop * lean
-        return (x, y)
-
     step = 360 / _HEAD_SEGMENTS
-    anchors = [pt(i * step, 1.0) for i in range(_HEAD_SEGMENTS)]
-    controls = [pt((i + 0.5) * step, k) for i in range(_HEAD_SEGMENTS)]
+    anchors = [_head_pt(i * step, 1.0, build) for i in range(_HEAD_SEGMENTS)]
+    controls = [_head_pt((i + 0.5) * step, k, build) for i in range(_HEAD_SEGMENTS)]
     return anchors[0], [
         (controls[i], anchors[(i + 1) % _HEAD_SEGMENTS]) for i in range(_HEAD_SEGMENTS)
     ]
+
+
+# Where the ear meets the skull, top and bottom, in head radii from the head
+# centre with y down.
+#
+# Measured off `ref/satoshi-real.jpg`, which is the one reference that draws the
+# ear plainly: the hair hangs around it rather than over it. The life-drawing
+# rule of thumb, ear from the brow line to the nose, is *not* what the canon
+# draws and following it put the ear 0.16 head radii too high. The canon's ear
+# top sits level with the top of the eye aperture, not the brow, and its bottom
+# runs to 0.49, which is lower than our own nose at 0.36. Ours and the canon's
+# noses do not agree about where they sit against the skull, so the ear is
+# placed against the skull and the eye, which do agree, rather than against a
+# nose that would drag it up.
+#
+# The fit is eye centre to drawn chin: our eye sits at 0.16 head radii and our
+# chin ink at 1.05, so that run is 0.89 r, and both ends are unambiguous ink in
+# the reference. Eye to mouth was tried first and is not usable here, since the
+# canon's mouth sits lower against its head than ours does; it gave a head
+# radius 38% different from the one eye-to-chin gives.
+#
+# Stated as named constants because the hair wants them too. A side lock's
+# length and flare were being chosen against nothing at all, which is most of
+# why they took five rounds and still did not settle; the ear is the landmark
+# they were missing, so a lock that should tuck behind it or flick past it now
+# has something to say that against.
+_EAR_TOP_Y = 0.03
+_EAR_BOT_Y = 0.49
+# How far down its own height the ear is widest. The canon reads 59%, which is
+# what makes it a teardrop with the weight low rather than a symmetric oval.
+_EAR_WIDE_F = 0.59
+# How far the ear stands clear of the skull at its widest, in head radii.
+#
+# The canon's own ear is 0.263 r wide, and that is not transferable as it
+# stands: it sticks out past a cheek sitting at 0.632 r, where ours sits at
+# 0.81 (adult) to 0.94 (chibi), so the canon's whole head-plus-ear reaches 0.895
+# r and our bare skull is already past that at the chibi. Our head being wide
+# against the canon's is the open residual under gap 2, not something the ear
+# can fix, so the ear takes a width that reads at our scale rather than one that
+# matches a silhouette we cannot match anyway.
+_EAR_OUT = 0.17
+# The ear is the same size against the head at both builds, deliberately. A
+# child's ear really is larger against its skull than an adult's, and that was
+# in here for a round as a shrink on the build, but the span above is measured
+# off the *adult* reference, so a shrink made the one build the number came from
+# the one build that did not reproduce it: the adult came out 12% short while
+# the chibi, which no reference shows an ear on at all, got the canon figure
+# exactly. There is no chibi ear to measure, both cuts cover it, so the knob was
+# unmeasurable in the direction it mattered and it is gone rather than inverted.
+
+
+def _ear_span(build: float) -> tuple[Point, Point]:
+    """Where the ear joins the skull, top and bottom, on the right side."""
+    return (
+        (_head_edge_x(_EAR_TOP_Y, build), _EAR_TOP_Y),
+        (_head_edge_x(_EAR_BOT_Y, build), _EAR_BOT_Y),
+    )
+
+
+def _ear_outer(build: float) -> tuple[Point, list[Segment]]:
+    """The ear's outer contour, top attach to bottom attach, on the right side.
+
+    Two quadratics: out to the widest point below the middle, then in and down
+    to the lobe. The helix is the only thing this draws. A front-facing ear at
+    this size is a bulge with one crease in it, and every extra fold tried on it
+    read as dirt on the cheek at chibi scale.
+    """
+    (top_x, top_y), (bot_x, bot_y) = _ear_span(build)
+    height = bot_y - top_y
+    wide_x = top_x + _EAR_OUT
+    return (top_x, top_y), [
+        (
+            (top_x + _EAR_OUT * 1.10, top_y + height * _EAR_WIDE_F * 0.30),
+            (wide_x, top_y + height * _EAR_WIDE_F),
+        ),
+        (
+            (
+                wide_x - _EAR_OUT * 0.10,
+                top_y + height * (_EAR_WIDE_F + 0.62 * (1 - _EAR_WIDE_F)),
+            ),
+            (bot_x, bot_y),
+        ),
+    ]
+
+
+def _ears(sk: Skeleton, p: CharacterParams) -> str:
+    """Ears, drawn over the head so the skull's outline stops at the ear instead
+    of running behind it.
+
+    The fill closes on a straight chord between the two attach points, which
+    sits inside the skull at every build, and only the outer arc carries a
+    stroke. That is what welds the ear on: the skin covers the length of head
+    outline the ear spans, no line crosses the join, and the silhouette reads as
+    one contour that bulges at the ear rather than as a shape stuck to a circle.
+    """
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    sw = _stroke_w(sk)
+    start, segments = _ear_outer(sk.build)
+    (top_x, top_y), _ = _ear_span(sk.build)
+    height = segments[-1][1][1] - top_y
+    out = _EAR_OUT
+    # The inner crease, set in from the helix and following it. It stops short of
+    # both ends: run to the lobe and it closes into a second outline, which reads
+    # as a hole rather than as the turn of a rim.
+    crease_start = (top_x + out * 0.30, top_y + height * 0.16)
+    crease = [
+        (
+            (top_x + out * 0.78, top_y + height * 0.30),
+            (top_x + out * 0.52, top_y + height * 0.50),
+        ),
+        (
+            (top_x + out * 0.30, top_y + height * 0.58),
+            (top_x + out * 0.22, top_y + height * 0.46),
+        ),
+    ]
+
+    parts = []
+    for side in (-1, 1):
+        ear_start, ear_segments = (start, segments) if side > 0 else _mirror(start, segments)
+        c_start, c_segments = (crease_start, crease) if side > 0 else _mirror(crease_start, crease)
+        parts.append(
+            f'<path d="{_curve(cx, cy, r, ear_start, ear_segments)}" fill="{p.skin_tone}" />'
+        )
+        parts.append(
+            f'<path d="{_curve(cx, cy, r, ear_start, ear_segments, close=False)}" fill="none" '
+            f'stroke="{OUTLINE}" stroke-width="{sw:.1f}" stroke-linecap="round" />'
+        )
+        parts.append(
+            f'<path d="{_curve(cx, cy, r, c_start, c_segments, close=False)}" fill="none" '
+            f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" stroke-linecap="round" />'
+        )
+    return "".join(parts)
 
 
 def _head(sk: Skeleton, p: CharacterParams) -> str:
@@ -2364,6 +2524,7 @@ def render_character(p: CharacterParams | None = None, sk: Skeleton | None = Non
     # one place a collision would show.
     layers = [
         _hair_defs(sk, p),
+        _ears(sk, p),
         _hair_mass(sk, p),
         _neck(sk, p),
         _legs_and_boots(sk, p),

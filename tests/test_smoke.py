@@ -65,6 +65,35 @@ def test_ref_out_matches_the_code(preset: str, build: str) -> None:
     assert committed.read_text() == expected, f"{committed.name} is stale: ./refresh-ref-out.sh"
 
 
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_ear_stays_welded_to_the_skull(build: str) -> None:
+    """The ear's outer contour has to stay outside the skull it grows off.
+
+    The ear is drawn over the head and closes on a straight chord between its two
+    attach points, so the skin covers the length of head outline it spans and the
+    silhouette reads as one contour. That only works while the contour is outside
+    the skull: let any of it fall inside and the ear's stroke cuts a line across
+    the cheek and the head's own outline reappears beside it. Nothing enforces
+    that, and the skull moves under the ear whenever the taper is retuned, which
+    is exactly the kind of change that would break this without looking broken in
+    the arithmetic.
+    """
+    sk = build_skeleton(heads=BUILDS[build])
+    start, segments = character._ear_outer(sk.build)
+    prev = start
+    for ctrl, end in segments:
+        for i in range(1, 21):
+            t = i / 21
+            x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * ctrl[0] + t**2 * end[0]
+            y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * ctrl[1] + t**2 * end[1]
+            skull = character._head_edge_x(y, sk.build)
+            assert x >= skull - 1e-9, (
+                f"the {build} ear dips {skull - x:.3f} head radii inside the skull at"
+                f" y={y:.3f}; it would cut a line across the cheek"
+            )
+        prev = end
+
+
 def _highest_ink(start: tuple[float, float], segments: list) -> float:
     """The topmost y a quadratic chain reaches, in the units it is given in.
 

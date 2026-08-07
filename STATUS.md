@@ -21,7 +21,8 @@ and reverted on the owner's call, and were re-opened on 2026-08-07 as
 part of the hair rebuild below; tasks 49-54), plus the fade move (both cuts now change tone half way
 down the hair, at every build, off one shared `_HAIR_FADE`; task 55).
 Per-task snapshots are in `out/35` through `out/73`, one directory per
-task, with the gap analysis's own strips in `out/gap-analysis`.
+task, with the gap analysis's own strips in `out/gap-analysis` and the
+ear pass in `out/ear`.
 
 On top of that, one change that touches no shape: the code is now a
 proper package (`src/anime_character_creator/`, `pyproject.toml`, uv,
@@ -127,8 +128,73 @@ first attempt reverted. What does not is the fringe. The canon's locks
 zigzag boundary whose every notch is two strokes converging into a black
 wedge, and it reads as a saw. Fixing that means drawing the front locks
 as their own shapes over the fringe fill, which the contract has no slot
-for yet. Progress renders are in `out/73/`, canon at 5x in
+for yet. Two smaller faults behind that one: the cowlick reads as an
+artifact stuck on the crown rather than as a blade, and the pale reaches
+the fringe in only two or three thin runs where the canon has one per
+lock. Progress renders are in `out/73/`, canon at 5x in
 `out/73/ref_head.png`.
+
+One measurement from those rounds is worth keeping whatever happens to
+the cut: the canon crop is widest 54% of the way down the hair's own
+height, at the temples, while the shipped `short_layered` is widest at
+89% down, which is the bottom of its mass, because that mass is a circle.
+That single number is most of why one reads as a haircut and the other as
+a dome.
+
+**The figure has ears** (the owner's call, 2026-08-07, as the first step
+of the hair rebuild). They exist on their own merits, a head with no ear
+reads as unfinished at the tall build, but the reason they came first is
+that they are a *landmark*: a side lock's length and flare were being
+chosen against nothing at all, which is a large part of why Satoshi's
+crop took five rounds without settling.
+
+Placement is measured, not assumed, and the assumption was wrong. The
+life-drawing rule of brow to nose put the ear 0.16 head radii too high.
+`ref/satoshi-real.jpg` is the one reference that draws the ear plainly,
+with the hair hanging around it rather than over it, and it puts the ear
+at 0.03 to 0.49 head radii, top level with the top of the eye aperture
+rather than the brow, widest 59% of the way down. The fit is eye centre
+to drawn chin, 0.89 head radii apart in our own construction and
+unambiguous ink in the reference. Eye to mouth was tried first and is
+unusable: the canon's mouth sits lower against its head than ours does,
+and the two pairs disagree about the head's radius by 38%.
+
+The ear's own width is the one canon number that would not transfer. The
+canon ear is 0.263 head radii wide and sticks out past a cheek sitting at
+0.632, for a total silhouette of 0.895; our bare skull is already at 0.81
+at the adult and 0.94 at the chibi, so matching the total is arithmetically
+impossible and matching the width would have given an elf. Our head being
+wide against the canon's is the open residual under gap 2. The ear takes
+0.17, chosen by eye off `out/ear/vary_chibi.png` and `vary_realistic.png`.
+
+Two pieces of machinery came with it. `_head_pt` is now the single
+definition of the skull's profile, with `_head_shape` walking it and a
+new `_head_edge_x` sampling it, so a part welded to the head follows the
+jaw taper for free instead of re-deriving it; that extraction was proved
+byte-neutral before the ear went on top of it. And a test asserts the
+ear's contour never dips inside the skull, which is the failure a future
+taper change would otherwise cause silently.
+
+Two things it deliberately does *not* do. It has no build-dependent size:
+a child's ear really is larger against its skull than an adult's, and
+that was in for a round as a shrink on the build, but the span is
+measured off the *adult* reference, so the shrink made the one build the
+number came from the one build that did not reproduce it. No reference
+shows a chibi ear at all, both cuts cover it, so the knob was
+unmeasurable in the direction that mattered and it is gone rather than
+inverted.
+
+And **it is not yet at the depth the canon draws it.** It ships under
+`_hair_mass`, which hides it completely: all four renders are byte for
+byte what they were before the ear existed, so the README's art is
+untouched. The canon's depth is over the head and under the front locks,
+and at that depth both cuts fill the temple solidly enough that what
+appears is a wedge of ear through the hair's inner edge rather than an
+ear, 90 to 630 px of it per render. That is the coupling the owner
+diagnosed, measured rather than argued: the hair owns the ear's space.
+`out/ear/wedge.py` reproduces it and `out/ear/wedge.png` is the picture.
+**Moving `_ears` to just after `_head` is one line and belongs in the
+hair rebuild**, once a cut leaves the ear room.
 
 ## Where it stands
 

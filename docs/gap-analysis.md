@@ -193,6 +193,17 @@ is a head-width question rather than a hair question, it shows at both
 builds, and it overlaps gap 7. Widening the fall further to compensate
 starts to read bulky, which is where 0.16 head radii went.
 
+**Second residual, measured in task 62 and not addressed:** the fall's
+width does not ride the build correctly, and the error changes sign
+between the two ends. At the realistic build our hair envelope is 20% to
+24% *wider* than the canon through 0.11 to 0.20 of figure height (the
+canon's falls sit about 1.05 head radii off centre, ours about 1.33); at
+the chibi build the same profile runs 10% to 13% *narrower*. The `_FALL_*`
+constants above were chosen at one end, so a re-author has to re-measure
+both rather than carry them over, and the fix is likely a build-dependent
+width rather than one constant. The other numbers from tasks 57, 58 and 59
+(hairline forehead-run height, fade height, length) still stand.
+
 The original finding follows.
 
 The canon's long hair is one curtain: two slabs of near-constant width
@@ -636,8 +647,9 @@ not move with this.
    73) is authored but parked**, five rounds in and not yet past the
    owner's bar of beating the plain circle by eye; it renders as
    `short_tousled`, nothing points at it, and what works and what does
-   not is on the task. **Satoko's re-authoring, task 72, has not
-   started.**
+   not is written up in `STATUS.md`. **Satoko's re-authoring has not
+   started**, and its acceptance spec is the two residuals under gap 2
+   above, not the shipped `_FALL_*` values.
 
 Gap 8's items are independent of each other and can be picked off in any
 order, which makes them good filler work between the larger passes.
