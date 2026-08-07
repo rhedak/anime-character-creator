@@ -223,6 +223,15 @@ def _mirror(start: Point, segments: list[Segment]) -> tuple[Point, list[Segment]
     return flip(start), [(flip(c), flip(e)) for c, e in segments]
 
 
+def _mirrored(edge: tuple[Point, list[Segment]]) -> list[tuple[Point, list[Segment]]]:
+    """Both sides of a symmetric cut's lock edge, right first.
+
+    Ordered, never a set: `ref-out/` is compared byte for byte, so the order
+    these come out in has to be the order they went in.
+    """
+    return [edge, _mirror(*edge)]
+
+
 def _reverse(start: Point, segments: list[Segment]) -> tuple[Point, list[Segment]]:
     """Walk a quadratic chain backwards. Reversing a quadratic is just
     swapping its endpoints and keeping the control point, so this is exact
@@ -687,6 +696,229 @@ def _short_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
     ]
 
 
+# Satoshi's traced crop.
+#
+# The outline here is not authored, it is measured. `out/trace/` pulls the canon's
+# hair silhouette off `ref/satoshi-real.jpg` as a radius per bearing in head-radius
+# units, simplifies it with Douglas-Peucker and least-squares fits one control
+# point per span, which is exact for a quadratic with its endpoints pinned. So
+# these numbers are the canon's own contour rather than anyone's idea of it, and
+# the way to change them is to re-trace rather than to nudge.
+#
+# 26 segments because that is the finest level whose every edge is at least two
+# stroke widths long. Below it the fit is more faithful on paper and worse on the
+# page: `_stroke_w` is figure-relative, so a feature shorter than the line that
+# draws it closes up, and no amount of rendering bigger helps. See
+# `docs/gap-analysis.md` gap 1 and the PITFALLS entry in the gap-analysis skill.
+#
+# The contour is asymmetric because the canon's is. Nothing here mirrors, which
+# the contract has always allowed and no cut had used.
+_CROP_START: Point = (-0.706, 0.872)
+_CROP_EDGE: list[Segment] = [
+    ((-0.751, 0.829), (-0.687, 0.687)),
+    ((-0.837, 0.784), (-0.869, 0.756)),
+    ((-0.798, 0.522), (-0.839, 0.428)),
+    ((-1.071, 0.514), (-1.062, 0.473)),
+    ((-0.938, 0.293), (-0.949, 0.202)),
+    ((-0.984, 0.159), (-1.112, 0.117)),
+    ((-1.009, 0.049), (-0.990, -0.000)),
+    ((-1.105, -0.110), (-1.070, -0.227)),
+    ((-1.040, -0.452), (-0.899, -0.630)),
+    ((-1.119, -0.811), (-1.069, -0.805)),
+    ((-0.886, -0.809), (-0.798, -0.856)),
+    ((-0.596, -1.027), (-0.351, -1.149)),
+    ((-0.200, -1.199), (-0.042, -1.189)),
+    ((-0.003, -1.374), (0.045, -1.301)),
+    ((0.238, -1.296), (0.360, -1.109)),
+    ((0.551, -1.176), (0.707, -1.089)),
+    ((0.780, -1.109), (0.714, -0.947)),
+    ((0.900, -0.712), (1.172, -0.474)),
+    ((1.213, -0.464), (1.011, -0.368)),
+    ((1.018, -0.188), (1.152, -0.000)),
+    ((1.233, 0.023), (0.989, 0.035)),
+    ((0.949, 0.190), (1.092, 0.463)),
+    ((1.124, 0.515), (0.890, 0.434)),
+    ((0.839, 0.530), (0.907, 0.761)),
+    ((0.902, 0.801), (0.727, 0.678)),
+    ((0.797, 0.836), (0.724, 0.863)),
+]
+
+# Which segment ends on the crown's apex, so the two sides can be taken apart.
+_CROP_CROWN_AT = 13
+# Which segments end on the temple either side, where the fringe meets the
+# silhouette. Both sit above the ear's top at 0.03, which is what leaves the ear
+# somewhere to be seen; move them down and the front hair swallows it again.
+_CROP_TEMPLE_L = 7
+_CROP_TEMPLE_R = 19
+# The lowest point of the trace as measured, which is what `fall` scales against:
+# a cut whose tips reach `fall` is the trace at `fall / _CROP_BASE_TIP`.
+_CROP_BASE_TIP = 0.872
+# Where the fringe leaves the side locks and starts running across the forehead.
+# Fixed rather than scaled: the mass grows with the build, the fringe does not,
+# because it sits on a brow that has not moved.
+_CROP_FRINGE_L: Point = (-0.92, -0.16)
+_CROP_FRINGE_R: Point = (0.94, -0.14)
+# How far inside the silhouette the front hair's own fill boundary is pulled,
+# in fractions of the radius. It only ever has to be enough that the fill cannot
+# cross the outline between two traced points; the mass paints the strip left
+# over in the same colour, so nothing shows.
+_CROP_FILL_INSET = 0.06
+
+
+def _crop_outline(fall: float) -> tuple[Point, list[Segment]]:
+    """The traced contour at the size this build wants, left tip round to right.
+
+    One scalar carries the whole build difference, and that is a measurement
+    rather than a convenience: the canon's chibi contour over its adult one is
+    1.32 across the crown with a standard deviation of 0.008, and stays near 1.23
+    even down at the jaw where the shoulders make the reading worst. A cut that
+    needed its proportions to change with the build would not come out that flat.
+    """
+    v = fall / _CROP_BASE_TIP
+    start = (_CROP_START[0] * v, _CROP_START[1] * v)
+    return start, [((c[0] * v, c[1] * v), (e[0] * v, e[1] * v)) for c, e in _CROP_EDGE]
+
+
+def _crop_mass_shape(fall: float) -> tuple[Point, list[Segment]]:
+    """The whole silhouette, closed across the nape.
+
+    The closing edge runs behind the neck and the shoulders at every build and is
+    never seen, so it is one quadratic rather than a shape. It dips below both
+    tips so the join cannot cut the corner off either of them.
+    """
+    start, edge = _crop_outline(fall)
+    end = edge[-1][1]
+    nape = ((end[0] + start[0]) / 2, max(end[1], start[1]) + 0.18)
+    return start, [*edge, (nape, start)]
+
+
+def _crop_fall_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """Both sides of the outline, each running from its bottom tip to the crown.
+
+    Taken out of the mass's own point data rather than restated, so the two
+    cannot drift apart the way the long cut's fall edge did before task 59 pulled
+    it into shared constants. Two entries rather than one mirrored, because this
+    cut is not symmetric: the canon's is not, and handing back one side let the
+    drawing code stamp the right-hand edge onto the left.
+    """
+    start, edge = _crop_outline(fall)
+    return [
+        _reverse(edge[_CROP_CROWN_AT][1], edge[_CROP_CROWN_AT + 1 :]),
+        (start, edge[: _CROP_CROWN_AT + 1]),
+    ]
+
+
+def _crop_hairline_shape(fall: float) -> tuple[Point, list[Segment], list[Segment]]:
+    """The fringe, temple to temple, and nothing else.
+
+    **The front hair stops above the ear on purpose.** The first version ran the
+    line all the way down both sides to the mass's bottom tips and closed `back`
+    on the mass's whole reversed chain, which meant the front fill covered
+    everything the mass covered. Nothing was left for an ear to be seen in: the
+    ear reads at the chibi and all but vanishes at the adult, and the fix is not
+    to float the ear over the hair but to stop the hair filling the place the
+    canon keeps for it.
+
+    Both ends sit on the mass's own outline, at the temple points the trace
+    already has, so the stroke still never stops in mid-air.
+
+    The fringe itself is **not traced yet**. These are the overlapping wedge locks
+    the short cut settled on, tips dipping toward the brow and notches rising
+    about a third of the way back, which is what reads as hair lying over hair
+    rather than as a row of teeth. Tracing it is the next step and wants its own
+    measurement: the canon's fringe boundary is hair against skin, so it can be
+    read off the reference the way the silhouette was.
+    """
+    v = fall / _CROP_BASE_TIP
+    _, edge = _crop_outline(fall)
+    left_temple = edge[_CROP_TEMPLE_L][1]
+    right_temple = edge[_CROP_TEMPLE_R][1]
+    lx, ly = _CROP_FRINGE_L
+    rx, ry = _CROP_FRINGE_R
+    line: list[Segment] = [
+        ((-1.02 * v, -0.10 * v), (lx, ly)),
+        # the fringe: wide shallow lock, a notch showing forehead, a deep narrow
+        # tip reaching the brow, then shorter ones toward the parting
+        ((-0.84, -0.44), (-0.68, -0.33)),
+        ((-0.56, -0.56), (-0.42, -0.50)),
+        ((-0.34, -0.22), (-0.26, -0.13)),
+        ((-0.18, -0.43), (-0.04, -0.39)),
+        ((0.06, -0.19), (0.16, -0.23)),
+        ((0.26, -0.51), (0.42, -0.45)),
+        ((0.54, -0.25), (0.64, -0.29)),
+        ((0.80, -0.15), (rx, ry)),
+        ((1.04 * v, -0.12 * v), right_temple),
+    ]
+    # Back over the crown, taken off the mass's own points and pulled in a
+    # fraction of a radius so it is inside the silhouette at every bearing.
+    #
+    # This was three hand-picked quadratics for a round and it leaked: written as
+    # flat multiples of the scale they sat at a constant radius while the traced
+    # crown does not, so between two tips the fill ran outside the outline and
+    # painted a smooth gold arc past the spikes. The lesson is the one task 59
+    # already paid for on the long cut, that an edge stated twice drifts. Nothing
+    # here restates the crown.
+    crown = _reverse(edge[_CROP_TEMPLE_L][1], edge[_CROP_TEMPLE_L + 1 : _CROP_TEMPLE_R + 1])[1]
+    k = 1.0 - _CROP_FILL_INSET
+    back: list[Segment] = [((c[0] * k, c[1] * k), (e[0] * k, e[1] * k)) for c, e in crown]
+    # The last end has to be the temple itself, not the pulled-in copy of it, so
+    # the fill closes exactly where the fringe's stroke started.
+    back[-1] = (back[-1][0], left_temple)
+    return left_temple, line, back
+
+
+def _crop_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """Where the crop fades to its tip tone.
+
+    One wavy region for now, the same construction the short cut uses, so the cut
+    is two-tone while the silhouette is being judged. The per-lock regions this
+    cut is eventually for are the step after the fringe: the contract already
+    takes a list, so adding them changes nothing here but this function.
+    """
+    v = fall / _CROP_BASE_TIP
+    mid = _fade_y(-1.30 * v, fall) - 0.06
+    edge = 1.30 * v
+    floor = fall + 1.5
+    return [
+        (
+            (-edge, mid - 0.10),
+            [
+                ((-edge * 0.80, mid + 0.06), (-edge * 0.66, mid - 0.04)),
+                ((-edge * 0.52, mid + 0.10), (-edge * 0.42, mid - 0.02)),
+                ((-edge * 0.26, mid + 0.10), (-edge * 0.14, mid)),
+                ((0.00, mid + 0.12), (edge * 0.14, mid)),
+                ((edge * 0.26, mid + 0.10), (edge * 0.42, mid - 0.02)),
+                ((edge * 0.52, mid + 0.10), (edge * 0.66, mid - 0.04)),
+                ((edge * 0.80, mid + 0.06), (edge, mid - 0.10)),
+                ((edge, floor * 0.6), (edge, floor)),
+                ((0.00, floor), (-edge, floor)),
+            ],
+        )
+    ]
+
+
+def _crop_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """Lines dividing the crown into locks, each aimed at a notch of the fringe.
+
+    Without them the crown is one field of hair colour, which is what makes a cut
+    read as an object the colour of hair rather than as hair. They scale with the
+    mass, since they live on it.
+    """
+    v = fall / _CROP_BASE_TIP
+    s = [
+        ((-0.49, -0.85), [((-0.67, -0.64), (-0.76, -0.40))]),
+        ((-0.15, -0.79), [((-0.22, -0.58), (-0.12, -0.46))]),
+        ((0.24, -0.83), [((0.29, -0.64), (0.36, -0.50))]),
+        ((0.52, -0.83), [((0.64, -0.63), (0.66, -0.38))]),
+        ((0.76, -0.70), [((0.96, -0.46), (1.06, -0.20))]),
+        ((-0.72, -0.73), [((-0.96, -0.49), (-1.06, -0.22))]),
+    ]
+    return [
+        ((q[0] * v, q[1] * v), [((c[0] * v, c[1] * v), (e[0] * v, e[1] * v)) for c, e in segs])
+        for q, segs in s
+    ]
+
+
 # Satoshi's tousled crop.
 #
 # Built from its locks rather than from an outline with texture drawn on it,
@@ -841,7 +1073,14 @@ def _tousle_hairline_shape(tip: float) -> tuple[Point, list[Segment], list[Segme
     left_down = _reverse(*_mirror(*_tousle_fall_edge(tip)))
     # Back across the crown inside the mass, so the mass's own outline carries
     # the silhouette and the skull outline never shows through the hair.
-    _, inner_crown = _arc(1.16, _CROWN_TO_TEMPLE, -_CROWN_TO_TEMPLE, 4)
+    # The radius comes off the crown's own deepest notch rather than being picked.
+    # At a picked 1.16 this arc stood outside the silhouette near the temple, where
+    # the crown's notches drop to 1.06, and the fill painted past the outline with
+    # no stroke on it to show what had happened. A constant radius under a notched
+    # crown is the mistake; the notch that decides it has to be the one in the data.
+    _, inner_crown = _arc(
+        min(r for _, r in _TOUSLE_CROWN) - 0.04, _CROWN_TO_TEMPLE, -_CROWN_TO_TEMPLE, 4
+    )
     back: list[Segment] = [*right_edge[1], *inner_crown, *left_down[1]]
     start: Point = back[-1][1]
     line: list[Segment] = [
@@ -851,7 +1090,7 @@ def _tousle_hairline_shape(tip: float) -> tuple[Point, list[Segment], list[Segme
         *_tousle_fringe_line(),
         # Down the inside of the right side lock to its point.
         ((1.04, -0.06), (1.10, tip - 0.40)),
-        ((1.16, tip - 0.14), (1.10, tip + 0.04)),
+        ((1.16, tip - 0.14), right_edge[0]),
     ]
     return start, line, back
 
@@ -957,7 +1196,12 @@ class Hairstyle:
 
     mass: Callable[[float], tuple[Point, list[Segment]]]
     hairline: Callable[[float], tuple[Point, list[Segment], list[Segment]]]
-    fall_edge: Callable[[float], tuple[Point, list[Segment]]]
+    # One chain per side. A list rather than one chain the drawing code mirrors,
+    # because mirroring is an assumption that a cut is symmetric and it fails
+    # without a sound: an asymmetric cut gets one side's lock edge stamped onto
+    # the other, standing off the silhouette where the mass does not agree.
+    # Symmetric cuts say so explicitly, with `_mirrored`.
+    fall_edge: Callable[[float], list[tuple[Point, list[Segment]]]]
     # One or more closed regions whose union is the tip-toned area. A list rather
     # than one region because a tone boundary that runs level across a whole head
     # can only say "pale below this height", and the canon says "pale from here to
@@ -982,16 +1226,44 @@ class Hairstyle:
     # the more correct unit for short hair, which is pinned to the skull and so
     # should not change length when the body gets longer.
     tip_range: tuple[float, float] | None = None
+    # How much bigger the whole cut is at the chibi end than at the adult end, as
+    # a multiplier on `tip_range`'s answer. None leaves a cut the same size against
+    # its head at every build, which is what every cut here did before this and
+    # what the two older ones still do.
+    #
+    # It exists because the canon does not work that way. Measured off both
+    # Satoshi references in head-radius units, the chibi's hair stands 0.73 head
+    # radii clear of its skull where the adult's stands 0.29, and the ratio
+    # between the two contours is 1.32 across the crown with a standard deviation
+    # of 0.008. So a chibi wears visibly more hair for the same head, one scalar
+    # describes it, and a cut that ignores this comes out with an adult's volume
+    # on a child's head. See `docs/gap-analysis.md` gap 1.
+    #
+    # A cut that raises this needs `build_skeleton`'s `hair_margin` to have room
+    # for it at the chibi end, and the ceiling test is what says so.
+    volume: tuple[float, float] | None = None
+
+
+def _long_fall_edges(length: float) -> list[tuple[Point, list[Segment]]]:
+    return _mirrored(_fall_edge(length))
+
+
+def _short_fall_edges(tip: float) -> list[tuple[Point, list[Segment]]]:
+    return _mirrored(_short_fall_edge(tip))
+
+
+def _tousle_fall_edges(tip: float) -> list[tuple[Point, list[Segment]]]:
+    return _mirrored(_tousle_fall_edge(tip))
 
 
 HAIRSTYLES: dict[str, Hairstyle] = {
     "long_blunt": Hairstyle(
-        _hair_mass_shape, _hairline_shape, _fall_edge, _hair_tip_edge, strands=_long_strands
+        _hair_mass_shape, _hairline_shape, _long_fall_edges, _hair_tip_edge, strands=_long_strands
     ),
     "short_layered": Hairstyle(
         _short_mass_shape,
         _short_hairline_shape,
-        _short_fall_edge,
+        _short_fall_edges,
         _short_tip_edge,
         strands=_short_strands,
         # Where the side tips end: a tight crop pinned to the skull at 0, a
@@ -999,10 +1271,21 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # bob this used to be, with locks reaching for the jaw.
         tip_range=(0.25, 0.70),
     ),
+    "short_crop": Hairstyle(
+        _crop_mass_shape,
+        _crop_hairline_shape,
+        _crop_fall_edge,
+        _crop_tip_edge,
+        strands=_crop_strands,
+        # Where the side tips reach. `hair_length` 0.65, which is what Satoshi
+        # carries, puts the cut at exactly the size it was traced at.
+        tip_range=(0.800, 0.911),
+        volume=(1.30, 1.00),
+    ),
     "short_tousled": Hairstyle(
         _tousle_mass_shape,
         _tousle_hairline_shape,
-        _tousle_fall_edge,
+        _tousle_fall_edges,
         _tousle_tip_edge,
         strands=_tousle_strands,
         tip_range=(0.25, 0.70),
@@ -1023,7 +1306,11 @@ def _hair_fall(sk: Skeleton, p: CharacterParams) -> float:
     style = HAIRSTYLES[p.hairstyle]
     if style.tip_range is not None:
         lo, hi = style.tip_range
-        return lo + p.hair_length * (hi - lo)
+        fall = lo + p.hair_length * (hi - lo)
+        if style.volume is not None:
+            chibi, adult = style.volume
+            fall *= adult + (chibi - adult) * (1.0 - sk.build)
+        return fall
     chin_y = sk.head_cy + sk.head_r
     tip_y = chin_y + p.hair_length * (sk.hip_y - chin_y)
     return (tip_y - sk.head_cy) / sk.head_r
@@ -1075,7 +1362,8 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
     d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     parts = _two_tone_hair(d, p)
     parts.append(
-        f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+        f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" '
+        f'stroke-linecap="round" stroke-linejoin="round" />'
     )
     return "".join(parts)
 
@@ -2479,9 +2767,13 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     # Outer edge of each lock. Redundant where the mass shows behind the body,
     # since it lands on the mass's own stroke, and the silhouette where it
     # doesn't.
-    for side in (-1, 1):
-        edge = style.fall_edge(fall)
-        edge_start, edge_segments = edge if side > 0 else _mirror(*edge)
+    # A list, one entry per side, rather than one chain mirrored here. Mirroring
+    # was a hidden assumption that every cut is symmetric, and it was silent until
+    # one was not: the traced crop's right-hand edge got stamped onto its left,
+    # where the mass is a different shape, and drew a row of black barbs standing
+    # off the silhouette with white between them and the hair. A cut that is
+    # symmetric says so by handing back both sides.
+    for edge_start, edge_segments in style.fall_edge(fall):
         edge_d = _curve(cx, cy, r, edge_start, edge_segments, close=False)
         parts.append(
             f'<path d="{edge_d}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" '

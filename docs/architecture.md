@@ -26,16 +26,21 @@ Two consequences worth knowing before changing anything:
 - **Ordering in the `layers` list is the z-order.** Legs go under the
   skirts so a hem covers the thigh; arms go over every garment so nothing
   can clip a hand. Moving a part in that list is a visual change.
-- **The ear's depth is temporary and is a statement about the hair.** The
-  canon draws it over the head and under the front locks, so back hair
-  passes behind it and front locks over it. It is not there yet: it sits
-  under `_hair_mass`, which hides it completely, because both cuts fill
-  the temple solidly and at the canon's depth a wedge of ear shows
-  through the hair's inner edge instead of an ear (90 to 630 px per
-  render; `out/ear/wedge.py` reproduces it). **Move `_ears` to just after
-  `_head` as part of rebuilding a cut**, once that cut leaves the ear
-  room, and treat any remaining wedge as the cut's problem rather than
-  the ear's.
+- **The ear's depth says something about how a cut is built.** It sits
+  over the head and under `_hair_front`, which is the canon's own
+  arrangement: back hair passes behind the ear, front locks over it.
+  Whether the ear then *reads* is the cut's business, not the ear's, and
+  the two things a cut has to get right are easy to miss.
+  - **Leave the ear somewhere to be seen.** A hairline whose fill covers
+    everything the mass covers leaves no gap, and the ear all but
+    vanishes. That was a real bug in `short_crop` for a round.
+    Its fringe runs temple to temple and stops there now, which is why
+    its ear reads at both builds.
+  - **Put the side locks in front, or make the mass clear the ear.** A
+    cut whose side locks live only in the mass cannot cover an ear,
+    because the mass is behind the head and the ear is on it.
+    `long_blunt` and `short_layered` are both like that, so a hint of ear
+    shows at their temples until they are re-authored.
 
 ## Modules
 

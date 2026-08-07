@@ -190,3 +190,25 @@ what the `B023` here was. Extract the loop body into a function taking
 parameters rather than adding a `noqa`. Compact numeric tables that the
 formatter wants to explode into one-value-per-line can be wrapped in
 `# fmt: off` and `# fmt: on`.
+
+## An overlay drawn at hairline weight flatters detail the stroke cannot draw
+
+**What it looked like.** A traced contour laid over the reference at 3x
+zoom with a 2px line looked crisper and more faithful the finer it was
+simplified, so the finest fit looked like the obvious pick. Drawn instead
+at `_stroke_w`, the same fit came out a scribble: the fine teeth painted
+as a wobble in the line rather than as locks.
+
+**Why.** The overlay's line has nothing to do with the figure's. Our
+stroke is *figure-relative*, so the ratio of a feature to the line that
+draws it is scale-free and rendering bigger never rescues it. A feature
+shorter than about two stroke widths has the strokes on either side of it
+overlapping, which is the same failure as a fringe notch closing into a
+black wedge.
+
+**The fix.** Measure the fit's shortest edge in stroke widths at every
+build before choosing a simplification level, and count how many edges
+fall under two. On the Satoshi crop trace that gave a clean cliff: 50
+segments had 11 to 15 sub-stroke edges, 32 segments had 4 to 6, and 26
+segments had none at either build. Pick the finest level with none, not
+the one that looks best in the overlay.

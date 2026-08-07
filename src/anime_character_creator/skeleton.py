@@ -71,7 +71,7 @@ def build_skeleton(
     canvas_h: float = 500,
     heads: float = DEFAULT_HEADS,
     frame: float = 0.0,
-    hair_margin: float = 0.36,
+    hair_margin: float | None = None,
     bottom_margin: float = 0.03,
 ) -> Skeleton:
     # Headroom above the skull, in head radii, so the hair has somewhere to go.
@@ -90,6 +90,19 @@ def build_skeleton(
     # nothing computes the bound from the shapes: the short cut's cowlick
     # flicks (tried and reverted) bled at exactly this boundary and needed
     # 0.44 for the day they existed.
+    #
+    # It rides the build rather than being one number, because the canon does not
+    # give a chibi and an adult the same volume of hair. Measured off both Satoshi
+    # references, the chibi's hair stands 0.73 head radii clear of its skull
+    # against the adult's 0.29, so a chibi's crown needs roughly twice the
+    # headroom for the same haircut (`docs/gap-analysis.md`, gap 1). Holding one
+    # margin at both ends means either the chibi is capped or the adult is given
+    # headroom it never uses, and headroom is not free: it comes straight out of
+    # the figure's height on the canvas, 7% at the chibi end between these two
+    # values. Passing a number explicitly still overrides this entirely.
+    if hair_margin is None:
+        t0 = min(1.0, max(0.0, (heads - 2.0) / 4.0))
+        hair_margin = _lerp(0.75, 0.36, t0)
     fig_h = canvas_h * (1.0 - bottom_margin) / (1.0 + hair_margin / (2.0 * heads))
     head_h = fig_h / heads
     head_r = head_h / 2

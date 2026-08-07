@@ -154,8 +154,9 @@ canvas height.
 
 ## HAIRSTYLES and Hairstyle
 
-`HAIRSTYLES` maps a name to a `Hairstyle`. Ships with `long_blunt` and
-`short_layered`; `DEFAULT_HAIRSTYLE` names the first.
+`HAIRSTYLES` maps a name to a `Hairstyle`. Ships with `long_blunt`,
+`short_layered`, `short_tousled` and `short_crop`; `DEFAULT_HAIRSTYLE`
+names the first.
 
 A `Hairstyle` is the four outlines a haircut needs, which have to agree
 with each other, plus an optional fifth:
@@ -168,6 +169,7 @@ with each other, plus an optional fifth:
 | `tip_edge` | Where the two tones meet, as a list of closed regions covering everything below each. They clip to their union, so a cut can give each lock its own boundary. |
 | `strands` | Optional open chains dividing the mass into locks. |
 | `tip_range` | What `hair_length` 0 and 1 mean for this cut, as depth below the head centre. `None` measures the body instead, chin to hip. |
+| `volume` | How much bigger the cut is at the chibi end than at the adult end, as `(chibi, adult)` multipliers on `tip_range`'s answer. `None` keeps one size against the head at every build. The canon gives a chibi about 1.3 times an adult's hair, so a cut traced off one reference wants this to reach the other. A cut that raises it needs `hair_margin` to have room for it, and the ceiling test says so. |
 
 Each callable takes the tip depth in head radii and returns point data in
 head-radius units (origin at the head centre, `1.0` is one head radius).

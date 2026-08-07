@@ -184,7 +184,153 @@ shows a chibi ear at all, both cuts cover it, so the knob was
 unmeasurable in the direction that mattered and it is gone rather than
 inverted.
 
-And **it is not yet at the depth the canon draws it.** It ships under
+**Satoshi's crop is traced** (the owner's method, 2026-08-07: outline the
+canon's hair, then apply the shape to our head). The harness is
+`out/trace/`. Curves are authored in head-radius units, the same system
+the shape code uses, so porting is dropping numbers in rather than
+fighting a transform; the calibration is checked by drawing our own head
+outline back onto the reference before anything is traced on it.
+
+Two methods were tried and the first was wrong. Picking tips and notches
+by eye off a polar grid and putting each control point at the mid-bearing
+at the mean radius bulges every edge outside the chord, which on a contour
+made of straight lock edges is wrong everywhere at once. What works is
+measuring the contour as a radius per bearing, simplifying it with
+Douglas-Peucker, and least-squares fitting each control point, which is
+exact for a quadratic with its endpoints pinned. An extrema-thinning pass
+was tried in between and silently ate the whole sawtooth down one side,
+because dropping the shallowest pair leaves a real tip adjacent to a
+notch of similar radius, which then goes too.
+
+**How fine to simplify is decided by the line weight, not by taste.** The
+overlays are a thin line over a magnified reference, which flatters
+detail; `_stroke_w` is figure-relative, so a feature shorter than about
+two stroke widths has the strokes either side of it overlapping and no
+amount of rendering bigger rescues it. Counting the fit's edges that fall
+under two strokes gives a clean cliff: 50 segments has 11 to 15 of them,
+32 has 4 to 6, and 26 has none at either build. **26 is the level**, being
+the finest that draws. `out/trace/weights.png` is the same trace at three
+levels drawn at the real weight, and `out/trace/detail.py` is the count.
+
+**The trace matches the adult and does not port to the chibi, and the
+reason is a gap nobody had named.** The canon draws a chibi's hair about
+29% bigger against its head than an adult's, in reach and in width alike;
+ours is one outline in head-radius units at both builds, tuned to the
+adult. So every chibi we ship wears an adult's volume of hair. The
+numbers, the calibration and its cross-checks are in
+`docs/gap-analysis.md` under gap 1.
+
+**The owner chose to let the volume ride the build (2026-08-07), and it
+is in.** `short_crop` is registered and carries the traced outline, and
+`Hairstyle` has a `volume` field, a pair of multipliers on `tip_range`'s
+answer for the chibi and adult ends, defaulting to None so the two older
+cuts are byte for byte unchanged. `build_skeleton`'s `hair_margin` now
+rides the build too, 0.75 at the chibi end and 0.36 at the adult, since a
+chibi crown at canon volume reaches 1.69 head radii and the old ceiling
+was 1.36. The adult renders are byte-identical; the two chibis are 7%
+smaller in frame, which is what the headroom costs and is the price of
+the change. `out/trace/margin_effect.png` is the before and after.
+
+**Nothing points at `short_crop` yet**, on the owner's call to keep the
+options open until both builds have been seen. `out/trace/see_chibi.png`
+and `see_realistic.png` are the canon, the traced crop and what ships
+today, side by side.
+
+What is traced is the silhouette and only the silhouette. The fringe is
+still the short cut's scalloped locks, the tone boundary is still one
+wave rather than a region per lock, and the strand lines are still a
+regular fan; all three are visibly a different language from the traced
+outline and are the next steps in that order. One defect found by looking
+and fixed: the hairline's side runs were made-up radii that sat *outside*
+the traced contour, putting a stroked line beyond the silhouette that read
+as loose ends tangled down the cheek. They come off the trace's own points
+now.
+
+Closing it was cheaper than it first looked and the first estimate here
+said so wrongly. It does **not** need a contract change: the shape
+callables already receive one float from `_hair_fall`, which already has
+the skeleton and today ignores it for any cut with a `tip_range`, so a
+skull-pinned cut can express its radii off that float and have it ride
+`sk.build`. What it does need is `hair_margin`, since 1.68 head radii
+plus the stroke is well past the current −1.36 ceiling. Raising it
+globally shrinks every figure on the canvas, 6.5% at the chibi and 2.8%
+at the adult, so it should ride the build too and leave the adult alone.
+That is still a change to every chibi render's scale, which is why it is
+the owner's call rather than something to decide while tracing.
+
+**The outline did not match the fill on the upper left, and the outline
+was the broken half** (the owner spotted it, 2026-08-07). `_hair_front`
+drew the lock edge and *its mirror*, one chain reflected, which is a
+hidden assumption that every cut is symmetric. It was silent for as long
+as every cut was. The traced crop is not, so its right-hand edge was
+stamped onto its left where the mass is a different shape, and drew a row
+of black barbs standing off the silhouette with white between them and
+the hair. `fall_edge` is a list now, one chain per side, and a symmetric
+cut says so by handing back both through `_mirrored`. That is the same
+move `tip_edge` made in task 71, and for the same reason: what looked
+like one thing the framework could derive was really a statement only the
+cut can make.
+
+The mass's own stroke also picked up round joins on the way past. It is
+not what caused the barbs, but SVG defaults a join to `miter` with a limit
+of four, so a sharp enough corner shoots a spike up to four stroke widths
+past the point it is drawing, and this is the first cut whose locks meet
+at real points.
+
+**The hair fill was also escaping its own outline, and there is a test for
+it now** (the owner spotted it, 2026-08-07). The traced crop's closing edge
+was three hand-picked quadratics written as flat multiples of the scale,
+so it sat at a constant radius while the traced crown does not, and
+between two tips the gold painted outside the spikes as a smooth arc. The
+closing edge comes off the mass's own points now, pulled in a fixed
+fraction, so nothing restates the crown. That is the lesson task 59
+already paid for on the long cut: an edge stated twice drifts.
+
+`test_the_front_hair_adds_no_silhouette` is the check that was missing,
+and it is worth having because this failure is *silent*. The closing edge
+is a fill boundary and never carries a stroke, so when it strays there is
+no line out of place, just hair colour where there should be none. It
+found two more leaks in the parked `short_tousled` immediately: its fringe
+ended on a hand-written point that missed the mass's own lock tip by
+0.011 head radii, and its inner crown arc stood at a picked 1.16 under a
+crown whose notches drop to 1.06. Both now read the data rather than
+restating it.
+
+Getting the test to say something true took three attempts and the first
+two both cried wolf, which is recorded in its docstring: comparing radii
+at a shared bearing breaks near a lock tip where the radius moves fast
+against the bearing, shrinking each point toward the head centre breaks at
+a tip too because the inward direction there is along the lock, and a
+coarsely sampled mass reports points on its own outline as outside it by
+the chord sagitta. What works is point-in-polygon against a densely
+sampled mass, with a hair's breadth of tolerance for the stretches that
+retrace it exactly.
+
+**The ear is now at the canon's depth**, over the head and under
+`_hair_front` (the owner asked, 2026-08-07). What had been blocking it
+turned out to be two separate things, and only one of them was about the
+ear.
+
+The first was a bug in the traced crop's own hairline: its `line` ran
+down both sides to the mass's bottom tips and its `back` closed on the
+mass's whole reversed chain, so the front fill covered everything the
+mass covered and left the ear nowhere to be seen. It reads at the chibi
+and all but vanishes at the adult. Floating the ear over the hair would
+have hidden that rather than fixed it; the fringe runs temple to temple
+and stops there now, and the ear reads at both builds.
+
+The second is real and stands: a cut whose side locks live only in the
+mass cannot cover an ear, because the mass is drawn behind the head and
+the ear is on it. `long_blunt` and `short_layered` are both like that, so
+a hint of ear shows at their temples, 91 to 561 px per render. Both are
+slated for re-authoring and this is one more thing the re-author has to
+answer. `out/ear/wedge.py` measures it and `out/trace/ear_*.png` is the
+three depths compared under the traced crop.
+
+The paragraph below is what this said before that change, kept because
+the reasoning still holds for any cut that has not been re-authored.
+
+And **the ear was not, at first, at the depth the canon draws it.** It ships under
 `_hair_mass`, which hides it completely: all four renders are byte for
 byte what they were before the ear existed, so the README's art is
 untouched. The canon's depth is over the head and under the front locks,

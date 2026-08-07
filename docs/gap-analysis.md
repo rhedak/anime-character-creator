@@ -159,6 +159,66 @@ third down Satoshi, and the flat-colour rule, which is about garment
 panels. Hair has always carried two tones, so per-lock tone is not a task
 56 violation.
 
+**Traced on 2026-08-07, and the trace found a blocker nobody had named.**
+The canon's crop was pulled off both references as a radius-per-bearing
+profile in head-radius units and simplified to a **26-segment** quadratic
+chain (`out/trace/`, `v3_*.png` are the fits at several levels). It
+matches the adult closely. It does not port, and the reason is not the one
+that was expected:
+
+| | crown reach | widest | notches |
+| --- | --- | --- | --- |
+| `ref/satoshi-real.jpg` | 1.30 r | 1.17 r at y −0.47 | 0.94 to 0.99 r |
+| `ref/satoshi-chibi.jpg` | 1.68 r | 1.52 r | 1.05 to 1.15 r |
+| ours, both builds | 1.28 r | about 1.15 r | on the skull |
+
+**The canon draws a chibi's hair about 29% bigger against its head than
+an adult's**, in both reach and width, and our architecture has one
+outline per hairstyle in head-radius units, so it cannot say that. Our
+cuts sit on the adult's figure at both builds, which means every chibi we
+ship is wearing an adult's volume of hair. That is a plausible second
+cause of the helmet reading, alongside the tone band, and it was invisible
+until both references were measured in the same units.
+
+Consequences if the adult trace is ported as it stands: at the realistic
+build it clears our skull by +0.080 r and the ear sits 0.030 r inside it,
+which is a fit. At the chibi it sinks 0.044 r *inside* our skull at the
+cheek and the ear pokes 0.094 r out past it. Raising the chibi to the
+canon's own volume would also need `hair_margin` roughly doubled, from
+0.36 to about 0.72, since 1.68 r plus the stroke is well over the current
+−1.36 ceiling.
+
+Read as clearance over the skull rather than as radius, the gap is wider
+than 29%: the adult's hair stands 0.29 head radii clear of its skull and
+the chibi's 0.73, a factor of 2.5. Ours is 0.28 to 0.30 at both builds.
+
+Both calibrations are eye centre to drawn chin, 0.89 r at the adult and
+0.84 at the chibi where `chin_drop` is zero. Cross-checks: the adult's
+figure height over six heads implies a radius within 4.8% of the fit, and
+the chibi's eye half-separation comes to 0.465 r against our house 0.46.
+`out/trace/chibi_check.png` shows the r = 1.0 circle landing on the
+canon's drawn chibi face, which is the check that matters, since the
+whole comparison rests on the two head radii being right.
+
+One cross-check disagreed and is worth having explained rather than
+waved away, because it was 22.8% and the conclusion rests on the radius.
+Dividing the chibi reference's figure height by 2.4 heads gives a radius
+far off the fit. **The references are not drawn at our named builds.**
+Measured skull-top to feet in each reference's own head heights,
+`satoshi-real.jpg` is 5.44 heads against our `realistic` 6.0 and
+`satoshi-chibi.jpg` is 2.74 against our `chibi` 2.4. Once the real head
+count is used the figure-height check reconstructs the fitted radius, so
+it confirms rather than contradicts. It also cuts the other way on the
+finding: the canon's chibi is *less* deformed than ours and still carries
+2.5 times the hair clearance, so the volume is not a side effect of a
+squatter figure.
+
+**Correction to a number recorded earlier:** the crop's widest point was
+written up as 54% down the hair's own height. Measured off the contour it
+has *two* lobes, 1.17 r at 38% down (the temple tuft) and 1.11 r at 65%
+(the lock over the ear), with a waist between them. One figure splitting
+the difference was hiding the shape.
+
 ### 2. Satoko's falls pinch at the jaw and hook inward
 
 **Closed by task 59 on 2026-08-06**, with the fall's outer edge standing

@@ -9,6 +9,7 @@ breaks silently.
 
 from __future__ import annotations
 
+import math
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -92,6 +93,82 @@ def test_the_ear_stays_welded_to_the_skull(build: str) -> None:
                 f" y={y:.3f}; it would cut a line across the cheek"
             )
         prev = end
+
+
+def _walk(start: tuple[float, float], segments: list, per: int = 24) -> list:
+    """A quadratic chain as a dense point list."""
+    pts = [start]
+    prev = start
+    for ctrl, end in segments:
+        for i in range(1, per + 1):
+            t = i / per
+            pts.append(
+                (
+                    (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * ctrl[0] + t**2 * end[0],
+                    (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * ctrl[1] + t**2 * end[1],
+                )
+            )
+        prev = end
+    return pts
+
+
+@pytest.mark.parametrize("hairstyle", sorted(HAIRSTYLES))
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_front_hair_adds_no_silhouette(hairstyle: str, build: str) -> None:
+    """The mass carries the whole outer contour, and no other piece may cross it.
+
+    That is the first rule of the hair contract and nothing enforced it. The
+    hairline's closing edge is a fill boundary, never stroked, so when it strays
+    outside the mass there is no line to give it away: the hair colour simply
+    paints past its own outline, which on the traced crop came out as a smooth
+    gold arc sitting outside the spikes.
+
+    A point passes if it is inside the mass **or** within a hair's breadth of its
+    outline, because most of a closing edge is a deliberate exact retrace of the
+    mass and lands on the boundary rather than inside it. Two cheaper tests were
+    tried and both cried wolf. Comparing radii at a shared bearing fails near a
+    lock's tip, where the radius moves fast enough against the bearing that two
+    samplings of the same curve disagree by more than a real leak. Shrinking each
+    point 1% toward the head centre fails at a tip too: the inward direction there
+    is along the lock, not toward the head, so a radial nudge walks a tip point
+    out through the side of its own shape.
+
+    The mass is sampled hard, 150 points a segment, for a third reason of the same
+    kind: the polygon's chords cut the corner off every curve they stand in for,
+    so a coarse sampling reports a point on the outline as outside it by the
+    sagitta. At 40 a segment that came to 0.015 head radii on `short_tousled`,
+    which is more than the 0.04 of a real leak has any business being near.
+    """
+    p = CharacterParams(hairstyle=hairstyle)
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    fall = character._hair_fall(sk, p)
+    style = HAIRSTYLES[hairstyle]
+    poly = _walk(*style.mass(fall), per=150)
+    edges = list(zip(poly, poly[1:] + poly[:1], strict=True))
+
+    def inside(px: float, py: float) -> bool:
+        hit = False
+        for (ax, ay), (bx, by) in edges:
+            if (ay > py) != (by > py) and px < ax + (py - ay) / (by - ay) * (bx - ax):
+                hit = not hit
+        return hit
+
+    def gap(px: float, py: float) -> float:
+        best = 9.9
+        for (ax, ay), (bx, by) in edges:
+            dx, dy = bx - ax, by - ay
+            n = dx * dx + dy * dy
+            t = 0.0 if n == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / n))
+            best = min(best, math.hypot(px - (ax + t * dx), py - (ay + t * dy)))
+        return best
+
+    _, line, back = style.hairline(fall)
+    for x, y in _walk(line[-1][1], back, per=10):
+        assert inside(x, y) or gap(x, y) <= 0.006, (
+            f"{hairstyle} at {build}: the hairline's closing edge reaches"
+            f" ({x:.3f}, {y:.3f}), {gap(x, y):.3f} head radii outside the mass, so"
+            " the fill paints past its own outline with no stroke to show it"
+        )
 
 
 def _highest_ink(start: tuple[float, float], segments: list) -> float:
