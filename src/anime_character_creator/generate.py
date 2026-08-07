@@ -88,6 +88,10 @@ def main() -> None:
     ap.add_argument("--heads", type=float, help="head-heights tall, overrides --build")
     ap.add_argument("--frame", type=float, help="shoulder against hip, -1 to 1, taller builds only")
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
+    ap.add_argument(
+        "--background",
+        help="paint a background, e.g. white; default is transparent, so the figure composites",
+    )
     args = ap.parse_args()
 
     base = PRESETS[args.preset] if args.preset else CharacterParams()
@@ -105,7 +109,7 @@ def main() -> None:
     if face:
         params = replace(params, face=replace(params.face, **face))
 
-    svg = render_character(params)
+    svg = render_character(params, background=args.background)
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

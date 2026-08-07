@@ -6,6 +6,26 @@ symptom is recognisable, and with what fixed it. Read before writing any
 new measuring code: four measurement passes were thrown away learning
 these, and `probe.py` exists so they do not have to be learned again.
 
+## `convert("RGB")` turns our transparent background black
+
+Our renders have been transparent since 2026-08-07, the references are
+opaque. `Image.open(path).convert("RGB")` discards alpha rather than
+compositing it, so every transparent pixel arrives as `(0, 0, 0)`.
+
+The symptom is not a crash. `is_bg` looks for a channel at or above 236
+on all three, black fails it, so **the entire canvas counts as figure**:
+`figure_box` returns the whole image, the normalised crop is the full
+400x500 frame rather than the figure, and every width below is then
+divided by the wrong height. The references measure correctly at the same
+time, so the comparison reads as a huge regression in our output rather
+than as a broken loader. `strip` output makes it obvious (our panel is
+suddenly tiny inside a full-canvas box); the numeric modes do not.
+
+Use `flatten(path)` in `probe.py`, which composites onto white when the
+image has alpha and falls through to `convert("RGB")` when it does not,
+so the references are untouched. Any new measuring code that opens an
+image directly needs the same two lines.
+
 ## Chained landmark inference poisons everything downstream
 
 **The mistake.** Deriving `shoulder_y` from a colour scan, then taking

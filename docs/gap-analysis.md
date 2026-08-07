@@ -17,8 +17,15 @@ figure and scaled to the same height, then measured and looked at. The
 `gap-analysis` skill in `.claude/skills/gap-analysis/` carries the
 procedure and the tooling, so a re-run after a shape pass reproduces
 these numbers the same way rather than measuring afresh. Strips
-regenerate into `out/gap-analysis/`, while each task that acted on a gap
-keeps its own `out/NN/` beside it:
+regenerate into `out/gap-analysis/`.
+
+Each task that acted on a gap used to keep its own `out/NN/` of renders
+beside it. **Those were deleted on 2026-08-07**: `out/` is ignored, so
+they were never on a clone, and 128MB of snapshots outlived their use
+once the finding was written down. The `out/NN/...` pointers below name
+pictures that no longer exist, kept because they still say which task
+drew the comparison. The measuring code was promoted to `harness/`
+rather than deleted with them.
 
 | File | What it shows |
 | --- | --- |
@@ -162,7 +169,7 @@ panels. Hair has always carried two tones, so per-lock tone is not a task
 **Traced on 2026-08-07, and the trace found a blocker nobody had named.**
 The canon's crop was pulled off both references as a radius-per-bearing
 profile in head-radius units and simplified to a **26-segment** quadratic
-chain (`out/trace/`, `v3_*.png` are the fits at several levels). It
+chain (`harness/trace/`, whose `v3.py` draws the fits at several levels). It
 matches the adult closely. It does not port, and the reason is not the one
 that was expected:
 
@@ -202,13 +209,13 @@ one clear of the hair, and `ref/satoshi-ear.png` is the owner's crop of
 it. What did *not* need changing is the width: stand-out over height is
 0.361 in the canon chibi against 0.370 in ours, so `_EAR_OUT` at 0.17,
 which was picked by eye, is where the measurement puts it. Traced in
-`out/ear2/`.
+`harness/ear2/`.
 
 Both calibrations are eye centre to drawn chin, 0.89 r at the adult and
 0.84 at the chibi where `chin_drop` is zero. Cross-checks: the adult's
 figure height over six heads implies a radius within 4.8% of the fit, and
 the chibi's eye half-separation comes to 0.465 r against our house 0.46.
-`out/trace/chibi_check.png` shows the r = 1.0 circle landing on the
+`harness/trace/chibi.py` draws the r = 1.0 circle landing on the
 canon's drawn chibi face, which is the check that matters, since the
 whole comparison rests on the two head radii being right.
 
@@ -227,7 +234,7 @@ squatter figure.
 
 **The fringe is traced, off `ref/satoshi-chibi-fringe.png`.** Five
 readings off the full drawing failed first and all five are written up in
-`out/trace/fringe.py` and `fringe2.py`, because each failed differently
+`harness/trace/fringe.py` and `fringe2.py`, because each failed differently
 and each was caught by eye against the reference's own outline rather
 than by any number: first skin going down runs on to the pupil between
 two locks; deepest hair above a solid run of skin loses a lock that sits

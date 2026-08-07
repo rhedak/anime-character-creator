@@ -20,9 +20,16 @@ rim, roughened fringe, fade rebalanced; crown cowlick flicks were tried
 and reverted on the owner's call, and were re-opened on 2026-08-07 as
 part of the hair rebuild below; tasks 49-54), plus the fade move (both cuts now change tone half way
 down the hair, at every build, off one shared `_HAIR_FADE`; task 55).
-Per-task snapshots are in `out/35` through `out/73`, one directory per
-task, with the gap analysis's own strips in `out/gap-analysis` and the
-ear pass in `out/ear`.
+Per-task snapshots used to sit in `out/35` through `out/73`, one
+directory per task. **They were deleted on 2026-08-07**, 128MB of
+renders in an ignored directory, so they were never on a fresh clone
+anyway and the findings they supported are written up here and in
+`docs/gap-analysis.md`. What was kept is the code that measured them:
+the harnesses moved to `harness/`, which has its own index. Citations
+below of the form `out/NN/...` name images that no longer exist; they
+are left in place because knowing which task drew a picture still tells
+you what was being compared. Where a surviving script regenerates one,
+the script is named instead.
 
 On top of that, one change that touches no shape: the code is now a
 proper package (`src/anime_character_creator/`, `pyproject.toml`, uv,
@@ -167,7 +174,7 @@ canon ear is 0.263 head radii wide and sticks out past a cheek sitting at
 at the adult and 0.94 at the chibi, so matching the total is arithmetically
 impossible and matching the width would have given an elf. Our head being
 wide against the canon's is the open residual under gap 2. The ear takes
-0.17, chosen by eye off `out/ear/vary_chibi.png` and `vary_realistic.png`.
+0.17, chosen by eye off the sheets `harness/ear/lab.py` draws.
 
 Two pieces of machinery came with it. `_head_pt` is now the single
 definition of the skull's profile, with `_head_shape` walking it and a
@@ -201,7 +208,7 @@ the way anatomy says. The span shipped is still the adult's: turning that
 into a build-riding one is a placement change and the ask was shape. And
 **a check that came out right**: stand-out over height is 0.361 in the
 canon chibi against 0.370 in what we already had, so `_EAR_OUT` at 0.17,
-picked by eye, needed nothing. Harness in `out/ear2/`.
+picked by eye, needed nothing. Harness in `harness/ear2/`.
 
 **Satoshi's crop is traced** (the owner's method, 2026-08-07: outline the
 canon's hair, then apply the shape to our head). The harness is
@@ -228,8 +235,8 @@ two stroke widths has the strokes either side of it overlapping and no
 amount of rendering bigger rescues it. Counting the fit's edges that fall
 under two strokes gives a clean cliff: 50 segments has 11 to 15 of them,
 32 has 4 to 6, and 26 has none at either build. **26 is the level**, being
-the finest that draws. `out/trace/weights.png` is the same trace at three
-levels drawn at the real weight, and `out/trace/detail.py` is the count.
+the finest that draws. `harness/trace/weights.py` draws the same trace at three
+levels at the real weight, and `harness/trace/detail.py` is the count.
 
 **The trace matches the adult and does not port to the chibi, and the
 reason is a gap nobody had named.** The canon draws a chibi's hair about
@@ -261,17 +268,16 @@ only ever exercised on default `CharacterParams`; pointed at a preset it
 comes under the `ref-out/` byte check and the four-render smoke test, at
 both builds and on Satoshi's own frame and palette. Checked outside the
 blonde range too, near-black on plum, teal on cream and a single-tone red
-(`out/trace/loud.py`).
+(`harness/trace/loud.py`).
 
 **What is shipped is one quarter of a cut, and the other three quarters
-are visibly borrowed.** `out/trace/see_chibi.png`
-and `see_realistic.png` are the canon, the traced crop and what ships
-today, side by side.
+are visibly borrowed.** `harness/trace/see.py` draws the canon, the traced
+crop and what ships today, side by side.
 
 **The fringe is traced off the owner's own crop, after five readings off
 the full drawing failed.** Each failed differently and each was caught by
 eye against the reference's outline rather than by a number; all five are
-written up in `out/trace/fringe.py` and `fringe2.py` so the next attempt
+written up in `harness/trace/fringe.py` and `fringe2.py` so the next attempt
 does not repeat them. The reason none of them worked is worth stating as
 a limit rather than as five near-misses: **on this JPEG the canon's pale
 tips sit colorimetrically between its gold and its skin**, the forehead
@@ -312,10 +318,10 @@ cross-checks the calibration at 0.459 head radii against our house 0.46.
 Eighteen segments for the mass and eight for the hairline, both the finest
 levels with no edge under two stroke widths. **Satoko now wears it.** It renders fuller and rounder than `long_blunt`,
 its parting reads, and the pale follows the falls instead of cutting a
-level line across them; `out/trace/satoko_shipped.png` puts both builds
+level line across them; `harness/trace/satoko_see.py` puts both builds
 beside their references. The gain is smaller than Satoshi's was, which is
 expected: her `long_blunt` bell was tuned by eye in task 59 and was
-already close to the traced outline (`out/trace/satoko_port.png` overlays
+already close to the traced outline (`harness/trace/satoko_port.py` overlays
 them).
 
 **The line down the inside of each fall was missing** (the owner spotted
@@ -497,7 +503,7 @@ mass cannot cover an ear, because the mass is drawn behind the head and
 the ear is in front of it. `long_blunt` and `short_layered` are both like that, so
 a hint of ear shows at their temples, 91 to 561 px per render. Both are
 slated for re-authoring and this is one more thing the re-author has to
-answer. `out/ear/wedge.py` measures it and `out/trace/ear_*.png` is the
+answer. `harness/ear/wedge.py` measures it and `harness/trace/eardepth.py` draws the
 three depths compared under the traced crop.
 
 The paragraph below is what this said before that change, kept because
@@ -511,7 +517,7 @@ and at that depth both cuts fill the temple solidly enough that what
 appears is a wedge of ear through the hair's inner edge rather than an
 ear, 90 to 630 px of it per render. That is the coupling the owner
 diagnosed, measured rather than argued: the hair owns the ear's space.
-`out/ear/wedge.py` reproduces it and `out/ear/wedge.png` is the picture.
+`harness/ear/wedge.py` reproduces it, and draws the picture.
 **Moving `_ears` out from under `_hair_mass` is one line and belongs in
 the hair rebuild**, once a cut leaves the ear room. (It landed just
 *before* `_head` rather than just after, for the reason at the top of
@@ -534,7 +540,26 @@ a shape.** Miss it and the README shows art the code no longer produces:
 ./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
 ```
 
-Anything else goes to `out/`, which is ignored.
+Anything else goes to `out/`, which is ignored, and which was emptied on
+2026-08-07: 128MB of per-task snapshots, with the scripts that measured
+them promoted to `harness/` first.
+
+**Those four render on transparency** as of 2026-08-07, the owner's call:
+a character gets composited onto a scene, so a white rectangle behind it
+was never part of the drawing, only something a caller then had to
+remove. `render_character` takes `background`, defaulting to none, and
+the CLI takes `--background white` for the old opaque document. The
+`fill="white"` still in each `.svg` is the sclera of an eye, which is why
+the test walks the elements rather than searching the text.
+
+That change has one consequence that would otherwise bite silently, and
+it is the same shape as every other measurement trap here. Anything that
+finds the figure by looking for near-white background has to flatten the
+alpha onto white on load; a plain `convert("RGB")` throws the alpha away
+and leaves the background **black**, so the whole canvas counts as ink
+and the numbers come out wrong rather than the run failing.
+`probe.py`'s loader and `harness/trousers/measure.py` both do the
+flattening now, and both were checked against the transparent renders.
 
 What is parametrized:
 

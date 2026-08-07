@@ -63,7 +63,14 @@ src = ["src", "tests"]
 # README are written to be read rather than to satisfy a formatter: a grouped
 # import that shows the whole surface at a glance turns into thirteen lines
 # under it. The code that ships is what these tools police.
-extend-exclude = ["*.md"]
+# `harness/` is excluded for the same reason. Those are the scratch scripts that
+# measured `ref/`, promoted out of the ignored `out/` so they survive a cleanup.
+# They are judged on what they measured, not on style, and several are kept
+# because they are records of readings that turned out to be wrong: running a
+# formatter over the evidence is not an improvement. Linting them cold reports
+# 199 errors, almost all `sys.path` juggling and unused imports left from
+# bisecting a bad reading.
+extend-exclude = ["*.md", "harness"]
 
 [tool.ruff.lint]
 select = [

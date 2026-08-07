@@ -3279,7 +3279,11 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
-def render_character(p: CharacterParams | None = None, sk: Skeleton | None = None) -> str:
+def render_character(
+    p: CharacterParams | None = None,
+    sk: Skeleton | None = None,
+    background: str | None = None,
+) -> str:
     """Draw one character and return the whole SVG document as a string.
 
     `p` carries what the character *is* (colours, garments, face, haircut) and
@@ -3289,6 +3293,18 @@ def render_character(p: CharacterParams | None = None, sk: Skeleton | None = Non
 
         render_character(PRESETS["satoko"])
         render_character(PRESETS["satoko"], build_skeleton(heads=BUILDS["realistic"]))
+
+    `background` is any SVG paint, and defaults to **none at all**, so the
+    figure comes out on transparency. That is what a character is for here: it
+    gets composited onto a scene, and a white rectangle behind it is not part of
+    the drawing, it is something the caller then has to remove. Pass
+    `background="white"` to get the old opaque document back, which is what the
+    CLI's `--background` does.
+
+    One consequence worth knowing before measuring anything: tools that find the
+    figure by looking for near-white background need the alpha flattened onto
+    white first, or every transparent pixel reads as black and the whole canvas
+    counts as ink. `probe.py` and the `harness/` scripts do that on load.
 
     Nothing is written to disk and nothing is rasterized here. The document is
     deterministic: the same arguments give the same bytes, which is what lets
@@ -3322,10 +3338,14 @@ def render_character(p: CharacterParams | None = None, sk: Skeleton | None = Non
     ]
 
     body = "\n  ".join(layer for layer in layers if layer)
+    # Emitted only when asked for, rather than always drawn and sometimes
+    # painted over: an absent rect is the transparency, there is no other way to
+    # say it in SVG.
+    bg = f'  <rect width="100%" height="100%" fill="{background}" />\n' if background else ""
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{sk.canvas_w:.0f}" height="{sk.canvas_h:.0f}" '
         f'viewBox="0 0 {sk.canvas_w:.0f} {sk.canvas_h:.0f}">\n'
-        f'  <rect width="100%" height="100%" fill="white" />\n'
+        f"{bg}"
         f"  {body}\n"
         f"</svg>\n"
     )

@@ -32,13 +32,21 @@ what they are.
 
 ```python
 render_character(p: CharacterParams | None = None,
-                 sk: Skeleton | None = None) -> str
+                 sk: Skeleton | None = None,
+                 background: str | None = None) -> str
 ```
 
 Draws one character and returns the whole SVG document as a string.
-Nothing is written to disk and nothing is rasterized. Both arguments are
-optional: no params gives the stock character, no skeleton builds one
+Nothing is written to disk and nothing is rasterized. All three arguments
+are optional: no params gives the stock character, no skeleton builds one
 from `p.heads` and `p.frame`.
+
+`background` is any SVG paint and defaults to none, so the figure comes
+out on transparency and composites straight onto a scene. Pass
+`background="white"` for an opaque document. One thing to know before
+measuring a render: a tool that finds the figure by looking for near-white
+background has to flatten the alpha onto white first, or every transparent
+pixel reads as black and the whole canvas counts as ink.
 
 ```python
 svg = render_character(PRESETS["satoko"])

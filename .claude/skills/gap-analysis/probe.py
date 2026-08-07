@@ -41,10 +41,29 @@ BG = 236  # a channel at or above this on all three counts as background
 # shared
 
 
+def flatten(path: str) -> Image.Image:
+    """Open an image with any transparency composited onto white.
+
+    Our own renders are transparent as of 2026-08-07, and a straight
+    `convert("RGB")` on those discards the alpha and leaves the background
+    reading as **black**, which is the opposite of what `is_bg` looks for: the
+    whole canvas would count as ink and every measurement here would come out
+    silently wrong rather than failing. The references are opaque already, so
+    flattening changes nothing for them and puts both sides on one footing.
+    """
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA") or "transparency" in im.info:
+        sheet = Image.new("RGB", im.size, "white")
+        im = im.convert("RGBA")
+        sheet.paste(im, (0, 0), im)
+        return sheet
+    return im.convert("RGB")
+
+
 def pixels(path: str) -> tuple[int, int, object]:
     """Width, height and a pixel accessor. Callers that need the `Image` itself
     open it themselves, so nothing unpacks a value it does not use."""
-    im = Image.open(path).convert("RGB")
+    im = flatten(path)
     return im.size[0], im.size[1], im.load()
 
 
@@ -111,7 +130,7 @@ def runs_in_row(p, W: int, y: int, hit) -> list[tuple[int, int]]:
 
 
 def normalised(path: str, height: int) -> Image.Image:
-    im = Image.open(path).convert("RGB")
+    im = flatten(path)
     W, H = im.size
     x0, y0, x1, y1 = figure_box(im.load(), W, H)
     crop = im.crop((x0, y0, x1 + 1, y1 + 1))

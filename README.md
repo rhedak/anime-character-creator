@@ -120,6 +120,9 @@ Add `--flat` to disable the cel-shading shadow shapes and see the flat
 silhouette only. Output is written as both `.svg` (inspect/edit
 directly in a browser or Inkscape) and `.png` (if cairosvg works).
 
+**The background is transparent**, so a render drops onto a scene as it
+is. Pass `--background white` (or any SVG paint) if you want it filled.
+
 ## How it works
 
 The package lives in `src/anime_character_creator/`. Longer notes on the

@@ -54,6 +54,26 @@ def test_render_is_deterministic() -> None:
 
 
 @pytest.mark.parametrize("preset", sorted(PRESETS))
+def test_the_figure_is_drawn_on_transparency(preset: str) -> None:
+    """No background rectangle unless one is asked for.
+
+    The owner's call on 2026-08-07: a character is composited onto a scene, so
+    an opaque white rectangle behind it is not part of the drawing, it is
+    something the caller has to undo. Checked by walking the elements rather
+    than by searching the text, because `fill="white"` legitimately appears in
+    the drawing: it is the sclera of every eye.
+    """
+    for want in (None, "white", "#ff00ff"):
+        root = ET.fromstring(render_character(PRESETS[preset], background=want))
+        full = [
+            el
+            for el in root
+            if el.tag.endswith("rect") and el.get("width") == "100%" and el.get("height") == "100%"
+        ]
+        assert [el.get("fill") for el in full] == ([] if want is None else [want])
+
+
+@pytest.mark.parametrize("preset", sorted(PRESETS))
 @pytest.mark.parametrize("build", sorted(BUILDS))
 def test_ref_out_matches_the_code(preset: str, build: str) -> None:
     """The same check `./refresh-ref-out.sh --check` makes, minus the PNGs.

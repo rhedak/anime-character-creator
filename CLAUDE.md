@@ -49,7 +49,13 @@ An installed package under `src/anime_character_creator/`, so the
 modules below import each other relatively and the CLI is the
 `anime-character-creator` console script. `pyproject.toml` holds the
 metadata, the `uv` dependency groups and the `ruff` config; `docs/` holds
-the architecture notes and the API reference.
+the architecture notes and the API reference; `harness/` holds the
+one-off scripts that measured `ref/`, promoted there out of the ignored
+`out/` so a cleanup cannot take them. Run one with
+`./harness/run.sh harness/<pass>/<script>.py`, which handles the cairo
+variable and makes the output directory. It is excluded from ruff on
+purpose: several of those scripts are records of readings that were
+wrong, and reformatting them would be editing the evidence.
 
 - `src/anime_character_creator/skeleton.py`: proportion anchors (`Skeleton` dataclass +
   `build_skeleton()`). Change here to adjust overall proportions.
