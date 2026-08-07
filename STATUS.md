@@ -278,7 +278,47 @@ locks, 17 of 22 sides in solid ink, and that drawing it needed a contract
 slot for overlapping locks. The two reverts that claim caused were right
 on the evidence available; the evidence was wrong.
 
-Two residuals. The trace is off the *chibi* reference, and our fringe is
+**The tone boundary follows the blades now** (the owner's call,
+2026-08-07, reopening the lock below for one change). `_crop_tip_edge`
+was a single wave at a fixed height, which could only say "pale below this
+line" and read as a white liner under a gold cap. It is the fringe's own
+traced chain lifted by `_CROP_TONE_LIFT` and extended out to the mass on
+both sides.
+
+The cheap trick is worth understanding rather than just using: a
+**uniform** lift over a boundary whose blades end at different depths
+leaves every blade pale from a fixed distance above its own tip. So the
+pale lands in the tips and the gold at the roots without anything being
+stated per lock, and one traced list does two jobs instead of two lists
+that can drift apart. What it gives up is that the canon varies how far
+the pale climbs from lock to lock; here they all get the same depth. The
+bar was the spirit of an edge per lock, not the canon's own.
+
+This does *not* use `tip_edge`'s list of regions, which task 71 added for
+exactly this and which nothing has needed yet. Per-lock regions remain the
+way to vary the depth per lock if that ever matters.
+
+**The chibis are locked in** (the owner's call, 2026-08-07): the chibi
+crop is where it should be and further work goes elsewhere. Nothing extra
+is needed to hold it, because `ref-out/` already pins all four renders
+byte for byte and `test_ref_out_matches_the_code` fails the moment a shape
+changes. That is the lock: refreshing it is a deliberate act, so a chibi
+cannot drift without someone choosing to let it.
+
+**The realistic build's hair is too compressed, and it is deferred, but
+here is the measurement while it is fresh.** The band of hair between the
+fringe's highest notch and the crown comes to 1.035 head radii at the
+chibi and 0.683 at the adult, while the blades themselves run 0.506 at
+both. So the fringe eats half the depth at the chibi and three quarters
+of it at the adult, which is the squashed look. The cause is structural
+rather than a bad number: **the mass rides the build and the fringe does
+not**, so an adult wears a chibi's fringe under an adult's crown. Two ways
+out, and the second is the one that just worked here: scale the fringe on
+the same `volume` the mass uses, or trace an adult fringe from a crop of
+`ref/satoshi-real.jpg` the way the chibi's came from
+`ref/satoshi-chibi-fringe.png`.
+
+Two residuals on the trace itself. It is off the *chibi* reference, and our fringe is
 fixed rather than scaled by build, so it sits a little higher over the
 adult's eyes than the canon puts it. And the tone is still one wave
 across the head rather than a region per lock, which is the original

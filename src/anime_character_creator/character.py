@@ -803,6 +803,10 @@ _CROP_NOTCHES: list[Point] = [
 # cross the outline between two traced points; the mass paints the strip left
 # over in the same colour, so nothing shows.
 _CROP_FILL_INSET = 0.06
+# How far above the fringe's own edge the gold gives way to the pale tips, in
+# head radii. The blades run about 0.5 from notch to tip, so this is roughly how
+# much of each blade comes out pale.
+_CROP_TONE_LIFT = 0.26
 # How far the lock divisions lean off vertical, and how far they run up from
 # their notch. Short: a division marks a join, it does not have to travel, and
 # full-length ones hang off the fringe as a curtain of needles.
@@ -904,30 +908,38 @@ def _crop_hairline_shape(fall: float) -> tuple[Point, list[Segment], list[Segmen
 
 
 def _crop_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
-    """Where the crop fades to its tip tone.
+    """Where the crop fades to its tip tone: the fringe's own edge, lifted.
 
-    One wavy region for now, the same construction the short cut uses, so the cut
-    is two-tone while the silhouette is being judged. The per-lock regions this
-    cut is eventually for are the step after the fringe: the contract already
-    takes a list, so adding them changes nothing here but this function.
+    The same traced chain the fringe is drawn from, moved up by `_CROP_TONE_LIFT`
+    and extended out to the mass on both sides. That is the cheap way to get what
+    the canon has, and it works for a reason worth stating: a *uniform* lift over
+    a boundary whose blades end at different depths leaves every blade pale from a
+    fixed distance above its own tip, so the pale sits in the tips and the gold at
+    the roots without any of it being stated per lock.
+
+    What it does not reproduce is that the canon varies how far the pale climbs
+    from lock to lock. This gives them all the same depth. The bar here is the
+    spirit of an edge per lock rather than the canon's own, and one list used
+    twice is worth more than a second list that can drift from the first.
+
+    It replaces a single wave at a fixed height, which could only ever say "pale
+    below this line" and read as a white liner under a gold cap.
     """
     v = fall / _CROP_BASE_TIP
-    mid = _fade_y(-1.30 * v, fall) - 0.06
-    edge = 1.30 * v
+    lift = _CROP_TONE_LIFT
+    edge = 1.35 * v
     floor = fall + 1.5
+    sx, sy = _CROP_FRINGE_START
+    ex, ey = _CROP_FRINGE[-1][1]
     return [
         (
-            (-edge, mid - 0.10),
+            (-edge, sy - lift),
             [
-                ((-edge * 0.80, mid + 0.06), (-edge * 0.66, mid - 0.04)),
-                ((-edge * 0.52, mid + 0.10), (-edge * 0.42, mid - 0.02)),
-                ((-edge * 0.26, mid + 0.10), (-edge * 0.14, mid)),
-                ((0.00, mid + 0.12), (edge * 0.14, mid)),
-                ((edge * 0.26, mid + 0.10), (edge * 0.42, mid - 0.02)),
-                ((edge * 0.52, mid + 0.10), (edge * 0.66, mid - 0.04)),
-                ((edge * 0.80, mid + 0.06), (edge, mid - 0.10)),
+                (((-edge + sx) / 2, sy - lift), (sx, sy - lift)),
+                *(((c[0], c[1] - lift), (e[0], e[1] - lift)) for c, e in _CROP_FRINGE),
+                (((ex + edge) / 2, ey - lift), (edge, ey - lift)),
                 ((edge, floor * 0.6), (edge, floor)),
-                ((0.00, floor), (-edge, floor)),
+                ((0.0, floor), (-edge, floor)),
             ],
         )
     ]
