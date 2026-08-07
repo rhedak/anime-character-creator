@@ -2939,14 +2939,23 @@ def _ear_outer(build: float) -> tuple[Point, list[Segment]]:
 
 
 def _ears(sk: Skeleton, p: CharacterParams) -> str:
-    """Ears, drawn over the head so the skull's outline stops at the ear instead
-    of running behind it.
+    """Ears, drawn *under* the head so the face's own outline runs across them.
 
-    The fill closes on a straight chord between the two attach points, which
-    sits inside the skull at every build, and only the outer arc carries a
-    stroke. That is what welds the ear on: the skin covers the length of head
-    outline the ear spans, no line crosses the join, and the silhouette reads as
-    one contour that bulges at the ear rather than as a shape stuck to a circle.
+    That is the canon's construction, and looking at it beside ours was what
+    settled it (`out/ear2/depth.png`, the owner's call on 2026-08-07): the
+    reference draws one unbroken heavy line down the side of the face and the
+    ear behind it, with only the part past that line showing. Drawn over the
+    head instead, the ear's rim runs into the face's outline and joins it, and
+    the two read as one silhouette that happens to bulge rather than as an ear
+    behind a face.
+
+    So what is visible here is the arc outside the skull and nothing else. The
+    fill still closes on a straight chord between the attach points, but the
+    chord and everything inboard of it is now painted over by the head; it is
+    there to give the sliver outside the skull something to be part of. Only the
+    outer arc carries a stroke, and the arc meets the skull exactly at both
+    attach points, so it emerges from the face's outline rather than crossing
+    it.
     """
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk)
@@ -3304,8 +3313,10 @@ def render_character(p: CharacterParams | None = None, sk: Skeleton | None = Non
         _belt(sk, p),
         _pouches(sk, p),
         _arms(sk, p),
-        _head(sk, p),
+        # The ear goes under the head and over the back hair: the canon runs the
+        # face's outline unbroken across the ear and hangs the hair behind it.
         _ears(sk, p),
+        _head(sk, p),
         _face(sk, p),
         _hair_front(sk, p),
     ]

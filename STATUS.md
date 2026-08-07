@@ -471,10 +471,18 @@ the chord sagitta. What works is point-in-polygon against a densely
 sampled mass, with a hair's breadth of tolerance for the stretches that
 retrace it exactly.
 
-**The ear is now at the canon's depth**, over the head and under
-`_hair_front` (the owner asked, 2026-08-07). What had been blocking it
-turned out to be two separate things, and only one of them was about the
-ear.
+**The ear is now at the canon's depth**, over the back hair and under
+`_head` (the owner asked, 2026-08-07). It went in over the head first and
+moved under it later the same day, once the traced outline made the
+difference legible: the canon runs one unbroken heavy line down the side
+of the face with the ear behind it, and over the head our rim ran into
+that outline and joined it, so the two read as a single silhouette that
+bulges rather than as an ear behind a face. `out/ear2/depth.png` is the
+canon and both depths side by side. Everything below about *reaching*
+that depth stands; only which side of `_head` it lands on changed.
+
+What had been blocking it turned out to be two separate things, and only
+one of them was about the ear.
 
 The first was a bug in the traced crop's own hairline: its `line` ran
 down both sides to the mass's bottom tips and its `back` closed on the
@@ -486,7 +494,7 @@ and stops there now, and the ear reads at both builds.
 
 The second is real and stands: a cut whose side locks live only in the
 mass cannot cover an ear, because the mass is drawn behind the head and
-the ear is on it. `long_blunt` and `short_layered` are both like that, so
+the ear is in front of it. `long_blunt` and `short_layered` are both like that, so
 a hint of ear shows at their temples, 91 to 561 px per render. Both are
 slated for re-authoring and this is one more thing the re-author has to
 answer. `out/ear/wedge.py` measures it and `out/trace/ear_*.png` is the
@@ -504,8 +512,10 @@ appears is a wedge of ear through the hair's inner edge rather than an
 ear, 90 to 630 px of it per render. That is the coupling the owner
 diagnosed, measured rather than argued: the hair owns the ear's space.
 `out/ear/wedge.py` reproduces it and `out/ear/wedge.png` is the picture.
-**Moving `_ears` to just after `_head` is one line and belongs in the
-hair rebuild**, once a cut leaves the ear room.
+**Moving `_ears` out from under `_hair_mass` is one line and belongs in
+the hair rebuild**, once a cut leaves the ear room. (It landed just
+*before* `_head` rather than just after, for the reason at the top of
+this section.)
 
 ## Where it stands
 

@@ -72,14 +72,17 @@ def test_ref_out_matches_the_code(preset: str, build: str) -> None:
 def test_the_ear_stays_welded_to_the_skull(build: str) -> None:
     """The ear's outer contour has to stay outside the skull it grows off.
 
-    The ear is drawn over the head and closes on a straight chord between its two
-    attach points, so the skin covers the length of head outline it spans and the
-    silhouette reads as one contour. That only works while the contour is outside
-    the skull: let any of it fall inside and the ear's stroke cuts a line across
-    the cheek and the head's own outline reappears beside it. Nothing enforces
-    that, and the skull moves under the ear whenever the taper is retuned, which
-    is exactly the kind of change that would break this without looking broken in
-    the arithmetic.
+    The ear is drawn under the head, so the only part of it anyone ever sees is
+    the part outside the skull. Any stretch of the contour that falls inside is
+    painted over and simply is not there, and an ear that has quietly lost its
+    lower half still renders a perfectly good head. Nothing enforces this, and
+    the skull moves under the ear whenever the jaw taper is retuned, which is
+    exactly the kind of change that would break it without looking broken in the
+    arithmetic.
+
+    It was worth checking under the old z-order too, where the ear sat on top of
+    the head: there a contour inside the skull cut a line across the cheek
+    instead of disappearing. Same bound, different symptom.
     """
     sk = build_skeleton(heads=BUILDS[build])
     start, segments = character._ear_outer(sk.build)
@@ -98,22 +101,28 @@ def test_the_ear_stays_welded_to_the_skull(build: str) -> None:
 
 
 @pytest.mark.parametrize("preset", sorted(PRESETS))
-def test_the_ear_is_over_the_head_and_under_the_front_hair(preset: str) -> None:
-    """The canon's own arrangement: back hair behind the ear, front locks over it.
+def test_the_ear_is_over_the_back_hair_and_under_the_face(preset: str) -> None:
+    """The canon's own arrangement: back hair behind the ear, face over it.
 
     A z-order is one line in a list and reads as housekeeping, so it is exactly
     the kind of thing that gets moved back without anyone noticing. This one is
-    not housekeeping: put the ear under the hair mass and it vanishes completely,
-    put it over the front hair and it floats on top of locks that should hang in
-    front of it. Both look plausible in the code and only one is right.
+    not housekeeping, and both directions are wrong in a way that still renders.
+    Put the ear under the hair mass and it vanishes completely, because the mass
+    is a filled shape wider than the head. Put it over the head and its rim runs
+    into the face's outline and joins it, so the two read as one silhouette that
+    bulges rather than as an ear behind a face; the canon draws the face's line
+    unbroken and the ear behind it, which is the owner's call recorded in
+    `_ears`.
     """
     p = PRESETS[preset]
     sk = build_skeleton(heads=p.heads, frame=p.frame)
     svg = render_character(p, sk)
-    head, ear, front = character._head(sk, p), character._ears(sk, p), character._hair_front(sk, p)
-    assert svg.index(head) < svg.index(ear), f"{preset}: the ear is behind the head, so it is gone"
-    assert svg.index(ear) < svg.index(front), (
-        f"{preset}: the ear is over the front hair, so it sits on locks that hang in front of it"
+    mass, ear, head = character._hair_mass(sk, p), character._ears(sk, p), character._head(sk, p)
+    assert svg.index(mass) < svg.index(ear), (
+        f"{preset}: the ear is behind the hair mass, so it is gone"
+    )
+    assert svg.index(ear) < svg.index(head), (
+        f"{preset}: the ear is over the head, so its rim joins the face's outline"
     )
 
 
