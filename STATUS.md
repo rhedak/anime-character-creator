@@ -20,7 +20,7 @@ rim, roughened fringe, fade rebalanced; crown cowlick flicks were tried
 and reverted on the owner's call, and were re-opened on 2026-08-07 as
 part of the hair rebuild below; tasks 49-54), plus the fade move (both cuts now change tone half way
 down the hair, at every build, off one shared `_HAIR_FADE`; task 55).
-Per-task snapshots are in `out/35` through `out/62`, one directory per
+Per-task snapshots are in `out/35` through `out/73`, one directory per
 task, with the gap analysis's own strips in `out/gap-analysis`.
 
 On top of that, one change that touches no shape: the code is now a
@@ -73,6 +73,62 @@ jaw. Narrowing the skull and easing the taper holds the jaw within 2% to
 against the canon, whose hair lies over the temples where ours stands
 off, so that half was picked on the strips. The chibi is unchanged to the
 eye.
+
+**Tasks 63, 64 and 70** then took gap 8's two sharpest items and the
+palette's one open one. The arm is 0.86 of the sleeve's width rather than
+0.99, so a garment hangs over a thinner limb instead of the two reading
+as one plank, and its top edge still sits on `_sleeve_hem_y`, so the hem
+line and the top of the limb stay one line. `_wrist_cuff` closes the
+undersleeve, in the second tone, drawn only where there is an
+undersleeve. The shoulder's slope went from 0.14 of the shoulder-to-waist
+drop to 0.24, with its control moved half way out and most of the way
+down, so the edge leaves the neck descending rather than holding its
+height and then turning a corner. And `HAIR` is the canon's `#e3b448`,
+which carries to the brows through `shade()`.
+
+**Tasks 65 to 69** finished gap 8's construction detail and gap 9. The
+apron is narrower with the pouches flanking it rather than sitting on its
+corners, and hangs a share of the skirt's own drop instead of a fixed lift
+off its hem, which is what had collapsed it to a band across a chibi's
+hips; the belt gained the knotted tie the canon hangs down the apron's
+front, and a keeper beside the buckle. The underskirt is pleated with
+lines and hangs at 0.86 of the skirt's hem width rather than 0.97, which
+with `hem_half_w` coming in to 1.02 at chibi took the hem rows from 13%
+to 20% wide of the canon to within 7%. The trousers are one garment:
+`_trouser_seat` joins the legs with a shallow crotch behind them and
+`_trouser_seams` draws the fly and hip pockets in front of them. The boot
+has a cuff band, a tongue under the laces and eyelets where they turn.
+The hand has two finger strokes above build 0.5.
+
+One analysis claim turned out to be wrong and was reverted inside task
+68: the boot is not 17% to 27% narrow of the canon, it is a third
+*wider*. The silhouette agreed only because the canon stands its feet
+further apart, and outer edge to outer edge is stance plus boot.
+
+**Task 71 changed the hair contract**, the piece both hair gaps were
+waiting on: `tip_edge` is a list of closed regions clipping to their
+union, so a cut can give every lock its own tone boundary instead of
+running one level line across the whole head. Every render came out byte
+for byte identical, which is what that refactor should do. A ceiling test
+came with it, solving each quadratic for its own extremum, so a crown
+that would be sliced flat against the canvas edge now fails loudly
+instead of shipping; the slack today is 16px on the long cut's chibi and
+2px on the short cut's adult.
+
+**Task 73, Satoshi's tousled crop, is authored but parked.** It renders
+as `short_tousled`, passes everything, and nothing points at it, so no
+render regressed. Five rounds in it does not beat the plain circle by
+eye, which is the owner's standing bar. What works is the spike-chain
+crown, straight lines between alternating tip and notch marks, which is
+the right language: a silhouette of tips and notches has no circle left
+in it to spoil, where a bump added onto an arc is the wobble that got the
+first attempt reverted. What does not is the fringe. The canon's locks
+*overlap*, so there is one line between neighbours; ours is a single
+zigzag boundary whose every notch is two strokes converging into a black
+wedge, and it reads as a saw. Fixing that means drawing the front locks
+as their own shapes over the fringe fill, which the contract has no slot
+for yet. Progress renders are in `out/73/`, canon at 5x in
+`out/73/ref_head.png`.
 
 ## Where it stands
 

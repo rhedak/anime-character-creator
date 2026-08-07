@@ -68,9 +68,9 @@ everything else is stated as what the strips show.
 
   Every surface but one is inside four points a channel, which is not
   visible. The exception is the gold: the canon's is a touch less
-  saturated, and ours reads marginally more orange. That is the only
-  part of a palette resample with anything in it, and it is a one-line
-  change to `HAIR` in `presets.py` if wanted.
+  saturated, and ours reads marginally more orange. **Taken in task 70**:
+  `HAIR` is now the canon's `#e3b448`. It carries to the brows, which
+  derive from it through `shade()`, which is the point of deriving them.
 - **The garment inventory.** Every layer the canon wears exists as a
   part. What is missing is construction detail inside those layers
   (gap 8), not garments.
@@ -507,37 +507,84 @@ From `out/gap-analysis/torso_chibi.png`, `torso_real.png` and `legs.png`:
   width (`out_top = _sleeve_half_w(sk) * 0.99`) to avoid a step at the
   hem, and the result reads as one continuous plank from shoulder to
   wrist. The canon wants that step; it is what says "sleeve".
+  **Closed by task 63**: the arm is now 0.86 of the sleeve's width rather
+  than 0.99, and its top edge still sits on `_sleeve_hem_y`, so the hem
+  line and the top of the limb stay one line and the narrower arm leaves
+  the outer stretch of it showing either side (`out/63/sleeve.png`,
+  `full.png`). The curved hem in the same bullet was NOT done: curving it
+  means the arm's top edge either stops coinciding with it, which
+  double-lines, or has to be an exact sub-curve of it, and arms draw over
+  every garment so it cannot simply hide behind the tunic. Worth doing
+  with a quadratic-splitting helper, not worth faking.
 - **Cuffs.** Satoshi's canon undersleeves are rolled at the forearm with
   a thicker cuff and two roll lines, leaving bare forearm below. Satoko's
   end in a wrist cuff. Ours run to the wrist with no cuff at either build.
-  **Settled on 2026-08-07**: the plain wrist cuff is in, since it is on
+  **Settled on 2026-08-07, and drawn in task 63** as `_wrist_cuff`, in
+  the second tone and only where there is an undersleeve, since a cuff on
+  a bare arm is a bracelet: the plain wrist cuff is in, since it is on
   Satoko's own references, and the rolled forearm cuff stays out, since
   the roll is Satoshi's and his references drive his haircut and nothing
   else about his design. STATUS.md previously ruled out cuffs wholesale
   and now names the roll instead.
 - **Shoulder slope.** The canon shoulder runs down and out from the neck.
   Ours is a nearly horizontal cap with a square outer corner, most
-  visible on Satoshi at the realistic build.
+  visible on Satoshi at the realistic build. **Closed by task 64**: the
+  slope went from 0.14 of the shoulder-to-waist drop to 0.24, and the
+  control point moved from far out and barely down to half way out and
+  most of the way down, so the edge now leaves the neck descending
+  instead of holding its height and then turning a corner
+  (`out/64/shoulder.png`).
 - **Apron.** The canon apron hangs *below* a belt, and the pouches hang
   at the hips off the belt. Ours is a rectangle with a hard top edge and
   the pouches sit on its upper corners, so at chibi the whole assembly
   reads as a satchel across the hips rather than an apron. The canon
   adult also has a knotted belt tie hanging down the apron's front, which
-  we have nothing for.
+  we have nothing for. **Closed by task 65**: the panel is 0.74 of the
+  waist half-width rather than 0.90, the pouches moved out to flank it
+  instead of sitting on its corners, and the tie is drawn, a knot with two
+  unequal tails. The apron's drop is now a share of the skirt's own drop
+  rather than a fixed lift off its hem, which is what had collapsed it to
+  a band across a chibi's hips: the old lift was measured hip to ankle,
+  most of a chibi's whole body.
 - **Belt.** The canon buckle is a frame with a pin, with a keeper and
-  stitching along the strap. Ours is a hollow square.
+  stitching along the strap. Ours is a hollow square. **Task 65** added
+  the keeper. A square alone is a shape; a square with a strap running
+  through a loop beside it is a fastening. Stitching along the strap is
+  still missing.
 - **Underskirt.** The canon adult's is a pleated skirt with vertical fold
   lines and a scalloped hem. Ours is a flat band, and at chibi its heavy
-  dark rim under a wide hem reads as a tray.
+  dark rim under a wide hem reads as a tray. **Closed by task 66** for
+  the pleats, drawn as lines, and for the tray, which was the band's own
+  width: it hung at 0.97 of the skirt's hem width, so the silhouette kept
+  the skirt's flare all the way past the hem, and it is 0.86 now. The
+  scalloped hem is not done.
 - **Trousers.** The canon has pocket seams, a fly seam, hip shaping and a
   taper to the ankle. Ours are two rectangles with background visible
-  between them up to the hip.
+  between them up to the hip. **Closed by task 67**: `_trouser_seat`
+  joins the two legs into one garment with a shallow crotch and is drawn
+  before them, so their strokes cover its sides and only the V between
+  them shows. `_trouser_seams` draws the fly and the two hip pockets, and
+  has to come *after* the legs or they paint over it.
 - **Boots.** The canon boot has a cuff, a tongue, eyelets, a heel and a
   sole. Ours is a rounded blob with lace crosses. At the realistic build
   ours is also 17% to 27% narrower than the canon's through the foot.
+  **Task 68** turned the cuff from a line into a band, added a tongue
+  under the laces and eyelets where they turn, above build 0.4.
+  **The width claim is wrong and was reverted.** Measured on the boot's
+  own colour rather than on the silhouette, the canon's adult boot is
+  0.058 of figure height across and ours 0.076, so ours is a third
+  *wider*. The silhouette agreed only because the canon stands its feet
+  further apart than we do, and outer edge to outer edge is stance plus
+  boot. Widening to chase it took the foot 22% past the canon. The real
+  residual is the stance, and a heel is a side-view feature a front view
+  can only imply.
 - **Hands.** The canon indicates fingers with short strokes. Ours are
   teardrop blobs, and at chibi they sit at the same height as the pouches
-  so they merge with them.
+  so they merge with them. **Closed by task 69**: two short strokes run
+  in from the outer edge above build 0.5, alongside the thumb crease that
+  was already there. Not separate digits, which the code had already
+  ruled out for reading as noise at this size, and which is also what the
+  canon does. The chibi merge went with task 65's pouches moving out.
 
 ### 9. Chibi hem too wide, adult hem band too wide
 
@@ -546,6 +593,17 @@ Our chibi silhouette runs 13% to 17% wider than the canon's at 0.80 H to
 is the skirt hem plus the underskirt band. `hem_half_w` lerps to
 `head_r * 1.11` at chibi; the canon's flare is gentler and its underskirt
 does not extend past the skirt.
+
+**Closed by task 66**, both halves at once, since they are one row of the
+silhouette: `hem_half_w` lerps to 1.02 at chibi and the underskirt hangs
+at 0.86 of the skirt's hem width rather than 0.97. The chibi went from
++17.6% and +13.3% at 0.80 and 0.85 to +9.5% and -6.9%, the adult from
++19.8% at 0.85 to +6.2%.
+
+Residual, and it is the other direction: at 0.75 H the chibi is 20%
+*narrower* than the canon and always was. That row is above the hem, so
+it is the skirt's own length and rise rather than its flare, and it did
+not move with this.
 
 ## Suggested order
 
@@ -563,12 +621,23 @@ does not extend past the skirt.
    above the cheek line and runs straighter. What looked like gap 2's
    residual belonging here turned out to be hair, not skull, and went
    back to the hair work.
-7. Gap 8's sleeve step, then its remaining detail and gap 9.
+7. ~~Gap 8 and gap 9~~. **Done, tasks 63 to 69**, with the palette's one
+   open item (task 70) alongside. What is left inside gap 8 is named in
+   its own bullets: stitching along the belt strap, a scalloped underskirt
+   hem, a wider stance, and gap 9's one remaining row, the chibi being
+   narrow at 0.75 H.
 8. Gap 1, **re-opened by the owner on 2026-08-07** together with a
-   rebuild of Satoko's cut. The hair contract changes first (task 71),
-   then the two cuts are authored on it (tasks 72 and 73). Both hair gaps
-   have the same root: the contract gives a cut one horizontal tone band
-   where the canon runs the tone along each lock.
+   rebuild of Satoko's cut. Both hair gaps have the same root: the
+   contract gave a cut one horizontal tone band where the canon runs the
+   tone along each lock. **The contract is changed, task 71**:
+   `tip_edge` is now a list of regions clipping to their union, so a cut
+   can give every lock its own boundary, and a ceiling test now makes a
+   sliced crown fail loudly instead of shipping. **Satoshi's crop (task
+   73) is authored but parked**, five rounds in and not yet past the
+   owner's bar of beating the plain circle by eye; it renders as
+   `short_tousled`, nothing points at it, and what works and what does
+   not is on the task. **Satoko's re-authoring, task 72, has not
+   started.**
 
 Gap 8's items are independent of each other and can be picked off in any
 order, which makes them good filler work between the larger passes.

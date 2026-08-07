@@ -334,7 +334,7 @@ def _hair_mass_shape(length: float) -> tuple[Point, list[Segment]]:
     ]
 
 
-def _hair_tip_edge(length: float) -> tuple[Point, list[Segment]]:
+def _hair_tip_edge(length: float) -> list[tuple[Point, list[Segment]]]:
     """Where hair fades to its tip tone. Only the part crossing the two side
     falls is ever visible, the rest sits behind the head and body. The edge
     scallops deeply, dipping toward the tips between anchors, so the fade
@@ -358,16 +358,24 @@ def _hair_tip_edge(length: float) -> tuple[Point, list[Segment]]:
         return _fade_y(_HAIR_CROWN_Y, length) + span * d
 
     floor = length + 1.5
-    return (-1.90, hi(0.045)), [
-        ((-1.60, lo(0.075)), (-1.24, hi(0.040))),
-        ((-0.98, lo(0.080)), (-0.72, hi(0.050))),
-        ((-0.48, lo(0.070)), (-0.24, hi(0.040))),
-        ((0.00, lo(0.085)), (0.24, hi(0.040))),
-        ((0.48, lo(0.070)), (0.72, hi(0.050))),
-        ((0.98, lo(0.080)), (1.24, hi(0.040))),
-        ((1.60, lo(0.075)), (1.90, hi(0.045))),
-        ((1.90, floor * 0.6), (1.90, floor)),
-        ((0.00, floor), (-1.90, floor)),
+    # One region, because this cut's locks all hang the same way: a wave across
+    # them is already a per-lock boundary, near enough. A cut whose locks point in
+    # different directions returns one region each instead.
+    return [
+        (
+            (-1.90, hi(0.045)),
+            [
+                ((-1.60, lo(0.075)), (-1.24, hi(0.040))),
+                ((-0.98, lo(0.080)), (-0.72, hi(0.050))),
+                ((-0.48, lo(0.070)), (-0.24, hi(0.040))),
+                ((0.00, lo(0.085)), (0.24, hi(0.040))),
+                ((0.48, lo(0.070)), (0.72, hi(0.050))),
+                ((0.98, lo(0.080)), (1.24, hi(0.040))),
+                ((1.60, lo(0.075)), (1.90, hi(0.045))),
+                ((1.90, floor * 0.6), (1.90, floor)),
+                ((0.00, floor), (-1.90, floor)),
+            ],
+        )
     ]
 
 
@@ -547,7 +555,7 @@ def _short_fall_edge(tip: float) -> tuple[Point, list[Segment]]:
     ]
 
 
-def _short_tip_edge(tip: float) -> tuple[Point, list[Segment]]:
+def _short_tip_edge(tip: float) -> list[tuple[Point, list[Segment]]]:
     """Where the crop fades to its tip tone: a wave about the line half way
     down the cut, so the sideburns, the rim tips, the nape and the lower part
     of the fringe are all pale and the crown stays in the base colour. This is
@@ -575,16 +583,21 @@ def _short_tip_edge(tip: float) -> tuple[Point, list[Segment]]:
     # fringe's own tips, where the canon has it.
     mid = _fade_y(-_CROWN_R, tip + 0.20) - 0.07
     floor = tip + 1.5
-    return (-1.90, mid - 0.10), [
-        ((-1.58, mid + 0.06), (-1.30, mid - 0.04)),
-        ((-1.06, mid + 0.10), (-0.86, mid - 0.02)),
-        ((-0.55, mid + 0.10), (-0.30, mid)),
-        ((0.00, mid + 0.12), (0.30, mid)),
-        ((0.55, mid + 0.10), (0.86, mid - 0.02)),
-        ((1.06, mid + 0.10), (1.30, mid - 0.04)),
-        ((1.58, mid + 0.06), (1.90, mid - 0.10)),
-        ((1.90, floor * 0.6), (1.90, floor)),
-        ((0.00, floor), (-1.90, floor)),
+    return [
+        (
+            (-1.90, mid - 0.10),
+            [
+                ((-1.58, mid + 0.06), (-1.30, mid - 0.04)),
+                ((-1.06, mid + 0.10), (-0.86, mid - 0.02)),
+                ((-0.55, mid + 0.10), (-0.30, mid)),
+                ((0.00, mid + 0.12), (0.30, mid)),
+                ((0.55, mid + 0.10), (0.86, mid - 0.02)),
+                ((1.06, mid + 0.10), (1.30, mid - 0.04)),
+                ((1.58, mid + 0.06), (1.90, mid - 0.10)),
+                ((1.90, floor * 0.6), (1.90, floor)),
+                ((0.00, floor), (-1.90, floor)),
+            ],
+        )
     ]
 
 
@@ -674,6 +687,262 @@ def _short_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
     ]
 
 
+# Satoshi's tousled crop.
+#
+# Built from its locks rather than from an outline with texture drawn on it,
+# which is what the other two cuts are. The canon crop is a bundle of pointed
+# locks, each gold at the root and pale toward its own tip, and the difference
+# that makes is structural rather than decorative: one tone boundary running
+# level across a whole head can only say "pale below this height", so a cut whose
+# locks point in different directions comes out with a band painted across it.
+# `tip_edge` returning a region per lock is what this cut needs and what it is
+# for.
+#
+# The fringe is one list of points used three ways: the hairline chains through
+# it, the pale wedges are cut from it, and the strand lines aim at its notches.
+# Spelling those out separately is what let the old cut's lines drift off its
+# own locks.
+_TOUSLE_NOTCHES: list[Point] = [
+    (-0.98, -0.30),
+    (-0.78, -0.52),
+    (-0.50, -0.70),
+    (-0.16, -0.76),
+    (0.20, -0.70),
+    (0.56, -0.58),
+    (0.86, -0.40),
+    (0.98, -0.30),
+]
+# One per gap in the list above. Deliberately uneven in width, length and
+# direction: a row of equal points is a comb. The canon's fringe is longest at
+# the temples and shortest either side of the parting, which sits right of
+# centre, and its notches cut most of the way back up the forehead, so each lock
+# is a blade with dark either side of it rather than a tooth on a band.
+_TOUSLE_TIPS: list[Point] = [
+    (-0.90, -0.04),
+    (-0.64, -0.20),
+    (-0.33, -0.40),
+    (0.02, -0.34),
+    (0.38, -0.26),
+    (0.72, -0.14),
+    (0.92, 0.00),
+]
+# Where the crown meets the side, and how far out the temple spike flicks. The
+# canon crop is widest here, at the temples, and narrows below; the cut it
+# replaces was widest at the bottom of its mass, because that mass was a circle.
+_TOUSLE_TEMPLE: Point = (1.18, -0.46)
+
+
+def _lerp(a: Point, b: Point, f: float) -> Point:
+    return (a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f)
+
+
+def _tousle_side(tip: float) -> list[Segment]:
+    """The right side, temple down to the side lock's point. One piece because
+    the mass draws it and `fall_edge` hands the same points to the front lock,
+    the same agreement `_FALL_*` exists for on the long cut."""
+    return [
+        ((1.30, -0.24), (1.26, 0.02)),
+        ((1.20, 0.26), (1.12, tip - 0.20)),
+        ((1.18, tip + 0.04), (1.02, tip + 0.06)),
+    ]
+
+
+# The crown, as the lock tips and the notches between them, each a bearing in
+# degrees clockwise from straight up and a radius in head radii. Tips stand out
+# at 1.28 to 1.40, notches cut back to 1.10 to 1.18, and the run is walked with
+# straight lines, so every tip is a corner rather than the top of an arc.
+#
+# That distinction is the whole of what was learned from the reverted attempt.
+# Bumps added *onto* a circular crown read as wobble, because a circle with a
+# lump on it is a circle with a lump on it however the lump is drawn. A silhouette
+# that is nothing but tips and notches has no circle left in it to spoil.
+#
+# The cowlick is the 20-degree mark, thin because its notches sit close either
+# side of it, and tall enough to clear the rest by 0.10 head radii but no more:
+# `test_hair_stays_under_the_canvas_ceiling` is about 0.01 away at this height.
+_TOUSLE_CROWN: list[tuple[float, float]] = [
+    (-70.0, 1.24),
+    (-58.0, 1.12),
+    (-40.0, 1.20),
+    (-20.0, 1.24),
+    (-4.0, 1.26),
+    (10.0, 1.14),
+    (18.0, 1.36),
+    (25.0, 1.08),
+    (35.0, 1.28),
+    (46.0, 1.06),
+    (60.0, 1.18),
+]
+
+
+def _polar(deg: float, radius: float) -> Point:
+    a = math.radians(deg)
+    return (radius * math.sin(a), -radius * math.cos(a))
+
+
+def _straight(a: Point, b: Point) -> Segment:
+    """A quadratic that is a straight line, so the anchors either side of it stay
+    corners. Tips have to be corners: a control point off the line rounds the
+    point over and the lock stops reading as a lock."""
+    return (_lerp(a, b, 0.5), b)
+
+
+def _chain(start: Point, points: list[Point]) -> list[Segment]:
+    segments = []
+    prev = start
+    for q in points:
+        segments.append(_straight(prev, q))
+        prev = q
+    return segments
+
+
+def _tousle_mass_shape(tip: float) -> tuple[Point, list[Segment]]:
+    """The crop's outer contour: a spiked crown rising to a cowlick right of
+    centre, temple spikes, side locks past the ear, and a ragged nape."""
+    left_side = [(_mirror_pt(c), _mirror_pt(e)) for c, e in _tousle_side(tip)]
+    left_temple = (-_TOUSLE_TEMPLE[0], _TOUSLE_TEMPLE[1])
+    return left_temple, [
+        *_chain(left_temple, [_polar(d, r) for d, r in _TOUSLE_CROWN]),
+        _straight(_polar(*_TOUSLE_CROWN[-1]), _TOUSLE_TEMPLE),
+        *_tousle_side(tip),
+        # The nape, right to left: shorter points than the sides, and the middle
+        # of it tucks up behind the skull where the neck covers it anyway.
+        ((1.00, tip + 0.10), (0.88, tip + 0.24)),
+        ((0.76, tip + 0.02), (0.62, tip + 0.14)),
+        ((0.42, tip + 0.28), (0.20, tip + 0.20)),
+        ((0.00, tip + 0.32), (-0.20, tip + 0.20)),
+        ((-0.42, tip + 0.28), (-0.62, tip + 0.14)),
+        ((-0.76, tip + 0.02), (-0.88, tip + 0.24)),
+        ((-1.00, tip + 0.10), (-1.10, tip + 0.04)),
+        *_reverse(left_temple, left_side)[1],
+    ]
+
+
+def _mirror_pt(q: Point) -> Point:
+    return (-q[0], q[1])
+
+
+def _tousle_fall_edge(tip: float) -> tuple[Point, list[Segment]]:
+    """The side lock's outer edge, its point back up to the temple. Traces the
+    mass's own side exactly, so the two strokes land on each other."""
+    return _reverse(_TOUSLE_TEMPLE, _tousle_side(tip))
+
+
+def _tousle_hairline_shape(tip: float) -> tuple[Point, list[Segment], list[Segment]]:
+    """Up the left side lock, across the fringe, down the right.
+
+    The fringe is a row of separate pointed locks, not a scalloped edge: the
+    notches rise most of the way back up the forehead, so each lock is a blade
+    with dark either side of it rather than a tooth on a band. That is the single
+    biggest difference between the crop the canon draws and the one this
+    replaces, and it is why the notch list is as deep as it is.
+    """
+    right_edge = _tousle_fall_edge(tip)
+    left_down = _reverse(*_mirror(*_tousle_fall_edge(tip)))
+    # Back across the crown inside the mass, so the mass's own outline carries
+    # the silhouette and the skull outline never shows through the hair.
+    _, inner_crown = _arc(1.16, _CROWN_TO_TEMPLE, -_CROWN_TO_TEMPLE, 4)
+    back: list[Segment] = [*right_edge[1], *inner_crown, *left_down[1]]
+    start: Point = back[-1][1]
+    line: list[Segment] = [
+        # Up the inside of the left side lock to where the fringe starts.
+        ((-1.16, tip - 0.14), (-1.10, tip - 0.40)),
+        ((-1.04, -0.06), (-0.98, _TOUSLE_NOTCHES[0][1])),
+        *_tousle_fringe_line(),
+        # Down the inside of the right side lock to its point.
+        ((1.04, -0.06), (1.10, tip - 0.40)),
+        ((1.16, tip - 0.14), (1.10, tip + 0.04)),
+    ]
+    return start, line, back
+
+
+def _tousle_fringe_line() -> list[Segment]:
+    """The fringe as quadratics: notch, point, notch, point. Controls sit along
+    each edge rather than off it, so a lock is a blade with a slight bow in it
+    and not a bulge."""
+    segments: list[Segment] = []
+    for i, point in enumerate(_TOUSLE_TIPS):
+        left, right = _TOUSLE_NOTCHES[i], _TOUSLE_NOTCHES[i + 1]
+        segments.append((_lerp(left, point, 0.55), point))
+        segments.append((_lerp(right, point, 0.55), right))
+    return segments
+
+
+def _tousle_tip_edge(tip: float) -> list[tuple[Point, list[Segment]]]:
+    """One pale region per lock, which is the whole point of this cut.
+
+    Each fringe lock gets a wedge covering the last `1 - _HAIR_FADE` of its own
+    length, so the boundary runs along the lock the way the canon's does, and the
+    ratio of the two tones is the shared one rather than this cut's own. The
+    regions overlap freely: a clip path is the union of its children, so they only
+    have to cover the right area between them, not tile it.
+    """
+    regions: list[tuple[Point, list[Segment]]] = []
+    for i, point in enumerate(_TOUSLE_TIPS):
+        left, right = _TOUSLE_NOTCHES[i], _TOUSLE_NOTCHES[i + 1]
+        # The top edge drops to each lock's own fade height, but keeps the notch
+        # x values rather than following the lock's edges inward. Following them
+        # inward is the obvious construction and it is wrong: it gives a wedge
+        # the same shape as the lock and half the size, which is narrower than
+        # the two outline strokes running down the lock's sides, so the tone is
+        # painted and then covered up. Measured on the first attempt, only three
+        # locks out of eight showed any of it. Keeping the notch x values makes
+        # the region wider than the lock at every height, and a clip only has to
+        # cover the area, not match it.
+        a = (left[0], left[1] + (point[1] - left[1]) * (1.0 - _HAIR_FADE))
+        b = (right[0], right[1] + (point[1] - right[1]) * (1.0 - _HAIR_FADE))
+        # Past the point rather than up to it, for the same reason.
+        far = _lerp(_lerp(left, right, 0.5), point, 1.35)
+        # Controls on the midpoints, so each side of the region is a straight line.
+        regions.append(
+            (
+                a,
+                [
+                    (_lerp(a, b, 0.5), b),
+                    (_lerp(b, far, 0.5), far),
+                    (_lerp(far, a, 0.5), a),
+                ],
+            )
+        )
+    # The sides and the nape, which hang the same way as each other and so take
+    # one region between them, bounded above by a line sloping out to the temples.
+    floor = tip + 1.5
+    regions.append(
+        (
+            (-1.60, -0.30),
+            [
+                ((-1.20, 0.16), (-0.90, 0.24)),
+                ((0.00, 0.40), (0.90, 0.24)),
+                ((1.20, 0.16), (1.60, -0.30)),
+                ((1.60, floor * 0.6), (1.60, floor)),
+                ((0.00, floor), (-1.60, floor)),
+            ],
+        )
+    )
+    return regions
+
+
+def _tousle_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
+    """Lines dividing the crown into locks, each aimed at a notch of the fringe.
+
+    Aimed at the notches on purpose: a line that dies over the middle of a lock
+    contradicts the lock it is lying on, and a line that runs to the crown itself
+    turns the whole set into spokes, which is what made the old cut an umbrella.
+    They start part way down for that reason and there are fewer of them than
+    there are notches, because the canon draws two or three, not one per lock.
+    """
+    return [
+        ((-0.60, -1.02), [((-0.86, -0.80), (-0.96, -0.52))]),
+        ((-0.10, -1.08), [((-0.34, -0.86), (-0.52, -0.66))]),
+        ((0.22, -1.14), [((0.16, -0.90), (0.02, -0.72))]),
+        ((0.34, -1.06), [((0.52, -0.86), (0.66, -0.62))]),
+        ((0.80, -1.04), [((1.02, -0.80), (1.10, -0.50))]),
+        # One down each side lock, following it rather than crossing it.
+        ((1.26, -0.30), [((1.30, 0.10), (1.20, tip - 0.24))]),
+        ((-1.26, -0.30), [((-1.30, 0.10), (-1.20, tip - 0.24))]),
+    ]
+
+
 @dataclass(frozen=True)
 class Hairstyle:
     """One haircut, as the four outlines that have to agree with each other.
@@ -689,7 +958,16 @@ class Hairstyle:
     mass: Callable[[float], tuple[Point, list[Segment]]]
     hairline: Callable[[float], tuple[Point, list[Segment], list[Segment]]]
     fall_edge: Callable[[float], tuple[Point, list[Segment]]]
-    tip_edge: Callable[[float], tuple[Point, list[Segment]]]
+    # One or more closed regions whose union is the tip-toned area. A list rather
+    # than one region because a tone boundary that runs level across a whole head
+    # can only say "pale below this height", and the canon says "pale from here to
+    # the tip of *this lock*", which is a different region per lock and cannot be
+    # one curve unless the locks happen to line up. A clip path is the union of
+    # its children, so per-lock regions compose with no other machinery.
+    #
+    # It stays a list, never a set or a dict's values: `ref-out/` is compared byte
+    # for byte, so the order these come out in has to be the order they went in.
+    tip_edge: Callable[[float], list[tuple[Point, list[Segment]]]]
     # Open chains drawn inside the mass, dividing it into locks. One flat shape
     # with no interior line reads as an object the colour of hair rather than as
     # hair, which is the difference between a haircut and a helmet. None leaves
@@ -719,6 +997,14 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # Where the side tips end: a tight crop pinned to the skull at 0, a
         # shaggy ear-length cut at 1. The old (0.42, 1.00) range described the
         # bob this used to be, with locks reaching for the jaw.
+        tip_range=(0.25, 0.70),
+    ),
+    "short_tousled": Hairstyle(
+        _tousle_mass_shape,
+        _tousle_hairline_shape,
+        _tousle_fall_edge,
+        _tousle_tip_edge,
+        strands=_tousle_strands,
         tip_range=(0.25, 0.70),
     ),
 }
@@ -755,9 +1041,13 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
     fall = _hair_fall(sk, p)
     clips = []
     if _hair_tip_tone(p) is not None:
-        start, segments = style.tip_edge(fall)
-        d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
-        clips.append(f'<clipPath id="{_HAIR_TIP_CLIP_ID}"><path d="{d}" /></clipPath>')
+        # Several regions clip to their union, which is what lets a cut give each
+        # lock its own tone boundary instead of running one line across them all.
+        regions = "".join(
+            f'<path d="{_curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)}" />'
+            for start, segments in style.tip_edge(fall)
+        )
+        clips.append(f'<clipPath id="{_HAIR_TIP_CLIP_ID}">{regions}</clipPath>')
     if style.strands is not None:
         # Strands are open chains, so nothing stops one running out past the
         # silhouette; clipping them to the shape they divide means a strand can be
@@ -871,8 +1161,11 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     sleeve_w = _sleeve_half_w(sk)
     cuff_y = _sleeve_hem_y(sk)
     # Shoulders slope. A horizontal shoulder line is what made the sleeve look
-    # bolted on even once it was the right shape.
-    slope = (wy - sy) * 0.14
+    # bolted on even once it was the right shape. 0.14 was not enough of it: the
+    # canon's shoulder leaves the neck already going down as well as out, and at
+    # 0.14 ours held its height across most of the span and then dropped at the
+    # end, which is a horizontal cap with a corner on it rather than a slope.
+    slope = (wy - sy) * 0.24
     # The torso's own width where the sleeve leaves it. Measured up from the
     # waist, not down from the shoulder: `shoulder_half_w` is the span across the
     # deltoids, so a ribcage derived from it comes out wider than the arm hanging
@@ -888,8 +1181,12 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
 
     def shoulder(s: int) -> str:
         """Neck to the outer tip of the sleeve, then down the sleeve's outside."""
+        # The control sits half way out and most of the way down, so the edge
+        # leaves the neck descending and arrives at the sleeve's tip nearly
+        # horizontal. Putting it far out and barely down, which is what was here,
+        # gives the opposite: a flat run and then a corner.
         return (
-            f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} "
+            f"Q {cx + s * sleeve_w * 0.50:.1f} {sy + slope * 0.62:.1f} "
             f"{cx + s * sleeve_w:.1f} {sy + slope:.1f} "
             f"Q {cx + s * sleeve_w * 1.03:.1f} {sy + slope + (cuff_y - sy - slope) * 0.55:.1f} "
             f"{cx + s * sleeve_w * 0.99:.1f} {cuff_y:.1f} "
@@ -1004,14 +1301,20 @@ def _skirt_path(
     )
 
 
-# Where the other lower-body layers sit relative to the skirt's own hem, as a
-# fraction of the hip-to-ankle span. Relative to the skirt rather than measured
-# from the hip on their own, because a chibi's skirt is drawn shorter than asked
-# for and measuring each layer independently would collapse them all onto the
-# same hem: the underskirt has to keep showing below the skirt, and the apron has
-# to keep stopping above it, at every build.
+# Where the other lower-body layers sit, both stated against the skirt rather
+# than measured from the hip on their own: a chibi's skirt is drawn shorter than
+# asked for, and layers measured independently collapse onto one hem, where the
+# underskirt has to keep showing below the skirt and the apron has to keep
+# stopping above it, at every build.
+#
+# How far the underskirt hangs past the skirt's hem, as a fraction of the
+# hip-to-ankle span.
 _UNDERSKIRT_DROP = 0.13
-_APRON_LIFT = 0.26
+# How far down the apron hangs, as a share of the skirt's own drop from the
+# apron's top edge to the skirt's hem. A share rather than a fixed lift off that
+# hem, which is what the apron used to take: measured hip to ankle, the lift was
+# most of a chibi's whole body and left a band across its hips.
+_APRON_DROP = 0.74
 
 
 def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
@@ -1023,8 +1326,12 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
     skirt_hem = _skirt_hem_y(sk, p.outfit.skirt_length)
     hem_y = skirt_hem + (sk.ankle_y - sk.hip_y) * _UNDERSKIRT_DROP
     # Hangs straight below the skirt's own hem rather than continuing to flare,
-    # and a shade narrower, so it reads as being under the other one.
-    hem_w = _skirt_half_w(sk, skirt_hem) * 0.97
+    # and clearly narrower, so it reads as being under the other one. At 0.97 it
+    # was the skirt's own width to within a stroke, so the silhouette held the
+    # skirt's flare all the way down past the hem, which is where ours ran wide
+    # of the canon: theirs has already narrowed toward the legs by then. It is
+    # also what made the chibi's dark band under a wide hem read as a tray.
+    hem_w = _skirt_half_w(sk, skirt_hem) * 0.86
     d = _skirt_path(sk, sk.waist_y, hem_y, hem_w=hem_w)
     shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
     if not p.shaded:
@@ -1037,7 +1344,26 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
     # panel's own hem cap, at the same width, so it cannot overhang.
     band_y = _skirt_corner_y(sk, hem_y)
     band = _skirt_path(sk, band_y, hem_y, top_w=hem_w, hem_w=hem_w)
-    return shape + f'<path d="{band}" fill="{shade(color)}" opacity="0.7" />'
+    parts = [shape, f'<path d="{band}" fill="{shade(color)}" opacity="0.7" />']
+    # Pleats, as lines rather than as tone, the same call the outer skirt's folds
+    # got: the canon adult's underskirt is a pleated skirt and the vertical fold
+    # lines are the whole of what says so. They start at the skirt hem above,
+    # since nothing higher is ever seen, and they run to the band, not through it,
+    # so the turn under the hem stays one unbroken edge.
+    #
+    # Only where the band is deep enough to hold them. On a chibi the visible
+    # strip is a few pixels and a row of lines across it reads as a comb.
+    if hem_y - skirt_hem > _stroke_w(sk) * 4:
+        pleat_sw = max(1.0, _stroke_w(sk) * 0.45)
+        for i in range(-3, 4):
+            at = i / 3.5
+            x0 = sk.head_cx + _skirt_half_w(sk, skirt_hem) * 0.86 * at
+            x1 = sk.head_cx + hem_w * at
+            parts.append(
+                f'<line x1="{x0:.1f}" y1="{skirt_hem:.1f}" x2="{x1:.1f}" y2="{band_y:.1f}" '
+                f'stroke="{shade(color)}" stroke-width="{pleat_sw:.1f}" opacity="0.75" />'
+            )
+    return "".join(parts)
 
 
 def _apron(sk: Skeleton, p: CharacterParams) -> str:
@@ -1049,9 +1375,20 @@ def _apron(sk: Skeleton, p: CharacterParams) -> str:
         return ""
     cx = sk.head_cx
     # Starts above the waist so the belt drawn over it covers the top edge.
+    # A fraction of the skirt's own drop rather than a fixed lift off its hem.
+    # The lift was measured from the hip to the ankle, which is most of a chibi's
+    # whole body, so on a chibi it ate nearly the entire panel and left a band
+    # across the hips where the canon hangs an apron down the skirt. Stated as a
+    # share of the skirt the apron hangs over, one number holds at both builds.
     top_y = sk.waist_y - (sk.hip_y - sk.waist_y) * 0.40
-    bot_y = _skirt_hem_y(sk, p.outfit.skirt_length) - (sk.ankle_y - sk.hip_y) * _APRON_LIFT
-    top_w = sk.waist_half_w * 0.90
+    bot_y = top_y + (_skirt_hem_y(sk, p.outfit.skirt_length) - top_y) * _APRON_DROP
+    # Narrower than the waist by a quarter rather than a tenth. At 0.90 the panel
+    # reached the hips, so the pouches hanging there landed on its top corners and
+    # the belt, apron and pouches read as one satchel strapped across the body,
+    # which is what the canon chibi does not do: there the apron is a panel hung
+    # in the middle with the pouches flanking it, and the gap between them is what
+    # tells the three pieces apart. The pouches move outboard to match.
+    top_w = sk.waist_half_w * 0.74
     # Flares only a little. Following the skirt's own flare down to a hem this
     # low turns the panel into a cone that swallows the garment under it, and the
     # reference's apron is a straight-hanging panel.
@@ -1125,9 +1462,18 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
     w_top = sk.arm_half_w
     w_elbow = sk.arm_half_w * (1.0 - 0.15 * sk.build)
     w_wrist = sk.arm_half_w * (1.0 - 0.34 * sk.build)
-    # The arm's outer edge picks up where the sleeve's did, so the silhouette runs
-    # on down the limb without a step at the hem.
-    out_top = _sleeve_half_w(sk) * 0.99
+    # The arm is narrower than the sleeve it comes out of, which is what says
+    # "sleeve" rather than "plank". It used to be the sleeve's own width, to 1%,
+    # deliberately, so the two outlines landed on each other and the silhouette
+    # ran from shoulder to wrist with no step in it. That reads as one continuous
+    # limb wearing nothing: the canon puts a visible step at the hem on both
+    # characters and at both builds, and a garment hanging over a thinner arm is
+    # the whole of what the step means.
+    #
+    # The arm's top edge still sits exactly on `_sleeve_hem_y`, so the hem line
+    # and the top of the limb remain one line and the narrower arm simply leaves
+    # the outer stretch of that line showing either side of it.
+    out_top = _sleeve_half_w(sk) * 0.86
     centre_top = out_top - w_top
     # Arms drift outward on the way down, so daylight opens between forearm and
     # waist. The drift lives in the forearm: the upper arm hangs near vertical
@@ -1168,8 +1514,35 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         parts.append(
             f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
         )
+        if p.outfit.undersleeve_color is not None:
+            parts.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
         parts.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
     return "".join(parts)
+
+
+def _wrist_cuff(sk: Skeleton, color: str, cx: float, wrist_y: float, w: float) -> str:
+    """A band closing the undersleeve at the wrist.
+
+    Small element, so it takes the second tone: this is the pouch-flap and
+    boot-cuff case the flat-colour rule leaves open, a turn of cloth reading as
+    thickness, not a plane across a panel.
+
+    Satoko's canon undersleeves end in one of these and Satoshi's are rolled at
+    the forearm instead, with a thicker cuff, two roll lines and bare arm below.
+    Only this one is drawn: the roll belongs to the satoshi references, which
+    drive his haircut and nothing else about his design (the owner's call,
+    2026-08-07). Drawn only when there is an undersleeve, since a cuff on a bare
+    arm is a bracelet.
+    """
+    h = w * 0.55
+    # The arm still tapers across the band's own height, so the top is a shade
+    # wider than the bottom. Without that the cuff reads as pasted on.
+    top_w = w * 1.05
+    return (
+        f'<path d="M {cx - top_w:.1f} {wrist_y - h:.1f} L {cx + top_w:.1f} {wrist_y - h:.1f} '
+        f'L {cx + w:.1f} {wrist_y:.1f} L {cx - w:.1f} {wrist_y:.1f} Z" '
+        f'fill="{shade(color)}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk) * 0.85:.1f}" />'
+    )
 
 
 def _hand(
@@ -1214,6 +1587,19 @@ def _hand(
             f'Q {x(-hw * 0.40):.1f} {wrist_y + length * 0.48:.1f} {x(-hw * 0.48):.1f} {wrist_y + length * 0.70:.1f}" '
             f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.55" stroke-linecap="round" />'
         )
+        # Fingers, as two short strokes running in from the outer edge rather
+        # than as separate digits. The canon indicates them exactly this way, and
+        # a hand drawn as four modelled fingers at this size reads as noise: the
+        # mitten with a thumb stays, these divide it. They stop short of the
+        # centre so the hand keeps one silhouette.
+        for at, reach in ((0.62, 0.62), (0.80, 0.50)):
+            parts.append(
+                f'<path d="M {x(hw * 0.98):.1f} {wrist_y + length * at:.1f} '
+                f"Q {x(hw * (0.98 - reach * 0.5)):.1f} {wrist_y + length * (at + 0.05):.1f} "
+                f'{x(hw * (0.98 - reach)):.1f} {wrist_y + length * (at + 0.07):.1f}" '
+                f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.55" '
+                f'stroke-linecap="round" />'
+            )
     return "".join(parts)
 
 
@@ -1270,6 +1656,8 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     fill = trousers or p.skin_tone
     stroke = f' stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}"' if trousers else ""
     parts = []
+    if trousers:
+        parts.append(_trouser_seat(sk, p, trousers, gap, w_top, top_y))
     for side in (-1, 1):
         cx = sk.head_cx + side * gap
         d = (
@@ -1287,6 +1675,69 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
         # down a trouser leg reads the same way one down a sleeve does. The canon
         # divides trousers with seams instead, which they do not have yet.
         parts.append(_boot(sk, p, cx, w_ankle, w_knee, side))
+    if trousers:
+        parts.append(_trouser_seams(sk, p, trousers, gap, w_top, top_y))
+    return "".join(parts)
+
+
+def _trouser_seat(
+    sk: Skeleton, p: CharacterParams, color: str, gap: float, w_top: float, top_y: float
+) -> str:
+    """The seat, joining the two legs into one garment.
+
+    Without it the trousers are two separate tubes and the canvas shows between
+    them right up to the hip, which is the single thing that stopped them reading
+    as trousers: a garment has a crotch. Drawn before the legs, so their own
+    strokes cover its sides and only the V between them is ever seen.
+
+    The seams come with it, because they are the other half of the same read. The
+    canon draws a fly down the front and a curved pocket seam at each hip, and
+    those are lines rather than tone, the same call the skirt's folds and the
+    underskirt's pleats got.
+    """
+    cx = sk.head_cx
+    drop = sk.knee_y - top_y
+    side_y = top_y + drop * 0.08
+    # Shallow. A deep V comes to a point between the legs and reads as an arrow
+    # painted on the trousers rather than as the seam where they join.
+    crotch_y = top_y + drop * 0.30
+    sw = _stroke_w(sk)
+    d = (
+        f"M {cx - gap - w_top:.1f} {top_y:.1f} L {cx + gap + w_top:.1f} {top_y:.1f} "
+        f"L {cx + gap - w_top:.1f} {side_y:.1f} "
+        f"Q {cx + gap * 0.35:.1f} {crotch_y * 0.55 + side_y * 0.45:.1f} {cx:.1f} {crotch_y:.1f} "
+        f"Q {cx - gap * 0.35:.1f} {crotch_y * 0.55 + side_y * 0.45:.1f} {cx - gap + w_top:.1f} {side_y:.1f} "
+        f"Z"
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+
+
+def _trouser_seams(
+    sk: Skeleton, p: CharacterParams, color: str, gap: float, w_top: float, top_y: float
+) -> str:
+    """The fly and the two hip pocket seams.
+
+    Drawn after the legs, not with the seat: the legs are stroked filled paths
+    over it, so anything the seat draws outside the crotch V is painted over, and
+    the pocket seams are exactly there. Lines rather than tone, the same call the
+    skirt's folds and the underskirt's pleats got.
+    """
+    if not p.shaded:
+        return ""
+    cx = sk.head_cx
+    drop = sk.knee_y - top_y
+    seam_sw = max(1.0, _stroke_w(sk) * 0.45)
+    parts = [
+        f'<line x1="{cx:.1f}" y1="{top_y + drop * 0.04:.1f}" x2="{cx:.1f}" y2="{top_y + drop * 0.30:.1f}" '
+        f'stroke="{shade(color)}" stroke-width="{seam_sw:.1f}" opacity="0.8" />'
+    ]
+    for s in (-1, 1):
+        parts.append(
+            f'<path d="M {cx + s * (gap + w_top * 0.90):.1f} {top_y + drop * 0.05:.1f} '
+            f"Q {cx + s * (gap + w_top * 0.40):.1f} {top_y + drop * 0.14:.1f} "
+            f'{cx + s * (gap - w_top * 0.10):.1f} {top_y + drop * 0.26:.1f}" '
+            f'fill="none" stroke="{shade(color)}" stroke-width="{seam_sw:.1f}" opacity="0.8" />'
+        )
     return "".join(parts)
 
 
@@ -1307,6 +1758,13 @@ def _boot(
     # it doubled the moment the leg stopped tapering to a point. The multiplier
     # was retuned when the chibi leg thickened from 0.15 to 0.22 head radii, so
     # the boot itself, already sized to the canon, came out the same.
+    # `docs/gap-analysis.md` had this 17% to 27% narrow of the canon through the
+    # foot at the realistic build. It is not: measured on the boot's own colour
+    # rather than on the silhouette, the canon's adult boot is 0.058 of figure
+    # height across and ours is 0.076, so ours is a third *wider*. The silhouette
+    # agreed only because the canon stands its feet further apart than we do, and
+    # outer-edge-to-outer-edge is stance plus boot. Widening this to chase that
+    # number was tried in task 68 and took the whole foot 22% past the canon.
     boot_w = sk.leg_half_w * (2.08 - 0.08 * sk.build)
     foot_h = sk.foot_y - sk.ankle_y
     # The shaft climbs a third of the way to the knee, so it stays a boot rather
@@ -1353,12 +1811,26 @@ def _boot(
         f"Q {x(-heel_w):.1f} {sk.foot_y:.1f} {x(-heel_w):.1f} {sk.foot_y - r:.1f} "
         f'Z" fill="{shade(color, 0.7)}" />'
     )
-    # Turned cuff at the top of the shaft, the one line that says "boot" rather
-    # than "sock".
+    # Turned cuff at the top of the shaft, the one thing that says "boot" rather
+    # than "sock". A band now rather than a line: the canon turns the leather over
+    # and the depth of the turn is what reads, where a single line reads as a
+    # seam. This is the small-element case the flat-colour rule leaves open, a
+    # turn of material showing its thickness.
+    cuff_h = (sk.ankle_y - top_y) * 0.34
     parts.append(
-        f'<line x1="{cx - shaft_w:.1f}" y1="{top_y + (sk.ankle_y - top_y) * 0.3:.1f}" '
-        f'x2="{cx + shaft_w:.1f}" y2="{top_y + (sk.ankle_y - top_y) * 0.3:.1f}" '
-        f'stroke="{shade(color, 0.7)}" stroke-width="{max(1.0, _stroke_w(sk) * 0.6):.1f}" />'
+        f'<rect x="{cx - shaft_w:.1f}" y="{top_y:.1f}" width="{shaft_w * 2:.1f}" '
+        f'height="{cuff_h:.1f}" fill="{shade(color, 0.78)}" stroke="{OUTLINE}" '
+        f'stroke-width="{_stroke_w(sk) * 0.7:.1f}" />'
+    )
+    # The tongue, under the laces and above the instep. Drawn before them so they
+    # cross it, which is the only way a tongue reads on a front view.
+    tongue_w = shaft_w * 0.50
+    parts.append(
+        f'<path d="M {cx - tongue_w:.1f} {top_y + cuff_h:.1f} L {cx + tongue_w:.1f} {top_y + cuff_h:.1f} '
+        f"Q {cx + tongue_w * 0.86:.1f} {instep_y + foot_h * 0.10:.1f} "
+        f"{cx:.1f} {instep_y + foot_h * 0.18:.1f} "
+        f'Q {cx - tongue_w * 0.86:.1f} {instep_y + foot_h * 0.10:.1f} {cx - tongue_w:.1f} {top_y + cuff_h:.1f} Z" '
+        f'fill="{shade(color, 0.88)}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk) * 0.55:.1f}" />'
     )
     # Cross-laces down the instep, between the cuff and the sole. Dark tone of
     # the boot's own leather, thin: they divide a surface, they do not bound one.
@@ -1376,6 +1848,16 @@ def _boot(
                 f'<line x1="{cx - s * lace_w:.1f}" y1="{y0:.1f}" x2="{cx + s * lace_w:.1f}" y2="{y0 + dy:.1f}" '
                 f'stroke="{lace_color}" stroke-width="{lace_sw:.1f}" stroke-linecap="round" />'
             )
+    # Eyelets where the laces turn, which is where the canon puts them. Only at
+    # the taller builds: at chibi they land under a stroke's width of each other
+    # and read as grit on the boot.
+    if sk.build > 0.4:
+        for i in range(steps + 1):
+            for s in (-1, 1):
+                parts.append(
+                    f'<circle cx="{cx + s * lace_w:.1f}" cy="{lace_top + i * dy:.1f}" '
+                    f'r="{lace_sw * 0.9:.1f}" fill="{shade(color, 0.35)}" />'
+                )
     return "".join(parts)
 
 
@@ -1420,6 +1902,42 @@ def _belt(sk: Skeleton, p: CharacterParams) -> str:
             f'<line x1="{cx:.1f}" y1="{by:.1f}" x2="{cx:.1f}" y2="{by + bh * 0.55:.1f}" '
             f'stroke="{OUTLINE}" stroke-width="{sw * 0.5:.1f}" stroke-linecap="round" />'
         )
+        # The keeper, the loop that holds the strap's loose end down past the
+        # buckle. One small band, and it is most of what tells a buckle from the
+        # hollow square this used to read as: a square alone is a shape, a square
+        # with a strap running through a loop beside it is a fastening.
+        kw = h * 0.22
+        parts.append(
+            f'<rect x="{bx + bw + h * 0.30:.1f}" y="{y + h * 0.08:.1f}" width="{kw:.1f}" '
+            f'height="{h * 0.84:.1f}" rx="{kw * 0.3:.1f}" fill="{shade(color, 0.7)}" '
+            f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" />'
+        )
+    else:
+        # With an apron over the belt the buckle is hidden behind the panel, which
+        # is why the canon draws Satoshi's and not Satoko's. What it draws instead
+        # is the strap's knotted end hanging down the apron's front, and that tie
+        # is the one thing on the assembly that says the panel hangs *from* the
+        # belt rather than being a pocket sewn across it.
+        sw = _stroke_w(sk)
+        tie_w = h * 0.30
+        knot_h = h * 0.55
+        knot_y = y + h * 0.55
+        parts.append(
+            f'<rect x="{cx - h * 0.42:.1f}" y="{knot_y:.1f}" width="{h * 0.84:.1f}" '
+            f'height="{knot_h:.1f}" rx="{knot_h * 0.35:.1f}" fill="{shade(color, 0.86)}" '
+            f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
+        )
+        for s, drop in ((-1, 0.62), (1, 0.48)):
+            # Two ends of unequal length, because a knot with two equal tails
+            # reads as a ribbon.
+            x0 = cx + s * h * 0.20
+            parts.append(
+                f'<path d="M {x0 - tie_w / 2:.1f} {knot_y + knot_h * 0.7:.1f} '
+                f"L {x0 + tie_w / 2:.1f} {knot_y + knot_h * 0.7:.1f} "
+                f"L {x0 + s * h * 0.10 + tie_w / 2:.1f} {knot_y + knot_h + (sk.hip_y - sk.waist_y) * drop:.1f} "
+                f"L {x0 + s * h * 0.10 - tie_w / 2:.1f} {knot_y + knot_h + (sk.hip_y - sk.waist_y) * drop:.1f} "
+                f'Z" fill="{shade(color, 0.86)}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
+            )
     return "".join(parts)
 
 
@@ -1444,11 +1962,13 @@ def _pouches(sk: Skeleton, p: CharacterParams) -> str:
     w = h * 0.95
     top = belt_y + belt_h * 0.55
     r = w * 0.18
-    # How far out the pouches hang rides the build: a chibi's arms are thick
-    # and hang right over the band's outer ends, so pouches there disappear
-    # behind them. The canon tucks the chibi's pouches inboard, flanking the
-    # apron, and lets the adult's sit out at the band's ends.
-    x_frac = 0.52 + 0.22 * sk.build
+    # How far out the pouches hang. They flank the apron rather than sitting on
+    # its corners: the canon chibi leaves a gap of skirt between panel and pouch,
+    # and that gap is what tells belt, apron and pouch apart instead of letting
+    # them read as one satchel across the hips. Still short of the band's ends,
+    # because a chibi's arms are thick and hang over them, which is what the
+    # earlier inboard value was really guarding against.
+    x_frac = 0.68 + 0.08 * sk.build
     parts = []
     for side in (-1, 1):
         x = cx + side * sk.waist_half_w * x_frac - w / 2

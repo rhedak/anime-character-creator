@@ -165,7 +165,7 @@ with each other, plus an optional fifth:
 | `mass` | The silhouette. The only outer contour the hair has. |
 | `hairline` | The fringe and side locks drawn in front of the face, as `(start, line, back)`. |
 | `fall_edge` | The stretch of the mass's outer edge the front lock retraces, exactly. |
-| `tip_edge` | Where the two tones meet, closing into a region that covers everything below it. |
+| `tip_edge` | Where the two tones meet, as a list of closed regions covering everything below each. They clip to their union, so a cut can give each lock its own boundary. |
 | `strands` | Optional open chains dividing the mass into locks. |
 | `tip_range` | What `hair_length` 0 and 1 mean for this cut, as depth below the head centre. `None` measures the body instead, chin to hip. |
 

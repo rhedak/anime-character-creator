@@ -20,6 +20,7 @@ from anime_character_creator import (
     PRESETS,
     CharacterParams,
     build_skeleton,
+    character,  # for the two private helpers the ceiling check needs
     render_character,
 )
 
@@ -62,3 +63,50 @@ def test_ref_out_matches_the_code(preset: str, build: str) -> None:
     committed = REF_OUT / f"{preset}{SUFFIX[build]}.svg"
     expected = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
     assert committed.read_text() == expected, f"{committed.name} is stale: ./refresh-ref-out.sh"
+
+
+def _highest_ink(start: tuple[float, float], segments: list) -> float:
+    """The topmost y a quadratic chain reaches, in the units it is given in.
+
+    Not the topmost anchor and not the topmost control point. A control point
+    lies outside its curve, so taking the minimum over the raw point data says a
+    crown is taller than it paints, and taking it over the anchors alone says a
+    crown that peaks between two anchors is shorter than it paints. Only the
+    second of those is dangerous, but both make the number useless as a bound, so
+    this solves each segment for its own extremum.
+    """
+    ys = [start[1]]
+    prev = start
+    for ctrl, end in segments:
+        ys.append(end[1])
+        a, b, c = prev[1], ctrl[1], end[1]
+        denom = a - 2 * b + c
+        if denom != 0:
+            t = (a - b) / denom
+            if 0 < t < 1:
+                ys.append((1 - t) ** 2 * a + 2 * (1 - t) * t * b + t**2 * c)
+        prev = end
+    return min(ys)
+
+
+@pytest.mark.parametrize("hairstyle", sorted(HAIRSTYLES))
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_hair_stays_under_the_canvas_ceiling(hairstyle: str, build: str) -> None:
+    """A crown taller than the headroom comes out sliced flat, silently.
+
+    `build_skeleton`'s `hair_margin` is the only thing holding the top of the
+    canvas off the hair, and nothing in the shape code knows about it, so a cut
+    with a peak or a spike on it can exceed the bound and still render, just with
+    a straight edge across the top. Both chibis shipped that way once. This is
+    the check that stops it happening again: a new hairstyle that fails here
+    wants `hair_margin` raised with it, not its crown flattened to fit.
+    """
+    p = CharacterParams(hairstyle=hairstyle)
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    top_units = _highest_ink(*HAIRSTYLES[hairstyle].mass(character._hair_fall(sk, p)))
+    # The stroke straddles the path, so half of it paints above the curve.
+    ink_y = sk.head_cy + sk.head_r * top_units - character._stroke_w(sk) / 2
+    assert ink_y >= 0, (
+        f"{hairstyle} at {build} paints {-ink_y:.1f}px above the canvas and is being"
+        " sliced flat; raise hair_margin in build_skeleton"
+    )

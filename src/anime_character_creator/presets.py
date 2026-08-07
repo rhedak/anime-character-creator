@@ -12,7 +12,12 @@ from .character import CharacterParams, FaceStyle, Outfit
 # Satoko and Satoshi are meant to read as related, so the palette they share
 # lives here once rather than being duplicated per character. What tells them
 # apart is the haircut, the lower body, and the frame, not the colors.
-HAIR = "#e6b53c"
+# Sampled off the canon as the modal exact colour inside a flat patch of hair,
+# not from a quantised histogram, whose buckets are eight points a channel and so
+# cannot settle a question this size. Every other surface came within four points
+# of what we already had, which is not visible; this one was twelve points short
+# of blue, enough to read as a shade more orange than the canon's.
+HAIR = "#e3b448"
 HAIR_TIPS = "#eceae3"
 TUNIC = "#4a6845"
 UNDERSLEEVE = "#ab9e86"

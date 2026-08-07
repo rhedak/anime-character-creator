@@ -115,9 +115,22 @@ callables, each taking the tip depth in head radii:
    these two disagree by a pixel it reads as a double line.
 3. `hairline` is the only line drawn *inside* the mass. Its two ends have
    to land on the mass's own lock tips, or the fringe stops in mid-air.
-4. `tip_edge` is where the two tones meet. It closes into a region
-   covering everything below it and is used as a clip path, so it is
-   never stroked and its lower half can be anywhere convenient (`floor`).
+4. `tip_edge` is where the two tones meet, as a **list of closed
+   regions**. A clip path is the union of its children, so one region per
+   lock composes with no other machinery, and a cut whose locks all hang
+   the same way can still return a single region. None of them is ever
+   stroked, so the lower half of each can be anywhere convenient
+   (`floor`).
+
+   A list rather than one region because one region can only say "pale
+   below this height", while the canon says "pale from here to the tip of
+   *this lock*", which is a different boundary per lock and cannot be one
+   curve unless the locks happen to line up. Two things this is not: it
+   is not a shading plane, so the flat-colour rule is untouched, that
+   rule is about garment panels and hair has carried two tones since the
+   start; and it is not a licence to move the *amount* of pale, which is
+   `_HAIR_FADE` and is the owner's call. Keep it a list, never a set or a
+   dict's values, or `ref-out/` stops comparing byte for byte.
 5. `strands` are open chains dividing the mass into locks, clipped to the
    front fill. Without them a cut reads as an object the colour of hair
    rather than as hair.
@@ -131,10 +144,16 @@ Two constants tie the tones and the headroom down:
   a fall fraction lands at a different height per build and colours the
   same character two ways.
 - **No hair ink may reach above `-(1 + hair_margin)` head radii**, and
-  the outer half of the stroke counts as ink. Nothing derives that bound
-  from the shapes, so a taller crown comes out silently sliced flat
-  against the canvas edge. A cut that needs more headroom raises
-  `hair_margin` with it.
+  the outer half of the stroke counts as ink. Nothing in the shape code
+  derives that bound, so a taller crown comes out silently sliced flat
+  against the canvas edge, which is how both chibis shipped once. A cut
+  that needs more headroom raises `hair_margin` with it.
+  `test_hair_stays_under_the_canvas_ceiling` is what makes the failure
+  loud: it solves each quadratic for its own extremum, since the topmost
+  anchor understates a crown that peaks between two anchors and the
+  topmost control point overstates every crown. The slack today is 16px
+  on the long cut's chibi and 2px on the short cut's adult, so a spiked
+  crown will need the margin raised, not trimmed to fit.
 
 ## Adding things
 

@@ -134,7 +134,12 @@ def build_skeleton(
         hip_y=chin_y + body * _lerp(0.58, 0.417, t),
         hip_half_w=head_r * _lerp(0.95, 1.30, t) * (1.0 - 0.11 * f),
         hem_y=chin_y + body * _lerp(0.70, 0.58, t),
-        hem_half_w=head_r * _lerp(1.11, 1.60, t),
+        # The canon's chibi flare is gentler than 1.11 read: measured on the
+        # silhouette at 0.80 and 0.85 of figure height, where the skirt hem and
+        # the underskirt band are what the outline is made of, ours ran 13% to
+        # 18% wide of it. The underskirt narrows in the same change; between them
+        # they are the whole of that row.
+        hem_half_w=head_r * _lerp(1.02, 1.60, t),
         # Legs run wider than arms at every build, the way limbs do. This
         # started the other way around at chibi (arms 0.22, legs 0.15), which
         # read as wrong the moment it was pointed at: measured off the canon
