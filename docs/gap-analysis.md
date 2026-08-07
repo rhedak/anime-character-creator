@@ -148,6 +148,17 @@ itself, which is this gap with nothing else on top of it, so the
 side-by-side in `out/58/final.png` is the cleanest look anyone has had
 at what re-opening the tousle would actually be worth.
 
+**Re-opened by the owner on 2026-08-07**, and widened: the hair is to be
+rebuilt rather than adjusted, Satoko keeping her style and Satoshi taking
+his own cut from his reference. That makes this gap and gap 2 one piece
+of work, because they share the root cause described above. The contract
+change is task 71, Satoko's cut task 72, Satoshi's task 73. Two things the
+rebuild must not quietly change: the pale fraction, which is half and half
+on the owner's call against a canon of about a tenth down Satoko and a
+third down Satoshi, and the flat-colour rule, which is about garment
+panels. Hair has always carried two tones, so per-lock tone is not a task
+56 violation.
+
 ### 2. Satoko's falls pinch at the jaw and hook inward
 
 **Closed by task 59 on 2026-08-06**, with the fall's outer edge standing
@@ -421,6 +432,70 @@ characters, while matching well at chibi.
 `_head_shape(build)` already takes the build, so this is a shape edit in
 one function rather than an architectural change.
 
+**Closed by task 62 on 2026-08-07**, but not the way this entry expected,
+and three of its claims were wrong. `_SKULL_NARROW = 0.10`,
+`_JAW_START_Y = -0.25` and `_JAW_EASE = 1.4` are new, and `jaw_pull` went
+*down*, from `0.30 * build` to `0.20 * build`.
+
+- **The head already tapered.** `jaw_pull = 0.30 * build` was there. The
+  shape at the adult build was not a chibi oval, it was a taper that
+  began at the cheek line and eased quadratically, which holds full width
+  all the way down the cheek and then loses it in the last tenth.
+- **The 8% to 18% was not measuring the skull.** Through 0.02 H to 0.24 H
+  at the realistic build the silhouette is hair, not head, so that number
+  belongs to the residual below. The skull has to be measured separately,
+  as the skin span across the face with the hair colours given to
+  `rows --against`.
+- **The chin is not where `skeleton` says it is.** `Skeleton.chin_y` is
+  `head_cy + head_r`, but `_head_shape`'s `chin_drop` pushes the drawn
+  chin to `1.05 * head_r`, so ours is at 0.188 H and not the 0.184 H the
+  anchor reports. A first pass compared the two figures at depths taken
+  from the anchor and so read our face 0.004 H too high, which at these
+  sizes is the whole size of the claim. See `PITFALLS.md`.
+
+Measured at depths above each figure's **drawn** chin (canon 0.176 H,
+ours 0.188 H), so both are read at the same place on the face:
+
+  | above chin | canon | before | first try | shipped |
+  | --- | --- | --- | --- | --- |
+  | 0.037 H | 0.095 | 0.104 | 0.087 | 0.094 |
+  | 0.027 H | 0.081 | 0.085 | 0.071 | 0.079 |
+  | 0.017 H | 0.061 | 0.059 | 0.050 | 0.056 |
+
+Which says the jaw was **already about right**, within 3% to 9%. The
+first try, a stronger taper starting above the cheek line, looked better
+on the strips and measured worse, pulling the jaw 8% to 18% *under* the
+canon. The head did not read round because the jaw was wide. It read
+round because the whole upper face was, and a taper cannot take width out
+of the cheek without taking more out of the jaw. So the fix is the other
+way round: narrow the whole adult skull by 10% and taper it *less*, which
+leaves the jaw within 2% to 8% and takes 12% off the widest point.
+
+The cheek half cannot be checked against the canon at all, because their
+hair lies over the temples and ours stands off them, so what is visible
+there is a hair difference wearing a face's clothes. That half was judged
+on the strips (`out/62/round2_satoko.png`, `round2_satoshi.png`), where a
+narrower skull with straighter sides is clearly the canon's face and the
+first try was still a wide face with a point on it. This is the "measure
+to find out what is wrong, then choose by eye" rule doing real work: the
+measurement redirected the change and the eye picked it.
+
+The chibi loses about 1% of head width, since `build` is 0.1 at 2.4 heads
+rather than 0. That is *away* from the canon, whose chibi head is wider
+than ours rather than narrower, so it is a regression in principle. It is
+also invisible: against the committed original the two are
+indistinguishable (`out/62/chibi_check3.png`).
+
+**Residual, and it is gap 2's, not this one's.** The hair envelope at the
+realistic build is 20% to 24% wider than the canon's through 0.11 H to
+0.20 H, where the silhouette is Satoko's falls. Measured in head radii,
+the canon's falls sit about 1.05 radii off the head centre at that
+height and ours about 1.33. At the chibi build the same profile runs the
+other way, ours 10% to 13% *narrower* than the canon's. So the fall width
+is not one number that is wrong, it is a number that does not ride the
+build correctly, and task 59's values should not be carried into the hair
+rebuild without re-measuring at both ends. Recorded on task 72.
+
 ### 8. Garment construction detail the canon draws and we do not
 
 Individually small, collectively a lot of the "finished drawing" quality.
@@ -435,6 +510,11 @@ From `out/gap-analysis/torso_chibi.png`, `torso_real.png` and `legs.png`:
 - **Cuffs.** Satoshi's canon undersleeves are rolled at the forearm with
   a thicker cuff and two roll lines, leaving bare forearm below. Satoko's
   end in a wrist cuff. Ours run to the wrist with no cuff at either build.
+  **Settled on 2026-08-07**: the plain wrist cuff is in, since it is on
+  Satoko's own references, and the rolled forearm cuff stays out, since
+  the roll is Satoshi's and his references drive his haircut and nothing
+  else about his design. STATUS.md previously ruled out cuffs wholesale
+  and now names the roll instead.
 - **Shoulder slope.** The canon shoulder runs down and out from the neck.
   Ours is a nearly horizontal cap with a square outer corner, most
   visible on Satoshi at the realistic build.
@@ -479,13 +559,16 @@ does not extend past the skirt.
    **Done, task 60**: widened, and the spacing needed nothing.
 5. ~~Gap 5 (outline toward black)~~. **Done, task 61**, after 4 so the two
    were judged separately.
-6. Gap 7 (adult head taper) and gap 8's sleeve step, which together are
-   most of what makes the realistic build read as an adult. Gap 7 now also
-   carries gap 2's residual, the head being wide relative to the hair, so
-   do the two as one judgement.
-7. Gap 8's remaining detail and gap 9.
-8. Gap 1 only if the owner re-opens the crown, since it needs a change to
-   the hair contract to do properly.
+6. ~~Gap 7 (adult head taper)~~. **Done, task 62**: the taper now starts
+   above the cheek line and runs straighter. What looked like gap 2's
+   residual belonging here turned out to be hair, not skull, and went
+   back to the hair work.
+7. Gap 8's sleeve step, then its remaining detail and gap 9.
+8. Gap 1, **re-opened by the owner on 2026-08-07** together with a
+   rebuild of Satoko's cut. The hair contract changes first (task 71),
+   then the two cuts are authored on it (tasks 72 and 73). Both hair gaps
+   have the same root: the contract gives a cut one horizontal tone band
+   where the canon runs the tone along each lock.
 
 Gap 8's items are independent of each other and can be picked off in any
 order, which makes them good filler work between the larger passes.

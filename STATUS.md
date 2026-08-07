@@ -17,10 +17,10 @@ clear of the tunic with canon-sized hands; tasks 44-47), plus a
 user-caught limb-width swap (chibi legs now wider than arms, task 48),
 plus the Satoshi hair pass (bob to shaggy crop: ear-level bulk, spiked
 rim, roughened fringe, fade rebalanced; crown cowlick flicks were tried
-and reverted on the owner's call, the crown stays a clean arc for now;
-tasks 49-54), plus the fade move (both cuts now change tone half way
+and reverted on the owner's call, and were re-opened on 2026-08-07 as
+part of the hair rebuild below; tasks 49-54), plus the fade move (both cuts now change tone half way
 down the hair, at every build, off one shared `_HAIR_FADE`; task 55).
-Per-task snapshots are in `out/35` through `out/59`, one directory per
+Per-task snapshots are in `out/35` through `out/62`, one directory per
 task, with the gap analysis's own strips in `out/gap-analysis`.
 
 On top of that, one change that touches no shape: the code is now a
@@ -61,7 +61,18 @@ because the apertures were narrow. **Task 61, `OUTLINE` is near black**,
 `#0d0d0d` rather than `#2b2b2b`: the canon piles 17% of its ink into the
 0-9 value bucket where ours sat at 40-49, same amount of line but softer,
 and the figure read hazier for it. The line-hierarchy half of that gap was
-looked at again afterwards and needed nothing.
+looked at again afterwards and needed nothing. **Task 62, the adult skull
+is 10% narrower and tapers less**, `_SKULL_NARROW`, `_JAW_START_Y` and
+`_JAW_EASE`, with `jaw_pull` going down rather than up. The analysis had
+this backwards and the measurement caught it: the head already tapered,
+and read at depths above its *drawn* chin the jaw was already within 3%
+to 9% of the canon. It read round because the whole upper face was wide,
+and no taper takes width out of a cheek without taking more out of the
+jaw. Narrowing the skull and easing the taper holds the jaw within 2% to
+8% and takes 12% off the widest point. The cheek itself is not checkable
+against the canon, whose hair lies over the temples where ours stands
+off, so that half was picked on the strips. The chibi is unchanged to the
+eye.
 
 ## Where it stands
 
@@ -192,8 +203,12 @@ What the canon language is, concretely:
   Satoko, though the satoshi pair does draw them. Mitten-grade hands with
   a thumb notch at chibi.
 - Garment accents survive chibification: pouches with flap and button,
-  a buckled belt band, boot cross-laces. (Rolled sleeve cuffs appear only
-  in the satoshi pair, whose style is not the target, so they are out.)
+  a buckled belt band, boot cross-laces, a plain wrist cuff on the
+  undersleeve. (The *rolled* forearm cuff appears only in the satoshi
+  pair, whose style is not the target, so it stays out. The plain wrist
+  cuff is on Satoko's own references and is in, the owner's call on
+  2026-08-07, which also settled that Satoshi's references drive his
+  haircut and nothing else about his design.)
 
 ## What is weak right now
 
@@ -311,6 +326,18 @@ rather than from a quantised histogram, the canon's green, skin and
 leather come within four points a channel of ours, which is not
 visible. The one surface with anything left in it is the hair gold,
 where the canon is slightly less saturated.
+
+**The hair is the largest remaining item, and it is being rebuilt rather
+than adjusted** (the owner's call, 2026-08-07). Both hair gaps have one
+root: a cut is drawn as a mass carrying the silhouette, one horizontal
+tone band cutting across it, and strand lines on top as decoration, while
+the canon draws a bundle of locks with the tone running along each lock's
+own direction. That is why Satoshi reads as an umbrella and Satoko as a
+gold helmet with a white liner. So the contract changes first, to per-lock
+tip regions, then Satoko's cut is re-authored on it to the silhouette
+already measured, and Satoshi gets a genuinely new tousled crop from his
+own reference. The pale fraction is not part of this: half and half stays,
+only the boundary's shape changes.
 
 The two canon passes of 2026-08-06 cleared the previous list; leg
 length closed as already matching the canon, and the chibi arms now

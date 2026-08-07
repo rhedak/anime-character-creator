@@ -45,6 +45,28 @@ render too, because the control points of a Bezier lie outside the curve
 and using them overstates the width. Measure both sides the same way when
 you do.
 
+## An anchor is not always where the ink is
+
+**The mistake.** Aligning our figure to a reference on `Skeleton.chin_y`,
+which is `head_cy + head_r`, when `_head_shape` draws the chin at
+`(1 + chin_drop) * head_r`. At the realistic build that is 0.004 H lower
+than the anchor.
+
+**Why it bites.** Every comparison that reads "at a matched depth above
+the chin" is then read 0.004 H too high on our side, which on a face is
+several percent of width. In task 62 that was the entire size of the
+claim being made, and it flipped the conclusion: the corrected numbers
+said the jaw was already close and the whole head was too wide, which is
+the opposite change.
+
+**The fix.** Compute the anchor, then check what the shape does to it
+before comparing. A part that offsets, drops or extends past an anchor
+has to be read at the offset value. Where a landmark is drawn rather than
+anchored, find it the same way on both sides, by reading `rows` down
+until the run goes to zero, and beware that on this figure the face and
+the neck are the same colour, so the span does not vanish at the chin, it
+becomes the neck.
+
 ## Quantised histograms cannot settle a palette question
 
 **The mistake.** Reading dominant colours from a histogram bucketed at 16

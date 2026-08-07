@@ -1470,30 +1470,59 @@ def _pouches(sk: Skeleton, p: CharacterParams) -> str:
 
 _HEAD_SEGMENTS = 8
 
+# How much width the whole skull loses by the adult end, as a fraction. The
+# measurement that produced this is in `docs/gap-analysis.md` under gap 7: read
+# below the hair, where the canon jaw can actually be seen, our jaw was already
+# close, so the head did not read round because the jaw was wide. It read round
+# because the whole upper face was, and a taper cannot fix that without eating the
+# jaw as well.
+_SKULL_NARROW = 0.10
+# Where the jaw taper begins, in head radii, negative being above the head
+# centre. A taper that begins at the cheek line holds full width down the whole
+# cheek and then loses it in the last tenth, which reads as a round head with a
+# point stuck on. Starting a quarter of a radius higher costs 2% of the width at
+# the cheek line, too little to strand the hairline, and lets the cheek run.
+_JAW_START_Y = -0.25
+# How the taper eases from there to the chin. Squared is a curve that stays wide
+# and then dives; nearer to linear is the straighter cheek the canon draws.
+_JAW_EASE = 1.4
+
 
 def _head_shape(build: float) -> tuple[Point, list[Segment]]:
-    """The skull: a circle at the chibi end, a jawed oval at the adult end.
+    """The skull: a circle at the chibi end, a narrower jawed oval at the adult end.
 
-    Eight quadratics that trace a unit circle when nothing tapers them, so the
-    chibi keeps exactly the round head it always had, and the lower half narrows
-    toward a chin as the build gets taller. A plain circle is fine at 2.4 heads
-    and reads as a ball on a stick at 7, which is what this is for.
+    Eight quadratics that trace a unit circle when nothing narrows or tapers them,
+    so the chibi keeps the round head it always had, and the head loses width and
+    gains a jaw as the build gets taller. A plain circle is fine at 2.4 heads and
+    reads as a ball on a stick at 7, which is what this is for.
 
-    The taper is confined to below the cheek line on purpose. The hair's crown and
-    temple points are pinned to this shape in the same head-radius units, so
-    narrowing the skull up there would leave the hairline floating off the face.
+    Two knobs rather than one, because the canon needs both. Against
+    `ref/satoko-real.jpg`, normalised on figure height and read at matched depths
+    above each figure's own drawn chin, the canon jaw runs 0.095, 0.081 and 0.061 H
+    and the old shape ran 0.104, 0.085 and 0.059: near enough that no amount of
+    taper was the answer, and a taper strong enough to change the look pulled the
+    jaw to 0.087, 0.071 and 0.050, out the other side. Narrowing the skull 10% and
+    tapering it *less* holds the jaw at 0.094, 0.079 and 0.056 while taking the
+    width out of the cheeks, which is where the roundness actually was.
+
+    The cheek itself cannot be measured against the canon: their hair lies across
+    the temples and ours stands off them, so what is visible there is a hair
+    difference wearing a face's clothes. That half was judged on the strips
+    (`out/62/round2_satoko.png`, `round2_satoshi.png`).
     """
-    jaw_pull = 0.30 * build
+    narrow = 1.0 - _SKULL_NARROW * build
+    jaw_pull = 0.20 * build
     chin_drop = 0.05 * build
     # Control-point radius that makes a quadratic chain trace a circle.
     k = 1 / math.cos(math.pi / _HEAD_SEGMENTS)
 
     def pt(deg: float, radius: float) -> Point:
         th = math.radians(deg)
-        x, y = math.sin(th) * radius, -math.cos(th) * radius
-        if y > 0:
-            lean = min(1.0, y)  # 0 at the cheek line, 1 at the chin
-            x *= 1.0 - jaw_pull * lean * lean
+        x, y = math.sin(th) * radius * narrow, -math.cos(th) * radius
+        if y > _JAW_START_Y:
+            # 0 where the taper starts, 1 at the chin.
+            lean = min(1.0, (y - _JAW_START_Y) / (1.0 - _JAW_START_Y))
+            x *= 1.0 - jaw_pull * lean**_JAW_EASE
             y *= 1.0 + chin_drop * lean
         return (x, y)
 

@@ -378,11 +378,36 @@ def cmd_eyes(a) -> None:
         )
     if len(keep) == 2:
         gap = keep[1][1] - (keep[0][1] + keep[0][3])
-        same = abs(keep[0][3] - keep[1][3]) <= 2 and abs(keep[0][4] - keep[1][4]) <= 2
+        # Relative rather than a pixel count, and not tight, because a deliberate
+        # asymmetry above the eyes makes the two apertures legitimately differ: an
+        # off-centre parting drops more fringe over one of them, which clips a few
+        # pixels off that aperture's top. A few percent apart is that. Wildly
+        # apart means the detector found a highlight dot or a gap between hair
+        # strands on one side, and then neither number means anything.
+        dw = abs(keep[0][3] - keep[1][3]) / max(keep[0][3], keep[1][3])
+        dh = abs(keep[0][4] - keep[1][4]) / max(keep[0][4], keep[1][4])
+        close = dw <= 0.08 and dh <= 0.08
         print(f"  gap between apertures {gap}px = {gap / Hf:.4f} H")
         print(
-            f"  left and right {'agree, trust these' if same else 'DISAGREE, do not trust these'}"
+            f"  left and right differ by {dw:.1%} in width, {dh:.1%} in height: "
+            + (
+                "consistent, trust these"
+                if close
+                else "TOO FAR APART, the detector found something else"
+            )
         )
+        print(f"  mean aperture width {(keep[0][3] + keep[1][3]) / 2 / Hf:.4f} H")
+        # Symmetry alone cannot catch the other failure, because what it finds
+        # instead is symmetric too: the pair of highlight dots inside the irises,
+        # which on the adult references came out 12x17px and agreed with each
+        # other perfectly. An aperture in this style is always wider than it is
+        # tall, so anything taller than wide is not one, however neatly the two
+        # sides match.
+        if min(keep[0][3] / keep[0][4], keep[1][3] / keep[1][4]) < 1.0:
+            print(
+                "  TALLER THAN WIDE, so these are not apertures: highlight dots, or a"
+                " gap between hair strands. Crop the head and read it by eye."
+            )
 
 
 # --------------------------------------------------------------------------
