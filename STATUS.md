@@ -299,7 +299,18 @@ expected: her `long_blunt` bell was tuned by eye in task 59 and was
 already close to the traced outline (`out/trace/satoko_port.png` overlays
 them).
 
-Two faults were found by looking, and both were mine rather than the
+**The line down the inside of each fall was missing** (the owner spotted
+it and painted it in). It is the line that says the hair hangs in front
+of the shoulder rather than behind it, and its absence was a limitation of
+how the boundary was read: a radial sweep from the head centre cannot
+describe that stretch, because below the cheek a fall runs almost straight
+down and a whole fall's worth of it falls between two bearings. Scanning
+rows there instead gives it, and the two readings agree where they meet,
+both being the same drawn line. `back` now closes on the mass's own
+contour, so the front hair covers exactly the band between the hairline
+and the silhouette, which is what hair is.
+
+Three faults were found by looking, and all three were mine rather than the
 trace's. The tone region left a gold wedge poking into the pale at the
 foot of each fall, because it was built from only those segments lying
 below the head centre, which is not a contiguous run; it now lifts the
@@ -311,7 +322,15 @@ curtain. That is precisely what the body-relative branch of `_hair_fall`
 exists for. `_long_scaled` now stretches only what lies below
 `_HAIR_CHEEK_Y` and leaves the crown alone, which is the split the hair
 contract has always documented, and the cut measures its length against
-the body again.
+the body again. The hairline gets the same treatment, since its lower half
+rides the falls and its upper half sits on a face that does not grow.
+
+The containment test earned its keep twice more here, on 0.010 head radii
+of fill outside the outline: once from a connector bowed off the line
+between two points of the silhouette, and once where a fall's inner and
+outer edges converge at its tip and the fit put the inner one a hair
+outside. Neither would have shown as a misplaced line, only as colour in
+the wrong place.
 
 **The tone boundary follows the blades now** (the owner's call,
 2026-08-07), and this is the state the chibi is locked at. `_crop_tip_edge`

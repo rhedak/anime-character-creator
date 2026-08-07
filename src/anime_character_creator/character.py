@@ -733,16 +733,18 @@ _LONG_EDGE: list[Segment] = [
     ((1.126, 1.670), (1.006, 1.550)),
     ((0.883, 1.665), (0.710, 1.672)),
 ]
-_LONG_LINE_START: Point = (-0.930, 0.434)
+_LONG_LINE_START: Point = (-0.767, 1.674)
 _LONG_LINE: list[Segment] = [
-    ((-0.927, 0.190), (-0.884, -0.000)),
-    ((-0.331, -0.200), (-0.315, -0.237)),
-    ((-0.204, -0.311), (-0.091, -0.394)),
-    ((-0.031, -0.443), (0.103, -0.587)),
-    ((0.154, -0.498), (0.191, -0.449)),
-    ((0.307, -0.317), (0.440, -0.205)),
-    ((0.493, -0.148), (0.838, 0.015)),
-    ((0.873, 0.187), (0.885, 0.412)),
+    ((-0.881, 1.265), (-0.927, 0.794)),
+    ((-0.936, 0.396), (-0.884, -0.000)),
+    ((-0.588, -0.091), (-0.315, -0.237)),
+    ((-0.083, -0.378), (0.103, -0.587)),
+    ((0.237, -0.364), (0.440, -0.205)),
+    ((0.624, -0.074), (0.838, 0.015)),
+    ((0.886, 0.371), (0.881, 0.724)),
+    ((0.876, 0.756), (0.785, 0.756)),
+    ((0.877, 0.756), (0.877, 0.792)),
+    ((0.828, 1.275), (0.716, 1.676)),
 ]
 # How far above the mass's own lower edge the gold gives way to the pale tips.
 # Larger than the crop's because these are falls rather than blades: the tips
@@ -751,6 +753,8 @@ _LONG_BASE_TIP = 1.677
 _LONG_TONE_LIFT = 0.62
 # How far inside the silhouette the front hair's fill boundary is pulled.
 _LONG_FILL_INSET = 0.05
+# How far the hairline's two ends are pulled toward the centre, in head radii.
+_LONG_LINE_TUCK = 0.04
 # Which segment ends on the crown's apex, so the two sides can be taken apart.
 _LONG_CROWN_AT = 9
 
@@ -780,6 +784,29 @@ def _long_scaled(fall: float) -> tuple[Point, list[Segment]]:
     return q(_LONG_EDGE_START), [(q(c), q(e)) for c, e in _LONG_EDGE]
 
 
+def _long_line(fall: float) -> tuple[Point, list[Segment]]:
+    """The traced hairline, with the stretch that the falls get and the face does
+    not: above the cheek line it is pinned to the head, below it it rides the
+    fall down."""
+    span = _LONG_BASE_TIP - _HAIR_CHEEK_Y
+    k = (fall - _HAIR_CHEEK_Y) / span if span else 1.0
+
+    def q(pt: Point) -> Point:
+        y = pt[1]
+        return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
+
+    line = [(q(c), q(e)) for c, e in _LONG_LINE]
+    # The two ends are tucked toward the centre. At a fall's bottom tip the inner
+    # and outer edges of the hair converge, so the traced hairline's last point
+    # and the traced mass's last point are within a stroke of each other, and the
+    # fit can put the inner one a hair outside. This keeps the fill inside the
+    # silhouette without moving anything a viewer can see.
+    start = (q(_LONG_LINE_START)[0] + _LONG_LINE_TUCK, q(_LONG_LINE_START)[1])
+    ctrl, end = line[-1]
+    line[-1] = (ctrl, (end[0] - _LONG_LINE_TUCK, end[1]))
+    return start, line
+
+
 def _long_traced_mass(fall: float) -> tuple[Point, list[Segment]]:
     """The whole silhouette, closed behind the shoulders where it is never seen."""
     start, edge = _long_scaled(fall)
@@ -799,21 +826,38 @@ def _long_traced_fall_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
 
 
 def _long_traced_hairline(fall: float) -> tuple[Point, list[Segment], list[Segment]]:
-    """Her parting and the inner edges of the falls, traced, with the fill closed
-    back over the crown just inside the mass so the mass carries the silhouette.
+    """Her parting, and the line down the inside of each fall.
 
-    The hairline does not scale with the build. It sits on a face, and the face
-    does not grow when the hair does.
+    That second part is the whole of what a viewer reads as hair lying in front
+    of the shoulder rather than behind it, and the first version of this cut did
+    not have it: the inner boundary was traced by sweeping bearings from the head
+    centre, and below the cheek a fall runs almost straight down, so a whole
+    fall's worth of it fell between two bearings. `out/trace/satoko.py` scans rows
+    there instead and the two readings agree where they meet, both being the same
+    drawn line.
+
+    `back` closes the fill on the mass's own contour, so the front hair covers
+    exactly the band between the hairline and the silhouette, which is what the
+    hair *is*. The two short connectors across each fall's bottom are the only
+    invented geometry here.
     """
-    _, edge = _long_scaled(fall)
-    start = _LONG_LINE_START
-    end = _LONG_LINE[-1][1]
-    k = 1.0 - _LONG_FILL_INSET
-    crown = _reverse(edge[0][1], edge[1 : _LONG_CROWN_AT * 2])[1]
-    back: list[Segment] = [((end[0], end[1] - 0.30), (end[0] * 1.02, -0.30))]
-    back += [((c[0] * k, c[1] * k), (e[0] * k, e[1] * k)) for c, e in crown]
-    back.append((((start[0] * 1.02 + start[0]) / 2, -0.30), start))
-    return start, list(_LONG_LINE), back
+    start, edge = _long_scaled(fall)
+    hs, hg = _long_line(fall)
+    end = hg[-1][1]
+    mass_start, mass_back = _reverse(start, edge)
+    inset = 1.0 - _LONG_FILL_INSET
+    # Straight chords, not bowed ones: a control placed off the line between two
+    # points on the silhouette can leave it, which at a fall's bottom tip put the
+    # fill 0.010 head radii outside its own outline.
+    back: list[Segment] = [
+        (((end[0] + mass_start[0]) / 2, (end[1] + mass_start[1]) / 2), mass_start)
+    ]
+    back += [
+        ((c[0] * inset, c[1] * inset), (e[0] * inset, e[1] * inset)) for c, e in mass_back[:-1]
+    ]
+    last = mass_back[-1][1]
+    back.append((((last[0] + hs[0]) / 2, (last[1] + hs[1]) / 2), hs))
+    return hs, hg, back
 
 
 def _long_traced_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
