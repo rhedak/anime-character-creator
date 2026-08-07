@@ -213,6 +213,41 @@ finding: the canon's chibi is *less* deformed than ours and still carries
 2.5 times the hair clearance, so the volume is not a side effect of a
 squatter figure.
 
+**The fringe is traced, off `ref/satoshi-chibi-fringe.png`.** Five
+readings off the full drawing failed first and all five are written up in
+`out/trace/fringe.py` and `fringe2.py`, because each failed differently
+and each was caught by eye against the reference's own outline rather
+than by any number: first skin going down runs on to the pupil between
+two locks; deepest hair above a solid run of skin loses a lock that sits
+below a gap; deepest hair outright settles on the brow line, finding
+bright desaturated skin beside the hairline; deepest ink finds the brow
+itself; and growing the forehead as a connected region cannot enter a gap
+where two blades seal it with ink.
+
+The reason none of them work is a property of the reference and worth
+stating once: **the canon's pale tips sit colorimetrically between its
+gold and its skin.** The forehead is sum 589-601 at red minus blue +45 to
++57, skin beside a drawn line rings to 520-622 at +8 to +56, and the
+gold-to-pale band runs about +40 at 650. There is no threshold with all
+three on the right side.
+
+The owner's crop settles it by leaving the brows and eyes out of frame,
+so the deepest ink in a column can only be the blade that made it. It is
+placed back in the reference by template match, mean squared error 1, so
+the calibration is the reference's own. Sixteen segments and five lock
+tips, and it draws at both builds.
+
+**Retracted:** an earlier entry here said the fringe was a deep zigzag of
+needle-tipped locks, 17 of 22 sides ending in solid ink with the worst
+0.45 head radii, and that drawing it needed overlapping locks the
+contract has no slot for. That came from the second failed reading. The
+overlapping-lock idea may still be right for other reasons; that
+measurement does not support it.
+
+**Residual:** the trace is off the chibi reference and our fringe is fixed
+rather than scaled by build, so it sits higher over the adult's eyes than
+the canon puts it.
+
 **Correction to a number recorded earlier:** the crop's widest point was
 written up as 54% down the hair's own height. Measured off the contour it
 has *two* lobes, 1.17 r at 38% down (the temple tuft) and 1.11 r at 65%

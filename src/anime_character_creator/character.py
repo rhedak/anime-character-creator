@@ -753,16 +753,61 @@ _CROP_TEMPLE_R = 19
 # The lowest point of the trace as measured, which is what `fall` scales against:
 # a cut whose tips reach `fall` is the trace at `fall / _CROP_BASE_TIP`.
 _CROP_BASE_TIP = 0.872
-# Where the fringe leaves the side locks and starts running across the forehead.
-# Fixed rather than scaled: the mass grows with the build, the fringe does not,
+# The fringe, traced off `ref/satoshi-chibi-fringe.png`: the canon's fringe cut
+# out of the chibi reference by the owner, background removed.
+#
+# That crop is what made this measurable. Five readings off the full drawing all
+# failed and each failed differently, because the canon's pale tips sit
+# colorimetrically between its gold and its skin, so no threshold puts all three
+# on the right side of it. What the crop changes is not its alpha, which is a
+# coarse outer selection with the gaps between blades left opaque, but what it
+# leaves out: no brows and no eyes. On the full drawing the deepest ink in a
+# column is the brow, which is why reading the drawn line found eyebrows. In the
+# crop the deepest ink can only be the blade that made it.
+#
+# The crop is placed back in the reference by template match rather than by an
+# eyeballed offset, and matches to a mean squared error of 1, so the calibration
+# is the reference's own. `out/trace/fringe3.py` carries it.
+#
+# Fixed rather than scaled by the build: the mass grows and the fringe does not,
 # because it sits on a brow that has not moved.
-_CROP_FRINGE_L: Point = (-0.92, -0.16)
-_CROP_FRINGE_R: Point = (0.94, -0.14)
+_CROP_FRINGE_START: Point = (-1.039, -0.181)
+_CROP_FRINGE: list[Segment] = [
+    ((-0.924, -0.200), (-0.817, -0.215)),
+    ((-0.741, -0.290), (-0.641, -0.356)),
+    ((-0.641, -0.237), (-0.624, -0.237)),
+    ((-0.435, -0.272), (-0.278, -0.385)),
+    ((-0.275, -0.288), (-0.272, -0.192)),
+    ((-0.080, -0.219), (0.068, -0.351)),
+    ((0.068, -0.249), (0.080, -0.249)),
+    ((0.193, -0.291), (0.289, -0.374)),
+    ((0.397, -0.477), (0.448, -0.618)),
+    ((0.512, -0.439), (0.653, -0.311)),
+    ((0.711, -0.271), (0.772, -0.237)),
+    ((0.783, -0.237), (0.783, -0.356)),
+    ((0.812, -0.328), (0.840, -0.300)),
+    ((0.885, -0.215), (0.885, -0.112)),
+    ((0.919, -0.112), (0.919, -0.243)),
+    ((0.985, -0.204), (1.061, -0.186)),
+]
+_CROP_NOTCHES: list[Point] = [
+    (-0.641, -0.356),
+    (-0.278, -0.385),
+    (0.068, -0.351),
+    (0.448, -0.618),
+    (0.783, -0.356),
+    (0.919, -0.243),
+]
 # How far inside the silhouette the front hair's own fill boundary is pulled,
 # in fractions of the radius. It only ever has to be enough that the fill cannot
 # cross the outline between two traced points; the mass paints the strip left
 # over in the same colour, so nothing shows.
 _CROP_FILL_INSET = 0.06
+# How far the lock divisions lean off vertical, and how far they run up from
+# their notch. Short: a division marks a join, it does not have to travel, and
+# full-length ones hang off the fringe as a curtain of needles.
+_CROP_SWEEP = 0.06
+_CROP_STRAND_RUN = 0.34
 
 
 def _crop_outline(fall: float) -> tuple[Point, list[Segment]]:
@@ -829,25 +874,16 @@ def _crop_hairline_shape(fall: float) -> tuple[Point, list[Segment], list[Segmen
     measurement: the canon's fringe boundary is hair against skin, so it can be
     read off the reference the way the silhouette was.
     """
-    v = fall / _CROP_BASE_TIP
     _, edge = _crop_outline(fall)
     left_temple = edge[_CROP_TEMPLE_L][1]
     right_temple = edge[_CROP_TEMPLE_R][1]
-    lx, ly = _CROP_FRINGE_L
-    rx, ry = _CROP_FRINGE_R
+    lx, ly = _CROP_FRINGE_START
+    rx, ry = _CROP_FRINGE[-1][1]
     line: list[Segment] = [
-        ((-1.02 * v, -0.10 * v), (lx, ly)),
-        # the fringe: wide shallow lock, a notch showing forehead, a deep narrow
-        # tip reaching the brow, then shorter ones toward the parting
-        ((-0.84, -0.44), (-0.68, -0.33)),
-        ((-0.56, -0.56), (-0.42, -0.50)),
-        ((-0.34, -0.22), (-0.26, -0.13)),
-        ((-0.18, -0.43), (-0.04, -0.39)),
-        ((0.06, -0.19), (0.16, -0.23)),
-        ((0.26, -0.51), (0.42, -0.45)),
-        ((0.54, -0.25), (0.64, -0.29)),
-        ((0.80, -0.15), (rx, ry)),
-        ((1.04 * v, -0.12 * v), right_temple),
+        # out to the temple, past where the forehead ends and the trace with it
+        (((left_temple[0] + lx) / 2, ly - 0.10), (lx, ly)),
+        *_CROP_FRINGE,
+        (((right_temple[0] + rx) / 2, ry - 0.10), right_temple),
     ]
     # Back over the crown, taken off the mass's own points and pulled in a
     # fraction of a radius so it is inside the silhouette at every bearing.
@@ -905,18 +941,23 @@ def _crop_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
     mass, since they live on it.
     """
     v = fall / _CROP_BASE_TIP
-    s = [
-        ((-0.49, -0.85), [((-0.67, -0.64), (-0.76, -0.40))]),
-        ((-0.15, -0.79), [((-0.22, -0.58), (-0.12, -0.46))]),
-        ((0.24, -0.83), [((0.29, -0.64), (0.36, -0.50))]),
-        ((0.52, -0.83), [((0.64, -0.63), (0.66, -0.38))]),
-        ((0.76, -0.70), [((0.96, -0.46), (1.06, -0.20))]),
-        ((-0.72, -0.73), [((-0.96, -0.49), (-1.06, -0.22))]),
-    ]
-    return [
-        ((q[0] * v, q[1] * v), [((c[0] * v, c[1] * v), (e[0] * v, e[1] * v)) for c, e in segs])
-        for q, segs in s
-    ]
+    out: list[tuple[Point, list[Segment]]] = []
+    for x, y in _CROP_NOTCHES:
+        # Up from a notch of the traced fringe, leaning the way the lock sweeps.
+        # One line where two locks meet is what reads as overlap rather than as a
+        # gap, which is the thing the canon does and a plain zigzag does not.
+        top = (x + _CROP_SWEEP, y - _CROP_STRAND_RUN)
+        out.append(((x, y), [(((x + top[0]) / 2 + _CROP_SWEEP * 0.5, (y + top[1]) / 2), top)]))
+    # Two long ones over the crown as well, or the top of the head is one field of
+    # hair colour and the cut reads as an object rather than as hair.
+    for x0, y0, x1, y1 in ((-0.62, -0.72, -1.00, -0.24), (0.70, -0.70, 1.04, -0.22)):
+        out.append(
+            (
+                (x0 * v, y0 * v),
+                [(((x0 + x1) / 2 * v, (y0 + y1) / 2 * v), (x1 * v, y1 * v))],
+            )
+        )
+    return out
 
 
 # Satoshi's tousled crop.

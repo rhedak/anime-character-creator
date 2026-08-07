@@ -249,7 +249,45 @@ are visibly borrowed.** `out/trace/see_chibi.png`
 and `see_realistic.png` are the canon, the traced crop and what ships
 today, side by side.
 
-The traced part is the silhouette and only the silhouette. The fringe is
+**The fringe is traced off the owner's own crop, after five readings off
+the full drawing failed.** Each failed differently and each was caught by
+eye against the reference's outline rather than by a number; all five are
+written up in `out/trace/fringe.py` and `fringe2.py` so the next attempt
+does not repeat them. The reason none of them worked is worth stating as
+a limit rather than as five near-misses: **on this JPEG the canon's pale
+tips sit colorimetrically between its gold and its skin**, the forehead
+at sum 589-601 and red minus blue +45 to +57, skin beside a drawn line
+ringing to 520-622 at +8 to +56, the gold-to-pale band at about +40 and
+650. No threshold puts all three on the right side of it.
+
+`ref/satoshi-chibi-fringe.png` settles it, and not for the reason it
+looks like. Its alpha is a coarse outer selection with the gaps between
+blades left opaque, so that is not the signal. What matters is what the
+crop leaves *out*: no brows and no eyes. On the full drawing the deepest
+ink in a column is the brow, which is why reading the drawn line came out
+along the eyebrows; in the crop the deepest ink can only be the blade
+that made it. The crop is placed back in the reference by template match
+rather than an eyeballed offset and matches to a mean squared error of 1,
+so the calibration is the reference's own.
+
+The result is 16 segments with five lock tips, and it draws: the fringe
+reads as pointed blades at both builds rather than as a scalloped band or
+a comb of needles. **A claim made from one of the failed readings is
+retracted**: it said the canon's fringe was a deep zigzag of needle-tipped
+locks, 17 of 22 sides in solid ink, and that drawing it needed a contract
+slot for overlapping locks. The two reverts that claim caused were right
+on the evidence available; the evidence was wrong.
+
+Two residuals. The trace is off the *chibi* reference, and our fringe is
+fixed rather than scaled by build, so it sits a little higher over the
+adult's eyes than the canon puts it. And the tone is still one wave
+across the head rather than a region per lock, which is the original
+complaint about this character and the next piece of work. `fringe2.py`
+turns out to trace the gold-to-pale boundary cleanly, which is exactly
+what those per-lock regions will need: the right tool pointed at the wrong
+question, kept for the right one.
+
+The rest of the cut that ships is the silhouette. The fringe is
 still the short cut's scalloped locks, the tone boundary is still one
 wave rather than a region per lock, and the strand lines are still a
 regular fan; all three are visibly a different language from the traced
