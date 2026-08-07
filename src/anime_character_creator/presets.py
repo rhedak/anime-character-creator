@@ -32,6 +32,7 @@ BOOTS = "#6d4c33"
 SATOKO = CharacterParams(
     skin_tone="#f6dbc2",
     hair_color=HAIR,
+    hairstyle="long_traced",
     hair_tip_color=HAIR_TIPS,
     eye_color="#74905e",
     # Working clothes in layers: green tunic over tan undersleeves, brown

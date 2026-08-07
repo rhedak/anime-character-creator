@@ -278,8 +278,43 @@ locks, 17 of 22 sides in solid ink, and that drawing it needed a contract
 slot for overlapping locks. The two reverts that claim caused were right
 on the evidence available; the evidence was wrong.
 
+**Satoko's cut is traced and built as `long_traced`, and nothing points
+at it yet.** Both boundaries come off `ref/satoko-chibi-hair.png`, and
+the signal is the owner's correction: **trace the drawn black outline,
+not the crop's alpha.** The alpha is a rough selection, some of the page
+opaque and the face opening a staircase; the ink is the artist's own line
+and is exact where the selection is not. Reading ink works on a crop of
+hair alone and fails on a whole face, because brows and eyes are the only
+other dark things on one. Here the furthest ink along a bearing is the
+mass and the nearest is the hairline. The crop places back into the
+reference at a mean squared error of 1, and her eye half-separation
+cross-checks the calibration at 0.459 head radii against our house 0.46.
+
+Eighteen segments for the mass and eight for the hairline, both the finest
+levels with no edge under two stroke widths. **Satoko now wears it.** It renders fuller and rounder than `long_blunt`,
+its parting reads, and the pale follows the falls instead of cutting a
+level line across them; `out/trace/satoko_shipped.png` puts both builds
+beside their references. The gain is smaller than Satoshi's was, which is
+expected: her `long_blunt` bell was tuned by eye in task 59 and was
+already close to the traced outline (`out/trace/satoko_port.png` overlays
+them).
+
+Two faults were found by looking, and both were mine rather than the
+trace's. The tone region left a gold wedge poking into the pale at the
+foot of each fall, because it was built from only those segments lying
+below the head centre, which is not a contiguous run; it now lifts the
+whole contour and clamps it at the half-and-half line, so the pale follows
+the tips and never climbs over the crown. And **a long cut was given a
+head-relative `tip_range`**, which froze her hair at one length in head
+radii, so at the adult build it rode up her back into a short white
+curtain. That is precisely what the body-relative branch of `_hair_fall`
+exists for. `_long_scaled` now stretches only what lies below
+`_HAIR_CHEEK_Y` and leaves the crown alone, which is the split the hair
+contract has always documented, and the cut measures its length against
+the body again.
+
 **The tone boundary follows the blades now** (the owner's call,
-2026-08-07, reopening the lock below for one change). `_crop_tip_edge`
+2026-08-07), and this is the state the chibi is locked at. `_crop_tip_edge`
 was a single wave at a fixed height, which could only say "pale below this
 line" and read as a white liner under a gold cap. It is the fringe's own
 traced chain lifted by `_CROP_TONE_LIFT` and extended out to the mass on
@@ -298,8 +333,9 @@ This does *not* use `tip_edge`'s list of regions, which task 71 added for
 exactly this and which nothing has needed yet. Per-lock regions remain the
 way to vary the depth per lock if that ever matters.
 
-**The chibis are locked in** (the owner's call, 2026-08-07): the chibi
-crop is where it should be and further work goes elsewhere. Nothing extra
+**The chibis are locked in** (the owner's call, 2026-08-07, confirmed
+after the tone change above): the chibi crop is where it should be and
+further work goes elsewhere. Nothing extra
 is needed to hold it, because `ref-out/` already pins all four renders
 byte for byte and `test_ref_out_matches_the_code` fails the moment a shape
 changes. That is the lock: refreshing it is a deliberate act, so a chibi

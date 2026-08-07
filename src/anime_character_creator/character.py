@@ -696,6 +696,190 @@ def _short_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
     ]
 
 
+# Satoko's traced cut.
+#
+# Both boundaries come off `ref/satoko-chibi-hair.png`, her hair cut out of the
+# chibi reference by the owner, and the signal is **the drawn black outline**
+# rather than the crop's alpha. The alpha is a rough selection: some of the page
+# came through opaque and the face opening's edge is a staircase. The ink is the
+# artist's own line and is exact wherever the selection is not.
+#
+# Reading ink works on a crop of the hair alone and does not on a whole face,
+# because brows and eyes are the only other dark things on one. Here the
+# furthest ink along a bearing is the mass and the nearest is the hairline, with
+# nothing between them that could be either. `out/trace/satoko.py` carries it,
+# and the crop places back into the reference at a mean squared error of 1.
+#
+# 18 and 8 segments: the finest levels with no edge under two stroke widths at
+# either build, the same bound the other traced cuts were chosen on.
+_LONG_EDGE_START: Point = (-0.782, 1.677)
+_LONG_EDGE: list[Segment] = [
+    ((-0.933, 1.651), (-1.050, 1.557)),
+    ((-1.165, 1.666), (-1.171, 1.612)),
+    ((-1.250, 1.572), (-1.306, 1.502)),
+    ((-1.362, 1.434), (-1.388, 1.341)),
+    ((-1.283, 0.169), (-1.232, -0.307)),
+    ((-1.183, -0.490), (-1.094, -0.657)),
+    ((-0.997, -0.821), (-0.858, -0.953)),
+    ((-0.721, -1.070), (-0.561, -1.150)),
+    ((-0.342, -1.242), (-0.109, -1.251)),
+    ((0.140, -1.229), (0.386, -1.187)),
+    ((0.556, -1.141), (0.701, -1.040)),
+    ((0.878, -0.907), (1.002, -0.728)),
+    ((1.128, -0.525), (1.186, -0.296)),
+    ((1.230, 0.160), (1.338, 1.338)),
+    ((1.314, 1.432), (1.260, 1.501)),
+    ((1.199, 1.562), (1.127, 1.609)),
+    ((1.126, 1.670), (1.006, 1.550)),
+    ((0.883, 1.665), (0.710, 1.672)),
+]
+_LONG_LINE_START: Point = (-0.930, 0.434)
+_LONG_LINE: list[Segment] = [
+    ((-0.927, 0.190), (-0.884, -0.000)),
+    ((-0.331, -0.200), (-0.315, -0.237)),
+    ((-0.204, -0.311), (-0.091, -0.394)),
+    ((-0.031, -0.443), (0.103, -0.587)),
+    ((0.154, -0.498), (0.191, -0.449)),
+    ((0.307, -0.317), (0.440, -0.205)),
+    ((0.493, -0.148), (0.838, 0.015)),
+    ((0.873, 0.187), (0.885, 0.412)),
+]
+# How far above the mass's own lower edge the gold gives way to the pale tips.
+# Larger than the crop's because these are falls rather than blades: the tips
+# run a long way and the canon turns them pale over roughly their last third.
+_LONG_BASE_TIP = 1.677
+_LONG_TONE_LIFT = 0.62
+# How far inside the silhouette the front hair's fill boundary is pulled.
+_LONG_FILL_INSET = 0.05
+# Which segment ends on the crown's apex, so the two sides can be taken apart.
+_LONG_CROWN_AT = 9
+
+
+def _long_scaled(fall: float) -> tuple[Point, list[Segment]]:
+    """The traced contour with its fall stretched to `fall`, its crown left alone.
+
+    A long cut does not scale as one piece, and the contract already says so:
+    above the cheek line hair is pinned to the skull, below it the points are a
+    fraction of the way down to the tips. So only y below `_HAIR_CHEEK_Y` is
+    remapped, and x is left as traced, because a fall that hangs further does not
+    also hang wider.
+
+    Scaling the whole contour was tried and is wrong twice over. It carries the
+    crown up with the tips, which at the adult build puts it past the canvas
+    ceiling; and it needs a head-relative `tip_range` to stay inside that, which
+    stops a long cut lengthening with the body at all. That is the thing the
+    body-relative branch of `_hair_fall` exists for.
+    """
+    span = _LONG_BASE_TIP - _HAIR_CHEEK_Y
+    k = (fall - _HAIR_CHEEK_Y) / span if span else 1.0
+
+    def q(pt: Point) -> Point:
+        y = pt[1]
+        return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
+
+    return q(_LONG_EDGE_START), [(q(c), q(e)) for c, e in _LONG_EDGE]
+
+
+def _long_traced_mass(fall: float) -> tuple[Point, list[Segment]]:
+    """The whole silhouette, closed behind the shoulders where it is never seen."""
+    start, edge = _long_scaled(fall)
+    end = edge[-1][1]
+    return start, [*edge, (((end[0] + start[0]) / 2, max(end[1], start[1]) + 0.16), start)]
+
+
+def _long_traced_fall_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """Both sides of the outline, each from its tip up to the crown. Taken out of
+    the mass's own points rather than restated, and given per side rather than
+    mirrored, since nothing here promises the trace is symmetric."""
+    start, edge = _long_scaled(fall)
+    return [
+        _reverse(edge[_LONG_CROWN_AT][1], edge[_LONG_CROWN_AT + 1 :]),
+        (start, edge[: _LONG_CROWN_AT + 1]),
+    ]
+
+
+def _long_traced_hairline(fall: float) -> tuple[Point, list[Segment], list[Segment]]:
+    """Her parting and the inner edges of the falls, traced, with the fill closed
+    back over the crown just inside the mass so the mass carries the silhouette.
+
+    The hairline does not scale with the build. It sits on a face, and the face
+    does not grow when the hair does.
+    """
+    _, edge = _long_scaled(fall)
+    start = _LONG_LINE_START
+    end = _LONG_LINE[-1][1]
+    k = 1.0 - _LONG_FILL_INSET
+    crown = _reverse(edge[0][1], edge[1 : _LONG_CROWN_AT * 2])[1]
+    back: list[Segment] = [((end[0], end[1] - 0.30), (end[0] * 1.02, -0.30))]
+    back += [((c[0] * k, c[1] * k), (e[0] * k, e[1] * k)) for c, e in crown]
+    back.append((((start[0] * 1.02 + start[0]) / 2, -0.30), start))
+    return start, list(_LONG_LINE), back
+
+
+def _long_traced_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """Where the falls turn pale: the mass's own edge, lifted, but never above the
+    half-way line.
+
+    Two rules, and the second is what a long cut needs that a crop does not. The
+    lift is the crop's trick: a uniform lift over an edge whose tips end at
+    different depths leaves every tip pale from a fixed distance above its own
+    point, so the pale follows the hair instead of cutting a level line across it.
+    The clamp then holds the boundary at `_fade_y`'s half-and-half height wherever
+    the lifted edge would climb above it, which is everywhere but the two falls.
+    Without it the lift carries on over the crown and turns the whole head pale.
+
+    A first version took only the segments lying below the head centre, which is
+    not a contiguous run, and left a gold wedge poking into the pale at the foot
+    of each fall.
+    """
+    v = fall / _LONG_BASE_TIP
+    start, edge = _long_scaled(fall)
+    lift = _LONG_TONE_LIFT * v
+    top = min(e[1] for _, e in edge)
+    bottom = max(e[1] for _, e in edge)
+    fade = _fade_y(top, bottom)
+    floor = bottom + 1.0
+    wide = max(abs(e[0]) for _, e in edge) + 0.25
+
+    # The contour, sampled and pushed up, then held at the fade line.
+    pts: list[Point] = []
+    prev = start
+    for ctrl, end in edge:
+        for i in range(1, 7):
+            t = i / 6
+            x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * ctrl[0] + t**2 * end[0]
+            y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * ctrl[1] + t**2 * end[1]
+            pts.append((x, max(y - lift, fade)))
+        prev = end
+
+    chain: list[Segment] = []
+    here: Point = (-wide, fade)
+    for q in [*pts, (wide, fade), (wide, floor), (-wide, floor), (-wide, fade)]:
+        chain.append((((here[0] + q[0]) / 2, (here[1] + q[1]) / 2), q))
+        here = q
+    return [((-wide, fade), chain)]
+
+
+def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """The two sweep lines the canon draws off the parting, and one down each
+    fall. They scale with the mass, since they live on it."""
+    v = fall / _LONG_BASE_TIP
+    out = []
+    for x0, y0, cx0, cy0, x1, y1 in (
+        (-0.30, -0.72, -0.62, -0.42, -0.86, -0.05),
+        (0.34, -0.74, 0.66, -0.44, 0.90, -0.08),
+    ):
+        out.append(((x0, y0), [((cx0, cy0), (x1, y1))]))
+    for side in (-1, 1):
+        out.append(
+            (
+                (side * 1.02 * v, 0.10 * v),
+                [((side * 1.10 * v, 0.70 * v), (side * 1.06 * v, 1.30 * v))],
+            )
+        )
+    return out
+
+
 # Satoshi's traced crop.
 #
 # The outline here is not authored, it is measured. `out/trace/` pulls the canon's
@@ -1323,6 +1507,17 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # shaggy ear-length cut at 1. The old (0.42, 1.00) range described the
         # bob this used to be, with locks reaching for the jaw.
         tip_range=(0.25, 0.70),
+    ),
+    "long_traced": Hairstyle(
+        _long_traced_mass,
+        _long_traced_hairline,
+        _long_traced_fall_edge,
+        _long_traced_tip_edge,
+        strands=_long_traced_strands,
+        # No `tip_range`, so `hair_length` measures the body, chin to hip. That
+        # is what keeps a long haircut the same haircut when the build changes;
+        # a head-relative range would freeze her hair at one length and it would
+        # ride up the adult's back.
     ),
     "short_crop": Hairstyle(
         _crop_mass_shape,
