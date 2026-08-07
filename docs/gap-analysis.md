@@ -192,6 +192,18 @@ Read as clearance over the skull rather than as radius, the gap is wider
 than 29%: the adult's hair stands 0.29 head radii clear of its skull and
 the chibi's 0.73, a factor of 2.5. Ours is 0.28 to 0.30 at both builds.
 
+**The ear does the same thing, and it is the same size of effect.** The
+chibi's ear runs 0.024 to 0.614 head radii and the adult's 0.03 to 0.49,
+so the canon draws a child's ear about 30% taller against its skull, the
+way anatomy says. Ours ships the adult's span at both builds. That
+retracts a note in `character.py` and in STATUS that said no reference
+showed a chibi ear at all: `ref/satoshi-chibi.jpg` draws the viewer-right
+one clear of the hair, and `ref/satoshi-ear.png` is the owner's crop of
+it. What did *not* need changing is the width: stand-out over height is
+0.361 in the canon chibi against 0.370 in ours, so `_EAR_OUT` at 0.17,
+which was picked by eye, is where the measurement puts it. Traced in
+`out/ear2/`.
+
 Both calibrations are eye centre to drawn chin, 0.89 r at the adult and
 0.84 at the chibi where `chin_drop` is zero. Cross-checks: the adult's
 figure height over six heads implies a radius within 4.8% of the fit, and

@@ -177,14 +177,31 @@ byte-neutral before the ear went on top of it. And a test asserts the
 ear's contour never dips inside the skull, which is the failure a future
 taper change would otherwise cause silently.
 
-Two things it deliberately does *not* do. It has no build-dependent size:
-a child's ear really is larger against its skull than an adult's, and
-that was in for a round as a shrink on the build, but the span is
-measured off the *adult* reference, so the shrink made the one build the
-number came from the one build that did not reproduce it. No reference
-shows a chibi ear at all, both cuts cover it, so the knob was
-unmeasurable in the direction that mattered and it is gone rather than
-inverted.
+It has no build-dependent size. A child's ear really is larger against
+its skull than an adult's, and that was in for a round as a shrink on the
+build, but the span is measured off the *adult* reference, so the shrink
+made the one build the number came from the one build that did not
+reproduce it. It is gone rather than inverted.
+
+**The outline itself is now traced** (the owner's call, 2026-08-07: the
+shape is still a bit off, align it, and here is a crop). Two quadratics
+out to a widest point and back was the right idea and the wrong curve.
+The canon's rim leaves the top attach far faster than one control can,
+holds its width through the middle of the ear rather than peaking, and
+comes back in along the lobe; four segments carry that, which is the
+finest the line weight supports. The inner fold is traced with it, one
+stroke shaped like a question mark.
+
+Two things fell out of doing it. **A retraction**: this said no reference
+showed a chibi ear, both cuts covering it. `ref/satoshi-chibi.jpg` draws
+the viewer-right one clear of the hair, which is where the owner's crop
+came from, and it puts the chibi's ear at 0.024 to 0.614 head radii
+against the adult's 0.03 to 0.49, about 30% taller against the skull,
+the way anatomy says. The span shipped is still the adult's: turning that
+into a build-riding one is a placement change and the ask was shape. And
+**a check that came out right**: stand-out over height is 0.361 in the
+canon chibi against 0.370 in what we already had, so `_EAR_OUT` at 0.17,
+picked by eye, needed nothing. Harness in `out/ear2/`.
 
 **Satoshi's crop is traced** (the owner's method, 2026-08-07: outline the
 canon's hair, then apply the shape to our head). The harness is

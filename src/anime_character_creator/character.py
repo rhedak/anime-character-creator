@@ -2814,9 +2814,6 @@ def _head_shape(build: float) -> tuple[Point, list[Segment]]:
 # has something to say that against.
 _EAR_TOP_Y = 0.03
 _EAR_BOT_Y = 0.49
-# How far down its own height the ear is widest. The canon reads 59%, which is
-# what makes it a teardrop with the weight low rather than a symmetric oval.
-_EAR_WIDE_F = 0.59
 # How far the ear stands clear of the skull at its widest, in head radii.
 #
 # The canon's own ear is 0.263 r wide, and that is not transferable as it
@@ -2832,9 +2829,70 @@ _EAR_OUT = 0.17
 # in here for a round as a shrink on the build, but the span above is measured
 # off the *adult* reference, so a shrink made the one build the number came from
 # the one build that did not reproduce it: the adult came out 12% short while
-# the chibi, which no reference shows an ear on at all, got the canon figure
-# exactly. There is no chibi ear to measure, both cuts cover it, so the knob was
-# unmeasurable in the direction it mattered and it is gone rather than inverted.
+# the chibi got the canon figure exactly.
+#
+# **Retraction.** This used to say there was no chibi ear to measure, both cuts
+# covering it. There is: `ref/satoshi-chibi.jpg` draws the viewer-right one
+# clear of the hair, and the owner's crop of it is `ref/satoshi-ear.png`.
+# Measured (`out/ear2/`), the chibi's ear runs 0.024 to 0.614 head radii against
+# the adult's 0.03 to 0.49, so it really is about 30% taller against the skull,
+# the way anatomy says. The span here is still the adult's and the shrink is
+# still gone: resolving that into a build-riding span is a placement change and
+# a separate decision from the shape below, which is what the trace is used for.
+
+# The ear's outline and its one inner fold, traced off the canon chibi and held
+# in the ear's own frame rather than in head radii: y runs 0 at the top attach to
+# 1 at the bottom, and x runs 0 on the chord between them to 1 at the widest
+# stand-out. That is what makes the trace a *shape* and leaves where the ear
+# sits and how far it stands out to `_EAR_TOP_Y`, `_EAR_BOT_Y` and `_EAR_OUT`
+# above, which are measured off the adult and should not be spent on this.
+#
+# Simplified to the finest level with no edge under two stroke widths at either
+# build, the same rule the hair silhouette settled on. The rim's own weight sets
+# the floor for the outline and 0.55 of it for the fold, so the fold gets to
+# keep more detail than the rim does.
+_EAR_ARC_START: Point = (0.000, 0.000)
+_EAR_ARC: list[Segment] = [
+    ((0.008, 0.345), (0.135, 0.655)),
+    ((0.273, 0.943), (0.500, 1.000)),
+    ((0.661, 0.944), (0.779, 0.768)),
+    ((0.963, 0.406), (1.000, 0.000)),
+]
+# The antihelix, which the canon draws as one stroke shaped like a question
+# mark: an upper crescent that turns back on itself and runs down into a hook.
+# Isolating it took three readings. It is not a separate piece of ink, since it
+# runs into the rim at the top, so connectivity does not find it; and it is not
+# the second run of ink along a row either, since a row-scan hops between the
+# crescent, the hook and the rim and comes out a zigzag lying on none of them.
+# What works is eroding the silhouette until the rim, which is its boundary by
+# definition, has nothing left, while a stroke drawn across the middle survives.
+#
+# Its x is normalised across its own width rather than shared with the rim's.
+# The canon's fold reaches a third of the ear's stand-out *left* of the attach
+# chord, which our ear has no room for: our chord is a straight line between two
+# points on the skull, and a skull is convex, so it bulges out past the chord
+# everywhere in between. The canon's ear overlaps the cheek and ours is welded
+# to it. So the two constants below say which band of the ear's width the fold
+# lands in, and the trace says only what shape it is inside that band.
+_EAR_FOLD_START: Point = (0.404, 1.000)
+_EAR_FOLD: list[Segment] = [
+    ((0.294, 0.955), (0.255, 0.778)),
+    ((0.229, 0.591), (0.260, 0.408)),
+    ((0.338, 0.255), (0.428, 0.105)),
+    ((0.430, 0.402), (0.615, 0.465)),
+    ((0.731, 0.258), (0.731, 0.000)),
+]
+# Where that band sits, as a share of the stand-out: inner edge, then width.
+# Solved rather than picked (`out/ear2/band.py`). Every point of the fold has to
+# clear the skull on one side and the rim on the other by a crease's own stroke
+# width, at both builds, which is two inequalities per point and linear in these
+# two numbers; this is the widest band that satisfies all of them, and it leaves
+# the inner edge with a hundredth of slack. Three candidate bands were rendered
+# first and the chibi tiles were not distinguishable by eye, which is what makes
+# this worth solving instead: the eye had nothing to go on and the constraint
+# does. The band picked by eye turned out to be infeasible at the adult.
+_EAR_FOLD_IN = 0.30
+_EAR_FOLD_SPAN = 0.45
 
 
 def _ear_span(build: float) -> tuple[Point, Point]:
@@ -2845,30 +2903,39 @@ def _ear_span(build: float) -> tuple[Point, Point]:
     )
 
 
+def _ear_place(build: float) -> Callable[[Point], Point]:
+    """Maps a traced (along, out) onto the skull, in head radii.
+
+    `along` runs the attach chord and `out` is measured straight along x, not
+    perpendicular to the chord. The chord is not near vertical, 16 degrees off
+    at the chibi and 19 at the adult, so the two are not the same thing: x is
+    the deliberate one, because `_EAR_OUT` is defined as how far the ear stands
+    clear of the skull sideways, and a perpendicular offset would shorten it by
+    the cosine and by a different amount at each build. Riding the chord rather
+    than a fixed x is what welds the traced shape to a skull whose own width
+    moves with the build.
+    """
+    (top_x, top_y), (bot_x, bot_y) = _ear_span(build)
+
+    def place(pt: Point) -> Point:
+        along, out = pt
+        return (top_x + (bot_x - top_x) * along + out * _EAR_OUT, top_y + (bot_y - top_y) * along)
+
+    return place
+
+
 def _ear_outer(build: float) -> tuple[Point, list[Segment]]:
     """The ear's outer contour, top attach to bottom attach, on the right side.
 
-    Two quadratics: out to the widest point below the middle, then in and down
-    to the lobe. The helix is the only thing this draws. A front-facing ear at
-    this size is a bulge with one crease in it, and every extra fold tried on it
-    read as dirt on the cheek at chibi scale.
+    The helix is the only thing this draws, traced off the canon chibi. What was
+    here before was two quadratics out to a widest point and back, which is the
+    right idea and the wrong curve: the canon's rim leaves the top attach much
+    faster than a single control can, holds its width through the middle of the
+    ear rather than peaking, and comes back in along the lobe. Four segments,
+    which is the finest the line weight supports.
     """
-    (top_x, top_y), (bot_x, bot_y) = _ear_span(build)
-    height = bot_y - top_y
-    wide_x = top_x + _EAR_OUT
-    return (top_x, top_y), [
-        (
-            (top_x + _EAR_OUT * 1.10, top_y + height * _EAR_WIDE_F * 0.30),
-            (wide_x, top_y + height * _EAR_WIDE_F),
-        ),
-        (
-            (
-                wide_x - _EAR_OUT * 0.10,
-                top_y + height * (_EAR_WIDE_F + 0.62 * (1 - _EAR_WIDE_F)),
-            ),
-            (bot_x, bot_y),
-        ),
-    ]
+    place = _ear_place(build)
+    return place(_EAR_ARC_START), [(place(c), place(e)) for c, e in _EAR_ARC]
 
 
 def _ears(sk: Skeleton, p: CharacterParams) -> str:
@@ -2884,23 +2951,16 @@ def _ears(sk: Skeleton, p: CharacterParams) -> str:
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk)
     start, segments = _ear_outer(sk.build)
-    (top_x, top_y), _ = _ear_span(sk.build)
-    height = segments[-1][1][1] - top_y
-    out = _EAR_OUT
-    # The inner crease, set in from the helix and following it. It stops short of
-    # both ends: run to the lobe and it closes into a second outline, which reads
-    # as a hole rather than as the turn of a rim.
-    crease_start = (top_x + out * 0.30, top_y + height * 0.16)
-    crease = [
-        (
-            (top_x + out * 0.78, top_y + height * 0.30),
-            (top_x + out * 0.52, top_y + height * 0.50),
-        ),
-        (
-            (top_x + out * 0.30, top_y + height * 0.58),
-            (top_x + out * 0.22, top_y + height * 0.46),
-        ),
-    ]
+    place = _ear_place(sk.build)
+
+    # The antihelix, traced with the rim. It stops well short of both ends, as
+    # the canon's does: run it to the lobe and it closes into a second outline,
+    # which reads as a hole rather than as the turn of a rim.
+    def fold(pt: Point) -> Point:
+        return place((pt[0], _EAR_FOLD_IN + pt[1] * _EAR_FOLD_SPAN))
+
+    crease_start = fold(_EAR_FOLD_START)
+    crease = [(fold(c), fold(e)) for c, e in _EAR_FOLD]
 
     parts = []
     for side in (-1, 1):
