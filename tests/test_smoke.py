@@ -24,6 +24,7 @@ from anime_character_creator import (
     CharacterParams,
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
+    cover,
     render_character,
 )
 
@@ -316,3 +317,51 @@ def test_hair_stays_under_the_canvas_ceiling(hairstyle: str, build: str) -> None
         f"{hairstyle} at {build} paints {-ink_y:.1f}px above the canvas and is being"
         " sliced flat; raise hair_margin in build_skeleton"
     )
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_cover_renders_and_stays_deterministic(build: str) -> None:
+    """Same params, same bytes, the same contract `render_character` holds.
+
+    The mist banks are the reason this is worth pinning: their skyline comes
+    from a jitter function keyed on an index rather than an RNG, precisely so a
+    cover can be compared rather than eyeballed. An RNG would pass every other
+    check here and fail only this one.
+    """
+    p = cover.CoverParams(build=build, subtitle="SATOSHI")
+    svg = cover.render_cover(p)
+    assert svg == cover.render_cover(p)
+    assert svg.startswith("<svg") and svg.rstrip().endswith("</svg>")
+    for line in p.title:
+        assert line in svg
+
+
+def test_the_cover_stays_flat() -> None:
+    """No gradient, no blur, no opacity on the page furniture.
+
+    `CLAUDE.md`'s flat-colour rule is about the figure, but the whole point of
+    drawing mist as stacked hard-edged banks is that the background obeys it
+    too. The easy regression is reaching for a gradient the first time a tone
+    ladder looks stepped, which is the one thing that would make this stop
+    matching the character it wraps.
+    """
+    svg = cover.render_cover(cover.CoverParams(subtitle="SATOSHI"))
+    page = svg[: svg.index("<g transform=")]
+    for banned in ("Gradient", "gradient", "filter", "blur", "opacity"):
+        assert banned not in page, f"the cover's own layers should not use {banned}"
+
+
+def test_the_figure_stands_on_the_page() -> None:
+    """The figure is inside the trim, and the mist in front is placed off it.
+
+    A cover is composed by fractions, so the failure mode is a figure that
+    renders perfectly and lands half off the page, or a mist bank keyed to the
+    canvas edge rather than to the soles: the first attempt keyed it to the
+    canvas and cut him across the shins, hiding the boots.
+    """
+    p = cover.CoverParams(subtitle="SATOSHI")
+    sk, _character, k, x, y = cover._placement(p)
+    assert x > 0 and x + sk.canvas_w * k < p.width
+    assert y > 0, "the figure's head runs off the top of the page"
+    assert y + sk.foot_y * k == pytest.approx(p.height * p.figure_feet_y)
+    assert y + sk.foot_y * k < p.height, "the soles land below the trim"
