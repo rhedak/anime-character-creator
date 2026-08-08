@@ -7,6 +7,8 @@ flags someone has to remember.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from .character import CharacterParams, Expression, FaceStyle, Outfit
 
 # Satoko and Satoshi are meant to read as related, so the palette they share
@@ -27,8 +29,9 @@ BOOTS = "#6d4c33"
 # Satoko: blonde fading to white at the ends, muted green eyes, green
 # working tunic, brown leather boots. Colors sampled from ref/satoko.png.
 # Guarded expression carried by stern brows and a flat mouth, per the canon,
-# which keeps chibi eyes big and open even on a wary character. Scar on her
-# left cheek.
+# which keeps chibi eyes big and open even on a wary character. A burn along her
+# left jaw and cheek, which is `scar_side=1`: that field counts from the
+# viewer's side and she faces us, so her left is the right of the picture.
 SATOKO = CharacterParams(
     skin_tone="#f6dbc2",
     hair_color=HAIR,
@@ -127,10 +130,82 @@ SATOSHI = CharacterParams(
     ),
 )
 
+# Kyoko and Tomohiro are not two more characters. They are Satoko and Satoshi
+# **before**, and the book they come from calls this "the single most important
+# design": one person styled to read as two, where the resemblance should be
+# visible once someone is told to look for it and should announce itself
+# otherwise (`docs/mist-characters/character_designs.md`). The disguise is a
+# maintained blonde dye over black regrowth, a burn scar, and plain clothes in
+# place of a researcher's. It is not a different face.
+#
+# So these are `replace()` on the shipped presets rather than four numbers typed
+# out again, and that is the whole point rather than a shortcut. A copied face
+# agrees with its original on the day it is written and drifts every time
+# somebody tunes an eye afterwards, silently, because nothing checks. A derived
+# one cannot: change Satoshi's aperture and Tomohiro's changes with it, because
+# there is only one aperture. The property the story needs is exactly the
+# property `replace` enforces, which is the same argument `Expression` makes for
+# being a delta rather than a whole `FaceStyle`.
+#
+# Three fields differ and the list is closed:
+#
+#   hair_color      jet black, the natural colour the dye covers
+#   hair_tip_color  None, because black hair has no pale ends to fade into
+#   scar_side       0, because the burn has not happened yet
+#
+# The haircut deliberately carries over. The design document lists the dye, the
+# scar, the expression and the clothes as the disguise, and not the cut, so
+# keeping it is correct as well as free. `ref/tomohiro.png` draws him shaggier
+# than the same document's "sleek and neat", which is the reference disagreeing
+# with its own text rather than a decision this file has to take.
+#
+# **The references drift on the one feature that cannot drift.** Measured inside
+# the iris, `ref/satoshi.png` is #5a6654 and `ref/satoko.png` #5a6c54, both the
+# pale jade-green the document specifies; `ref/tomohiro.png` is #303636 and
+# `ref/kyoko.png` #303036, which is grey. The eyes are named there as the one
+# feature the disguise does not touch, so that is drift landing precisely on the
+# resemblance itself. Here the four share an `eye_color` by construction and the
+# question cannot arise. Their hair, sampled the same way, came out #313437 and
+# #313538, which is agreement to within a rounding step and the reason one
+# constant covers both.
+BLACK_HAIR = "#313538"
+
+
+def _before(base: CharacterParams) -> CharacterParams:
+    """The same person before the dye and the burn."""
+    return replace(
+        base,
+        hair_color=BLACK_HAIR,
+        hair_tip_color=None,
+        face=replace(base.face, scar_side=0),
+    )
+
+
+KYOKO = _before(SATOKO)
+TOMOHIRO = _before(SATOSHI)
+
 PRESETS: dict[str, CharacterParams] = {
     "satoko": SATOKO,
     "satoshi": SATOSHI,
+    "kyoko": KYOKO,
+    "tomohiro": TOMOHIRO,
 }
+
+# Which characters get a realistic-build render checked into `ref-out/real/`.
+#
+# The owner's call on 2026-08-08: "the real ones don't work so well so I suggest
+# we defer them, the chibis are where the music is at." So the chibi is the
+# build this project publishes, and the tall figures move to a subdirectory that
+# says what they are. The pair below are the two that were measured against
+# `ref/satoko-real.jpg` and `ref/satoshi-real.jpg`, so they are the only ones
+# whose realistic render was ever judged against anything.
+#
+# This is a **publishing** decision and it lives on its own rather than as a
+# field on `CharacterParams`, which is about who a character is. Nothing stops
+# `--build realistic` on any preset, and `BUILDS` is untouched: the direction of
+# the project is still to edge toward less deformed proportions, so the build
+# stays available and only the checked-in artifacts shrink.
+REALISTIC_REFS: tuple[str, ...] = ("satoko", "satoshi")
 
 
 # Named expressions, checked in for the same reason a character is: a mood that

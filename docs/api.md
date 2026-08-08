@@ -188,14 +188,38 @@ change. The agreement rules those five have to keep are in
 
 ## PRESETS
 
-Named characters as `CharacterParams` values: `PRESETS["satoko"]` and
-`PRESETS["satoshi"]`, also importable as `SATOKO` and `SATOSHI` from
-`anime_character_creator.presets`. They are checked-in artifacts that get
-re-rendered as the shape code improves, which is what `ref-out/` holds.
+Named characters as `CharacterParams` values: `PRESETS["satoko"]`,
+`"satoshi"`, `"kyoko"` and `"tomohiro"`, also importable as `SATOKO`,
+`SATOSHI`, `KYOKO` and `TOMOHIRO` from `anime_character_creator.presets`.
+They are checked-in artifacts that get re-rendered as the shape code
+improves, which is what `ref-out/` holds.
 
-Add a character here rather than as a pile of CLI flags. Both current
-presets share a palette through module constants, since they are meant to
-read as related.
+Add a character here rather than as a pile of CLI flags. The four share a
+palette through module constants, since they are meant to read as
+related.
+
+**Kyoko and Tomohiro are derived, not written.** They are Satoko and
+Satoshi before the dye and the burn, so they come out of a `_before()`
+helper that is a `replace()` of three fields (`hair_color`,
+`hair_tip_color`, `scar_side`) rather than a second set of numbers. The
+same reasoning as `Expression` below: the shared face is a property the
+story depends on, and a copy holds it only until somebody tunes an eye on
+one of the four. Derive a character from another whenever they are
+supposed to stay the same underneath.
+
+## REALISTIC_REFS
+
+Which characters get a realistic-build render checked into
+`ref-out/real/`. A tuple of preset names, currently `("satoko",
+"satoshi")`.
+
+The chibi is the build this project publishes; the tall figures were
+deferred on 2026-08-08 because they do not work well enough yet. This is
+a **publishing** decision, so it lives on its own rather than as a field
+on `CharacterParams`, which is about who a character is. `BUILDS` is
+untouched and `--build realistic` still works on anything; what shrank is
+the set of committed artifacts. `refresh-ref-out.sh` reads this name out
+of the package, the way it reads `PRESETS` and `BUILDS`.
 
 ## EXPRESSIONS and Expression
 

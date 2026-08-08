@@ -18,20 +18,34 @@ both ends of the build range. Build is a named mode, `--build chibi`
 (default) or `--build realistic`, with `--heads` open for anything in
 between.
 
-|  | chibi (2.4 heads) | realistic (6 heads) |
-| --- | --- | --- |
-| **Satoko** | <img src="ref-out/on-white/satoko.png" width="150" alt="Satoko at the chibi build"> | <img src="ref-out/on-white/satoko_real.png" width="150" alt="Satoko at the realistic build"> |
-| **Satoshi** | <img src="ref-out/on-white/satoshi.png" width="150" alt="Satoshi at the chibi build"> | <img src="ref-out/on-white/satoshi_real.png" width="150" alt="Satoshi at the realistic build"> |
+| Satoko | Satoshi | Kyoko | Tomohiro |
+| --- | --- | --- | --- |
+| <img src="ref-out/on-white/satoko.png" width="150" alt="Satoko"> | <img src="ref-out/on-white/satoshi.png" width="150" alt="Satoshi"> | <img src="ref-out/on-white/kyoko.png" width="150" alt="Kyoko"> | <img src="ref-out/on-white/tomohiro.png" width="150" alt="Tomohiro"> |
 
 Those four live in `ref-out/` as both `.png` and `.svg`. **They are
 transparent**, so a render drops onto a scene as it is.
+
+They are also only two people. Kyoko is Satoko before the dye and the
+burn, and Tomohiro is Satoshi the same way, so each pair is one preset
+and a `replace()` of three fields rather than two sets of numbers that
+happen to agree. That is deliberate: the resemblance is the point, and a
+copied face keeps it only until somebody tunes an eye. See
+`docs/character-roster-plan.md`.
+
+The table is the chibi, which is the build this project publishes. The
+realistic build still works on anything (`--build realistic`), but its
+renders are **deferred**: the owner's call on 2026-08-08 was that the
+tall figures do not work well enough yet and the chibi is where the
+project is. Two of them are checked in under `ref-out/real/`, for Satoko
+and Satoshi, who are the only characters whose realistic build was ever
+measured against a reference. They are not displayed here.
 
 `ref-out/cover.svg` is there too: a book cover composed around one of
 them by `cover.py`, which is the same drawing code with a backdrop, mist
 and a title stacked over it. That one is opaque, being a page rather than
 a figure. Render it with `./cover.sh`.
 
-The table above links `ref-out/on-white/` instead, which is the same four
+The table above links `ref-out/on-white/` instead, which is the same eight
 drawn on a white background. That exists for this page and nothing else:
 the outline is `#0d0d0d` and a dark theme here is about `#0d1117`, so a
 transparent figure on it loses its whole outer contour, which is the

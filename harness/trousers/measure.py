@@ -148,6 +148,6 @@ for target in (
     "ref/satoshi-chibi.jpg",
     "ref/satoshi.png",
     "ref-out/satoshi.png",
-    "ref-out/satoshi_real.png",
+    "ref-out/real/satoshi.png",
 ):
     report(target)

@@ -63,7 +63,13 @@ class FaceStyle:
     mouth_curve: float = 1.0
     mouth_width: float = 1.0
     blush: float = 1.0
-    # -1 scars the left cheek, 1 the right, 0 none.
+    # Which cheek carries a scar, **stated from the viewer's side**: -1 the left
+    # of the picture, 1 the right, 0 none. The figure faces us, so the viewer's
+    # right is the character's left, and a description written the other way
+    # round ("a burn along her left cheek") means 1 here, not -1. Worth spelling
+    # out because both frames are in use: this file counts in picture space and
+    # every character description counts in body space, and the two disagree on
+    # every single scar without ever disagreeing visibly enough to notice.
     scar_side: int = 0
 
 
@@ -2319,7 +2325,20 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
             f"Q {cx - w_calf:.1f} {calf_y:.1f} {cx - w_knee:.1f} {sk.knee_y:.1f} "
             f"Q {cx - w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx - w_top:.1f} {top_y:.1f} Z"
         )
-        parts.append(f'<path d="{d}" fill="{p.skin_tone}" />')
+        # Outlined, at the same 0.85 weight the bare arm uses, because a bare leg
+        # is on show between the hem and the boot and every other shape in the
+        # drawing carries a contour there. It shipped as a bare fill on the
+        # assumption that a hem covered its top, which is true, and that the rest
+        # of it was covered too, which is not: the skirt reaches mid-calf on the
+        # adult and stops well above the boot at the chibi, so the chibi has had a
+        # pair of untouched skin-coloured shapes in a hard-edged drawing.
+        #
+        # Only the sides show. The top edge runs above the hem and the bottom
+        # edge inside the boot, both drawn after this, so neither doubles a line.
+        parts.append(
+            f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
+            f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" />'
+        )
         parts.append(_boot(sk, p, cx, w_ankle, w_knee, side))
     return "".join(parts)
 

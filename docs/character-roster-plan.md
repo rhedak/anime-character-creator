@@ -1,0 +1,510 @@
+# Character roster plan
+
+Plan for taking the cast from two named characters to fourteen, and for
+producing a reference sheet of our own that answers
+`ref/character_sheet_satoshi.png`. Written 2026-08-08 at `e3ea295`.
+
+## What the references are, and what they are not
+
+`ref/` gained sixteen files on 2026-08-08: two twelve-slot contact
+sheets and fourteen individual figures. **They are AI-generated
+references for the character designs, not for the style.** What we take
+from them is who these people are: what they wear, how they carry
+themselves, what the silhouette has to say about them at a glance. What
+we do not take is how they are drawn. Every one of them is soft-shaded,
+gradient-lit and painterly, which is the opposite of the flat
+hard-edged look this generator exists to produce (see `CLAUDE.md`,
+"Hard constraints").
+
+This distinction does real work below. Half of what the references use
+to say "this person is sixty" is brushwork that cannot survive being
+redrawn as flat vector shapes at chibi scale, so that information has to
+be re-expressed rather than copied. Same with fabric weight, embroidery
+and beard texture.
+
+The standing rule from `docs/gap-analysis.md` applies here too: the
+references are guides, not targets. Measure to find what is wrong, then
+choose by eye.
+
+## Where the designs actually come from
+
+`docs/mist-characters/character_designs.md` is the authority, not `ref/`.
+It states hair, eyes, garments, scars and bearing per character, and it
+records which of those were themselves revised to match an approved
+image. Where it and a reference image disagree, it says which one wins
+and usually the image does.
+
+Two cautions about using it here.
+
+**It is a prompt document for a different pipeline.** Its style section
+locks "natural adult proportions (about 6.5-7 heads tall), soft
+cel-shading, polished graphic finish". None of that transfers. This
+generator draws flat, hard-edged shapes at 2.4 heads, and `CLAUDE.md`
+forbids the shading it asks for and the image generation it exists to
+drive. **Take the design facts from it and none of its style.**
+
+**It does not describe our renders, so drift in a reference is not a
+target.** The measurement below is the case in point.
+
+### The rule the iris measurement implies
+
+Sampled inside the iris of each reference:
+
+| Reference | Iris | Specified |
+| --- | --- | --- |
+| `ref/satoshi.png` | `#5a6654` | pale jade-green |
+| `ref/satoko.png` | `#5a6c54` | pale jade-green |
+| `ref/tomohiro.png` | `#303636` | pale jade-green, "unchanged" |
+| `ref/kyoko.png` | `#303036` | pale jade-green, "unchanged" |
+
+The first two are green. The second two are grey. The design document
+names the eyes as "the one feature the disguise doesn't touch", so the
+drift landed exactly on the feature that carries the resemblance, which
+is what the owner meant on 2026-08-08 by "that is AI drift not design
+intent".
+
+So: **design facts come from the document, resemblance comes from
+construction.** A generator that derives one preset from another cannot
+drift, because there is only one value to drift. That is a thing this
+project can do that the reference pipeline cannot, and it is worth
+building around rather than treating as a convenience.
+
+## The cast
+
+Two **rosters**, not two casts. The sheets share ten members and swap one
+slot each: `character_sheet_satoshi.png` carries Satoshi and Tomohiro,
+`character_sheet_parent.png` carries Satoko and Kyoko. Fourteen personas,
+but **eleven people**: Satoko, Satoshi, Kyoko and Tomohiro are all the
+same person.
+
+That last part is the book's central design and it is worth stating
+plainly, because it changes what building them costs. Kyoko is who she
+was before the cataclysm. Satoko is the persona she wears now: a
+maintained blonde dye over black regrowth, a burn along the left jaw and
+cheek, plain innkeeper's clothes in place of a researcher's, and a
+guarded expression in place of a confident one. Satoshi and Tomohiro are
+the same two states of the same person read male. Bone structure, build
+and eyes are shared across all four by design.
+
+Which means Kyoko and Tomohiro are not two of the twelve new characters.
+They are three fields on two presets we already ship.
+
+The sheets label with full names while our preset keys are short, so a
+sheet needs a display name per character rather than reusing the key.
+
+| Display name | Key | Rosters | Same person as | File |
+| --- | --- | --- | --- | --- |
+| Satoshi | `satoshi` | child | Satoko, Kyoko, Tomohiro | `ref/satoshi.png` |
+| Satoko | `satoko` | parent | Satoshi, Kyoko, Tomohiro | `ref/satoko.png` |
+| Kyoko | `kyoko` | parent | Satoko before | `ref/kyoko.png` |
+| Tomohiro | `tomohiro` | child | Satoshi before | `ref/tomohiro.png` |
+| Chiyo | `chiyo` | both | | `ref/chiyo.png` |
+| Daizen Kurogane | `daizen` | both | | `ref/daizen.png` |
+| Elara Sturm | `elara` | both | | `ref/elara.png` |
+| Haruto Kisaragi | `haruto` | both | | `ref/haruto.png` |
+| Keiko Natsume | `keiko` | both | | `ref/keiko.png` |
+| Krista Bastler | `krista` | both | | `ref/krista.png` |
+| Reika Mizuki | `reika` | both | | `ref/reika.png` |
+| Reinhard von Falkenrath | `reinhard` | both | | `ref/reinhard.png` |
+| Tenno Amatsuki | `tenno` | both | | `ref/tenno.png` |
+| Viktor Grau | `viktor` | both | | `ref/victor.png` |
+
+The sheet spells him "Viktor Grau" and the file is `victor.png`. The
+sheet is the character, so the key is `viktor`.
+`character_designs.md` already flags the spelling and keeps the
+filename, so we do the same rather than renaming a checked-in reference.
+
+`ref/satoshi 2.png` and `ref/satoko 2.png` were accidental additions and
+were deleted on 2026-08-08. `ref/satoshi.png` and `ref/satoko.png` remain
+the canon, which also settles what `docs/gap-analysis.md` measures
+against.
+
+## What the references demand that we do not have
+
+Read character by character this is fourteen problems. Read by
+machinery it is about six, because the cast reuses its own costume.
+
+### Garments
+
+`Outfit` has eleven fields today: tunic, boots, undersleeve, belt,
+apron, skirt, underskirt, trousers, pouch, skirt length, tucked. Grouped
+by what they would need on top of that:
+
+| Cluster | Characters | Missing machinery |
+| --- | --- | --- |
+| **Military uniform** | Elara, Krista, Reinhard, Tenno, Viktor | standing collar, chest pocket pair, hip pocket pair, button placket, shoulder boards, cross-body strap, tall boot shaft, cuff piping |
+| **Robe and wide sleeve** | Haruto, Daizen, Reika | crossed front, wide hanging sleeve, obi sash, hakama, open outer robe |
+| **Open coat** | Kyoko, Tomohiro, Keiko | an outer layer that hangs open over an inner one, in three lengths |
+| **Near what we have** | Chiyo | bib apron rather than waist apron, headscarf |
+
+**Five characters come out of one garment.** The uniform is remarkably
+consistent across its five wearers: standing collar with rank tabs, two
+flapped chest pockets, two flapped hip pockets, a centre button
+placket, a waist belt, trousers into tall boots. Tenno wears the same
+cut in khaki instead of blue-grey and without the cross-body strap.
+Elara and Krista hang glowing blue crystals off the belt, which is a
+world element rather than a personal one and probably wants to be its
+own field.
+
+### A hem that does not hold its reading across builds
+
+Found while looking at the four renders on 2026-08-08, pre-existing and
+not acted on. Satoko's `skirt_length=0.70` is measured hip to ankle, and
+that fraction reads correctly at the realistic build, where the skirt and
+the underskirt reach the boots. At chibi it leaves a band of bare leg
+between the underskirt's hem and the boot tops. Kyoko inherits it,
+because she inherits the outfit.
+
+It matters more now than it did: a twelve-tile sheet is judged at chibi,
+and every character with a skirt will be measured the same way. Worth
+settling before Chiyo (task 9), who wears two skirts and a bib apron, and
+before Reika (task 25), whose outer robe trails. The likely fix is that a
+hem needs the same treatment `Hairstyle.volume` gave the hair: a length
+that means the same thing at both ends of the build range rather than the
+same fraction.
+
+**Half of it was a missing outline, and that half is fixed** (2026-08-08).
+The bare leg was a filled path with no stroke, on the reasoning recorded
+in `_legs_and_boots` that a hem covers its top. The top, yes; the rest of
+it, no, so the chibi carried two untouched skin-coloured shapes in a
+drawing whose whole idea is hard edges. It now takes the same outline at
+the same 0.85 weight the bare arm already had. What is left of this gap
+is the length itself, which is task 20.
+
+The open coat cluster is three lengths of one idea: Tomohiro's jacket is
+cropped at the waist, Keiko's lab coat falls below the knee, Kyoko's
+coat falls to mid-calf. If the layer takes a length the way `skirt`
+does, it is one garment rather than three. Tomohiro and Kyoko also both
+wear a navy inner tunic under a wide dark sash, which is a second reason
+to look at them together.
+
+### Hair
+
+Nine of the twelve new heads need a cut that is not a variant of the
+five we have (`long_blunt`, `short_layered`, `long_traced`,
+`short_crop`, `short_tousled`):
+
+- **topknot** with shaved or tight sides: Daizen, Haruto
+- **high ponytail**: Krista
+- **very long straight, centre-parted, past the waist**: Reika
+- **swept back, short, no fringe**: Reinhard, Tenno, Viktor
+- **long straight with a centre part, at the shoulder**: Keiko, Kyoko
+
+Tomohiro's shaggy dark cut is the one that plausibly lands on existing
+`short_tousled` machinery with different parameters, and Chiyo's hair is
+mostly hidden under a scarf, which makes those two the cheapest heads in
+the cast as well as the cheapest bodies.
+
+A topknot and a ponytail are both the same new idea: hair that leaves
+the skull silhouette and comes back, which no current cut does. Both
+also need to sit behind the head at the crown, so they are a z-order
+question as much as a shape one.
+
+### Age
+
+**This is the gap nobody has named, and it should be settled before it
+gets copied five ways.** The cast spans roughly teens to seventies.
+Chiyo, Daizen, Tenno, Keiko and Reika all read visibly older than
+Satoshi and Satoko. `FaceStyle` has no age lever at all.
+
+In the references age is carried by crow's feet, jowls, beard texture
+and skin mottling, all of which is the style half we discard, and none
+of which survives a chibi head anyway. So age has to be re-expressed as
+something flat and skeleton-relative. The candidates, cheapest first:
+
+1. **Eye aperture.** A smaller, less open eye with a lower iris ratio
+   reads older at any size. `eye_size`, `eye_openness` and `iris_size`
+   already exist, so this costs nothing but a decision about what the
+   numbers mean.
+2. **Brow weight and position.** Heavier and lower reads older.
+   `brow_weight` exists.
+3. **Hair desaturation.** Grey and white at the temples. `hair_color`
+   and `hair_tip_color` exist but the tip tone runs the wrong way for
+   this: it is for the ends of a lock, and grey comes in at the root.
+4. **Hairline.** A receded hairline is Tenno's single strongest age
+   signal and there is no field for it.
+5. **A `heads` nudge.** An older figure at a slightly taller build
+   inside the chibi range. This is the expensive option and probably
+   fights the sheet, which wants one build across the grid.
+
+The proposal is that **age is a preset-level convention rather than a
+field**: a documented set of `FaceStyle` values that read old, applied
+per character, in the same way `EXPRESSIONS` is a documented set that
+reads as a mood. Where that turns out to be insufficient, it names the
+one field worth adding, and the first candidate is the hairline.
+
+### Facial hair
+
+Daizen wears a full beard and Reinhard a short one. There is no
+representation of facial hair at all. It is one new part function with a
+`beard_color` and a length or style, drawn over the chin and under the
+mouth line.
+
+### Accessories and props
+
+Per the brief, props are out of scope for the first pass. Two caveats
+worth writing down before someone acts on that literally:
+
+- **Load-bearing props.** Tenno's cane and Daizen's chest are part of
+  the pose and the silhouette. Without them those two read as standing
+  oddly rather than as not carrying anything.
+- **Head accessories are not props.** Krista's goggles, Keiko's glasses,
+  Chiyo's headscarf and Reika's kanzashi sit on the head and are part of
+  what makes each face recognisable at thumbnail size. Glasses in
+  particular are cheap and carry Keiko almost single-handed.
+
+### The gate that has to hold
+
+`CLAUDE.md` requires that anything a character differs on lives in
+`CharacterParams`, `FaceStyle` or `Outfit` with a neutral default, never
+hardcoded into a part function. Twelve characters is exactly where the
+pressure to special-case Reika's kanzashi or Daizen's checked cuffs
+becomes real. The generator has to stay general.
+
+The practical test for each new feature: could a second character use
+this field, and does leaving it unset draw nothing?
+
+## Decisions taken
+
+- **All fourteen land in `ref-out/`.** Confirmed 2026-08-08. The cost is
+  smaller than it looks: `./refresh-ref-out.sh --check` runs the current
+  four characters plus the cover in 1.8 seconds, so fourteen is about six
+  seconds, and the files are flat-colour PNGs.
+- **`refresh-ref-out.sh` needs no change to accommodate them.** It reads
+  `PRESETS`, `REALISTIC_REFS` and `BUILDS` out of the installed package,
+  so adding a preset adds its files.
+- **The sheet is a module, not a script.** `sheet.py` alongside
+  `cover.py`, with `sheet.sh` alongside `cover.sh`, so it is testable
+  and its output is checked in.
+- **`ROSTERS` lists only the characters that exist**, and grows as they
+  land. The alternative, naming all twelve slots up front, is ten
+  `KeyError`s against `PRESETS` on the day it is written, and it would
+  make tasks 3 and 4 unbuildable until the cast is finished. See task 5
+  for how the full grid gets exercised in the meantime.
+- **The chibi is the published build; the realistic renders are
+  deferred.** Settled 2026-08-08, and it settles what was written here
+  as an open assumption. The tall figures do not work well enough yet,
+  so they moved from `ref-out/<name>_real.*` to `ref-out/real/<name>.*`,
+  lost their on-white copies (which existed only to be displayed), and
+  came off the README. `presets.REALISTIC_REFS` is the short list that
+  still gets one: Satoko and Satoshi, the only two whose realistic build
+  was ever measured against a reference. The other twelve are chibi-only
+  in `ref-out/`.
+
+  Nothing about the realistic *build* changed. `BUILDS` is untouched and
+  `--build realistic` still works on any character, so the stated
+  direction of edging toward less deformed proportions is unaffected;
+  what shrank is the set of committed artifacts.
+
+## Answered since
+
+- **Kyoko and Tomohiro are not a parent and child pair.** They are
+  Satoko and Satoshi before, which is a stronger relationship than the
+  one guessed at here and makes them the cheapest characters in the cast
+  rather than two of the twelve. Built 2026-08-08 as `_before()` in
+  `presets.py`, a `replace()` of three fields on each shipped preset.
+- **The "2" references were accidental** and are gone. `ref/satoko.png`
+  and `ref/satoshi.png` stay the measured canon.
+
+## Open questions
+
+- **Which roster does the checked-in sheet show?** Both is two artifacts
+  and two byte-compare corpora. Child-only is one, and the parent sheet
+  becomes a flag.
+- **Does the sheet reuse the reference's layout** (4x3, dark ground,
+  white labels, light card per tile) or state its own? Reusing it makes
+  the comparison direct, which is worth something while the cast is
+  being built.
+
+## The order, and why it is not "most similar first"
+
+The stated heuristic is easy to hard, starting with the characters
+closest to what exists. That is right for the first two and stops being
+right after them, because the cast's cost is concentrated in shared
+machinery rather than spread across individuals. Ordering purely by
+per-character similarity would build the uniform on the fifth character
+and then not use it four more times.
+
+So: the two cheapest characters first, because they prove the pipeline
+and the sheet with almost no new shape code. Then order by how many
+characters each new piece of machinery unlocks.
+
+The sheet comes before any of them. It is buildable today with the two
+presets we have, and it is the artifact every later step is judged
+against. Built last, it would be the thing that finally reveals that
+twelve characters were each tuned in isolation and do not sit together.
+
+One rule applies throughout, and it comes from choosing the cover's
+expression on 2026-08-08: **a face is judged at the size it will be
+seen.** That measurement found a brow-only change shifts under 1% of the
+face while anything touching the lid shifts two to three times as much,
+which is why the choice was made on thumbnails rather than head crops. A
+twelve-tile sheet renders every character small. So every character task
+below is done when the character reads **in its tile**, not when it reads
+at full size, and a face that is only distinguishable at full size is not
+finished. Leaving that check to the end would mean tuning twelve faces
+twice.
+
+The other rule is the one the phases below already follow and Phase 1
+originally did not: **machinery gets its own task, before its first
+wearer.** A garment three characters share, hidden inside the first
+character who happens to wear it, is a garment the second wearer has to
+go back and generalise.
+
+## Tasks
+
+Numbered for reference in commits and in later notes, the way
+`docs/gap-analysis.md`'s gaps are. Each is meant to be one change that
+leaves the tooling green.
+
+### Phase 0a: Kyoko and Tomohiro (done 2026-08-08)
+
+Ahead of the sheet, which is a reversal of the order first written here.
+The sheet came first while Tomohiro looked like an ordinary cheap
+character. He is not one: he and Kyoko are three fields on presets that
+already ship, which makes them cheaper than the sheet and better inputs
+to it, since a four-tile sheet says more than a two-tile one. The sheet
+still comes before every expensive character.
+
+- [x] **0. Kyoko and Tomohiro as derived presets.** `_before()` in
+      `presets.py`: jet black hair, no tip tone, no scar, everything else
+      inherited by `replace()`. Their outfits stay Satoko's and
+      Satoshi's for now, because dressing them needs task 7 and the
+      point of this task was the face. Also fixed on the way past: the
+      `scar_side` comment said "1 the right" while `presets.py` said
+      "her left cheek", which are the same side described from opposite
+      ends and would have put Elara's scar on the wrong cheek.
+
+### Phase 0: the artifact to iterate against
+
+- [ ] **1. `sheet.py`.** A labelled grid of characters on one page, as
+      SVG, built from the same skeleton-relative approach as `cover.py`.
+      Takes a roster and lays out its members. Display name per tile.
+- [ ] **2. Display names and rosters.** A display name on
+      `CharacterParams` (or a parallel mapping in `presets.py`), and a
+      `ROSTERS` mapping so the child and parent sheets are data rather
+      than two functions. Each roster lists only the characters that
+      exist, so today both are two names long (Satoshi and Tomohiro;
+      Satoko and Kyoko) and both grow by one every time a character
+      lands.
+- [ ] **3. `sheet.sh` and `ref-out/sheet.png`.** Mirror `cover.sh`. Add
+      the sheet to `refresh-ref-out.sh` and to its `--check` staleness
+      test, the way the cover already is.
+- [ ] **4. Sheet tests.** Renders, stays deterministic, every roster
+      member appears exactly once, and the checked-in file matches the
+      code.
+- [ ] **5. Exercise the layout at full width.** A two-tile sheet proves
+      nothing about a four by three grid: not the tile aspect, not
+      whether long labels like "Reinhard von Falkenrath" collide, not
+      whether twelve figures at that size read as one cast. Render twelve
+      placeholder tiles from the two presets with varied palettes, look
+      at it, and fix the layout then. The checked-in artifact still has
+      two tiles; this is a harness script, and `harness/` is where it
+      goes. Without it, task 26 lays the grid out a second time and
+      Phase 0 bought less than it looks.
+
+### Phase 1: the first two characters, and what they need
+
+- [ ] **6. Age vocabulary.** Comes before Chiyo, not out of her: she is
+      the first older character, so her face cannot be built until this
+      is settled, and settling it inside her task means five more
+      characters inherit an undocumented decision. Choose the
+      `FaceStyle` values that read old (see "Age" above for the
+      candidates), document them in `presets.py` next to `EXPRESSIONS`
+      with the reasoning, and check them at tile size.
+- [ ] **7. Open outer layer.** A garment that hangs open over an inner
+      one, with a length the way `skirt_length` works. Three wearers at
+      three lengths: Tomohiro cropped at the waist, Keiko below the knee,
+      Kyoko at mid-calf. Built once here rather than cropped now and
+      generalised at task 19.
+- [ ] **8. Dress Kyoko and Tomohiro.** They exist and share their
+      originals' clothes. Tomohiro's reference is a cropped olive jacket
+      over a navy tunic with a wide sash and dark trousers; Kyoko's is
+      the same navy tunic and sash under a mid-calf coat, with tall
+      boots. Both use task 7's garment, at its two ends. Note the two
+      references agree with each other on the inner layer, which is the
+      design working rather than a coincidence.
+- [ ] **9. Chiyo.** Bib apron (chest coverage with shoulder straps,
+      unlike Satoko's waist apron) over a tan shirt, waist sash, brown
+      overskirt, dark underskirt, headscarf. Closest to Satoko's existing
+      layer stack; the new pieces are the bib and the scarf.
+
+### Phase 2: the uniform, five characters
+
+- [ ] **10. The uniform garment.** Standing collar, chest and hip pocket
+      pairs, button placket, shoulder boards, cuff piping, tall boot
+      shaft. New `Outfit` fields, all defaulting to off.
+- [ ] **11. Cross-body strap and belt kit.** The strap as its own field,
+      since Tenno lacks it; the belt crystals as another, since only
+      Elara and Krista carry them.
+- [ ] **12. Swept-back short hair.** One cut, three wearers.
+- [ ] **13. Elara Sturm.** Blue-grey uniform, dark red short cut, gloves.
+- [ ] **14. Krista Bastler.** Same uniform, high ponytail, goggles on the
+      head. The ponytail is a new cut and the first hair that leaves the
+      skull silhouette and comes back, which makes it a z-order question
+      as much as a shape one. It has one wearer, so it stays in her task.
+- [ ] **15. Viktor Grau.** Same uniform, black swept-back hair, laced
+      boots rather than smooth.
+- [ ] **16. Facial hair.** One new part drawn over the chin and under the
+      mouth line, with a colour and a length, absent by default. Its own
+      task because Daizen needs the full-beard end of it at task 24, and
+      a beard built inside Reinhard is a beard Daizen has to go back and
+      generalise.
+- [ ] **17. Reinhard von Falkenrath.** Same uniform, blond swept-back
+      hair, short beard.
+- [ ] **18. Tenno Amatsuki.** Khaki uniform, no strap, grey hair and a
+      receding hairline, oldest face in the cast and so the first real
+      test of task 6. Cane deferred with the other props, and noted as
+      load-bearing.
+
+### Phase 3: coats
+
+- [ ] **19. Keiko Natsume.** White lab coat over a dark wrap and long
+      skirt, long centre-parted hair, glasses. Glasses are a new head
+      part, cheap, and carry her almost single-handed at tile size.
+- [ ] **20. The chibi hem.** A skirt length that reads the same at both
+      builds rather than the same fraction of hip-to-ankle, which is what
+      leaves Satoko and Kyoko bare-legged at chibi today (see "A hem that
+      does not hold its reading across builds"). Here rather than earlier
+      because Keiko's skirt is the third one to want it and the sheet is
+      the first thing that shows it off; earlier is fine if Chiyo makes
+      it obvious first.
+
+Kyoko's coat used to be this task and has moved to task 8, with the rest
+of her. She is Satoko, so she arrived with the first pair.
+
+### Phase 4: robes
+
+- [ ] **21. Robe geometry.** Crossed front, wide hanging sleeve, obi
+      sash. The largest single piece of new shape work in the plan.
+- [ ] **22. Hakama.** Wide pleated lower garment, worn by Haruto and
+      Reika both.
+- [ ] **23. Haruto Kisaragi.** Black kimono and hakama, obi, laced boots,
+      topknot. The topknot is a new cut with two wearers, and it stays
+      here rather than becoming its own task only because Daizen is the
+      very next character to use it.
+- [ ] **24. Daizen Kurogane.** Open haori over a kimono, obi, full beard,
+      grey topknot. The checked cuff panels are a pattern, and a pattern
+      on a flat garment needs its own decision.
+- [ ] **25. Reika Mizuki.** Layered kimono, grey outer robe with a
+      trailing hem, teal hakama, very long straight hair, kanzashi.
+
+### Phase 5: closing out
+
+- [ ] **26. Refresh `ref-out/` for the full cast** and update the
+      README's table to show the fourteen chibis.
+- [ ] **27. Re-run the gap analysis** against the sheet as a whole rather
+      than character by character, which is the first point at which
+      "do these people look like one cast" is answerable. This is a
+      check on the cast, not a substitute for the tile-size check each
+      character already passed.
+- [ ] **28. Revisit props** with the load-bearing ones first: Tenno's
+      cane, Daizen's chest.
+
+Twenty-eight tasks and one already done: five for the sheet, eight for
+shared machinery, eleven for the remaining characters, three for closing
+out. Kyoko and Tomohiro left the character count entirely, which is what
+"they are the same person" buys. The machinery tasks
+are the ones worth doing carefully; a character on top of machinery that
+already works is mostly a palette and a set of numbers, which is the
+shape this generator is supposed to have.

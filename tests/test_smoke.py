@@ -22,6 +22,7 @@ from anime_character_creator import (
     EXPRESSIONS,
     HAIRSTYLES,
     PRESETS,
+    REALISTIC_REFS,
     CharacterParams,
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
@@ -30,7 +31,9 @@ from anime_character_creator import (
 )
 
 REF_OUT = Path(__file__).resolve().parent.parent / "ref-out"
-SUFFIX = {"chibi": "", "realistic": "_real"}
+# Where each build's renders live under ref-out/, matching `prefix_for` in
+# refresh-ref-out.sh. The chibi is the published build and sits at the top level.
+PREFIX = {"chibi": "", "realistic": "real/"}
 
 
 @pytest.mark.parametrize("preset", sorted(PRESETS))
@@ -75,9 +78,25 @@ def test_the_figure_is_drawn_on_transparency(preset: str) -> None:
         assert [el.get("fill") for el in full] == ([] if want is None else [want])
 
 
-@pytest.mark.parametrize("preset", sorted(PRESETS))
-@pytest.mark.parametrize("build", sorted(BUILDS))
-def test_ref_out_matches_the_code(preset: str, build: str) -> None:
+def _published() -> list[tuple[str, str, str]]:
+    """Every (preset, build, path) `ref-out/` is supposed to hold, minus the cover.
+
+    The chibi is published for every character; the realistic build only for
+    `REALISTIC_REFS`, and under `real/`. Derived here rather than listed so the
+    tests and `refresh-ref-out.sh` cannot disagree about what should exist: they
+    read the same two names out of the package.
+    """
+    out = []
+    for preset in sorted(PRESETS):
+        for build in sorted(BUILDS):
+            if build != "chibi" and preset not in REALISTIC_REFS:
+                continue
+            out.append((preset, build, f"{PREFIX[build]}{preset}"))
+    return out
+
+
+@pytest.mark.parametrize(("preset", "build", "rel"), _published())
+def test_ref_out_matches_the_code(preset: str, build: str, rel: str) -> None:
     """The same check `./refresh-ref-out.sh --check` makes, minus the PNGs.
 
     `ref-out/` is committed and the README displays it, so it is stale the
@@ -85,9 +104,22 @@ def test_ref_out_matches_the_code(preset: str, build: str) -> None:
     change, the fix is to run the script, not to edit the expectation.
     """
     p = PRESETS[preset]
-    committed = REF_OUT / f"{preset}{SUFFIX[build]}.svg"
+    committed = REF_OUT / f"{rel}.svg"
     expected = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
-    assert committed.read_text() == expected, f"{committed.name} is stale: ./refresh-ref-out.sh"
+    assert committed.read_text() == expected, f"{rel}.svg is stale: ./refresh-ref-out.sh"
+
+
+def test_the_deferred_builds_left_nothing_behind() -> None:
+    """No `*_real` files at the old top-level paths.
+
+    The realistic renders moved under `real/` on 2026-08-08 when they were
+    deferred. A leftover at the old path is the worst kind of stale: nothing
+    renders to it any more, so no comparison ever looks at it again, and it sits
+    in the repository looking like current art forever. The script reports these
+    rather than deleting them, since `ref-out/` is committed.
+    """
+    left = sorted(p.name for p in REF_OUT.rglob("*_real.*"))
+    assert not left, f"realistic renders live in ref-out/real/ now; git rm {left}"
 
 
 @pytest.mark.parametrize("build", sorted(BUILDS))
@@ -435,6 +467,81 @@ def test_an_expression_changes_the_mood_and_nothing_else(name: str, preset: str)
     ]
     assert moved, f"{name} on {preset} changes nothing at all"
     ET.fromstring(render_character(after))
+
+
+@pytest.mark.parametrize("preset", sorted(PRESETS))
+def test_the_readme_shows_every_character(preset: str) -> None:
+    """The README's table has to keep up with `PRESETS`, and nothing made it.
+
+    `./refresh-ref-out.sh` writes a character's files the moment it is added to
+    `PRESETS`, because it reads the package. The README's table is hand-written,
+    so a new character arrives on disk automatically and in the table only if
+    somebody remembers, which is the same silent staleness `--check` exists to
+    catch one directory over. Ten more characters are planned, so this stops
+    being a small gap quickly.
+
+    Chibi only, which is the point of the deferral: the realistic renders are on
+    disk under `real/` and deliberately not displayed. Checked as a link to
+    `on-white/`, since that is what the table is allowed to use: the transparent
+    renders lose their outline against a dark theme.
+    """
+    readme = (Path(__file__).resolve().parent.parent / "README.md").read_text()
+    want = f"ref-out/on-white/{preset}.png"
+    assert want in readme, f"{preset} renders but the README never shows it: add a row"
+    assert f"ref-out/on-white/{preset}_real.png" not in readme, (
+        f"{preset}: the README points at an on-white realistic copy, which is not written any more"
+    )
+
+
+@pytest.mark.parametrize(("before", "after"), [("kyoko", "satoko"), ("tomohiro", "satoshi")])
+def test_the_disguise_changes_only_the_disguise(before: str, after: str) -> None:
+    """One person, two presentations, and the same face underneath both.
+
+    Kyoko and Satoko are the same woman before and after; so are Tomohiro and
+    Satoshi. Their book calls the resemblance the single most important design
+    in it, and the references it was drawn from lost it: measured inside the
+    iris, `ref/satoshi.png` and `ref/satoko.png` are jade-green while
+    `ref/tomohiro.png` and `ref/kyoko.png` are grey, which is drift landing on
+    the one feature the disguise is documented as not touching.
+
+    Here it cannot drift, because the pair is `replace()` on one preset rather
+    than a second set of numbers, and this pins that. The failure it guards
+    against is not a crash: it is somebody tuning an eye on one of the four and
+    leaving the other three behind, which renders perfectly and quietly breaks
+    the reveal the story is built on.
+    """
+    was, now = PRESETS[before], PRESETS[after]
+    assert was.eye_color == now.eye_color, "the eyes are what the disguise does not touch"
+    assert was.face == replace(now.face, scar_side=0), (
+        "one face, minus a burn that has not happened"
+    )
+    assert was.frame == now.frame and was.heads == now.heads
+    # And the disguise itself is present rather than merely absent from the diff.
+    assert now.face.scar_side != 0 and was.face.scar_side == 0
+    assert was.hair_color != now.hair_color and was.hair_tip_color is None
+
+
+@pytest.mark.parametrize(("before", "after"), [("kyoko", "satoko"), ("tomohiro", "satoshi")])
+def test_the_pair_before_is_not_dressed_yet(before: str, after: str) -> None:
+    """Deliberately a *current state*, not an invariant, and separated for that.
+
+    Kyoko and Tomohiro wear their originals' clothes and cuts because the first
+    pass built the face and left the wardrobe to the open-layer garment (task 8
+    of `docs/character-roster-plan.md`). Dressing them is supposed to break this
+    and nothing else, which is why it is not an assertion inside the face test:
+    there it would fail on the day of a planned change, on a line about outfits,
+    under a name that says the disguise is broken, and the likely reaction would
+    be to weaken the face assertions that actually matter.
+
+    The cut is a slightly different case. `character_designs.md` lists the dye,
+    the burn, the expression and the clothes as the disguise, and not the
+    haircut, so sharing it is correct rather than merely unfinished. It is here
+    because `ref/tomohiro.png` draws him shaggier anyway, so this may yet change
+    for reasons that have nothing to do with the disguise either.
+    """
+    was, now = PRESETS[before], PRESETS[after]
+    assert was.outfit == now.outfit, "expected while undressed; see task 8"
+    assert was.hairstyle == now.hairstyle, "the cut is not part of the disguise; the dye is"
 
 
 def test_the_cover_wears_its_chosen_expression() -> None:

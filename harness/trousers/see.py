@@ -42,7 +42,7 @@ SHOTS = [
     ("canon chibi", "ref/satoshi-chibi.jpg", 792, 1141),
     ("ours chibi", "ref-out/satoshi.png", *ours("chibi")),
     ("canon adult", "ref/satoshi.png", 530, 1117),
-    ("ours adult", "ref-out/satoshi_real.png", *ours("realistic")),
+    ("ours adult", "ref-out/real/satoshi.png", *ours("realistic")),
 ]
 
 H = 460

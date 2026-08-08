@@ -29,7 +29,7 @@ from .character import (
     render_character,
 )
 from .colorutil import shade
-from .presets import EXPRESSIONS, PRESETS
+from .presets import EXPRESSIONS, PRESETS, REALISTIC_REFS
 from .skeleton import BUILDS, DEFAULT_BUILD, DEFAULT_HEADS, Skeleton, build_skeleton
 
 __all__ = [
@@ -39,6 +39,7 @@ __all__ = [
     "EXPRESSIONS",
     "HAIRSTYLES",
     "PRESETS",
+    "REALISTIC_REFS",
     "CharacterParams",
     "Expression",
     "FaceStyle",

@@ -58,7 +58,7 @@ S=.claude/skills/gap-analysis/probe.sh   # a path is fine in a variable, a comma
 # full figures, ref beside ours, guide lines every 0.1 of figure height
 $S strip --guides --out out/NN/cmp_satoko.png \
   --panel "K chibi REF=ref/satoko-chibi.jpg" --panel "K chibi OURS=ref-out/satoko.png" \
-  --panel "K real REF=ref/satoko-real.jpg"  --panel "K real OURS=ref-out/satoko_real.png"
+  --panel "K real REF=ref/satoko-real.jpg"  --panel "K real OURS=ref-out/real/satoko.png"
 
 # heads at 2x
 $S strip --band 0,0.42 --zoom 2 --out out/NN/heads_satoko.png --panel ... --panel ...

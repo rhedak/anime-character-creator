@@ -9,18 +9,32 @@
 #   ./refresh-ref-out.sh          re-render, report which files moved
 #   ./refresh-ref-out.sh --check  compare only, write nothing, exit 1 if stale
 #
-# Each character is rendered twice. The files at the top of ref-out/ are the art
-# itself and are transparent, which is what makes them usable as they are. The
-# copies under ref-out/on-white/ exist only because the README displays them on
-# a page whose colour we do not control: OUTLINE is #0d0d0d, GitHub's dark theme
-# is #0d1117, and a transparent figure on that loses its entire outer contour,
-# which is the hard-edged look the project is for. Interior line work survives
-# either way, since it sits on filled shapes. Same drawing, one paint behind it,
-# and nothing outside the README should reach for the on-white copies.
+# The layout, and what each directory is for:
 #
-# Characters come from `presets.PRESETS` and builds from `skeleton.BUILDS`, read
-# out of the installed package, so adding a character here is adding it there.
-# Nothing about the pair of names below is baked in.
+#   ref-out/<name>.svg|png           the chibi, every character, transparent
+#   ref-out/on-white/<name>.png      the same, on white, for the README only
+#   ref-out/real/<name>.svg|png      the realistic build, deferred, a short list
+#
+# The files at the top are the art itself and are transparent, which is what
+# makes them usable as they are. The copies under on-white/ exist only because
+# the README displays them on a page whose colour we do not control: OUTLINE is
+# #0d0d0d, GitHub's dark theme is #0d1117, and a transparent figure on that loses
+# its entire outer contour, which is the hard-edged look the project is for.
+# Interior line work survives either way, since it sits on filled shapes. Same
+# drawing, one paint behind it, and nothing outside the README should reach for
+# the on-white copies.
+#
+# real/ is a deferral, not an archive. The owner's call on 2026-08-08 was that
+# the tall figures do not work well enough to publish and the chibi is where the
+# project is, so they moved out of the top level and lost their on-white copies,
+# which existed only to be displayed. `presets.REALISTIC_REFS` is the short list
+# that still gets one; every other character is chibi-only here. Nothing about
+# the realistic *build* changed, and `--build realistic` still works on anything.
+#
+# Characters come from `presets.PRESETS`, the realistic short list from
+# `presets.REALISTIC_REFS` and builds from `skeleton.BUILDS`, all read out of the
+# installed package, so adding a character here is adding it there. Nothing about
+# the names below is baked in.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,19 +51,27 @@ case "${1-}" in
     *) echo "usage: $(basename "$0") [--check]" >&2; exit 2 ;;
 esac
 
-# Filename suffix per named build. The default build takes the bare character
-# name, which is what the committed files and the README's links already use.
+# Where a build's renders go, relative to ref-out/, as a directory prefix. The
+# default build sits at the top level with a bare character name, which is what
+# the committed files and the README's links use; the realistic build goes under
+# real/, which is the deferral described above.
 #
-# A build with no entry here is a hard error rather than a guess. These filenames
-# are committed and linked from the README, so inventing one silently would leave
-# a link pointing at nothing, and skipping one silently would leave a character
+# A build with no entry here is a hard error rather than a guess. These paths are
+# committed and linked from the README, so inventing one silently would leave a
+# link pointing at nothing, and skipping one silently would leave a character
 # half-refreshed, which is the exact failure this script exists to prevent.
-suffix_for() {
+prefix_for() {
     case "$1" in
         chibi) printf '' ;;
-        realistic) printf '_real' ;;
+        realistic) printf 'real/' ;;
         *) return 1 ;;
     esac
+}
+
+# Whether a build's renders get an on-white copy. Only the builds the README
+# displays do, because that is the only thing on-white is for.
+displayed() {
+    [ "$1" = chibi ]
 }
 
 # Two command substitutions rather than one call read line by line: bash
@@ -65,12 +87,22 @@ print(" ".join(sorted(getattr(mod, os.environ["NAME"]))))
 }
 presets=$(listing presets PRESETS) || { echo "could not read PRESETS; is the package installed?  uv sync" >&2; exit 1; }
 builds=$(listing skeleton BUILDS) || { echo "could not read BUILDS; is the package installed?  uv sync" >&2; exit 1; }
+realistic=$(listing presets REALISTIC_REFS) || { echo "could not read REALISTIC_REFS; is the package installed?  uv sync" >&2; exit 1; }
 
 for build in $builds; do
-    if ! suffix_for "$build" >/dev/null; then
-        echo "build '$build' has no filename suffix in $(basename "$0"); add one" >&2
+    if ! prefix_for "$build" >/dev/null; then
+        echo "build '$build' has no ref-out/ prefix in $(basename "$0"); add one" >&2
         exit 1
     fi
+done
+
+# Every name on the short list has to be a character, or a typo there silently
+# drops a realistic render instead of failing.
+for preset in $realistic; do
+    case " $presets " in
+        *" $preset "*) ;;
+        *) echo "REALISTIC_REFS names '$preset', which is not in PRESETS" >&2; exit 1 ;;
+    esac
 done
 
 # Render into a staging directory and only copy over ref-out/ once every file has
@@ -91,43 +123,67 @@ trap 'rm -rf "$stage"' EXIT
 # Parallel arrays rather than colon-packed strings, which would need `<<<` to take
 # apart again. Bash 3.2, which is what macOS ships as /bin/bash, has no
 # associative arrays.
+#
+# `rel_of` is a path relative to ref-out/ and may contain a slash, so every
+# directory it names has to exist in the staging area before a render lands in it.
 preset_of=()
 build_of=()
-stem_of=()
+rel_of=()
 for preset in $presets; do
     for build in $builds; do
+        # The chibi is published for everyone; the realistic build only for the
+        # short list. A character not on it simply has no tall render, which is
+        # the deferral rather than a gap.
+        if [ "$build" != chibi ]; then
+            case " $realistic " in
+                *" $preset "*) ;;
+                *) continue ;;
+            esac
+        fi
         preset_of+=("$preset")
         build_of+=("$build")
-        stem_of+=("${preset}$(suffix_for "$build")")
+        rel_of+=("$(prefix_for "$build")${preset}")
     done
 done
-# Two counts, deliberately. `characters` bounds every loop over `stem_of`, and
+# `if` rather than `displayed x && mkdir ...`: under `set -e` a trailing `&&`
+# whose left side is false makes the whole loop body fail, and the body's status
+# is the loop's, so the script would exit the moment it met a build with no
+# on-white copy. That is the one build this change adds.
+for build in $builds; do
+    mkdir -p "$stage/$(prefix_for "$build")"
+    if displayed "$build"; then
+        mkdir -p "$stage/on-white/$(prefix_for "$build")"
+    fi
+done
+# Two counts, deliberately. `characters` bounds every loop over `rel_of`, and
 # `count` is only ever reported. They were one variable until the cover was
 # added to the total, which walked the copy loop one index past the end of the
 # array.
-characters=${#stem_of[@]}
+characters=${#rel_of[@]}
 count=$((characters + 1))
 
 i=0
 while [ "$i" -lt "$characters" ]; do
-    stem=${stem_of[$i]}
-    "$root/render.sh" --out "$stage/$stem" --preset "${preset_of[$i]}" --build "${build_of[$i]}" >/dev/null
-    # The README's copy. Rendered rather than composited afterwards, so it goes
-    # through exactly the same path as the art and cannot drift from it.
-    "$root/render.sh" --out "$stage/on-white/$stem" --preset "${preset_of[$i]}" \
-        --build "${build_of[$i]}" --background white >/dev/null
+    rel=${rel_of[$i]}
+    "$root/render.sh" --out "$stage/$rel" --preset "${preset_of[$i]}" --build "${build_of[$i]}" >/dev/null
     for ext in svg png; do
-        if [ ! -s "$stage/$stem.$ext" ]; then
-            echo "render produced no $stem.$ext, leaving ref-out/ alone" >&2
+        if [ ! -s "$stage/$rel.$ext" ]; then
+            echo "render produced no $rel.$ext, leaving ref-out/ alone" >&2
             if [ "$ext" = png ]; then
                 echo "  PNG export needs the system cairo library: brew install cairo" >&2
             fi
             exit 1
         fi
     done
-    if [ ! -s "$stage/on-white/$stem.png" ]; then
-        echo "render produced no on-white/$stem.png, leaving ref-out/ alone" >&2
-        exit 1
+    if displayed "${build_of[$i]}"; then
+        # The README's copy. Rendered rather than composited afterwards, so it
+        # goes through exactly the same path as the art and cannot drift from it.
+        "$root/render.sh" --out "$stage/on-white/$rel" --preset "${preset_of[$i]}" \
+            --build "${build_of[$i]}" --background white >/dev/null
+        if [ ! -s "$stage/on-white/$rel.png" ]; then
+            echo "render produced no on-white/$rel.png, leaving ref-out/ alone" >&2
+            exit 1
+        fi
     fi
     i=$((i + 1))
 done
@@ -146,25 +202,45 @@ done
 changed=0
 i=0
 while [ "$i" -lt "$characters" ]; do
-    stem=${stem_of[$i]}
+    rel=${rel_of[$i]}
+    build=${build_of[$i]}
     i=$((i + 1))
     # The SVG decides. It is deterministic text, where a PNG can differ in bytes
     # for reasons that are not the drawing.
     #
     # Its absence does not, though: an on-white copy that was never written, or
     # deleted, leaves a broken image in the README while the drawing itself is
-    # perfectly current, so the SVG comparison alone would call that clean.
-    if cmp -s "$stage/$stem.svg" "$root/ref-out/$stem.svg" &&
-        [ -s "$root/ref-out/on-white/$stem.png" ]; then
-        echo "  unchanged  $stem"
+    # perfectly current, so the SVG comparison alone would call that clean. Only
+    # the displayed builds have one to be missing.
+    fresh=false
+    if cmp -s "$stage/$rel.svg" "$root/ref-out/$rel.svg"; then
+        fresh=true
+        if displayed "$build" && [ ! -s "$root/ref-out/on-white/$rel.png" ]; then
+            fresh=false
+        fi
+    fi
+    if $fresh; then
+        echo "  unchanged  $rel"
         continue
     fi
     changed=$((changed + 1))
     if $check_only; then
-        echo "  STALE      $stem"
+        echo "  STALE      $rel"
     else
-        echo "  updated    $stem"
+        echo "  updated    $rel"
     fi
+done
+
+# A render that used to be published and is not any more leaves its old file
+# behind, where it goes stale invisibly: nothing above looks at files the loop
+# does not name. Called out rather than deleted, because ref-out/ is committed
+# and a script that removes tracked files without being asked is worse than a
+# stale one.
+for orphan in "$root"/ref-out/*_real.svg "$root"/ref-out/*_real.png \
+    "$root"/ref-out/on-white/*_real.png; do
+    [ -e "$orphan" ] || continue
+    echo "  ORPHAN     ${orphan#"$root"/ref-out/}  (realistic renders live in real/ now; git rm it)" >&2
+    changed=$((changed + 1))
 done
 
 # Same rule as a character: the SVG decides, and it is deterministic text.
@@ -188,12 +264,19 @@ if $check_only; then
     exit 0
 fi
 
-mkdir -p "$root/ref-out/on-white"
+for build in $builds; do
+    mkdir -p "$root/ref-out/$(prefix_for "$build")"
+    if displayed "$build"; then
+        mkdir -p "$root/ref-out/on-white/$(prefix_for "$build")"
+    fi
+done
 i=0
 while [ "$i" -lt "$characters" ]; do
-    stem=${stem_of[$i]}
-    cp "$stage/$stem.svg" "$stage/$stem.png" "$root/ref-out/"
-    cp "$stage/on-white/$stem.png" "$root/ref-out/on-white/"
+    rel=${rel_of[$i]}
+    cp "$stage/$rel.svg" "$stage/$rel.png" "$root/ref-out/$(dirname "$rel")/"
+    if displayed "${build_of[$i]}"; then
+        cp "$stage/on-white/$rel.png" "$root/ref-out/on-white/$(dirname "$rel")/"
+    fi
     i=$((i + 1))
 done
 cp "$stage/cover.svg" "$stage/cover.png" "$root/ref-out/"

@@ -529,7 +529,23 @@ All four PoC targets render: Satoko and Satoshi, each at `chibi` and
 `realistic`. Every shape is computed from the `Skeleton`, nothing is
 composited from pre-made art, and no AI image generation is involved.
 
-`ref-out/` holds those four as checked-in `.png` and `.svg`, and the
+Two more characters landed on 2026-08-08, and they are the same two
+people: Kyoko is Satoko before the dye and the burn, Tomohiro is Satoshi
+the same way, each a `replace()` of three fields on the preset it comes
+from rather than a second set of numbers. The derivation is the point,
+not a shortcut, since a copied face agrees on the day it is written and
+drifts the first time somebody tunes an eye. See
+`docs/character-roster-plan.md`, which also holds the plan for the ten
+remaining characters in the cast.
+
+The same day, **the realistic renders were deferred**: the tall figures
+do not work well enough to publish, so the chibi is now the build this
+project ships. They moved to `ref-out/real/`, lost their on-white copies
+and came off the README, and only `presets.REALISTIC_REFS` (Satoko and
+Satoshi, the two ever measured against a reference) still gets one. The
+`realistic` build itself is untouched and works on any character.
+
+`ref-out/` holds the chibis as checked-in `.png` and `.svg`, and the
 README displays them. It is the only generated output in version control,
 and it is the current state of the named characters rather than a
 snapshot of some past one, so **refresh it in the same change that alters
@@ -550,7 +566,7 @@ Anything else goes to `out/`, which is ignored, and which was emptied on
 2026-08-07: 128MB of per-task snapshots, with the scripts that measured
 them promoted to `harness/` first.
 
-`ref-out/on-white/` holds the same four on a white card. They exist for
+`ref-out/on-white/` holds the same chibis on a white card. They exist for
 the README and for nothing else: the page's background colour is not
 ours to set, `OUTLINE` is `#0d0d0d`, and a dark theme is around
 `#0d1117`, so a transparent figure there loses its entire outer contour
