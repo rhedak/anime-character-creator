@@ -63,6 +63,10 @@ class FaceStyle:
     mouth_curve: float = 1.0
     mouth_width: float = 1.0
     blush: float = 1.0
+    # Fine wire spectacles. On `FaceStyle` rather than `Outfit` because they are
+    # part of a face the way a scar is: nobody in this cast is drawn once with
+    # them and once without, and an expression must not be able to remove them.
+    glasses: bool = False
     # Which cheek carries a scar, **stated from the viewer's side**: -1 the left
     # of the picture, 1 the right, 0 none. The figure faces us, so the viewer's
     # right is the character's left, and a description written the other way
@@ -156,6 +160,57 @@ class Outfit:
     # which is the point: they have to agree on the line they meet at, and the
     # belt is only wide enough to hide a disagreement of a few pixels.
     tunic_tucked: bool = False
+    # --- Uniform trim. Five fields rather than one `uniform=True`, because the
+    # cast does not wear the uniform as a unit: Tenno has the cut without the
+    # strap, Elara and Krista hang crystals off the belt that nobody else
+    # carries, and a coat wants the collar without any of the rest. Each is off
+    # by default and draws nothing, which is what keeps them general.
+    #
+    # What is here is the minimum that reads at the size a character is seen on
+    # a sheet: a closed collar, a line of buttons, a pocket on each breast, a
+    # strap across the chest, a boot that climbs the calf. Rank tabs, shoulder
+    # boards, cuff piping and hip pockets are all in the references and all
+    # below that line; see `docs/character-roster-plan.md`.
+    #
+    # A standing collar closing at the throat, in place of the open V. Its own
+    # colour, so a uniform's collar can differ from the tunic it sits on.
+    collar_color: str | None = None
+    # A row of buttons down the centre front, from collar to belt.
+    placket_color: str | None = None
+    # A flapped pocket on each breast.
+    chest_pocket_color: str | None = None
+    # A strap from one shoulder across to the opposite hip. Worn over the tunic
+    # and under the arms, which is where a real one sits and also the only place
+    # it does not clip a hand.
+    strap_color: str | None = None
+    # How far up the shin the boot climbs, on top of the ankle boot every
+    # character already has: 0 leaves it alone, 1 takes it to the knee.
+    boot_shaft: float = 0.0
+    # --- Robe. Three fields, and between them they carry the whole cluster:
+    # what says "kimono" at tile size is a front that crosses, a sleeve that
+    # hangs, and a wide sash. Embroidery, the checked panels, layered inner
+    # collars and sword furniture are all in the references and all below the
+    # first-draft line.
+    #
+    # A panel crossing the chest, right over left, in place of the tunic's
+    # symmetric front. Its own colour so an outer robe can sit over an inner one.
+    robe_color: str | None = None
+    # How far the sleeve hangs below the tunic's own short one, shoulder (0) to
+    # hip (1). A kimono sleeve is a bag of cloth, not a tube on an arm, so this
+    # hangs from the shoulder rather than following the arm inside it.
+    sleeve_drop: float = 0.0
+    # How much taller the belt band is than the default. An obi is the same
+    # object as a belt, three or four times the height, and giving it a scalar
+    # rather than its own garment means a buckle and a sash cannot disagree
+    # about where the waist is.
+    belt_scale: float = 1.0
+    # An outer layer hanging open over whatever is worn under it: a cropped
+    # jacket, a lab coat, a long coat. One garment rather than three, because
+    # the three differ only in where the hem lands.
+    coat_color: str | None = None
+    # Where the coat's hem falls, shoulder (0) to ankle (1). Roughly: 0.30 a
+    # jacket cropped at the waist, 0.62 below the knee, 0.75 mid-calf.
+    coat_length: float = 0.55
 
 
 @dataclass(frozen=True)
@@ -183,6 +238,26 @@ class CharacterParams:
     # Which haircut, by name from HAIRSTYLES.
     hairstyle: str = "long_blunt"
     eye_color: str = "#4a9c6d"
+    # Hair that leaves the skull and comes back: a tail hanging behind the head,
+    # and a knot gathered on the crown. Both are separate parts rather than
+    # `Hairstyle` entries, which is what makes them cheap: a `Hairstyle` is five
+    # callables that have to agree with each other and with the ceiling test,
+    # while these two compose with *any* cut, so one shape gives Krista her
+    # ponytail and Haruto and Daizen their topknots without touching the five
+    # existing cuts at all.
+    #
+    # How far the tail falls, shoulder (0) to hip (1). 0 is no tail.
+    hair_tail: float = 0.0
+    # A knot gathered on the crown, sitting proud of the skull.
+    hair_knot: bool = False
+    # Facial hair. None leaves the face bare, which is everybody but two.
+    # Its own colour rather than reading `hair_color`, because a beard greys
+    # before the head does on one of the two who wear one, and because a
+    # character could dye one and not the other.
+    beard_color: str | None = None
+    # How far the beard drops below the chin, in head radii: about 0.15 is the
+    # short groomed beard Reinhard wears, about 0.45 the full one Daizen does.
+    beard_length: float = 0.15
     outfit: Outfit = field(default_factory=Outfit)
     face: FaceStyle = field(default_factory=FaceStyle)
     # Head-heights tall. Ignored when render_character is handed a skeleton.
@@ -1807,7 +1882,11 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         # A shade over the waist's own width, so the short run below the waist
         # reads as cloth gathered into the belt rather than as a taper.
         hw = ww * 1.01
-    notch = sk.neck_half_w * 0.8
+    # How deep the neckline cuts. A working tunic wears an open V; a garment
+    # with a standing collar closes at the throat, so the V shrinks to a seam
+    # the collar then covers. Left at 0.8 under a collar, the V's outline pokes
+    # out below the collar's lower edge and reads as a second neckline.
+    notch = sk.neck_half_w * (0.28 if p.outfit.collar_color else 0.8)
     sleeve_w = _sleeve_half_w(sk)
     cuff_y = _sleeve_hem_y(sk)
     # Shoulders slope. A horizontal shoulder line is what made the sleeve look
@@ -1880,10 +1959,11 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     )
     fill = p.outfit.tunic_color
     shape = f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
-    if p.outfit.undersleeve_color is not None:
+    if p.outfit.undersleeve_color is not None and p.outfit.collar_color is None:
         # The undersleeve shows once more at the neckline: a sliver of its tone
         # trimming the V, which both canon builds wear. Drawn just inside the
-        # notch so the tunic's own outline still bounds it.
+        # notch so the tunic's own outline still bounds it. Not under a collar,
+        # where there is no V left to trim.
         notch_t = notch * 0.78
         shape += (
             f'<path d="M {cx - notch_t:.1f} {sy + notch * 0.10:.1f} L {cx:.1f} {sy + notch_t:.1f} '
@@ -1891,6 +1971,466 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             f'stroke="{p.outfit.undersleeve_color}" stroke-width="{_stroke_w(sk) * 0.9:.1f}" />'
         )
     return shape
+
+
+def _hair_tail(sk: Skeleton, p: CharacterParams) -> str:
+    """A gathered tail hanging behind the head.
+
+    Drawn *behind* the hair mass and the head, so it emerges from the silhouette
+    rather than sitting on the face. That is the whole reason this is a part and
+    not a `Hairstyle`: a cut owns the outline around the skull, and a tail is by
+    definition outside it.
+
+    Narrow where it is bound and swelling below, because a bundle of hair does
+    that, and because a constant-width strip reads as a ribbon.
+    """
+    if p.hair_tail <= 0.0:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    color = p.hair_color
+    sw = _stroke_w(sk)
+    # Bound high at the back of the skull, which is what tells a ponytail from
+    # hair simply hanging: the tie sits above the ear, not at the nape.
+    tie_y = cy - r * 0.30
+    length = (sk.hip_y - sk.shoulder_y) * max(0.0, min(1.0, p.hair_tail))
+    tip_y = tie_y + r * 0.55 + length
+    # Off to one side, and **outside the cut**. Measured on the shipped
+    # hairstyles, the mass spans about 1.34 to 1.39 head radii either way, so a
+    # tail drawn anywhere inside that is behind a filled shape wider than it is
+    # and simply does not exist. The first attempt put the belly at 0.42 and drew
+    # nothing at all. It has to swing clear of the hair before it falls.
+    side = 1
+    near = r * 1.05
+    belly = r * 1.72
+    d = (
+        f"M {cx + side * near * 0.55:.1f} {tie_y:.1f} "
+        f"Q {cx + side * belly:.1f} {tie_y + (tip_y - tie_y) * 0.28:.1f} "
+        f"{cx + side * belly * 0.86:.1f} {tip_y:.1f} "
+        f"Q {cx + side * near * 0.92:.1f} {tip_y - (tip_y - tie_y) * 0.16:.1f} "
+        f"{cx + side * near * 0.62:.1f} {tie_y + (tip_y - tie_y) * 0.34:.1f} "
+        f"Z"
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+
+
+def _hair_knot(sk: Skeleton, p: CharacterParams) -> str:
+    """A knot gathered on the crown.
+
+    **Over** the hair mass, not behind it, which is the opposite of the tail and
+    the only thing that works. A cut carries its own volume: the shipped ones top
+    out around -1.25 to -1.28 head radii while `build_skeleton`'s hair margin
+    puts the ceiling at -1.36, so there is under a tenth of a radius of daylight
+    above a cut for a knot to poke through. Drawn behind, it is invisible; drawn
+    over, it reads as what it is, hair gathered on top of hair, and it cannot
+    clip the canvas because it never has to reach above the cut to be seen.
+    """
+    if not p.hair_knot:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    sw = _stroke_w(sk)
+    rx, ry = r * 0.24, r * 0.19
+    # Poking above the cut rather than sitting inside it. The shipped cuts top
+    # out around -1.25 to -1.28 head radii and the canvas ceiling is -1.36, so
+    # this rides at -1.13 and paints to about -1.34 once the stroke's outer half
+    # is counted, which is what the ceiling counts. Buried at -1.02 it was a
+    # same-coloured ellipse on same-coloured hair, which is nothing at all; at
+    # -1.15 it cleared the hair and went 0.001 past the margin, which the test
+    # caught and the eye did not.
+    cyk = cy - r * 1.13
+    # A band under it. One line, and it is the difference between a knot and a
+    # lump: hair gathered has to look tied.
+    band_w = rx * 0.85
+    return (
+        f'<ellipse cx="{cx:.1f}" cy="{cyk:.1f}" rx="{rx:.1f}" ry="{ry:.1f}" '
+        f'fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="M {cx - band_w:.1f} {cyk + ry * 0.86:.1f} '
+        f'L {cx + band_w:.1f} {cyk + ry * 0.86:.1f}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+    )
+
+
+def _robe_front(sk: Skeleton, p: CharacterParams) -> str:
+    """A kimono's crossed front: one panel laid over the other, right under left.
+
+    The tunic underneath keeps the silhouette; this only changes what the front
+    of it says. That is the whole trick at this size, and it is why the robe
+    cluster did not need a garment of its own: a torso is a torso, and what makes
+    one a kimono is the diagonal where the two panels meet.
+
+    Drawn as one filled panel with a diagonal top edge rather than two panels
+    with a seam. Two would be the honest construction and would put a line down
+    the middle of the chest, which is what a *coat* does; a kimono's visible
+    edge runs from the far shoulder down to the near hip, and only one of them
+    shows because the other is underneath.
+    """
+    if p.outfit.robe_color is None:
+        return ""
+    cx = sk.head_cx
+    color = p.outfit.robe_color
+    sw = _stroke_w(sk)
+    sy, wy = sk.shoulder_y, sk.waist_y
+    belt_y, _bh = _belt_band(sk)
+    ww = sk.waist_half_w
+    neck = sk.neck_half_w * 0.62
+    # The overlapping panel: from the wearer's right shoulder, across the chest,
+    # down to the left hip. Its far edge follows the torso, so it cannot show
+    # outside the tunic it is laid on.
+    torso_at_shoulder = _sleeve_half_w(sk) * 0.80
+    d = (
+        f"M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} "
+        f"L {cx - torso_at_shoulder:.1f} {sy + (wy - sy) * 0.22:.1f} "
+        f"Q {cx - torso_at_shoulder:.1f} {wy:.1f} {cx - ww:.1f} {belt_y:.1f} "
+        f"L {cx + ww * 0.72:.1f} {belt_y:.1f} "
+        f"Z"
+    )
+    # The fold's own edge, drawn as a line rather than left as a fill boundary:
+    # panel and tunic can be the same colour on a character who wears one robe,
+    # and then the diagonal is the only thing saying anything crossed at all.
+    fold = (
+        f'<path d="M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} '
+        f'L {cx + ww * 0.72:.1f} {belt_y:.1f}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{sw * 0.8:.1f}" stroke-linecap="round" />'
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />{fold}'
+
+
+def _hanging_sleeves(sk: Skeleton, p: CharacterParams) -> str:
+    """The bag of cloth a kimono sleeve is, hanging off the shoulder.
+
+    Not a tube on an arm. `_arms` draws a limb and a sleeve that follows it,
+    which is right for every other garment here and wrong for this one: a
+    furisode hangs straight down from the shoulder seam and the arm inside it is
+    somewhere else entirely. So this is its own shape, drawn behind the arms, and
+    the arm carries on being drawn over it.
+
+    Squared off at the bottom with a rounded outer corner, which is the shape,
+    and hanging from the tunic's own sleeve line so the two share an edge instead
+    of stacking two outlines at the shoulder.
+    """
+    drop = max(0.0, min(1.0, p.outfit.sleeve_drop))
+    if drop <= 0.0 or p.outfit.robe_color is None:
+        return ""
+    cx = sk.head_cx
+    color = p.outfit.robe_color
+    sw = _stroke_w(sk)
+    top = _sleeve_hem_y(sk)
+    hem = top + (sk.hip_y - sk.shoulder_y) * drop
+    outer = _sleeve_half_w(sk) * 1.02
+    inner = sk.waist_half_w * 0.98
+    r = (outer - inner) * 0.35
+    parts = []
+    for s in (-1, 1):
+        d = (
+            f"M {cx + s * inner:.1f} {top:.1f} "
+            f"L {cx + s * outer:.1f} {top:.1f} "
+            f"L {cx + s * outer:.1f} {hem - r:.1f} "
+            f"Q {cx + s * outer:.1f} {hem:.1f} {cx + s * (outer - r):.1f} {hem:.1f} "
+            f"L {cx + s * inner:.1f} {hem:.1f} "
+            f"Z"
+        )
+        parts.append(f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
+    return "".join(parts)
+
+
+def _coat(sk: Skeleton, p: CharacterParams) -> str:
+    """An outer layer hanging open, as two panels with the body between them.
+
+    Two panels rather than one shape with a hole in it, which is what makes it
+    read as *open*: each has its own outline, and the gap between them shows
+    whatever is worn underneath. A single silhouette with a slit drawn on it is
+    a coat that is done up, however the slit is coloured.
+
+    One garment covers Tomohiro's cropped jacket, Keiko's lab coat and Kyoko's
+    long coat, because those three differ only in where the hem lands, which is
+    `coat_length`. Building three would have meant three sets of the same
+    mistakes.
+
+    The panels flare on the way down, following the skirt's own flare so a coat
+    and a skirt worn together do not disagree about which way cloth hangs, and
+    they leave the arms alone: sleeves are the undersleeve's job, and a coat
+    sleeve drawn here would land underneath the arm that is drawn after it.
+    """
+    if p.outfit.coat_color is None:
+        return ""
+    cx = sk.head_cx
+    color = p.outfit.coat_color
+    sw = _stroke_w(sk)
+    sy = sk.shoulder_y
+    hem_y = sy + (sk.ankle_y - sy) * max(0.0, min(1.0, p.outfit.coat_length))
+    shoulder_w = _sleeve_half_w(sk) * 0.92
+    # The opening: narrow at the throat, wider at the hem, which is how an
+    # unfastened coat hangs. Level edges read as a zip left undone.
+    gap_top = sk.neck_half_w * 0.55
+    gap_hem = sk.waist_half_w * 0.52
+    # Follows the skirt's flare where there is one to follow, so the two hems
+    # agree; on a character with no skirt it is the same widening a coat does.
+    out_hem = max(sk.hip_half_w * 1.06, _skirt_half_w(sk, hem_y) * 0.94)
+    waist_y = sk.waist_y
+    parts = []
+    for s in (-1, 1):
+        d = (
+            f"M {cx + s * gap_top:.1f} {sy + sk.neck_half_w * 0.5:.1f} "
+            f"L {cx + s * shoulder_w:.1f} {sy + (waist_y - sy) * 0.16:.1f} "
+            f"Q {cx + s * shoulder_w * 1.02:.1f} {waist_y:.1f} "
+            f"{cx + s * out_hem:.1f} {hem_y:.1f} "
+            f"L {cx + s * gap_hem:.1f} {hem_y:.1f} "
+            f"Q {cx + s * gap_top * 1.35:.1f} {waist_y:.1f} "
+            f"{cx + s * gap_top:.1f} {sy + sk.neck_half_w * 0.5:.1f} Z"
+        )
+        parts.append(f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
+    return "".join(parts)
+
+
+def _beard(sk: Skeleton, p: CharacterParams) -> str:
+    """Facial hair: a mass along the jaw, hanging below the chin.
+
+    Welded to the skull the way the ear is, by sampling `_head_edge_x` rather
+    than by assuming a circle, so it follows the jaw taper as the build gets
+    taller instead of standing off the face at one end of the range.
+
+    Drawn over the face and under nothing, which is the only order that works:
+    under the face the mouth's line would sit on top of the beard and the chin
+    would show through it, and a beard is the one part that is *supposed* to
+    cover the jaw it grows on.
+
+    A moustache is not separate. At the size this is looked at, the gap between
+    a moustache and the beard under it is a pixel, so the mass runs unbroken past
+    the mouth and the mouth's own stroke draws over it, which is what the shape
+    reads as anyway.
+    """
+    if p.beard_color is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    b = sk.build
+    color = p.beard_color
+    sw = _stroke_w(sk)
+    # Where the mass meets the face at the sides. Level with the mouth, which is
+    # as high as it can go before the cheek starts disappearing: the head is at
+    # its widest just above this, so every step upward here adds a band of face
+    # width to the mass and the beard turns into a hood.
+    top = 0.62
+    drop = max(0.0, p.beard_length)
+    chin = _head_pt(180.0, 1.0, b)[1]
+    # **On** the skull's edge, not inside it. Tucked inside, the face's own
+    # outline runs across above the beard, the mass below reads as a separate
+    # object hanging off the chin, and what comes out is a scarf. Landing the top
+    # corners on the contour merges the two outlines into one jaw, which is how a
+    # beard is drawn. The cheek is kept clear by *height* instead: `top` sits
+    # below the head's widest point, so there is face above the beard rather than
+    # beside it.
+    x_top = _head_edge_x(top, b)
+    # **Wider than the jaw at the bottom**, which is the part that matters and
+    # the part three attempts at this got wrong. A beard tucked inside the head's
+    # outline is invisible once the figure is shrunk to a tile, because nothing
+    # about the silhouette changed and colour alone is what goes first. Hanging
+    # it past the jaw puts a wedge on the outline, and a wedge under a chin reads
+    # as a beard at any size. It scales with the length, so a short groomed one
+    # stays close to the face and a full one squares off well outside it.
+    x_wide = _head_edge_x(min(0.98, chin - 0.06), b) + drop * 1.25
+    mid_y = chin + drop * 0.45
+    bottom = chin + drop
+    d = (
+        f"M {cx - x_top * r:.1f} {cy + top * r:.1f} "
+        f"Q {cx - x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
+        f"{cx - x_wide * r:.1f} {cy + mid_y * r:.1f} "
+        f"Q {cx - x_wide * r * 0.90:.1f} {cy + bottom * r:.1f} {cx:.1f} {cy + bottom * r:.1f} "
+        f"Q {cx + x_wide * r * 0.90:.1f} {cy + bottom * r:.1f} "
+        f"{cx + x_wide * r:.1f} {cy + mid_y * r:.1f} "
+        f"Q {cx + x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
+        f"{cx + x_top * r:.1f} {cy + top * r:.1f} "
+        # Back along the top edge, which has to dive **below the mouth** in the
+        # middle. The mouth sits at 0.55 head radii and the ends of this edge are
+        # at 0.62, so a shallow curve between them runs across the face above the
+        # mouth and the beard comes out as a surgical mask, which is exactly what
+        # the first attempt drew. A quadratic's midpoint is a quarter of each end
+        # plus half the control, so the control goes to roughly twice the depth
+        # actually wanted.
+        f"Q {cx:.1f} {cy + 1.00 * r:.1f} {cx - x_top * r:.1f} {cy + top * r:.1f} Z"
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+
+
+def _glasses(sk: Skeleton, p: CharacterParams) -> str:
+    """Fine wire spectacles: two rims and a bridge, no lenses.
+
+    No fill, so the eyes read through them. A tinted lens would be a second tone
+    over the iris and would take the eye colour with it, and the eye is the one
+    thing on a face that has to survive being shrunk.
+
+    Sized off the eye rather than off the head, so a rim always frames the eye it
+    belongs to however that character's aperture is tuned.
+    """
+    if not p.face.glasses:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    f = p.face
+    sw = _stroke_w(sk)
+    # The same two numbers `_face` places an eye with, so the rim cannot drift
+    # off the eye when a character's aperture changes.
+    eye_dx = r * 0.34
+    eye_y = cy + r * 0.10
+    rw = r * 0.26 * f.eye_width
+    rh = r * 0.20 * f.eye_size
+    stroke = f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}"'
+    parts = [
+        f'<rect x="{cx + s * eye_dx - rw:.1f}" y="{eye_y - rh:.1f}" '
+        f'width="{rw * 2:.1f}" height="{rh * 2:.1f}" rx="{rh * 0.55:.1f}" {stroke} />'
+        for s in (-1, 1)
+    ]
+    parts.append(
+        f'<path d="M {cx - eye_dx + rw:.1f} {eye_y:.1f} L {cx + eye_dx - rw:.1f} {eye_y:.1f}" '
+        f"{stroke} />"
+    )
+    # Arms to the temples, which is what stops the pair reading as two rings
+    # floating on the cheeks.
+    for s in (-1, 1):
+        parts.append(
+            f'<path d="M {cx + s * (eye_dx + rw):.1f} {eye_y:.1f} '
+            f'L {cx + s * _head_edge_x(0.10, sk.build) * r:.1f} {eye_y - rh * 0.35:.1f}" {stroke} />'
+        )
+    return "".join(parts)
+
+
+def _collar(sk: Skeleton, p: CharacterParams) -> str:
+    """A standing collar closing at the throat, over the tunic's open V.
+
+    The tunic's neckline is a V that shows the undersleeve's tone at its edge,
+    which is right for a working tunic and wrong for a uniform, where the
+    garment closes at the neck. Rather than give the tunic a second neckline
+    shape, this covers the V with a band: the silhouette underneath is
+    unchanged, and a collar is a separate piece of cloth on the reference too.
+
+    Two shapes, not one. The band around the neck reads as a collar only once
+    something says which way it faces, so the front carries a shallow notch
+    where the two halves meet, which is the same trick the V was doing.
+    """
+    if p.outfit.collar_color is None:
+        return None or ""
+    cx, sy = sk.head_cx, sk.shoulder_y
+    color = p.outfit.collar_color
+    sw = _stroke_w(sk)
+    # Off the neck, not off the shoulder: a collar wraps a throat, and reading
+    # the shoulder here would widen it into a yoke as the frame gets broader.
+    half = sk.neck_half_w * 1.70
+    h = sk.neck_half_w * 1.75
+    # Sits high, most of it above the shoulder line. A collar drawn down onto
+    # the chest reads as a bib; what says "closed at the throat" is cloth
+    # standing up the neck, and at tile size the part below the shoulder is
+    # indistinguishable from the tunic it is the same colour as anyway.
+    top = sy - h * 0.80
+    d = (
+        f"M {cx - half:.1f} {top:.1f} L {cx + half:.1f} {top:.1f} "
+        f"L {cx + half * 0.86:.1f} {top + h:.1f} L {cx - half * 0.86:.1f} {top + h:.1f} Z"
+    )
+    notch = h * 0.55
+    return (
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="M {cx:.1f} {top:.1f} L {cx:.1f} {top + notch:.1f}" fill="none" '
+        f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
+    )
+
+
+def _placket(sk: Skeleton, p: CharacterParams) -> str:
+    """A line of buttons down the centre front, collar to belt.
+
+    The one piece of uniform trim that is pure line work, and the one that does
+    most of the work: a plain coloured torso reads as a jersey, and a seam down
+    the middle of it reads as a coat that fastens. The buttons are dots on that
+    seam rather than drawn discs, because at tile size a disc with an outline is
+    a smudge and a dot is a button.
+    """
+    if p.outfit.placket_color is None:
+        return ""
+    cx = sk.head_cx
+    color = p.outfit.placket_color
+    sw = _stroke_w(sk)
+    top = sk.shoulder_y + sk.neck_half_w * 0.9
+    belt_y, _belt_h = _belt_band(sk)
+    bottom = belt_y
+    # Slightly off centre, the way a real placket is: the flap that carries the
+    # buttons laps over the other side rather than meeting it edge to edge. A
+    # dead-centre line reads as a fold in the cloth instead.
+    x = cx + sk.waist_half_w * 0.13
+    parts = [
+        f'<path d="M {x:.1f} {top:.1f} L {x:.1f} {bottom:.1f}" fill="none" '
+        f'stroke="{color}" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+    ]
+    # Four, which is what fits between a collar and a belt without the row
+    # reading as a zip. They ride the line rather than sitting beside it.
+    n = 4
+    for i in range(n):
+        by = top + (bottom - top) * (i + 0.5) / n
+        parts.append(f'<circle cx="{x:.1f}" cy="{by:.1f}" r="{sw * 0.62:.1f}" fill="{color}" />')
+    return "".join(parts)
+
+
+def _chest_pockets(sk: Skeleton, p: CharacterParams) -> str:
+    """A flapped pocket on each breast.
+
+    Drawn as a flap alone rather than a pocket with a flap over it. The pocket's
+    own outline is a rectangle behind the flap and is invisible at every size
+    this is looked at, so all it would add is two more lines to thicken the
+    shape; what says "military tunic" is the horizontal flap with a stitch under
+    it.
+    """
+    if p.outfit.chest_pocket_color is None:
+        return ""
+    cx = sk.head_cx
+    color = p.outfit.chest_pocket_color
+    sw = _stroke_w(sk)
+    # Between the armpit and the waist, and inside the torso's own width at that
+    # height, so a pocket cannot ride out over the side contour on a broad frame.
+    top = _sleeve_hem_y(sk) + (sk.waist_y - _sleeve_hem_y(sk)) * 0.28
+    w = sk.waist_half_w * 0.38
+    h = sk.waist_half_w * 0.30
+    off = sk.waist_half_w * 0.50
+    parts = []
+    for s in (-1, 1):
+        px = cx + s * off
+        parts.append(
+            # The flap takes the second tone, which is the pouch-flap and
+            # boot-cuff case the flat-colour rule leaves open: a turn of cloth
+            # reading as thickness on a small element, not a plane across a
+            # panel. Without it the flap is the tunic's own colour and all that
+            # survives being shrunk is a faint rectangle of outline.
+            f'<rect x="{px - w / 2:.1f}" y="{top:.1f}" width="{w:.1f}" height="{h:.1f}" '
+            f'rx="{h * 0.22:.1f}" fill="{shade(color)}" stroke="{OUTLINE}" '
+            f'stroke-width="{sw * 0.7:.1f}" />'
+        )
+    return "".join(parts)
+
+
+def _strap(sk: Skeleton, p: CharacterParams) -> str:
+    """A strap over the right shoulder and across to the opposite hip.
+
+    Every uniformed character in the references wears one the same way round, so
+    the direction is fixed rather than a field: it is part of the uniform, not
+    something a character chooses. Tenno is the one who goes without, and he does
+    that by leaving the colour unset.
+
+    Drawn over the tunic and under the arms. Over the arms it would cross a hand
+    at the wrist, and under the tunic it would not exist.
+    """
+    if p.outfit.strap_color is None:
+        return ""
+    cx = sk.head_cx
+    color = p.outfit.strap_color
+    sw = _stroke_w(sk)
+    top_x = cx + sk.shoulder_half_w * 0.52
+    top_y = sk.shoulder_y + (sk.waist_y - sk.shoulder_y) * 0.10
+    belt_y, _h = _belt_band(sk)
+    bot_x = cx - sk.waist_half_w * 0.72
+    w = sk.neck_half_w * 0.42
+    # A band with two parallel edges rather than a thick line, so it takes an
+    # outline like every other garment and does not read as a drawn stroke.
+    dx, dy = bot_x - top_x, belt_y - top_y
+    length = math.hypot(dx, dy)
+    nx, ny = -dy / length * w, dx / length * w
+    d = (
+        f"M {top_x + nx:.1f} {top_y + ny:.1f} L {bot_x + nx:.1f} {belt_y + ny:.1f} "
+        f"L {bot_x - nx:.1f} {belt_y - ny:.1f} L {top_x - nx:.1f} {top_y - ny:.1f} Z"
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.8:.1f}" />'
 
 
 def _skirt_half_w(sk: Skeleton, y: float) -> float:
@@ -2528,7 +3068,15 @@ def _boot(
     foot_h = sk.foot_y - sk.ankle_y
     # The shaft climbs a third of the way to the knee, so it stays a boot rather
     # than becoming a waders as the shin gets longer at taller builds.
-    top_y = sk.ankle_y - (sk.ankle_y - sk.knee_y) * 0.32
+    #
+    # `boot_shaft` extends that toward the knee without changing anything else
+    # about the boot: the five uniformed characters and Kyoko all wear a tall
+    # boot with the trouser tucked into it, which is a different garment from the
+    # ankle boot the rest of the cast wears and reads as one at any size. It
+    # stops a little short of the knee itself, because a shaft that reaches the
+    # joint reads as a legging rather than as a boot pulled on.
+    shaft_reach = 0.32 + (0.92 - 0.32) * max(0.0, min(1.0, p.outfit.boot_shaft))
+    top_y = sk.ankle_y - (sk.ankle_y - sk.knee_y) * shaft_reach
     # Off the ankle it wraps, not off the knee above it, so the shaft cannot come
     # out wider than the leg going into it.
     shaft_w = w_ankle * 1.10
@@ -2620,15 +3168,21 @@ def _boot(
     return "".join(parts)
 
 
-def _belt_band(sk: Skeleton) -> tuple[float, float]:
+def _belt_band(sk: Skeleton, scale: float = 1.0) -> tuple[float, float]:
     """Where the belt sits and how deep it is, as (top y, height).
 
     Shared rather than computed where it is needed, because three parts depend
     on it now: the belt draws it, a tucked tunic ends inside it, and trousers
     start inside it. Two of those only work while all three agree, and the
     failure is a band of bare canvas at the waist.
+
+    `scale` is how an obi is drawn: the same band three or four times as deep,
+    growing about its own centre so the waist does not move. Only `_belt` passes
+    it. The tucked tunic and the trousers deliberately keep asking for the plain
+    band, because their join has to land where a belt of any depth covers it, and
+    the unscaled midpoint is inside every scaled band by construction.
     """
-    h = (sk.hip_y - sk.waist_y) * 0.42
+    h = (sk.hip_y - sk.waist_y) * 0.42 * max(0.2, scale)
     return sk.waist_y - h * 0.35, h
 
 
@@ -2641,7 +3195,7 @@ def _belt(sk: Skeleton, p: CharacterParams) -> str:
     cx = sk.head_cx
     # Wraps over the tunic, so it is a shade wider than the body at the waist.
     half_w = sk.waist_half_w * 1.03
-    y, h = _belt_band(sk)
+    y, h = _belt_band(sk, p.outfit.belt_scale)
     parts = [
         f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '
         f'rx="{h * 0.18:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
@@ -2651,11 +3205,16 @@ def _belt(sk: Skeleton, p: CharacterParams) -> str:
             f'<rect x="{cx - half_w:.1f}" y="{y + h * 0.62:.1f}" width="{half_w * 2:.1f}" height="{h * 0.38:.1f}" '
             f'rx="{h * 0.18:.1f}" fill="{shade(color)}" opacity="0.8" />'
         )
-    if p.outfit.apron_color is None:
-        # A buckle, but only where an apron does not hang over the belt's
-        # centre: with one there the buckle sits under the panel, which is why
-        # the canon shows Satoshi's and not chibi Satoko's. Metal is a fixed
-        # neutral tone, like the blush: it is not anyone's palette.
+    # A buckle, but not on a sash. An obi is the same band three times as deep
+    # and it is *tied*, not fastened, so a metal buckle on one is the single
+    # detail that would say "belt" loudest on the three characters the depth is
+    # there to dress. The cut-off sits between a wide belt and a narrow sash.
+    obi = p.outfit.belt_scale > 1.6
+    if p.outfit.apron_color is None and not obi:
+        # Only where an apron does not hang over the belt's centre: with one
+        # there the buckle sits under the panel, which is why the canon shows
+        # Satoshi's and not chibi Satoko's. Metal is a fixed neutral tone, like
+        # the blush: it is not anyone's palette.
         sw = _stroke_w(sk)
         bw, bh = h * 1.5, h * 1.08
         bx, by = cx - bw / 2, y + (h - bh) / 2
@@ -3383,22 +3942,55 @@ def render_character(
     # one place a collision would show.
     layers = [
         _hair_defs(sk, p),
+        # Behind the mass, so both emerge from the silhouette instead of sitting
+        # on the face. That is the whole point of them being parts rather than
+        # hairstyles: a cut owns the outline around the skull, and these two are
+        # by definition outside it.
+        _hair_tail(sk, p),
         _hair_mass(sk, p),
         _neck(sk, p),
         _legs_and_boots(sk, p),
         _underskirt(sk, p),
         _skirt(sk, p),
+        # Behind the tunic: a kimono sleeve hangs off the shoulder seam, so the
+        # torso's own outline has to close over the top of it.
+        _hanging_sleeves(sk, p),
         _tunic(sk, p),
+        # The crossed front, over the tunic it re-fronts and under the obi.
+        _robe_front(sk, p),
+        # Uniform trim, over the tunic it sits on and under the belt that
+        # crosses it. The placket has to stop at the belt and the strap has to
+        # pass behind it, which this order gives for nothing.
+        _placket(sk, p),
+        _chest_pockets(sk, p),
+        _strap(sk, p),
         _apron(sk, p),
+        # Over the tunic and the trim on it, under the belt and the arms: a coat
+        # hangs open in front of the body and behind the arms, and a belt worn
+        # with one is worn over it.
+        _coat(sk, p),
         _belt(sk, p),
         _pouches(sk, p),
         _arms(sk, p),
+        # After the arms and before the ear: a standing collar wraps the throat,
+        # so it belongs over the neck and the tunic's V, and it is the one
+        # garment high enough that the head has to be drawn after it.
+        _collar(sk, p),
         # The ear goes under the head and over the back hair: the canon runs the
         # face's outline unbroken across the ear and hangs the hair behind it.
         _ears(sk, p),
         _head(sk, p),
         _face(sk, p),
+        # Over the face: a beard covers the jaw it grows on, and spectacles sit
+        # in front of the eyes rather than behind them.
+        _beard(sk, p),
+        _glasses(sk, p),
         _hair_front(sk, p),
+        # Last of the hair, unlike the tail, which is first. See `_hair_knot`: a
+        # cut leaves under a tenth of a head radius of daylight above itself, so
+        # a knot drawn behind the mass is invisible; drawn between the mass and
+        # the fringe it is invisible too, because the fringe covers the crown.
+        _hair_knot(sk, p),
     ]
 
     body = "\n  ".join(layer for layer in layers if layer)

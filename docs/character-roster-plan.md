@@ -124,6 +124,36 @@ against.
 Read character by character this is fourteen problems. Read by
 machinery it is about six, because the cast reuses its own costume.
 
+## What "first draft" means, per cluster
+
+Written before any garment code, on purpose. Every one of these designs has
+more detail in its reference than a tile can hold, and the failure mode of
+working through a cast is that character three absorbs the budget character
+ten needed. So each cluster gets a **minimum recognisable list**: the features
+that carry identity at the size a character is actually seen, and nothing
+else. Anything below the line is not forbidden, it is just not what "first
+draft" means, and adding it before every character exists is the mistake.
+
+The test for the line is the one the cover's expression pass established: does
+it survive being shrunk to a tile? A brow moves under 1% of a face. A rank tab
+is four pixels.
+
+| Cluster | In the first draft | Below the line |
+| --- | --- | --- |
+| **Uniform** | standing collar, chest pocket pair, centre placket, waist belt, tall boot shaft, cross-body strap | rank tabs, shoulder boards, cuff piping, hip pockets, order-specific collar pins |
+| **Robe** | crossed front, wide hanging sleeve, obi at the waist | embroidery, the checked panels, sword furniture, layered inner collars |
+| **Open coat** | the open front over a visible inner layer, at the right length | pocket detail, lapel shape, the pattern woven into Kyoko's |
+| **Head** | beard, glasses, ponytail, topknot | goggles, kanzashi, hairpins, headscarf pattern |
+| **Everyone** | hair colour and mass, eye colour, skin, silhouette, age | anything at all that needs a second tone to read |
+
+Two of those are worth stating as rules rather than rows. **A pattern is below
+the line everywhere**: Daizen's checked cuffs and Kyoko's woven coat are both
+texture, both invisible at tile size, and both would need machinery that
+nothing else in the cast uses. And **a prop is not a garment**: Tenno's cane and
+Daizen's chest change how those two read, and they are still deferred, because a
+prop is the one thing on this list that can be added later without touching
+anything already built.
+
 ### Garments
 
 `Outfit` has eleven fields today: tunic, boots, undersleeve, belt,
@@ -351,6 +381,67 @@ wearer.** A garment three characters share, hidden inside the first
 character who happens to wear it, is a garment the second wearer has to
 go back and generalise.
 
+## Where it got to, 2026-08-08
+
+**Every character in the cast has a first-draft chibi.** Fourteen presets,
+all on `ref-out/sheet.svg`, all in the README, all byte-compared. What was
+built to get there, in the order it was built:
+
+1. **`sheet.py`**, the cast on one page. Built first as a batching tool as
+   much as a deliverable: a character is judged in its tile, and rendering a
+   whole cluster and reading one sheet is the only way to look at this cast
+   often enough.
+2. **A stub pass**: all ten remaining characters at once, with the colouring
+   and frame their designs call for and the closest garments then available.
+   That put a full sheet on screen before any new garment existed, which is
+   what surfaced the blush default and the hair-length problem below while
+   they were still cheap.
+3. **`aged()`**, the age vocabulary.
+4. **The uniform**, five `Outfit` fields, five characters.
+5. **The beard** and **the spectacles**.
+6. **The open coat**, one garment at three lengths, three characters.
+7. **The robe**: crossed front, hanging sleeve, obi.
+
+### What the stub pass caught, which is the argument for doing one
+
+- **`FaceStyle.blush` defaults to 1.0**, which is the generator's cute
+  default and wrong for most of this cast. Ten characters arrived with pink
+  cheeks, including both men in their sixties. Every preset now states one.
+- **`short_crop` is not a short cut.** Its `tip_range` spans 0.800 to 0.911,
+  so `hair_length` barely moves it, and its `volume` is 1.30 at the chibi
+  end. Five men came out with shoulder-length shaggy hair. `short_layered`
+  at a low length is the tight cut, and it took all five with no new
+  geometry: what looked like "nine new hairstyles" in the plan was mostly a
+  wrong base.
+- **`short_tousled` leaves a notch** in its silhouette that reads as damage
+  once shrunk to a tile. Elara moved off it.
+
+8. **The ponytail and the topknot**, as two composable parts rather than
+   `Hairstyle` entries. That is what made them cheap enough to build at all:
+   a `Hairstyle` is five callables that have to agree with each other and
+   with the ceiling test, while `hair_tail` and `hair_knot` compose with any
+   cut, so one small shape each gave Krista her ponytail and Haruto and
+   Daizen their topknots without touching the five existing cuts.
+
+   Both were invisible on the first attempt, in opposite directions. The
+   tail was drawn inside the hair mass, which measures 1.34 to 1.39 head
+   radii wide, so a shape at 0.42 was behind a filled silhouette and drew
+   nothing. The knot was drawn *behind* the mass, where a cut leaves under a
+   tenth of a radius of daylight above itself, and then between the mass and
+   the fringe, where the fringe covers the crown. It ends up last of all the
+   hair, poking through.
+
+### Still below the line, and deliberately
+
+- **Krista's goggles** and **Chiyo's headscarf**. Both are named in the
+  table above as first-draft features, so this is the one place the work
+  falls short of the stated bar rather than beneath it. Chiyo instead moved
+  to `long_traced` at a short length, which reads as hair scraped back and
+  fixed her reading as a boy at tile size; Krista has her ponytail.
+- **The hakama**, which Haruto and Reika both want under their robes.
+- **Everything already listed** under "What first draft means": patterns,
+  rank tabs, kanzashi, props.
+
 ## Tasks
 
 Numbered for reference in commits and in later notes, the way
@@ -377,23 +468,23 @@ still comes before every expensive character.
 
 ### Phase 0: the artifact to iterate against
 
-- [ ] **1. `sheet.py`.** A labelled grid of characters on one page, as
+- [x] **1. `sheet.py`.** A labelled grid of characters on one page, as
       SVG, built from the same skeleton-relative approach as `cover.py`.
       Takes a roster and lays out its members. Display name per tile.
-- [ ] **2. Display names and rosters.** A display name on
+- [x] **2. Display names and rosters.** A display name on
       `CharacterParams` (or a parallel mapping in `presets.py`), and a
       `ROSTERS` mapping so the child and parent sheets are data rather
       than two functions. Each roster lists only the characters that
       exist, so today both are two names long (Satoshi and Tomohiro;
       Satoko and Kyoko) and both grow by one every time a character
       lands.
-- [ ] **3. `sheet.sh` and `ref-out/sheet.png`.** Mirror `cover.sh`. Add
+- [x] **3. `sheet.sh` and `ref-out/sheet.png`.** Mirror `cover.sh`. Add
       the sheet to `refresh-ref-out.sh` and to its `--check` staleness
       test, the way the cover already is.
-- [ ] **4. Sheet tests.** Renders, stays deterministic, every roster
+- [x] **4. Sheet tests.** Renders, stays deterministic, every roster
       member appears exactly once, and the checked-in file matches the
       code.
-- [ ] **5. Exercise the layout at full width.** A two-tile sheet proves
+- [x] **5. Exercise the layout at full width.** A two-tile sheet proves
       nothing about a four by three grid: not the tile aspect, not
       whether long labels like "Reinhard von Falkenrath" collide, not
       whether twelve figures at that size read as one cast. Render twelve
@@ -405,61 +496,61 @@ still comes before every expensive character.
 
 ### Phase 1: the first two characters, and what they need
 
-- [ ] **6. Age vocabulary.** Comes before Chiyo, not out of her: she is
+- [x] **6. Age vocabulary.** Comes before Chiyo, not out of her: she is
       the first older character, so her face cannot be built until this
       is settled, and settling it inside her task means five more
       characters inherit an undocumented decision. Choose the
       `FaceStyle` values that read old (see "Age" above for the
       candidates), document them in `presets.py` next to `EXPRESSIONS`
       with the reasoning, and check them at tile size.
-- [ ] **7. Open outer layer.** A garment that hangs open over an inner
+- [x] **7. Open outer layer.** A garment that hangs open over an inner
       one, with a length the way `skirt_length` works. Three wearers at
       three lengths: Tomohiro cropped at the waist, Keiko below the knee,
       Kyoko at mid-calf. Built once here rather than cropped now and
       generalised at task 19.
-- [ ] **8. Dress Kyoko and Tomohiro.** They exist and share their
+- [x] **8. Dress Kyoko and Tomohiro.** They exist and share their
       originals' clothes. Tomohiro's reference is a cropped olive jacket
       over a navy tunic with a wide sash and dark trousers; Kyoko's is
       the same navy tunic and sash under a mid-calf coat, with tall
       boots. Both use task 7's garment, at its two ends. Note the two
       references agree with each other on the inner layer, which is the
       design working rather than a coincidence.
-- [ ] **9. Chiyo.** Bib apron (chest coverage with shoulder straps,
+- [x] **9. Chiyo.** Bib apron (chest coverage with shoulder straps,
       unlike Satoko's waist apron) over a tan shirt, waist sash, brown
       overskirt, dark underskirt, headscarf. Closest to Satoko's existing
       layer stack; the new pieces are the bib and the scarf.
 
 ### Phase 2: the uniform, five characters
 
-- [ ] **10. The uniform garment.** Standing collar, chest and hip pocket
+- [x] **10. The uniform garment.** Standing collar, chest and hip pocket
       pairs, button placket, shoulder boards, cuff piping, tall boot
       shaft. New `Outfit` fields, all defaulting to off.
-- [ ] **11. Cross-body strap and belt kit.** The strap as its own field,
+- [x] **11. Cross-body strap and belt kit.** The strap as its own field,
       since Tenno lacks it; the belt crystals as another, since only
       Elara and Krista carry them.
-- [ ] **12. Swept-back short hair.** One cut, three wearers.
-- [ ] **13. Elara Sturm.** Blue-grey uniform, dark red short cut, gloves.
-- [ ] **14. Krista Bastler.** Same uniform, high ponytail, goggles on the
+- [x] **12. Swept-back short hair.** One cut, three wearers.
+- [x] **13. Elara Sturm.** Blue-grey uniform, dark red short cut, gloves.
+- [x] **14. Krista Bastler.** Same uniform, high ponytail, goggles on the
       head. The ponytail is a new cut and the first hair that leaves the
       skull silhouette and comes back, which makes it a z-order question
       as much as a shape one. It has one wearer, so it stays in her task.
-- [ ] **15. Viktor Grau.** Same uniform, black swept-back hair, laced
+- [x] **15. Viktor Grau.** Same uniform, black swept-back hair, laced
       boots rather than smooth.
-- [ ] **16. Facial hair.** One new part drawn over the chin and under the
+- [x] **16. Facial hair.** One new part drawn over the chin and under the
       mouth line, with a colour and a length, absent by default. Its own
       task because Daizen needs the full-beard end of it at task 24, and
       a beard built inside Reinhard is a beard Daizen has to go back and
       generalise.
-- [ ] **17. Reinhard von Falkenrath.** Same uniform, blond swept-back
+- [x] **17. Reinhard von Falkenrath.** Same uniform, blond swept-back
       hair, short beard.
-- [ ] **18. Tenno Amatsuki.** Khaki uniform, no strap, grey hair and a
+- [x] **18. Tenno Amatsuki.** Khaki uniform, no strap, grey hair and a
       receding hairline, oldest face in the cast and so the first real
       test of task 6. Cane deferred with the other props, and noted as
       load-bearing.
 
 ### Phase 3: coats
 
-- [ ] **19. Keiko Natsume.** White lab coat over a dark wrap and long
+- [x] **19. Keiko Natsume.** White lab coat over a dark wrap and long
       skirt, long centre-parted hair, glasses. Glasses are a new head
       part, cheap, and carry her almost single-handed at tile size.
 - [ ] **20. The chibi hem.** A skirt length that reads the same at both
@@ -475,18 +566,18 @@ of her. She is Satoko, so she arrived with the first pair.
 
 ### Phase 4: robes
 
-- [ ] **21. Robe geometry.** Crossed front, wide hanging sleeve, obi
+- [x] **21. Robe geometry.** Crossed front, wide hanging sleeve, obi
       sash. The largest single piece of new shape work in the plan.
 - [ ] **22. Hakama.** Wide pleated lower garment, worn by Haruto and
       Reika both.
-- [ ] **23. Haruto Kisaragi.** Black kimono and hakama, obi, laced boots,
+- [x] **23. Haruto Kisaragi.** Black kimono and hakama, obi, laced boots,
       topknot. The topknot is a new cut with two wearers, and it stays
       here rather than becoming its own task only because Daizen is the
       very next character to use it.
-- [ ] **24. Daizen Kurogane.** Open haori over a kimono, obi, full beard,
+- [x] **24. Daizen Kurogane.** Open haori over a kimono, obi, full beard,
       grey topknot. The checked cuff panels are a pattern, and a pattern
       on a flat garment needs its own decision.
-- [ ] **25. Reika Mizuki.** Layered kimono, grey outer robe with a
+- [x] **25. Reika Mizuki.** Layered kimono, grey outer robe with a
       trailing hem, teal hakama, very long straight hair, kanzashi.
 
 ### Phase 5: closing out

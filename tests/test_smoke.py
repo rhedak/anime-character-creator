@@ -19,15 +19,18 @@ import pytest
 
 from anime_character_creator import (
     BUILDS,
+    DISPLAY_NAMES,
     EXPRESSIONS,
     HAIRSTYLES,
     PRESETS,
     REALISTIC_REFS,
+    ROSTERS,
     CharacterParams,
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
     cover,
     render_character,
+    sheet,
 )
 
 REF_OUT = Path(__file__).resolve().parent.parent / "ref-out"
@@ -516,32 +519,104 @@ def test_the_disguise_changes_only_the_disguise(before: str, after: str) -> None
         "one face, minus a burn that has not happened"
     )
     assert was.frame == now.frame and was.heads == now.heads
+    # Not the outfit, and not the hairstyle. A companion test used to pin both as
+    # "not dressed yet" while the pair still wore their originals' clothes, and
+    # it was deleted the day they were dressed, which is what it existed to
+    # flag. Neither belongs here: the wardrobe is the one thing that genuinely
+    # differs between the two lives, and the cut is free to change for reasons
+    # that have nothing to do with the disguise.
     # And the disguise itself is present rather than merely absent from the diff.
     assert now.face.scar_side != 0 and was.face.scar_side == 0
     assert was.hair_color != now.hair_color and was.hair_tip_color is None
 
 
-@pytest.mark.parametrize(("before", "after"), [("kyoko", "satoko"), ("tomohiro", "satoshi")])
-def test_the_pair_before_is_not_dressed_yet(before: str, after: str) -> None:
-    """Deliberately a *current state*, not an invariant, and separated for that.
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_topknot_is_visible_and_still_fits(build: str) -> None:
+    """A knot has to clear the cut under it and stay inside the canvas margin.
 
-    Kyoko and Tomohiro wear their originals' clothes and cuts because the first
-    pass built the face and left the wardrobe to the open-layer garment (task 8
-    of `docs/character-roster-plan.md`). Dressing them is supposed to break this
-    and nothing else, which is why it is not an assertion inside the face test:
-    there it would fail on the day of a planned change, on a line about outfits,
-    under a name that says the disguise is broken, and the likely reaction would
-    be to weaken the face assertions that actually matter.
-
-    The cut is a slightly different case. `character_designs.md` lists the dye,
-    the burn, the expression and the clothes as the disguise, and not the
-    haircut, so sharing it is correct rather than merely unfinished. It is here
-    because `ref/tomohiro.png` draws him shaggier anyway, so this may yet change
-    for reasons that have nothing to do with the disguise either.
+    Both halves have bitten. Drawn at -1.02 head radii it was a same-coloured
+    ellipse buried in same-coloured hair and drew nothing; the shipped cuts top
+    out around -1.25 to -1.28, so it has to sit above that. And the hair margin
+    `build_skeleton` leaves puts the ceiling at -1.36, so there is well under a
+    tenth of a radius to land in. Nothing else checks a part that is not a
+    `Hairstyle`, and the failure at either end is silent: too low is invisible,
+    too high is sliced flat against the canvas edge.
     """
-    was, now = PRESETS[before], PRESETS[after]
-    assert was.outfit == now.outfit, "expected while undressed; see task 8"
-    assert was.hairstyle == now.hairstyle, "the cut is not part of the disguise; the dye is"
+    p = replace(PRESETS["haruto"], heads=BUILDS[build])
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    svg = character._hair_knot(sk, p)
+    cy_k = float(re.search(r'cy="([-\d.]+)"', svg).group(1))
+    ry = float(re.search(r'ry="([-\d.]+)"', svg).group(1))
+    ink_top = (cy_k - ry - character._stroke_w(sk) / 2 - sk.head_cy) / sk.head_r
+    assert ink_top > -1.36, f"the knot paints to {ink_top:.3f} head radii, past the canvas margin"
+    mass_top = min(
+        (float(v) - sk.head_cy) / sk.head_r
+        for v in re.findall(r"[-\d.]+", character._hair_mass(sk, p).split('d="')[1].split('"')[0])[
+            1::2
+        ]
+    )
+    knot_top = (cy_k - ry - sk.head_cy) / sk.head_r
+    assert knot_top < mass_top, (
+        f"the knot's crown is at {knot_top:.3f} and the cut's at {mass_top:.3f}, so it is buried"
+    )
+
+
+def test_the_sheet_renders_and_stays_deterministic() -> None:
+    p = sheet.SheetParams()
+    svg = sheet.render_sheet(p)
+    assert svg == sheet.render_sheet(p)
+    ET.fromstring(svg)
+
+
+def test_every_roster_member_appears_once() -> None:
+    """A tile per character, labelled, and nobody drawn twice or dropped.
+
+    The failure this guards is quiet: a roster that names a character the grid
+    then lays out one tile short looks like a layout choice rather than a
+    missing person, which is exactly the sort of thing nobody spots on a sheet
+    of fourteen.
+    """
+    for roster in sorted(ROSTERS):
+        p = replace(sheet.SheetParams(), roster=roster)
+        svg = sheet.render_sheet(p)
+        members = sheet.members_of(p)
+        assert len(members) == len(set(members)), f"{roster} names somebody twice"
+        for preset in members:
+            name = DISPLAY_NAMES[preset]
+            assert svg.count(f">{name}</text>") == 1, (
+                f"{roster}: {name} is not labelled exactly once"
+            )
+
+
+def test_every_character_has_a_display_name_and_a_roster() -> None:
+    """Adding a preset has to mean adding it to the sheet, or it is invisible.
+
+    `refresh-ref-out.sh` renders a new character's files off `PRESETS` alone, so
+    without this a character can land, get committed art, and never appear on
+    the one page the cast is judged on.
+    """
+    for preset in PRESETS:
+        assert preset in DISPLAY_NAMES, f"{preset} has no display name for the sheet"
+        assert any(preset in names for names in ROSTERS.values()), f"{preset} is on no roster"
+
+
+def test_ref_out_sheet_matches_the_code() -> None:
+    committed = REF_OUT / "sheet.svg"
+    assert committed.read_text() == sheet.render_sheet(), "sheet.svg is stale: ./refresh-ref-out.sh"
+
+
+def test_the_sheet_scales_every_figure_the_same() -> None:
+    """One body scale across the grid, so nobody reads as taller than they are.
+
+    Each tile scales off its own skeleton, which is a fixed canvas, rather than
+    off the figure's ink. Fitting to ink would quietly enlarge whoever is drawn
+    smallest, and on a cast sheet a size difference reads as a height
+    difference. `frame` moves the shoulders and hips, not the canvas, so every
+    character comes out at one scale even though no two are the same width.
+    """
+    svg = sheet.render_sheet()
+    scales = set(re.findall(r"scale\(([0-9.]+)\)", svg))
+    assert len(scales) == 1, f"figures are at different scales: {sorted(scales)}"
 
 
 def test_the_cover_wears_its_chosen_expression() -> None:

@@ -74,6 +74,14 @@ displayed() {
     [ "$1" = chibi ]
 }
 
+# The whole-page compositions, each with a `<name>.sh` that renders it. They are
+# not characters, so they sit outside the loops below, but they *contain*
+# characters, which means they go stale on any shape change rather than only on
+# their own, and the sheet goes stale on a new character too. That is why they
+# are refreshed here rather than by hand when somebody remembers.
+pages="cover sheet"
+npages=$(set -- $pages; echo $#)
+
 # Two command substitutions rather than one call read line by line: bash
 # implements here-strings and here-documents by writing a temp file, so anything
 # using `<<<` breaks wherever TMPDIR is not writable. Command substitution uses a
@@ -160,7 +168,7 @@ done
 # added to the total, which walked the copy loop one index past the end of the
 # array.
 characters=${#rel_of[@]}
-count=$((characters + 1))
+count=$((characters + npages))
 
 i=0
 while [ "$i" -lt "$characters" ]; do
@@ -188,15 +196,17 @@ while [ "$i" -lt "$characters" ]; do
     i=$((i + 1))
 done
 
-# The cover, which is a page rather than a character and so is not in the loop
-# above. It gets no on-white copy: its own backdrop is an opaque rectangle
-# covering the trim, so there is no transparency for a card to sit behind.
-"$root/cover.sh" --out "$stage/cover" >/dev/null
-for ext in svg png; do
-    if [ ! -s "$stage/cover.$ext" ]; then
-        echo "render produced no cover.$ext, leaving ref-out/ alone" >&2
-        exit 1
-    fi
+# The pages. Neither gets an on-white copy, because each paints its own opaque
+# ground over the whole canvas and there is no transparency for a card to sit
+# behind.
+for page in $pages; do
+    "$root/$page.sh" --out "$stage/$page" >/dev/null
+    for ext in svg png; do
+        if [ ! -s "$stage/$page.$ext" ]; then
+            echo "render produced no $page.$ext, leaving ref-out/ alone" >&2
+            exit 1
+        fi
+    done
 done
 
 changed=0
@@ -244,16 +254,18 @@ for orphan in "$root"/ref-out/*_real.svg "$root"/ref-out/*_real.png \
 done
 
 # Same rule as a character: the SVG decides, and it is deterministic text.
-if cmp -s "$stage/cover.svg" "$root/ref-out/cover.svg"; then
-    echo "  unchanged  cover"
-else
-    changed=$((changed + 1))
-    if $check_only; then
-        echo "  STALE      cover"
+for page in $pages; do
+    if cmp -s "$stage/$page.svg" "$root/ref-out/$page.svg"; then
+        echo "  unchanged  $page"
     else
-        echo "  updated    cover"
+        changed=$((changed + 1))
+        if $check_only; then
+            echo "  STALE      $page"
+        else
+            echo "  updated    $page"
+        fi
     fi
-fi
+done
 
 if $check_only; then
     if [ "$changed" -gt 0 ]; then
@@ -279,5 +291,7 @@ while [ "$i" -lt "$characters" ]; do
     fi
     i=$((i + 1))
 done
-cp "$stage/cover.svg" "$stage/cover.png" "$root/ref-out/"
+for page in $pages; do
+    cp "$stage/$page.svg" "$stage/$page.png" "$root/ref-out/"
+done
 echo "wrote $count renders to ref-out/, $changed changed"

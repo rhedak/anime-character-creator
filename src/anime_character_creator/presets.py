@@ -171,24 +171,610 @@ SATOSHI = CharacterParams(
 BLACK_HAIR = "#313538"
 
 
-def _before(base: CharacterParams) -> CharacterParams:
-    """The same person before the dye and the burn."""
+def _before(base: CharacterParams, outfit: Outfit) -> CharacterParams:
+    """The same person before the dye and the burn, in the clothes of that life.
+
+    The face and everything about it comes through untouched; the three fields
+    listed above and the wardrobe are all that differ. The outfit is passed in
+    rather than derived because it is the one thing that genuinely *is* different
+    rather than a variation: a researcher's layers are not an innkeeper's with a
+    colour changed.
+    """
     return replace(
         base,
         hair_color=BLACK_HAIR,
         hair_tip_color=None,
+        outfit=outfit,
         face=replace(base.face, scar_side=0),
     )
 
 
-KYOKO = _before(SATOKO)
-TOMOHIRO = _before(SATOSHI)
+# Both references dress the pair the same way underneath: a navy tunic closed
+# with a wide dark sash, over dark legs. What differs is the outer layer, which
+# is Tomohiro's cropped jacket against Kyoko's coat to mid-calf, and that is one
+# garment at two lengths. The agreement between the two references is worth
+# noting rather than assuming: they were drawn separately, and getting the inner
+# layer to match is the design working.
+BEFORE_TUNIC = "#3a3e4a"
+BEFORE_SASH = "#22242c"
+BEFORE_LEG = "#2b2d34"
+
+KYOKO = _before(
+    SATOKO,
+    Outfit(
+        tunic_color=BEFORE_TUNIC,
+        boot_color="#4a3a2c",
+        undersleeve_color=BEFORE_TUNIC,
+        belt_color=BEFORE_SASH,
+        trouser_color=BEFORE_LEG,
+        skirt_color=None,
+        tunic_tucked=True,
+        boot_shaft=0.75,
+        coat_color="#3f434a",
+        coat_length=0.72,
+    ),
+)
+TOMOHIRO = _before(
+    SATOSHI,
+    Outfit(
+        tunic_color=BEFORE_TUNIC,
+        boot_color="#4a3a2c",
+        undersleeve_color=BEFORE_TUNIC,
+        belt_color=BEFORE_SASH,
+        trouser_color=BEFORE_LEG,
+        skirt_color=None,
+        tunic_tucked=True,
+        coat_color="#4a5442",
+        coat_length=0.30,
+    ),
+)
+
+# ---------------------------------------------------------------------------
+# The rest of the cast.
+#
+# **These are first drafts and several are deliberately underdressed.** Each one
+# carries the colouring and the frame its design calls for, and the closest
+# garments the generator can currently build, which for the five Wodensreich
+# officers means a plain tunic where a uniform belongs and for the three robed
+# characters means a tunic and trousers where a kimono belongs. That is a stated
+# stage, not an oversight: the alternative was to build the uniform, the coat and
+# the robe first and have nine of fourteen characters not exist for a long while,
+# and a cast sheet with everyone on it in rough clothes answers questions a
+# perfect quarter of a cast cannot. Which garment each is waiting for is on the
+# preset. See `docs/character-roster-plan.md` for the order they get built in.
+#
+# Colours: the design document
+# (`docs/mist-characters/character_designs.md`) is the authority on what a
+# character *is*, and it names hair, eyes and garments per person. Where it says
+# "slate gray-blue" rather than a number, the number was sampled off the
+# reference as the modal exact colour inside a flat patch, the way Satoko's were
+# (`harness/roster/palette.py`).
+
+
+# One uniform tone for all five who wear it, rather than the five different ones
+# the references measure (#38424b on Elara through #5d6a73 on Viktor). That
+# spread is the reference images' lighting, not five designs: the document is
+# explicit that they "share Reinhard's uniform base ... so the group reads
+# visually as one expedition", and reading as one group is exactly what a cast
+# sheet is for. Tenno wears the same cut in khaki, which is a design difference
+# and so does get its own tone.
+def aged(face: FaceStyle, years: float = 1.0) -> FaceStyle:
+    """A face read older, as a scaling of the fields that already exist.
+
+    The cast runs from teens to seventies and `FaceStyle` has no age field. It
+    does not get one, because everything the references use to say "sixty" is
+    brushwork: crow's feet, jowls, slack skin, the texture of a beard. That is
+    the painterly half this project discards on purpose, and none of it survives
+    a chibi head at tile size anyway. So age has to be re-said in the vocabulary
+    a flat drawing has, and the vocabulary a flat drawing has is the aperture.
+
+    **The eye carries almost all of it.** A younger face here is a large, wide
+    open eye with a big iris, which is the whole chibi look; walking those three
+    numbers down reads as age immediately and reads as nothing else. Brow weight
+    adds a little on top. What does *not* work is a hairline or a wrinkle: one
+    needs a field nothing else would use, and the other is a line so fine that at
+    150 pixels it is a smudge.
+
+    `years` is a dial rather than a flag, 0 leaving a face alone and 1 being the
+    cast's oldest. Chiyo, Daizen and Tenno take the full amount; Keiko and Reika
+    are written directly, since they read composed rather than old and want a
+    smaller change than this makes at any setting.
+
+    A function rather than an `Expression`, deliberately. An expression is a
+    *mood*, something a character puts on and takes off, and every field it may
+    touch is one that changes minute to minute. Age is the opposite: it belongs
+    to `eye_size` and `iris_size`, which are the fields `Expression` is forbidden
+    to move because they are who the face is. Same shape of idea, opposite half
+    of the dataclass, so it stays a separate thing.
+    """
+    return replace(
+        face,
+        eye_size=face.eye_size * (1 - 0.14 * years),
+        eye_openness=face.eye_openness * (1 - 0.16 * years),
+        eye_lower_lid=face.eye_lower_lid * (1 - 0.07 * years),
+        iris_size=face.iris_size * (1 - 0.09 * years),
+        brow_weight=face.brow_weight * (1 + 0.18 * years),
+    )
+
+
+UNIFORM = "#55636d"
+UNIFORM_BELT = "#2f2b28"
+UNIFORM_BOOTS = "#241f1d"
+KHAKI = "#ae9f86"
+# Weathered, for the faces the document describes as older or worn. A duller,
+# slightly deeper skin than the young cast's, which is as much as a flat drawing
+# can say about age through skin alone.
+SKIN_WORN = "#e0c0a4"
+SKIN = "#f2d4bb"
+
+CHIYO = CharacterParams(
+    skin_tone=SKIN_WORN,
+    hair_color="#4a4640",
+    hairstyle="long_traced",
+    hair_length=0.16,
+    eye_color="#5a6a72",
+    # Waiting on: a bib apron (hers covers the chest, where Satoko's hangs from
+    # the belt) and a headscarf. Until then this is Satoko's layer stack in
+    # innkeeper's browns, which is genuinely close: the reference is the same
+    # tunic, sash, overskirt and underskirt.
+    outfit=Outfit(
+        tunic_color="#9c8f76",
+        boot_color="#6b5541",
+        undersleeve_color="#9c8f76",
+        belt_color="#5b4a3c",
+        apron_color="#6b5a48",
+        skirt_color="#7a705c",
+        underskirt_color="#4f5347",
+        pouch_color="#4f4133",
+        skirt_length=0.78,
+    ),
+    frame=-0.2,
+    # Firm and assessing rather than warm: the innkeeper who keeps the books,
+    # the rooms and the people in line. Brows down, mouth set flat, then aged.
+    face=aged(
+        FaceStyle(
+            eye_size=0.86,
+            eye_width=1.04,
+            eye_tilt=0.10,
+            eye_corner=0.55,
+            iris_size=0.66,
+            brow_tilt=0.50,
+            brow_weight=0.90,
+            mouth_curve=-0.10,
+            mouth_width=0.68,
+            blush=0.0,
+        )
+    ),
+)
+
+DAIZEN = CharacterParams(
+    skin_tone=SKIN_WORN,
+    hair_color="#9a958c",
+    hairstyle="short_layered",
+    hair_length=0.45,
+    eye_color="#7ea3bd",
+    hair_knot=True,
+    beard_color="#9a958c",
+    beard_length=0.30,
+    # Waiting on: an open haori over a kimono, an obi, and a full beard. The
+    # navy is the haori's, the dark green underneath is the kimono's.
+    outfit=Outfit(
+        tunic_color="#293040",
+        boot_color="#54402f",
+        undersleeve_color="#2e352c",
+        belt_color="#6b5334",
+        trouser_color="#2e302b",
+        skirt_color=None,
+        tunic_tucked=True,
+        robe_color="#293040",
+        sleeve_drop=0.45,
+        belt_scale=2.8,
+    ),
+    frame=1.0,
+    # Shrewd and severe, and the oldest-looking man in the cast next to Tenno.
+    face=aged(
+        FaceStyle(
+            eye_size=0.84,
+            eye_width=1.10,
+            eye_tilt=0.14,
+            eye_corner=0.62,
+            iris_size=0.64,
+            brow_tilt=0.65,
+            brow_weight=1.00,
+            mouth_curve=-0.20,
+            mouth_width=0.70,
+            blush=0.0,
+        )
+    ),
+)
+
+ELARA = CharacterParams(
+    skin_tone="#e8c8ab",
+    hair_color="#4e2729",
+    hairstyle="short_layered",
+    hair_length=0.34,
+    eye_color="#8a6b3f",
+    # Waiting on: the Wodensreich uniform, the cross-body strap and the belt
+    # crystals. Her scar is not waiting on anything: it is the part Satoko
+    # already has, which is why she is the one who proves it generalises.
+    outfit=Outfit(
+        tunic_color=UNIFORM,
+        boot_color=UNIFORM_BOOTS,
+        undersleeve_color=UNIFORM,
+        belt_color=UNIFORM_BELT,
+        trouser_color=UNIFORM,
+        skirt_color=None,
+        tunic_tucked=True,
+        collar_color=UNIFORM,
+        placket_color=UNIFORM_BELT,
+        chest_pocket_color=UNIFORM,
+        strap_color=UNIFORM_BELT,
+        boot_shaft=1.0,
+    ),
+    frame=-0.1,
+    face=FaceStyle(
+        eye_size=0.90,
+        eye_width=1.02,
+        eye_tilt=0.18,
+        eye_corner=0.55,
+        iris_size=0.70,
+        brow_tilt=0.55,
+        brow_weight=0.95,
+        mouth_curve=-0.15,
+        mouth_width=0.68,
+        blush=0.0,
+        # From one eyebrow down across the cheek, per the reference art. Stated
+        # from the viewer's side, so 1 is the right of the picture.
+        scar_side=1,
+    ),
+)
+
+HARUTO = CharacterParams(
+    skin_tone=SKIN,
+    hair_color="#2e2c2a",
+    hairstyle="short_layered",
+    hair_length=0.30,
+    eye_color="#7d9188",
+    hair_knot=True,
+    # Waiting on: a kimono, a hakama and an obi, which is most of him.
+    outfit=Outfit(
+        tunic_color="#33332e",
+        boot_color="#4a3c2e",
+        undersleeve_color="#2a2a26",
+        belt_color="#4b4239",
+        trouser_color="#2b2b27",
+        skirt_color=None,
+        tunic_tucked=True,
+        robe_color="#2b2b26",
+        sleeve_drop=0.55,
+        belt_scale=2.6,
+    ),
+    frame=0.7,
+    face=FaceStyle(
+        eye_size=0.88,
+        eye_width=1.10,
+        eye_tilt=0.20,
+        eye_corner=0.60,
+        iris_size=0.68,
+        brow_tilt=0.30,
+        # The practised charming smile, which is the one thing about him that has
+        # to survive being shrunk.
+        mouth_curve=0.35,
+        mouth_width=0.78,
+        blush=0.15,
+    ),
+)
+
+KEIKO = CharacterParams(
+    skin_tone=SKIN,
+    hair_color="#3b3230",
+    hairstyle="long_traced",
+    hair_length=0.55,
+    eye_color="#b8873f",
+    # Waiting on: an open lab coat at full length, and spectacles. The charcoal
+    # is the researcher's robes the coat hangs over.
+    outfit=Outfit(
+        tunic_color="#3f3f3a",
+        boot_color="#232323",
+        undersleeve_color="#e8e9e6",
+        belt_color="#33332f",
+        skirt_color="#3a3a35",
+        skirt_length=0.82,
+        coat_color="#eceded",
+        coat_length=0.80,
+    ),
+    frame=-0.3,
+    face=FaceStyle(
+        eye_size=0.90,
+        eye_width=1.05,
+        eye_openness=0.82,
+        eye_tilt=0.10,
+        eye_corner=0.45,
+        iris_size=0.70,
+        brow_tilt=0.10,
+        brow_weight=0.70,
+        mouth_curve=0.20,
+        mouth_width=0.70,
+        glasses=True,
+        blush=0.25,
+    ),
+)
+
+KRISTA = CharacterParams(
+    skin_tone="#f4d3b6",
+    hair_color="#a9763f",
+    hairstyle="long_traced",
+    hair_length=0.42,
+    eye_color="#6fb0ae",
+    hair_tail=0.75,
+    # Waiting on: the uniform, the strap, the belt crystals, a high ponytail and
+    # goggles. The goggles and the ponytail are most of what makes her her at
+    # tile size, so she is the least finished of the five officers.
+    outfit=Outfit(
+        tunic_color=UNIFORM,
+        boot_color=UNIFORM_BOOTS,
+        undersleeve_color=UNIFORM,
+        belt_color=UNIFORM_BELT,
+        trouser_color=UNIFORM,
+        skirt_color=None,
+        tunic_tucked=True,
+        collar_color=UNIFORM,
+        placket_color=UNIFORM_BELT,
+        chest_pocket_color=UNIFORM,
+        strap_color=UNIFORM_BELT,
+        boot_shaft=1.0,
+    ),
+    frame=-0.2,
+    face=FaceStyle(
+        eye_size=1.02,
+        eye_width=1.02,
+        eye_openness=1.05,
+        eye_tilt=0.05,
+        eye_corner=0.35,
+        iris_size=0.76,
+        brow_tilt=-0.10,
+        brow_weight=0.70,
+        # The one bright face in a cast that otherwise skews heavy and
+        # controlled, which the document calls a deliberate counterweight.
+        mouth_curve=0.55,
+        mouth_width=0.80,
+        blush=0.5,
+    ),
+)
+
+REIKA = CharacterParams(
+    skin_tone="#f6dcc6",
+    hair_color="#262a2e",
+    hairstyle="long_traced",
+    hair_length=0.95,
+    eye_color="#4a3f3d",
+    # Waiting on: layered vestments with a trailing outer robe, a hakama, and
+    # the jewelled headpiece. The teal is the underskirt, which is the one thing
+    # about her that already reads from across a room.
+    outfit=Outfit(
+        tunic_color="#b8bcbc",
+        boot_color="#3a3a38",
+        undersleeve_color="#e8e7e7",
+        belt_color="#8d9291",
+        skirt_color="#4d9ca8",
+        underskirt_color="#b8bcbc",
+        skirt_length=0.95,
+        robe_color="#c6cac9",
+        sleeve_drop=0.70,
+        belt_scale=2.2,
+    ),
+    frame=-0.4,
+    face=FaceStyle(
+        eye_size=0.92,
+        eye_width=1.06,
+        eye_openness=0.86,
+        eye_tilt=0.16,
+        eye_corner=0.50,
+        iris_size=0.70,
+        brow_tilt=0.05,
+        brow_weight=0.65,
+        # Gentle and serene rather than cold, which the document says is a
+        # deliberate departure from the original spec and was kept.
+        mouth_curve=0.25,
+        mouth_width=0.66,
+        blush=0.20,
+    ),
+)
+
+REINHARD = CharacterParams(
+    skin_tone="#eccaa9",
+    hair_color="#a8865c",
+    hairstyle="short_layered",
+    hair_length=0.22,
+    eye_color="#8098a8",
+    beard_color="#8f7550",
+    beard_length=0.12,
+    # Waiting on: the uniform, the strap, and a short beard.
+    outfit=Outfit(
+        tunic_color=UNIFORM,
+        boot_color=UNIFORM_BOOTS,
+        undersleeve_color=UNIFORM,
+        belt_color=UNIFORM_BELT,
+        trouser_color=UNIFORM,
+        skirt_color=None,
+        tunic_tucked=True,
+        collar_color=UNIFORM,
+        placket_color=UNIFORM_BELT,
+        chest_pocket_color=UNIFORM,
+        strap_color=UNIFORM_BELT,
+        boot_shaft=1.0,
+    ),
+    frame=1.0,
+    face=FaceStyle(
+        eye_size=0.86,
+        eye_width=1.08,
+        eye_openness=0.88,
+        eye_tilt=0.08,
+        eye_corner=0.55,
+        iris_size=0.66,
+        brow_tilt=0.20,
+        brow_weight=0.85,
+        # The faint knowing expression: present, and small enough not to read as
+        # a smile.
+        mouth_curve=0.18,
+        mouth_width=0.70,
+        blush=0.0,
+    ),
+)
+
+TENNO = CharacterParams(
+    skin_tone=SKIN_WORN,
+    hair_color="#a09a90",
+    hairstyle="short_layered",
+    hair_length=0.24,
+    eye_color="#8a6a45",
+    # Waiting on: the uniform cut in khaki, and a cane, which is deferred with
+    # the other props but is load-bearing for his pose.
+    outfit=Outfit(
+        tunic_color=KHAKI,
+        boot_color="#5c4632",
+        undersleeve_color=KHAKI,
+        belt_color="#5b4432",
+        trouser_color="#a3947c",
+        skirt_color=None,
+        tunic_tucked=True,
+        collar_color=KHAKI,
+        placket_color="#4b3a2a",
+        chest_pocket_color=KHAKI,
+        boot_shaft=0.55,
+    ),
+    frame=0.5,
+    face=aged(
+        FaceStyle(
+            eye_size=0.88,
+            eye_width=1.06,
+            eye_tilt=0.02,
+            eye_corner=0.60,
+            iris_size=0.68,
+            # Inner ends raised: the permanently apologetic expression the
+            # document describes, which is the sorrow direction rather than the
+            # stern one, and the one thing that separates him from Daizen at
+            # tile size once both are grey.
+            brow_tilt=-0.35,
+            brow_weight=0.75,
+            mouth_curve=-0.15,
+            mouth_width=0.66,
+            blush=0.0,
+        )
+    ),
+)
+
+VIKTOR = CharacterParams(
+    skin_tone="#f0cfb2",
+    hair_color="#2b2f36",
+    hairstyle="short_layered",
+    hair_length=0.20,
+    eye_color="#8098a8",
+    # Waiting on: the uniform and the strap.
+    outfit=Outfit(
+        tunic_color=UNIFORM,
+        boot_color=UNIFORM_BOOTS,
+        undersleeve_color=UNIFORM,
+        belt_color=UNIFORM_BELT,
+        trouser_color=UNIFORM,
+        skirt_color=None,
+        tunic_tucked=True,
+        collar_color=UNIFORM,
+        placket_color=UNIFORM_BELT,
+        chest_pocket_color=UNIFORM,
+        strap_color=UNIFORM_BELT,
+        boot_shaft=1.0,
+    ),
+    frame=0.8,
+    face=FaceStyle(
+        eye_size=0.88,
+        eye_width=1.10,
+        eye_openness=0.84,
+        eye_tilt=0.14,
+        eye_corner=0.58,
+        iris_size=0.68,
+        brow_tilt=0.15,
+        brow_weight=0.75,
+        # The relaxed half-smile: he coasts, and it should show.
+        mouth_curve=0.40,
+        mouth_width=0.72,
+        blush=0.15,
+    ),
+)
 
 PRESETS: dict[str, CharacterParams] = {
     "satoko": SATOKO,
     "satoshi": SATOSHI,
     "kyoko": KYOKO,
     "tomohiro": TOMOHIRO,
+    "chiyo": CHIYO,
+    "daizen": DAIZEN,
+    "elara": ELARA,
+    "haruto": HARUTO,
+    "keiko": KEIKO,
+    "krista": KRISTA,
+    "reika": REIKA,
+    "reinhard": REINHARD,
+    "tenno": TENNO,
+    "viktor": VIKTOR,
+}
+
+# What a character is called on a sheet, where the preset key is not it: the
+# reference sheets label "Reinhard von Falkenrath" and "Elara Sturm" while the
+# key stays short enough to type at a CLI.
+#
+# A plain mapping rather than a field on `CharacterParams`, because this is
+# presentation metadata in the same category as `REALISTIC_REFS` and not part of
+# who a character is. It also keeps a name out of every preset constructor.
+DISPLAY_NAMES: dict[str, str] = {
+    "satoko": "Satoko",
+    "satoshi": "Satoshi",
+    "kyoko": "Kyoko",
+    "tomohiro": "Tomohiro",
+    "chiyo": "Chiyo",
+    "daizen": "Daizen Kurogane",
+    "elara": "Elara Sturm",
+    "haruto": "Haruto Kisaragi",
+    "keiko": "Keiko Natsume",
+    "krista": "Krista Bastler",
+    "reika": "Reika Mizuki",
+    "reinhard": "Reinhard von Falkenrath",
+    "tenno": "Tenno Amatsuki",
+    # The sheets spell him "Viktor Grau" while the reference file is
+    # `ref/victor.png`. The design document flags the spelling and keeps the
+    # filename, so we do the same: the character is Viktor, and renaming a
+    # checked-in reference to match would be the more disruptive half of the fix.
+    "viktor": "Viktor Grau",
+}
+
+# Who appears on a sheet, in the order they appear.
+#
+# One roster for now. The references are two of twelve that share ten members
+# and swap one slot each, Satoshi and Tomohiro against Satoko and Kyoko, which
+# matters for the book and does not matter for judging whether a design works.
+# Building both now would be two artifacts and two byte-compare corpora to keep
+# fresh for no gain, so the split is deferred rather than decided against.
+#
+# The four personas lead because they are the two characters the rest of the
+# cast is drawn to match, and the others follow alphabetically, which is an
+# order rather than a ranking.
+ROSTERS: dict[str, tuple[str, ...]] = {
+    "cast": (
+        "satoko",
+        "satoshi",
+        "kyoko",
+        "tomohiro",
+        "chiyo",
+        "daizen",
+        "elara",
+        "haruto",
+        "keiko",
+        "krista",
+        "reika",
+        "reinhard",
+        "tenno",
+        "viktor",
+    ),
 }
 
 # Which characters get a realistic-build render checked into `ref-out/real/`.

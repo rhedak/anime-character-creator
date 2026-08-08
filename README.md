@@ -13,16 +13,34 @@ possible later addition (they'd slot in as extra SVG layers).
 
 ## Status
 
-Proof of concept: two characters, Satoko and Satoshi, each rendering at
-both ends of the build range. Build is a named mode, `--build chibi`
-(default) or `--build realistic`, with `--heads` open for anything in
-between.
+Fourteen named characters, all rendering at the chibi build. Build is a
+named mode, `--build chibi` (default) or `--build realistic`, with
+`--heads` open for anything in between.
+
+All fourteen are **first drafts**: each carries the colouring, frame and
+garments its design calls for, judged at the size a character is actually
+seen on a sheet rather than at full height. What is deliberately left off
+is listed per cluster in `docs/character-roster-plan.md`, and the two
+least finished are Krista and Chiyo, whose references lean hardest on a
+head accessory.
 
 | Satoko | Satoshi | Kyoko | Tomohiro |
 | --- | --- | --- | --- |
-| <img src="ref-out/on-white/satoko.png" width="150" alt="Satoko"> | <img src="ref-out/on-white/satoshi.png" width="150" alt="Satoshi"> | <img src="ref-out/on-white/kyoko.png" width="150" alt="Kyoko"> | <img src="ref-out/on-white/tomohiro.png" width="150" alt="Tomohiro"> |
+| <img src="ref-out/on-white/satoko.png" width="140" alt="Satoko"> | <img src="ref-out/on-white/satoshi.png" width="140" alt="Satoshi"> | <img src="ref-out/on-white/kyoko.png" width="140" alt="Kyoko"> | <img src="ref-out/on-white/tomohiro.png" width="140" alt="Tomohiro"> |
 
-Those four live in `ref-out/` as both `.png` and `.svg`. **They are
+| Chiyo | Daizen | Elara | Haruto |
+| --- | --- | --- | --- |
+| <img src="ref-out/on-white/chiyo.png" width="140" alt="Chiyo"> | <img src="ref-out/on-white/daizen.png" width="140" alt="Daizen"> | <img src="ref-out/on-white/elara.png" width="140" alt="Elara"> | <img src="ref-out/on-white/haruto.png" width="140" alt="Haruto"> |
+
+| Keiko | Krista | Reika | Reinhard |
+| --- | --- | --- | --- |
+| <img src="ref-out/on-white/keiko.png" width="140" alt="Keiko"> | <img src="ref-out/on-white/krista.png" width="140" alt="Krista"> | <img src="ref-out/on-white/reika.png" width="140" alt="Reika"> | <img src="ref-out/on-white/reinhard.png" width="140" alt="Reinhard"> |
+
+| Tenno | Viktor |  |  |
+| --- | --- | --- | --- |
+| <img src="ref-out/on-white/tenno.png" width="140" alt="Tenno"> | <img src="ref-out/on-white/viktor.png" width="140" alt="Viktor"> |  |  |
+
+All fourteen live in `ref-out/` as both `.png` and `.svg`. **They are
 transparent**, so a render drops onto a scene as it is.
 
 They are also only two people. Kyoko is Satoko before the dye and the
@@ -45,15 +63,20 @@ them by `cover.py`, which is the same drawing code with a backdrop, mist
 and a title stacked over it. That one is opaque, being a page rather than
 a figure. Render it with `./cover.sh`.
 
-The table above links `ref-out/on-white/` instead, which is the same eight
+`ref-out/sheet.svg` is the whole cast on one page, from `sheet.py`. That
+is where a cast gets judged rather than a character: whether these people
+look like they come from one world is a question about the set. Render it
+with `./sheet.sh`.
+
+The tables above link `ref-out/on-white/`, which is the same fourteen
 drawn on a white background. That exists for this page and nothing else:
 the outline is `#0d0d0d` and a dark theme here is about `#0d1117`, so a
 transparent figure on it loses its whole outer contour, which is the
 hard-edged look the project is for. Reach for the transparent ones for
 anything real.
 
-Both sets are the current state of the two named characters, so they have
-to be refreshed whenever a shape changes, otherwise this table shows art
+Both sets are the current state of the named characters, so they have to
+be refreshed whenever a shape changes, otherwise these tables show art
 the code no longer produces:
 
 ```bash
@@ -61,24 +84,30 @@ the code no longer produces:
 ./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
 ```
 
-It renders every character in `PRESETS` at every build in `BUILDS`, so
+It renders every character in `PRESETS` at the chibi build, the short
+list in `REALISTIC_REFS` at the realistic build too, and both pages, so
 adding a character means adding it to `presets.py` and nothing else.
 Everything else generated goes to `out/`, which is not checked in.
 
 Current shape set: head (a circle at chibi scale, narrowing to a jaw as
-the build gets taller), face (eyes, brows, mouth, blush, scar), two
-hairstyles that optionally divide into locks and change to a second tone
-over their lower half, and a layered
-outfit of tunic, undersleeves, belt, apron, skirt, underskirt, trousers
-and boots, plus arms, legs and feet. All flat cel-shaded (base color plus
-one shadow tone). A garment is worn when its color is set, so characters
-differ by which layers they have rather than by bespoke code.
+the build gets taller), face (eyes, brows, mouth, blush, scar, spectacles),
+a beard, five hairstyles that optionally divide into locks and change to a
+second tone over their lower half, and a layered outfit of tunic,
+undersleeves, belt, apron, skirt, underskirt, trousers and boots, plus
+uniform trim (standing collar, button placket, chest pockets, cross-body
+strap, tall boot shaft), an open coat at any length, and robe pieces
+(crossed front, hanging sleeve, obi), plus arms, legs and feet. All flat
+cel-shaded. A garment is worn when its color is set, so characters differ
+by which layers they have rather than by bespoke code.
 
 Named characters live in `presets.py`, so a character is a checked-in
 artifact that gets re-rendered as the shape code improves.
 
-Not yet built: no pose variety, no second outfit family, no picker UI.
-See `STATUS.md` for what is still weak.
+Not yet built: no pose variety, no picker UI, and no hair that leaves the
+skull silhouette and comes back, which is what a ponytail and a topknot
+both need. See `STATUS.md` for what is still weak and
+`docs/character-roster-plan.md` for what each character is still waiting
+on.
 
 ## Setup
 
@@ -130,8 +159,8 @@ Garment flags, one per layer: `--tunic-color` (also spelled
 away, drop it from the preset, since the command line has no way to say
 "none".
 
-Shape flags: `--hairstyle` (`long_blunt`, `short_crop`, `short_layered`
-or `short_tousled`),
+Shape flags: `--hairstyle` (`long_blunt`, `long_traced`, `short_crop`,
+`short_layered` or `short_tousled`),
 `--hair-length`, `--frame` (shoulder against hip, -1 to 1, only bites at
 taller builds).
 

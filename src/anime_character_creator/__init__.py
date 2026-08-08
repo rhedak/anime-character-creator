@@ -29,17 +29,19 @@ from .character import (
     render_character,
 )
 from .colorutil import shade
-from .presets import EXPRESSIONS, PRESETS, REALISTIC_REFS
+from .presets import DISPLAY_NAMES, EXPRESSIONS, PRESETS, REALISTIC_REFS, ROSTERS
 from .skeleton import BUILDS, DEFAULT_BUILD, DEFAULT_HEADS, Skeleton, build_skeleton
 
 __all__ = [
     "BUILDS",
     "DEFAULT_BUILD",
     "DEFAULT_HEADS",
+    "DISPLAY_NAMES",
     "EXPRESSIONS",
     "HAIRSTYLES",
     "PRESETS",
     "REALISTIC_REFS",
+    "ROSTERS",
     "CharacterParams",
     "Expression",
     "FaceStyle",
