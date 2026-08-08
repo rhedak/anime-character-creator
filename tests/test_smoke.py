@@ -328,7 +328,7 @@ def test_the_cover_renders_and_stays_deterministic(build: str) -> None:
     cover can be compared rather than eyeballed. An RNG would pass every other
     check here and fail only this one.
     """
-    p = cover.CoverParams(build=build, subtitle="SATOSHI")
+    p = cover.CoverParams(build=build, subtitle="BOOK ONE")
     svg = cover.render_cover(p)
     assert svg == cover.render_cover(p)
     assert svg.startswith("<svg") and svg.rstrip().endswith("</svg>")
@@ -345,7 +345,7 @@ def test_the_cover_stays_flat() -> None:
     ladder looks stepped, which is the one thing that would make this stop
     matching the character it wraps.
     """
-    svg = cover.render_cover(cover.CoverParams(subtitle="SATOSHI"))
+    svg = cover.render_cover(cover.CoverParams(subtitle="BOOK ONE"))
     page = svg[: svg.index("<g transform=")]
     for banned in ("Gradient", "gradient", "filter", "blur", "opacity"):
         assert banned not in page, f"the cover's own layers should not use {banned}"
@@ -359,7 +359,7 @@ def test_the_figure_stands_on_the_page() -> None:
     canvas edge rather than to the soles: the first attempt keyed it to the
     canvas and cut him across the shins, hiding the boots.
     """
-    p = cover.CoverParams(subtitle="SATOSHI")
+    p = cover.CoverParams(subtitle="BOOK ONE")
     sk, _character, k, x, y = cover._placement(p)
     assert x > 0 and x + sk.canvas_w * k < p.width
     assert y > 0, "the figure's head runs off the top of the page"

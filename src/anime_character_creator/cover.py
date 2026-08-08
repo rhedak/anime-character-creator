@@ -15,9 +15,14 @@ picked: that reference is a painterly AI image and is not the target, but its
 colour is a fair guide to the mood, and its bands run from a near-black sky
 through blue-greens to a pale horizon.
 
-Deliberately still simple. Composition is a large centred figure with the title
-above and the character's name below, not the reference's landscape. Ruins, a
-ridge and a layered valley are the obvious next pass.
+**The chibi build is the design.** The owner's call on 2026-08-08, after seeing
+both: `realistic` renders and is kept as a fallback, but the cover is composed
+for the chibi and that is what `build` defaults to. Anything tuned here should
+be judged at the chibi first.
+
+Deliberately still simple. Composition is a large centred figure under a stacked
+title, not the reference's landscape. Ruins, a ridge and a layered valley are the
+obvious next pass.
 """
 
 from __future__ import annotations
@@ -63,8 +68,15 @@ class CoverParams:
     """
 
     title: tuple[str, ...] = ("THE HERO", "OF THE MIST", "TRAGEDY")
+    # Empty by default, and worth leaving that way unless there is a real
+    # subtitle. A lone line under the figure reads as a **byline**, whoever it
+    # names: the character's name there says he wrote the book. That is why the
+    # first draft's "SATOSHI" came out, and it is a property of the position
+    # rather than of the word.
     subtitle: str = ""
     preset: str = "satoshi"
+    # `realistic` still renders and is the backup; the composition is tuned for
+    # this one.
     build: str = "chibi"
     width: float = 1000.0
     height: float = 1500.0
@@ -212,20 +224,26 @@ def render_cover(p: CoverParams | None = None) -> str:
     # first has to cross his boots and the second his soles, and those move with
     # `figure_height`. Fixed fractions had him cut at the waist.
     sk, character, k, x, y = _placement(p)
-    # Read off the body, so both stay put if the figure is resized or the build
-    # changes. The near bank crosses the boot at its cuff and the nearest one
-    # sits just under the sole, which is what stands him in the mist rather than
-    # burying him in it.
-    boot = y + (sk.ankle_y + (sk.foot_y - sk.ankle_y) * 0.45) * k
     sole = y + sk.foot_y * k
+    foot_h = (sk.foot_y - sk.ankle_y) * k
+
+    # **Feet just covered, and no more** (the owner's call). The subtlety is that
+    # a bank's waterline is not its baseline: the bumps rise above it, by
+    # `rx * mist_flatness`, and `rx` is the widest of a jittered range. So the
+    # front banks are sized from the boot rather than positioned by eye. Put the
+    # baseline on the soles and make the tallest possible bump exactly one boot
+    # high, and the mist line then wanders around the top of the foot, burying it
+    # where a bump peaks and leaving the heel showing between them. That wobble
+    # is the point: a flat line across both ankles would read as water.
+    near = foot_h / (p.width * 1.6 * p.mist_flatness)
 
     behind = [(0.455, 0.055, 3), (0.56, 0.07, 17), (0.655, 0.085, 41)]
     layers = [_backdrop(p)]
     for i, (top, scale, seed) in enumerate(behind):
         layers.append(_mist_band(p, H * top, H - H * top, pal.mist[i], seed, scale))
     layers.append(_figure(p, sk, character, k, x, y))
-    layers.append(_mist_band(p, boot, H - boot, pal.mist[3], 59, 0.10))
-    layers.append(_mist_band(p, sole, H - sole, pal.mist[4], 83, 0.115))
+    layers.append(_mist_band(p, sole, H - sole, pal.mist[3], 59, near))
+    layers.append(_mist_band(p, sole + foot_h * 0.7, H, pal.mist[4], 83, near * 1.25))
 
     size = H * 0.072
     top = H * 0.115
