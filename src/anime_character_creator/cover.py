@@ -20,9 +20,18 @@ both: `realistic` renders and is kept as a fallback, but the cover is composed
 for the chibi and that is what `build` defaults to. Anything tuned here should
 be judged at the chibi first.
 
-Deliberately still simple. Composition is a large centred figure under a stacked
-title, not the reference's landscape. Ruins, a ridge and a layered valley are the
-obvious next pass.
+**Simple is the design, not a stage on the way to something denser.** A ridge
+and two clusters of ruined towers were built on top of this and then dropped, on
+the owner's call of 2026-08-08 after seeing them: *do not try to beat the AI
+generated cover on its own ground, stick to the simple style and sell it for what
+it is.* They worked, in the sense that they rendered and read as ruins, and that
+was the problem. They invited the comparison, and a flat cover loses a contest
+about detail with a painted one while winning easily on being deliberate. So the
+absence of a landscape here is a decision, and anyone adding one back is
+reopening a settled question rather than finishing an unfinished job.
+
+What is left is the composition that survived: a large centred figure standing in
+mist under a stacked title, and nothing else on the page.
 """
 
 from __future__ import annotations
