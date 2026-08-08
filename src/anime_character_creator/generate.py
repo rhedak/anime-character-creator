@@ -21,7 +21,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from .character import HAIRSTYLES, CharacterParams, render_character
-from .presets import PRESETS
+from .presets import EXPRESSIONS, PRESETS
 from .skeleton import BUILDS
 
 COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color")
@@ -89,6 +89,11 @@ def main() -> None:
     ap.add_argument("--frame", type=float, help="shoulder against hip, -1 to 1, taller builds only")
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
     ap.add_argument(
+        "--expression",
+        choices=sorted(EXPRESSIONS),
+        help="a named mood laid over the character's resting face, leaving the rest of it alone",
+    )
+    ap.add_argument(
         "--background",
         help="paint a background, e.g. white; default is transparent, so the figure composites",
     )
@@ -108,6 +113,12 @@ def main() -> None:
         params = replace(params, outfit=replace(params.outfit, **outfit))
     if face:
         params = replace(params, face=replace(params.face, **face))
+    # After the individual knobs, so an explicit --brow-tilt still wins over the
+    # mood's. A named expression is a starting point, not a lock.
+    if args.expression:
+        params = EXPRESSIONS[args.expression].applied_to(params)
+        if face:
+            params = replace(params, face=replace(params.face, **face))
 
     svg = render_character(params, background=args.background)
 

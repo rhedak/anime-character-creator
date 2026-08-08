@@ -7,7 +7,7 @@ flags someone has to remember.
 
 from __future__ import annotations
 
-from .character import CharacterParams, FaceStyle, Outfit
+from .character import CharacterParams, Expression, FaceStyle, Outfit
 
 # Satoko and Satoshi are meant to read as related, so the palette they share
 # lives here once rather than being duplicated per character. What tells them
@@ -130,4 +130,38 @@ SATOSHI = CharacterParams(
 PRESETS: dict[str, CharacterParams] = {
     "satoko": SATOKO,
     "satoshi": SATOSHI,
+}
+
+
+# Named expressions, checked in for the same reason a character is: a mood that
+# worked once should be reusable rather than re-derived from four numbers
+# someone half remembers. Each is a delta, so any of these goes on any
+# character without touching what their face *is*; see `Expression`.
+#
+# These came out of choosing a face for the cover of "The Hero of the Mist
+# Tragedy" on 2026-08-08, judged both as head crops and at thumbnail size. The
+# finding worth keeping is that **the brow is the weak lever**: brow-only moods
+# shift under 1% of the face at either size, while anything touching
+# `eye_openness` shifts two to three times that, because a brow is a thin
+# stroke and a lid is the edge of a filled shape. A mood that has to survive
+# being shrunk moves a lid.
+EXPRESSIONS: dict[str, Expression] = {
+    # Brows down, mouth turned. Reads as anger rather than sorrow, which makes
+    # it a fighting face: right for a confrontation, wrong for a tragedy.
+    "stern": Expression(brow_tilt=0.55, mouth_curve=-0.25),
+    # The same further, with the mouth set small. Same caveat, more of it.
+    "grim": Expression(brow_tilt=0.75, mouth_curve=-0.45, mouth_width=0.62),
+    # Worn out rather than angry, and the strongest of these at any size. This
+    # is the cover's, chosen 2026-08-08: "this cost him something" is what the
+    # title promises, and the lid is what still says it at thumbnail size.
+    # It does spend some of the wide-eyed look that reads as *him*, which is
+    # the trade it makes.
+    "hollow": Expression(eye_openness=0.66, brow_tilt=0.30, mouth_curve=-0.20),
+    # Inner brow ends **raised**, the opposite direction to stern. Grief stated
+    # rather than implied.
+    "sorrow": Expression(brow_tilt=-0.40, mouth_curve=-0.30, eye_openness=0.82),
+    # Brows down over a wide-open eye. Reads closer to alarm than to resolve,
+    # kept because that is worth knowing before anyone tries the combination
+    # again.
+    "resolute": Expression(brow_tilt=0.50, mouth_curve=0.0, eye_openness=1.0, mouth_width=0.80),
 }

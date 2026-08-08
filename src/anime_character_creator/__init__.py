@@ -22,22 +22,25 @@ from __future__ import annotations
 from .character import (
     HAIRSTYLES,
     CharacterParams,
+    Expression,
     FaceStyle,
     Hairstyle,
     Outfit,
     render_character,
 )
 from .colorutil import shade
-from .presets import PRESETS
+from .presets import EXPRESSIONS, PRESETS
 from .skeleton import BUILDS, DEFAULT_BUILD, DEFAULT_HEADS, Skeleton, build_skeleton
 
 __all__ = [
     "BUILDS",
     "DEFAULT_BUILD",
     "DEFAULT_HEADS",
+    "EXPRESSIONS",
     "HAIRSTYLES",
     "PRESETS",
     "CharacterParams",
+    "Expression",
     "FaceStyle",
     "Hairstyle",
     "Outfit",

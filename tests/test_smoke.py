@@ -19,6 +19,7 @@ import pytest
 
 from anime_character_creator import (
     BUILDS,
+    EXPRESSIONS,
     HAIRSTYLES,
     PRESETS,
     CharacterParams,
@@ -398,3 +399,55 @@ def test_the_figure_stands_on_the_page() -> None:
     assert y > 0, "the figure's head runs off the top of the page"
     assert y + sk.foot_y * k == pytest.approx(p.height * p.figure_feet_y)
     assert y + sk.foot_y * k < p.height, "the soles land below the trim"
+
+
+@pytest.mark.parametrize("name", sorted(EXPRESSIONS))
+@pytest.mark.parametrize("preset", sorted(PRESETS))
+def test_an_expression_changes_the_mood_and_nothing_else(name: str, preset: str) -> None:
+    """The one property that makes a named mood reusable across characters.
+
+    An expression is a delta, not a `FaceStyle`. If it ever became a whole face,
+    every character wearing it would silently inherit the *stock* aperture and
+    stop looking like themselves, while still rendering perfectly well and
+    wearing the right mood, which is precisely the kind of break nobody spots in
+    a diff. So: the fields a mood is allowed to move may move, and every field
+    that says who the face is must come through untouched.
+    """
+    identity = ("eye_size", "eye_width", "eye_corner", "eye_tilt", "iris_size", "scar_side")
+    before = PRESETS[preset]
+    after = EXPRESSIONS[name].applied_to(before)
+    for f in identity:
+        assert getattr(after.face, f) == getattr(before.face, f), (
+            f"{name} altered {f}, which is who the face is rather than what it is doing"
+        )
+    assert after.hairstyle == before.hairstyle and after.outfit == before.outfit
+    moved = [
+        f
+        for f in (
+            "brow_tilt",
+            "brow_weight",
+            "eye_openness",
+            "eye_lower_lid",
+            "mouth_curve",
+            "mouth_width",
+        )
+        if getattr(after.face, f) != getattr(before.face, f)
+    ]
+    assert moved, f"{name} on {preset} changes nothing at all"
+    ET.fromstring(render_character(after))
+
+
+def test_the_cover_wears_its_chosen_expression() -> None:
+    """`hollow` is the owner's call of 2026-08-08 and is the cover's default.
+
+    Pinned because it is a default rather than a call site: nothing else in the
+    file mentions it, so it is invisible at the point the cover is rendered.
+    """
+    p = cover.CoverParams()
+    assert p.expression == "hollow"
+    sk, character, _k, _x, _y = cover._placement(p)
+    assert character.face == EXPRESSIONS["hollow"].on(PRESETS["satoshi"].face)
+    assert sk is not None
+    # And it can be taken off, which is what `None` is for.
+    _sk, plain, *_ = cover._placement(replace(p, expression=None))
+    assert plain.face == PRESETS["satoshi"].face

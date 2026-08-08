@@ -43,7 +43,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from .character import OUTLINE, CharacterParams, render_character
-from .presets import PRESETS
+from .presets import EXPRESSIONS, PRESETS
 from .skeleton import BUILDS, Skeleton, build_skeleton
 
 
@@ -89,6 +89,17 @@ class CoverParams:
     # module already composes one specific book rather than a generic page.
     author: str = "rhedak"
     preset: str = "satoshi"
+    # An explicit character, overriding `preset`. This is how a cover puts a
+    # named character on the page wearing an expression the preset does not
+    # carry: the preset is who he is everywhere, and grief on one book's cover
+    # is not that. Pass `replace(PRESETS["satoshi"], face=...)`.
+    character: CharacterParams | None = None
+    # A named mood from `EXPRESSIONS`, laid over whichever character the two
+    # fields above resolve to. `hollow` is the cover's, chosen 2026-08-08 by
+    # rendering six candidates as head crops and as thumbnails: it is the only
+    # one that both survives being shrunk and says what the title says. None
+    # leaves the character's own resting face.
+    expression: str | None = "hollow"
     # `realistic` still renders and is the backup; the composition is tuned for
     # this one.
     build: str = "chibi"
@@ -174,7 +185,9 @@ def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float]
     instead put every band 3% of a figure too high: the first attempt cut him
     across the shins and hid the boots entirely.
     """
-    character = PRESETS[p.preset]
+    character = p.character or PRESETS[p.preset]
+    if p.expression:
+        character = EXPRESSIONS[p.expression].applied_to(character)
     sk = build_skeleton(heads=BUILDS[p.build], frame=character.frame)
     k = (p.height * p.figure_height) / sk.canvas_h
     x = p.width / 2 - sk.canvas_w * k / 2
@@ -302,6 +315,14 @@ def main() -> None:
     )
     ap.add_argument("--subtitle", default="", help="smaller line under the title")
     ap.add_argument("--author", default=None, help="byline at the foot of the page")
+    ap.add_argument(
+        "--expression",
+        choices=sorted(EXPRESSIONS),
+        help="a named mood over the character's resting face; --no-expression for none",
+    )
+    ap.add_argument(
+        "--no-expression", action="store_true", help="draw the character's own resting face"
+    )
     ap.add_argument("--width", type=float, default=1000.0)
     ap.add_argument("--height", type=float, default=1500.0)
     args = ap.parse_args()
@@ -312,6 +333,10 @@ def main() -> None:
     p = replace(p, subtitle=args.subtitle)
     if args.author is not None:
         p = replace(p, author=args.author)
+    if args.no_expression:
+        p = replace(p, expression=None)
+    elif args.expression:
+        p = replace(p, expression=args.expression)
 
     svg = render_cover(p)
     out = Path(args.out)

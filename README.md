@@ -130,6 +130,11 @@ Expression flags, each neutral at its default: eye shape
 ./render.sh --out out/grumpy --mouth-curve -0.6 --blush 0 --brow-tilt 0.5
 ```
 
+`--expression` lays a named mood (`hollow`, `stern`, `grim`, `sorrow`,
+`resolute`) over the character's resting face, changing only what the
+face is *doing* and leaving what it *is* alone, so the same mood works on
+any character. Individual knobs still win over it.
+
 Add `--flat` to disable the cel-shading shadow shapes and see the flat
 silhouette only. Output is written as both `.svg` (inspect/edit
 directly in a browser or Inkscape) and `.png` (if cairosvg works).

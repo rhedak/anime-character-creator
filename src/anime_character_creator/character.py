@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 
 from .colorutil import shade
 from .skeleton import DEFAULT_HEADS, Skeleton, build_skeleton
@@ -65,6 +65,51 @@ class FaceStyle:
     blush: float = 1.0
     # -1 scars the left cheek, 1 the right, 0 none.
     scar_side: int = 0
+
+
+@dataclass(frozen=True)
+class Expression:
+    """A mood, as a **delta** on whatever face a character already has.
+
+    Not a `FaceStyle`, and the distinction is the whole point. A `FaceStyle`
+    carries two different kinds of thing: what a face *is* (`eye_size`,
+    `eye_width`, `eye_corner`, `eye_tilt`, `iris_size`) and what it is *doing*
+    right now (`brow_tilt`, `mouth_curve`, `eye_openness`). Satoshi's aperture is
+    0.92 wide and 1.08 long because that is his face at rest, in every scene, and
+    an expression that arrived as a whole `FaceStyle` would quietly overwrite it
+    with the stock values and hand back a different character wearing the right
+    mood.
+
+    So every field here is `None` by default, meaning *leave that one alone*, and
+    only the named fields are written. `None` rather than a neutral number
+    because there is no number that means "unchanged": 0.0 is a real brow tilt,
+    and a level brow is a choice a mood can make.
+
+    Fields are limited to the ones a mood moves. Adding `eye_size` here would be
+    a way to make a character stop being themselves.
+    """
+
+    # 0 is level. Positive drops the inner ends (stern), negative raises them,
+    # which is the grief reading rather than more of the same.
+    brow_tilt: float | None = None
+    brow_weight: float | None = None
+    # How high the upper lid rides. This is the one that survives being shrunk:
+    # a brow is a thin stroke and washes out at thumbnail size, where a lid
+    # changes the shape of a filled mass. Measured at about four times the
+    # signal of `brow_tilt` on the cover, at both sizes.
+    eye_openness: float | None = None
+    eye_lower_lid: float | None = None
+    mouth_curve: float | None = None
+    mouth_width: float | None = None
+
+    def on(self, face: FaceStyle) -> FaceStyle:
+        """This mood, over one face, leaving everything unnamed as it was."""
+        stated = {k: v for k, v in asdict(self).items() if v is not None}
+        return replace(face, **stated)
+
+    def applied_to(self, p: CharacterParams) -> CharacterParams:
+        """The same, on a whole character."""
+        return replace(p, face=self.on(p.face))
 
 
 @dataclass(frozen=True)

@@ -197,6 +197,37 @@ Add a character here rather than as a pile of CLI flags. Both current
 presets share a palette through module constants, since they are meant to
 read as related.
 
+## EXPRESSIONS and Expression
+
+Named moods: `EXPRESSIONS["hollow"]`, `"stern"`, `"grim"`, `"sorrow"`,
+`"resolute"`. Apply one with either method:
+
+```python
+face = EXPRESSIONS["hollow"].on(PRESETS["satoshi"].face)      # a FaceStyle
+satoshi = EXPRESSIONS["hollow"].applied_to(PRESETS["satoshi"])  # a whole character
+```
+
+**An `Expression` is a delta, not a `FaceStyle`, and that is the point.**
+A `FaceStyle` mixes what a face *is* (`eye_size`, `eye_width`,
+`eye_corner`, `eye_tilt`, `iris_size`) with what it is *doing*
+(`brow_tilt`, `eye_openness`, `mouth_curve`). A mood that arrived as a
+whole `FaceStyle` would overwrite the first group with stock values and
+hand back a different character wearing the right expression, rendering
+perfectly the whole time. So every field defaults to `None`, meaning
+leave that one alone, and only the named fields are written. `None`
+rather than a neutral number because no number means "unchanged": `0.0`
+is a real brow tilt.
+
+Only mood fields exist on it. Adding `eye_size` would make it a way for a
+character to stop being themselves.
+
+One measured note, from choosing the cover's face: **the brow is the weak
+lever.** Brow-only moods shift under 1% of the face whether you look at a
+head crop or a thumbnail, while anything touching `eye_openness` shifts
+two to three times that, because a brow is a thin stroke and a lid is the
+edge of a filled shape. A mood that has to survive being shrunk moves a
+lid.
+
 ## shade
 
 ```python
