@@ -23,9 +23,13 @@ between.
 | **Satoko** | <img src="ref-out/on-white/satoko.png" width="150" alt="Satoko at the chibi build"> | <img src="ref-out/on-white/satoko_real.png" width="150" alt="Satoko at the realistic build"> |
 | **Satoshi** | <img src="ref-out/on-white/satoshi.png" width="150" alt="Satoshi at the chibi build"> | <img src="ref-out/on-white/satoshi_real.png" width="150" alt="Satoshi at the realistic build"> |
 
-Those four are the only renders checked in, and they live in `ref-out/`
-as both `.png` and `.svg`. **They are transparent**, so a render drops
-onto a scene as it is.
+Those four live in `ref-out/` as both `.png` and `.svg`. **They are
+transparent**, so a render drops onto a scene as it is.
+
+`ref-out/cover.svg` is there too: a book cover composed around one of
+them by `cover.py`, which is the same drawing code with a backdrop, mist
+and a title stacked over it. That one is opaque, being a page rather than
+a figure. Render it with `./cover.sh`.
 
 The table above links `ref-out/on-white/` instead, which is the same four
 drawn on a white background. That exists for this page and nothing else:

@@ -319,6 +319,39 @@ def test_hair_stays_under_the_canvas_ceiling(hairstyle: str, build: str) -> None
     )
 
 
+def test_ref_out_cover_matches_the_code() -> None:
+    """The cover is checked in like the characters, so it goes stale like them.
+
+    Worse, in fact: a character moves only when its own shapes change, but the
+    cover embeds one, so *any* shape edit moves the cover too. It is the file
+    most likely to be left behind by a change that looks unrelated to it.
+    """
+    committed = REF_OUT / "cover.svg"
+    assert committed.read_text() == cover.render_cover(), (
+        "ref-out/cover.svg is stale: ./refresh-ref-out.sh"
+    )
+
+
+def test_the_byline_is_not_the_subtitle() -> None:
+    """Two fields, two places, and the bottom one is the author.
+
+    They were one field to start with, rendering at the foot of the page, which
+    is how a first draft ended up looking as though the protagonist had written
+    the book. Keeping them distinct is the fix, so this pins that a subtitle
+    never lands in the byline's position.
+    """
+    p = cover.CoverParams(subtitle="BOOK ONE", author="rhedak")
+    svg = cover.render_cover(p)
+    ys = {
+        el.text: float(el.get("y"))
+        for el in ET.fromstring(svg)
+        if el.tag.endswith("text") and el.text in ("BOOK ONE", "rhedak", p.title[-1])
+    }
+    assert ys[p.title[-1]] < ys["BOOK ONE"] < ys["rhedak"]
+    assert ys["rhedak"] > p.height * 0.9, "the byline should sit at the foot of the page"
+    assert ys["BOOK ONE"] < p.height * 0.5, "a subtitle belongs under the title, not at the foot"
+
+
 @pytest.mark.parametrize("build", sorted(BUILDS))
 def test_the_cover_renders_and_stays_deterministic(build: str) -> None:
     """Same params, same bytes, the same contract `render_character` holds.

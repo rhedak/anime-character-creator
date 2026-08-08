@@ -540,6 +540,12 @@ a shape.** Miss it and the README shows art the code no longer produces:
 ./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
 ```
 
+`ref-out/cover.svg` and its PNG are the fifth checked-in render: the book
+cover from `cover.py`, a flat backdrop with mist banks, one character and
+the title over it. It is refreshed by the same script, which matters more
+than it looks, since the cover embeds a character and so goes stale on
+**any** shape change rather than only on its own.
+
 Anything else goes to `out/`, which is ignored, and which was emptied on
 2026-08-07: 128MB of per-task snapshots, with the scripts that measured
 them promoted to `harness/` first.

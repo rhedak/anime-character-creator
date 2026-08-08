@@ -83,6 +83,11 @@ class CoverParams:
     # first draft's "SATOSHI" came out, and it is a property of the position
     # rather than of the word.
     subtitle: str = ""
+    # The byline, and a separate field from `subtitle` for the reason recorded
+    # above: the bottom of a cover *means* author, so a line that goes there
+    # should have to say it is one. Defaulted like `title` is, because this
+    # module already composes one specific book rather than a generic page.
+    author: str = "rhedak"
     preset: str = "satoshi"
     # `realistic` still renders and is the backup; the composition is tuned for
     # this one.
@@ -258,8 +263,23 @@ def render_cover(p: CoverParams | None = None) -> str:
     top = H * 0.115
     for i, line in enumerate(p.title):
         layers.append(_text(p, line, top + i * size * 1.16, size, p.title_font, size * 0.02))
+    # A subtitle belongs under the title, not at the foot of the page. It used to
+    # render at the bottom, which is the position that reads as a byline and is
+    # exactly how the first draft's "SATOSHI" came to look like an author. Now
+    # that there is a real byline down there, the two would also have collided.
     if p.subtitle:
-        layers.append(_text(p, p.subtitle, H * 0.93, H * 0.038, p.subtitle_font, H * 0.010))
+        layers.append(
+            _text(
+                p,
+                p.subtitle,
+                top + len(p.title) * size * 1.16,
+                H * 0.034,
+                p.subtitle_font,
+                H * 0.008,
+            )
+        )
+    if p.author:
+        layers.append(_text(p, p.author, H * 0.945, H * 0.028, p.subtitle_font, H * 0.006))
 
     body = "\n  ".join(layer for layer in layers if layer)
     return (
@@ -280,7 +300,8 @@ def main() -> None:
         action="append",
         help="one title line; repeat the flag, the breaks are yours to choose",
     )
-    ap.add_argument("--subtitle", default="", help="smaller line under the figure")
+    ap.add_argument("--subtitle", default="", help="smaller line under the title")
+    ap.add_argument("--author", default=None, help="byline at the foot of the page")
     ap.add_argument("--width", type=float, default=1000.0)
     ap.add_argument("--height", type=float, default=1500.0)
     args = ap.parse_args()
@@ -289,6 +310,8 @@ def main() -> None:
     if args.title:
         p = replace(p, title=tuple(args.title))
     p = replace(p, subtitle=args.subtitle)
+    if args.author is not None:
+        p = replace(p, author=args.author)
 
     svg = render_cover(p)
     out = Path(args.out)

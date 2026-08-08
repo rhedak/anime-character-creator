@@ -101,10 +101,15 @@ for preset in $presets; do
         stem_of+=("${preset}$(suffix_for "$build")")
     done
 done
-count=${#stem_of[@]}
+# Two counts, deliberately. `characters` bounds every loop over `stem_of`, and
+# `count` is only ever reported. They were one variable until the cover was
+# added to the total, which walked the copy loop one index past the end of the
+# array.
+characters=${#stem_of[@]}
+count=$((characters + 1))
 
 i=0
-while [ "$i" -lt "$count" ]; do
+while [ "$i" -lt "$characters" ]; do
     stem=${stem_of[$i]}
     "$root/render.sh" --out "$stage/$stem" --preset "${preset_of[$i]}" --build "${build_of[$i]}" >/dev/null
     # The README's copy. Rendered rather than composited afterwards, so it goes
@@ -127,9 +132,20 @@ while [ "$i" -lt "$count" ]; do
     i=$((i + 1))
 done
 
+# The cover, which is a page rather than a character and so is not in the loop
+# above. It gets no on-white copy: its own backdrop is an opaque rectangle
+# covering the trim, so there is no transparency for a card to sit behind.
+"$root/cover.sh" --out "$stage/cover" >/dev/null
+for ext in svg png; do
+    if [ ! -s "$stage/cover.$ext" ]; then
+        echo "render produced no cover.$ext, leaving ref-out/ alone" >&2
+        exit 1
+    fi
+done
+
 changed=0
 i=0
-while [ "$i" -lt "$count" ]; do
+while [ "$i" -lt "$characters" ]; do
     stem=${stem_of[$i]}
     i=$((i + 1))
     # The SVG decides. It is deterministic text, where a PNG can differ in bytes
@@ -151,6 +167,18 @@ while [ "$i" -lt "$count" ]; do
     fi
 done
 
+# Same rule as a character: the SVG decides, and it is deterministic text.
+if cmp -s "$stage/cover.svg" "$root/ref-out/cover.svg"; then
+    echo "  unchanged  cover"
+else
+    changed=$((changed + 1))
+    if $check_only; then
+        echo "  STALE      cover"
+    else
+        echo "  updated    cover"
+    fi
+fi
+
 if $check_only; then
     if [ "$changed" -gt 0 ]; then
         echo "$changed of $count in ref-out/ do not match the code; run $(basename "$0")" >&2
@@ -162,10 +190,11 @@ fi
 
 mkdir -p "$root/ref-out/on-white"
 i=0
-while [ "$i" -lt "$count" ]; do
+while [ "$i" -lt "$characters" ]; do
     stem=${stem_of[$i]}
     cp "$stage/$stem.svg" "$stage/$stem.png" "$root/ref-out/"
     cp "$stage/on-white/$stem.png" "$root/ref-out/on-white/"
     i=$((i + 1))
 done
-echo "wrote $count characters to ref-out/, $changed changed"
+cp "$stage/cover.svg" "$stage/cover.png" "$root/ref-out/"
+echo "wrote $count renders to ref-out/, $changed changed"
