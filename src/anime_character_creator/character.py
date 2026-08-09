@@ -2387,8 +2387,16 @@ _BEARD_SIDEBURN_W_EASE = 2.0
 # the edge stays low where it crosses the cheek and rises only in the middle, over
 # a span narrow enough to read as a moustache. `_BEARD_TASH_HALF` is that span;
 # past about 0.36 the lobe stops being a moustache and the mask comes back.
-_BEARD_TASH_Y = 0.46
-_BEARD_TASH_HALF = 0.24
+#
+# The height is set by what is left between the lobe and the lip, not by where the
+# lobe sits. At 0.46 that band came to 0.037 head radii, which on an 88 pixel head
+# is 3.3 pixels of hair inside a 4 pixel outline: what got drawn was a line above
+# the mouth rather than a moustache, and the owner's read was exactly that. At
+# 0.36 it is 0.137, about a seventh of a head, which is a moustache. The other end
+# is close: 0.31 was rendered too and the lobe starts climbing toward the nose and
+# reads as a snout.
+_BEARD_TASH_Y = 0.36
+_BEARD_TASH_HALF = 0.28
 # The lips, showing through. Both as multiples of the mouth's own half width, so
 # the lozenge keeps its proportions on a character whose mouth is narrow; zero
 # draws none.

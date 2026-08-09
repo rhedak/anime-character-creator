@@ -616,6 +616,15 @@ Swept in `harness/beard/moustache.py` over the lobe's height and half width and
 the lip's width together, which is right because they trade against each other:
 a wider lobe needs a wider lip to stay a moustache.
 
+The lobe then came up again, from 0.46 to 0.36, on the owner's read that the
+moustache was a line rather than an area. **The height that matters is not the
+lobe's but the band left between it and the lip**, and measured that way the
+report was exact: 0.037 head radii, which on an 88 pixel head is 3.3 pixels of
+hair inside a 4 pixel outline. There was less moustache than there was ink
+drawing it. At 0.36 the band is 0.137, about a seventh of a head. 0.31 was
+rendered too and is past the end of it: the lobe starts climbing toward the nose
+and reads as a snout.
+
 ### The bottom line, and what a length means
 
 Fourth read, and the one that made the previous three land. Two asks together:
