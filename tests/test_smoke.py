@@ -835,6 +835,60 @@ def test_the_cap_covers_the_hair_it_is_tied_over(hairstyle: str, build: str) -> 
     assert sk.head_cx + rx * sk.head_r <= 400, f"the cap runs off the canvas at {rx:.3f}"
 
 
+@pytest.mark.parametrize("build", sorted(BUILDS))
+@pytest.mark.parametrize(
+    "face",
+    [
+        replace(PRESETS["keiko"].face, glasses=True),
+        replace(
+            PRESETS["keiko"].face, glasses=True, eye_width=1.3, eye_size=0.75, eye_openness=0.7
+        ),
+        replace(PRESETS["keiko"].face, glasses=True, eye_lower_lid=1.4, eye_openness=0.6),
+    ],
+    ids=["default", "wide-small", "asymmetric-lids"],
+)
+def test_the_glasses_frame_the_eye_rather_than_a_second_guess_at_it(face, build: str) -> None:
+    """Every rim actually contains the aperture it is drawn over.
+
+    `_glasses` used to carry its own copy of `_eye_placement`'s numbers, at
+    different values: `eye_dx` 0.34 against the real 0.46, `eye_y` at `+0.10`
+    against the real `+0.16`, a half width built from `eye_width` alone with
+    neither `eye_r` nor `_EYE_ASPECT`, a half height built from `eye_size`
+    where the aperture itself reads `eye_openness` and `eye_lower_lid`. None of
+    that showed up as an error, since a rim in roughly the right place still
+    renders; it showed up as the eye sitting outside its own glasses, which is
+    the owner's report on 2026-08-09.
+
+    Checked against the aperture's own corners rather than against
+    `_eye_placement`'s numbers a second time, which would only prove the two
+    functions still agree with each other and not that either agrees with what
+    is drawn. Three faces because the old code happened to roughly fit one
+    default aperture at one build; asymmetric lids is the case that a single
+    symmetric `rh` could never have held regardless of its value.
+    """
+    p = replace(PRESETS["keiko"], face=face)
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    svg = character._glasses(sk, p)
+    rects = re.findall(r'<rect x="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"', svg)
+    assert len(rects) == 2, f"expected two rims, found {len(rects)}"
+    eye_dx, eye_y, eye_r, f = character._eye_placement(sk, p)
+    for side, (x, y, w, h) in zip((-1, 1), rects, strict=True):
+        rim_left, rim_top = float(x), float(y)
+        rim_right, rim_bot = rim_left + float(w), rim_top + float(h)
+        ex = sk.head_cx + side * eye_dx
+        half_w = eye_r * f.eye_width * character._EYE_ASPECT
+        top_h = eye_r * f.eye_openness
+        bot_h = eye_r * f.eye_lower_lid
+        assert rim_left <= ex - half_w and rim_right >= ex + half_w, (
+            f"{build} side {side}: aperture spans {ex - half_w:.1f}-{ex + half_w:.1f} but the "
+            f"rim only spans {rim_left:.1f}-{rim_right:.1f}"
+        )
+        assert rim_top <= eye_y - top_h and rim_bot >= eye_y + bot_h, (
+            f"{build} side {side}: aperture spans {eye_y - top_h:.1f}-{eye_y + bot_h:.1f} but the "
+            f"rim only spans {rim_top:.1f}-{rim_bot:.1f}"
+        )
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)

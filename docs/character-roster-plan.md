@@ -691,6 +691,40 @@ sets: it is what is left between two constants that know nothing about each
 other, so either can close it without appearing to do anything. It shipped once
 at 3.3 pixels of hair inside a 4 pixel outline.
 
+### The cap and the glasses: two parts sized against the bone under them
+
+Two more reports the same day, both the same shape of bug as each other and as
+`_hair_tail` and `_hair_knot` before them: a part that sits on top of something
+soft-edged, sized against the hard skeleton under it instead.
+
+**Chiyo's cap** took its width from `_head_edge_x`, the skull. On `long_traced`
+hair that is 0.975 head radii of cloth over 1.237 of hair, so a fifth of a head
+radius of hair stood outside the scarf tied over it. New `_hair_edge_x(y, sk, p)`
+walks the hairstyle's own mass contour for the widest crossing at a height,
+falling back to the skull where the hair does not reach; `_headscarf` reads its
+dome and its knot from that, at a small clearance so the cloth stands proud of
+the hair rather than landing exactly on its outline. Guarded across every
+hairstyle at both builds, since a scarf is a garment and anyone can wear one.
+
+**Keiko's glasses** were worse in a different way: not sized against the wrong
+thing, but against a *second, wrong copy* of the right thing. The docstring
+claimed to read "the same two numbers `_face` places an eye with," and did not:
+`eye_dx` 0.34 against the real 0.46, `eye_y` at `+0.10` against the real `+0.16`,
+a half width from `eye_width` alone with neither the eye's own scale nor its
+aspect, a half height from `eye_size` where the aperture reads `eye_openness`
+and `eye_lower_lid`. None of that is an error SVG can catch; a rim in roughly
+the right place still renders, and what shows up instead is the eye sitting
+outside its own glasses. New `_eye_placement(sk, p)` is now the one definition
+both `_face` and `_glasses` read, the same move `_MOUTH_Y` made for the beard.
+Guarded against the aperture's own drawn corners, not against `_eye_placement`'s
+numbers a second time, which would only prove the two functions agree with each
+other and not that either agrees with what is on the canvas.
+
+The lesson from all four is the same one stated once and then not applied
+everywhere: a garment or accessory has to read the surface it sits on, not the
+frame that surface is built from, and a comment claiming it does so is not a
+substitute for the two functions sharing code.
+
 ### Still below the line, and deliberately
 
 - **Krista's goggles.** Named in the table above as a first-draft feature and

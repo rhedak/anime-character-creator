@@ -2571,6 +2571,14 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     )
 
 
+# How far outside the aperture's own bounding box the rim sits. A rounded rect
+# is not an almond, so a rim drawn tight against the eye's exact extremes clips
+# the corners; this is the same kind of clearance `_SCARF_CLEAR` gives a cap over
+# hair, sized larger because a rim's rounded corner cuts in further than a cloth
+# hem does.
+_GLASSES_CLEAR = 1.18
+
+
 def _glasses(sk: Skeleton, p: CharacterParams) -> str:
     """Fine wire spectacles: two rims and a bridge, no lenses.
 
@@ -2578,36 +2586,50 @@ def _glasses(sk: Skeleton, p: CharacterParams) -> str:
     over the iris and would take the eye colour with it, and the eye is the one
     thing on a face that has to survive being shrunk.
 
-    Sized off the eye rather than off the head, so a rim always frames the eye it
-    belongs to however that character's aperture is tuned.
+    Sized off the eye's own aperture rather than a second guess at it. This used
+    to carry its own copy of every number `_eye_placement` returns, at different
+    values, `eye_dx` 0.34 against the real 0.46 and `eye_y` at `+0.10` against
+    the real `+0.16` among them, so the rim sat closer to the nose and lower than
+    the eye it was meant to frame and the eye showed outside it on two sides.
+    `_eye_placement` is now the only definition of where an eye is, and
+    `_eye_shape`'s own half extents are the only definition of how big the
+    aperture is, so a rim built from both cannot drift off the eye however
+    a character's face is tuned.
     """
     if not p.face.glasses:
         return ""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    f = p.face
+    eye_dx, eye_y, eye_r, f = _eye_placement(sk, p)
     sw = _stroke_w(sk)
-    # The same two numbers `_face` places an eye with, so the rim cannot drift
-    # off the eye when a character's aperture changes.
-    eye_dx = r * 0.34
-    eye_y = cy + r * 0.10
-    rw = r * 0.26 * f.eye_width
-    rh = r * 0.20 * f.eye_size
+    # The aperture's own half extents, in the same terms `_eye_shape` builds it
+    # from: apex and base sit exactly at `top` and `bot`, and the inner and outer
+    # corners exactly at `w`, so this is the aperture's true bounding box rather
+    # than an approximation of it.
+    half_w = eye_r * f.eye_width * _EYE_ASPECT * _GLASSES_CLEAR
+    top_h = eye_r * f.eye_openness * _GLASSES_CLEAR
+    bot_h = eye_r * f.eye_lower_lid * _GLASSES_CLEAR
     stroke = f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}"'
     parts = [
-        f'<rect x="{cx + s * eye_dx - rw:.1f}" y="{eye_y - rh:.1f}" '
-        f'width="{rw * 2:.1f}" height="{rh * 2:.1f}" rx="{rh * 0.55:.1f}" {stroke} />'
+        f'<rect x="{cx + s * eye_dx - half_w:.1f}" y="{eye_y - top_h:.1f}" '
+        f'width="{half_w * 2:.1f}" height="{top_h + bot_h:.1f}" '
+        f'rx="{min(half_w, top_h + bot_h) * 0.3:.1f}" {stroke} />'
         for s in (-1, 1)
     ]
     parts.append(
-        f'<path d="M {cx - eye_dx + rw:.1f} {eye_y:.1f} L {cx + eye_dx - rw:.1f} {eye_y:.1f}" '
-        f"{stroke} />"
+        f'<path d="M {cx - eye_dx + half_w:.1f} {eye_y:.1f} '
+        f'L {cx + eye_dx - half_w:.1f} {eye_y:.1f}" {stroke} />'
     )
     # Arms to the temples, which is what stops the pair reading as two rings
-    # floating on the cheeks.
+    # floating on the cheeks. Read off the skull at the height the arm actually
+    # leaves at, rather than a second guess at eye height: the arm used to query
+    # the skull's edge at a fixed 0.10 head radii while the eye it left from sat
+    # at 0.16, which is the same drift as everything else here.
+    arm_y = eye_y - top_h * 0.35
+    arm_y_hr = (arm_y - cy) / r
     for s in (-1, 1):
         parts.append(
-            f'<path d="M {cx + s * (eye_dx + rw):.1f} {eye_y:.1f} '
-            f'L {cx + s * _head_edge_x(0.10, sk.build) * r:.1f} {eye_y - rh * 0.35:.1f}" {stroke} />'
+            f'<path d="M {cx + s * (eye_dx + half_w):.1f} {eye_y:.1f} '
+            f'L {cx + s * _head_edge_x(arm_y_hr, sk.build) * r:.1f} {arm_y:.1f}" {stroke} />'
         )
     return "".join(parts)
 
@@ -4204,14 +4226,25 @@ def _scar(sk: Skeleton, side: int) -> str:
     return line(0.52, 0.56, 0.65, 0.35, sw * 0.6) + line(0.55, 0.44, 0.63, 0.49, sw * 0.45)
 
 
-def _face(sk: Skeleton, p: CharacterParams) -> str:
+def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, float, FaceStyle]:
+    """Where an eye sits and how big it is: `(eye_dx, eye_y, eye_r, face)`.
+
+    One source for both `_face` and `_glasses`, which is what `_glasses` claimed
+    to be reading and was not: it carried its own copy of every number here, at
+    different values, so the rims sat closer together and lower than the eyes
+    they were meant to frame. A second definition agrees with the first on the
+    day it is written and stops agreeing the moment either one is retuned, which
+    is the same failure `_MOUTH_Y` was pulled out to stop.
+
+    Returns the build-adjusted `FaceStyle` along with the geometry, not just the
+    numbers, because a caller sizing the aperture itself, the way `_glasses`
+    does, needs the lids at the values they are actually drawn at. The canon
+    lids the adult eye, almond where the chibi gets a round-open aperture, so
+    the adjustment happens once, here, rather than once per caller.
+    """
     r = sk.head_r
-    cx, cy = sk.head_cx, sk.head_cy
+    cy = sk.head_cy
     f = p.face
-    # The canon lids the adult eye: ref/satoko-real.jpg draws an almond where
-    # the chibi gets a round-open aperture, on the same character. Riding the
-    # lids on the build keeps that one construction, so a preset states its
-    # chibi eye and the taller build derives its own.
     if sk.build > 0:
         f = replace(
             f,
@@ -4228,6 +4261,13 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     eye_y = cy + r * 0.16
     eye_dx = r * 0.46
     eye_r = r * 0.26 * (1.0 - 0.22 * sk.build) * f.eye_size
+    return eye_dx, eye_y, eye_r, f
+
+
+def _face(sk: Skeleton, p: CharacterParams) -> str:
+    r = sk.head_r
+    cx, cy = sk.head_cx, sk.head_cy
+    eye_dx, eye_y, eye_r, f = _eye_placement(sk, p)
     sw = _stroke_w(sk)
     # Brows are hair, so they carry the hair's own darker tone rather than the
     # outline color. On dark hair the difference vanishes, which is correct.
