@@ -615,6 +615,11 @@ def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
     guarded lives in how the points are joined up, not in where they are. Both
     builds, because the jaw taper only exists at the tall end and an edge that
     ignores the contour goes wrong there first.
+
+    The *inner* edge is deliberately not held to this. It carries the width
+    easing, so it bows away from its own two ends by about a tenth of a head
+    radius on purpose; what has to hold there is the taper, which is the next
+    test.
     """
     p = PRESETS["reinhard"]
     sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
@@ -645,6 +650,50 @@ def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
             f"at {y:.2f} head radii the strip's edge is {share:.2f} of the way out to the "
             f"skull's where its own ends put it at {held:.2f}, so it is cutting across the "
             f"cheek instead of following it"
+        )
+
+
+@pytest.mark.parametrize("build", ["chibi", "realistic"])
+def test_the_sideburn_never_narrows_on_its_way_down(build: str) -> None:
+    """The strip covers more of the cheek at every step toward the jaw.
+
+    This is the original defect stated as an invariant. The strip used to be
+    0.31 head radii wide beside the eye and 0.06 at the jaw, and two edges that
+    converge make a triangle, so it read as a cut-out rather than as hair. A
+    reference beard runs the other way: thin in front of the ear, spreading
+    where it meets the mass.
+
+    Measured as how far the inner edge sits inside the skull's own edge, which
+    is what the width looks like once it is drawn on a face that is itself
+    narrowing. That makes it a check on the contour's taper and the ratio and
+    the width together, not a restatement of the three constants: the realistic
+    build's jaw pulls in fast enough to eat a width that only just grows.
+
+    Computed rather than parsed, unlike its neighbour. The inner edge's points
+    are buried mid-path between the chin's curves and the top edge's dive, and
+    what is being asserted here is where they are, which is exactly the half a
+    parse would add nothing to.
+    """
+    sk = build_skeleton(heads=BUILDS[build], frame=PRESETS["reinhard"].frame)
+    inner = character._face_track(
+        character._BEARD_SIDEBURN_Y,
+        character._BEARD_TOP + 0.14,
+        sk.build,
+        character._BEARD_SIDEBURN_OUT,
+        character._BEARD_SIDE_INSET,
+        character._BEARD_SIDEBURN_W_TOP,
+        character._BEARD_SIDEBURN_W_BOT,
+        character._BEARD_SIDEBURN_W_EASE,
+    )
+    covered = [character._head_edge_x(y, sk.build) - x for x, y in inner]
+    assert covered[-1] > covered[0], (
+        f"the strip covers {covered[0]:.3f} head radii of cheek at the top and "
+        f"{covered[-1]:.3f} at the jaw, so it converges to a point and reads as a wedge"
+    )
+    for (x, y), here, nxt in zip(inner, covered, covered[1:], strict=False):
+        assert nxt >= here - 1e-9, (
+            f"at {y:.2f} head radii the strip pinches from {here:.3f} to {nxt:.3f}"
+            f" (inner edge at {x:.3f})"
         )
 
 

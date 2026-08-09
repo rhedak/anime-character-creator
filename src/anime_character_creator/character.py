@@ -2344,12 +2344,27 @@ _BEARD_SIDEBURN_OUT = 0.99
 # front of the ear and only spreads where it meets the beard, so the taper is
 # inverted here and the numbers are small.
 #
-# The top width does one more job: it sets how much of the strip's top cut shows.
-# That cut is a horizontal, it sits level with the top of the ear, and a long one
-# reads as the edge of something worn rather than the top of some hair. At 0.08
-# what is left of it is short enough to sit under the fringe on both wearers.
-_BEARD_SIDEBURN_W_TOP = 0.08
+# The top width does two more jobs, and both want it small. It sets how much of
+# the strip's top cut shows, that cut being a horizontal level with the top of the
+# ear, and a long one reads as the edge of something worn rather than the top of
+# some hair. And it decides how hard the strip collides with what is already at
+# that height: 0.02 head radii is the head at its widest, where the side hair
+# comes down and one hundredth above where the ear attaches, so three outlines
+# arrive in the same place and at 0.08 they butt into each other instead of one
+# tucking under another. At 0.04 the strip arrives as a taper thin enough to slip
+# under the fringe, and it clears the ear rather than crossing it.
+_BEARD_SIDEBURN_W_TOP = 0.04
 _BEARD_SIDEBURN_W_BOT = 0.17
+# How late the strip opens out. Above 1 it stays near its top width for longer and
+# flares near the jaw instead of widening evenly the whole way down.
+#
+# Which is what the crowding actually wants, because only one end of this span is
+# crowded. Widening evenly puts the strip back at a colliding width a short way
+# down, still inside the stretch the ear runs alongside; at 2.0 it is half its
+# final width only in the last third, which is past everything it can hit and is
+# also the shape `ref/reinhard.png` has, a thin line in front of the ear that
+# spreads at the jaw.
+_BEARD_SIDEBURN_W_EASE = 2.0
 
 
 def _beard(sk: Skeleton, p: CharacterParams) -> str:
@@ -2430,6 +2445,7 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
         _BEARD_SIDE_INSET,
         _BEARD_SIDEBURN_W_TOP,
         _BEARD_SIDEBURN_W_BOT,
+        _BEARD_SIDEBURN_W_EASE,
     )
 
     def line(pts: list[Point], s: int) -> str:
@@ -3600,6 +3616,7 @@ def _face_track(
     r1: float,
     w0: float = 0.0,
     w1: float = 0.0,
+    w_ease: float = 1.0,
     steps: int = 10,
 ) -> list[Point]:
     """Points down the skull's edge from `y0` to `y1`, in head radii.
@@ -3610,6 +3627,11 @@ def _face_track(
     the same thing and both are needed: a ratio alone gives a band that thins as
     the jaw draws in, and a width alone gives one that ignores the taper.
 
+    `w_ease` bends the width's interpolation: above 1 it holds the band near `w0`
+    for longer and opens it late. That matters when only one end of the span is
+    crowded, which is the usual case for a band laid against a head, since the
+    top of the face is where the hair and the ear both arrive.
+
     Sampled off `_head_edge_x` rather than fitted, for the reason that helper
     exists at all: it cannot drift away from the drawn outline. A polyline is
     enough at the size this is looked at, ten segments over a quarter of the
@@ -3619,7 +3641,7 @@ def _face_track(
     for i in range(steps + 1):
         f = i / steps
         y = y0 + (y1 - y0) * f
-        x = _head_edge_x(y, build) * (r0 + (r1 - r0) * f) - (w0 + (w1 - w0) * f)
+        x = _head_edge_x(y, build) * (r0 + (r1 - r0) * f) - (w0 + (w1 - w0) * f**w_ease)
         pts.append((x, y))
     return pts
 
@@ -4228,6 +4250,17 @@ def render_character(
         _face(sk, p),
         # Over the face: a beard covers the jaw it grows on, and spectacles sit
         # in front of the eyes rather than behind them.
+        #
+        # Lifting the hair or the ear back over the beard was tried on 2026-08-09,
+        # to stop the three of them colliding at the temple, and neither can be
+        # bought at this price. The hair mass is a filled shape wider and taller
+        # than the head, so over the beard it is over the face too and the figure
+        # loses its face entirely. The ear is not even a judgement: the beard is
+        # over the head and the ear is under it, so in one list "ear over the
+        # beard, still under the head" does not exist, and what can be drawn
+        # instead is the ear over the face, which `_ears` records as the wrong
+        # arrangement. The crowding is geometry; `_BEARD_SIDEBURN_W_TOP` is where
+        # it lives.
         _beard(sk, p),
         _glasses(sk, p),
         _hair_front(sk, p),

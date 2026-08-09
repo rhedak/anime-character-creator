@@ -516,6 +516,56 @@ and brings back the original hood.
 one so the change can be judged as a single before-and-after, at head size and at
 tile size together, which is the only way this part has ever been judged safely.
 
+### The temple, where three outlines arrive at once
+
+The owner's next read on the same part: the beard collides with the hair and the
+ear, and should arrive narrower at the top. The collision is structural rather
+than incidental. The strip's top is at 0.02 head radii, its outer edge at 0.99 of
+the skull's, and that is the head at its widest, where the side hair comes down
+and one hundredth above where the ear attaches at 0.03. Three outlines meet in
+the same place, and at a top width of 0.08 they butt into each other instead of
+one tucking under another.
+
+Both families of answer were swept together in `harness/beard/crowding.py`,
+because the cheap one should win if it can.
+
+**Z-order, the owner's suggestion, and neither move survives being looked at.**
+Worth being exact about why, because one of the two is not a judgement at all.
+
+The beard is drawn over the head, since a beard has to cover the jaw it grows on
+and the head's own outline would otherwise run across it. The ear is drawn under
+the head, since the canon runs the face's outline unbroken across the ear. In a
+linear z-order those two together mean **"ear over the beard but still under the
+head" does not exist**: anything after the beard is after the head. So the
+candidate that was rendered is the ear over the head and face, and it reads the
+way `_ears` already documents, as an ear stuck on the side of a head rather than
+one behind it. Not ugly-but-arguable. Unreachable, and the nearest reachable
+thing is a known failure.
+
+The hair mass is a plain rejection. It is a filled shape wider and taller than
+the head, so over the beard is over the face, and the figure renders as a wig
+with a chin.
+
+Both are recorded at the z-order list itself, so the next person does not sweep
+them again.
+
+**Geometry, which is where it lived.** `_BEARD_SIDEBURN_W_TOP` 0.08 to 0.04, and
+the width's interpolation eased at 2.0 rather than running linearly. The easing
+is the half that is not obvious: only one end of this span is crowded, and a
+linear widening puts the strip back at a colliding width a short way down, still
+inside the stretch the ear runs alongside. Eased, it is half its final width only
+in the last third, past everything it can hit.
+
+Pulling the outer edge in off the skull was tried as well, at 0.94, and it is the
+strap failure returning: it opens a band of skin between the strip and the hair,
+and a sideburn that does not reach the hair is not a sideburn. The strip stays on
+the edge and gets thin instead.
+
+Thinner is the direction of this part's standing failure, which is vanishing when
+the figure is shrunk, so the tiles were magnified and compared as pixels rather
+than eyeballed at size. The beard survives: at tile size it is carried by the mass
+under the jaw, and the strip was never what was doing that work.
+
 ### Still below the line, and deliberately
 
 - **Krista's goggles.** Named in the table above as a first-draft feature and
