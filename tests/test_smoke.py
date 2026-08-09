@@ -957,6 +957,31 @@ def test_the_hakama_is_drawn_over_whatever_is_on_the_legs(preset: str) -> None:
     )
 
 
+def test_the_chibi_hem_pull_back_is_floored_at_half() -> None:
+    """A long hem still lands noticeably lower than a short one, at chibi.
+
+    The owner's report on #103: at the shipped `sk.build`-only blend, 0.1 at
+    chibi, two lengths as far apart as 0.60 and 0.95 land within four pixels of
+    each other, which is indistinguishable at this figure's size and is why
+    Reika's near-floor-length hakama read as mid-thigh. `harness/hem/pullback.py`
+    swept candidates against four references; the owner's pick on 2026-08-10
+    was a floor at half.
+
+    Checked as a real separation between a short and a long request rather than
+    as the constant itself, so the guard survives the floor being retuned to a
+    different number later without also needing to be edited.
+    """
+    sk = build_skeleton(heads=BUILDS["chibi"])
+    short = character._skirt_hem_y(sk, 0.20)
+    long = character._skirt_hem_y(sk, 0.95)
+    gap = long - short
+    span = sk.ankle_y - sk.hip_y
+    assert gap > span * 0.3, (
+        f"a 0.20 and a 0.95 hem are only {gap:.1f}px apart at chibi, {gap / span:.0%} of the "
+        f"hip-to-ankle span, which reads as the same length"
+    )
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)

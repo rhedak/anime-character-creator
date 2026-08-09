@@ -784,8 +784,37 @@ floor-length in her reference and reads shorter than that here for exactly the
 reason #103 names. Confirmed rather than assumed: at the realistic build, where
 the pull-back is nearly gone, both wearers' hakama read correctly against their
 references, so the geometry is right and the shortfall is `_skirt_hem_y`'s,
-not `_hakama`'s. Left as `#103`'s problem rather than reopened here, since a
-fix there fixes every length-based lower garment at once rather than this one.
+not `_hakama`'s. Fixed in `_skirt_hem_y` itself the next day; see below.
+
+### #103, closed: the pull-back floored at half
+
+Five strengths swept in `harness/hem/pullback.py` against four references
+spanning the range of lengths actually in use, Satoko's skirt (0.70) through
+Reika's hakama (0.95): the shipped blend, `sqrt`, two floors, and no pull-back
+at all. Judged at chibi, where the whole question lives, since every candidate
+converges to the same answer at the realistic build regardless of strength.
+
+The owner's pick on 2026-08-10 was a floor at half: `max(sk.build, 0.5)` in
+place of `sk.build`, which is 0.1 at chibi on its own. That is enough to fix
+Reika, whose hakama now reads close to floor-length instead of mid-thigh,
+without pushing Satoko's already-settled look as far as "full" did, which grew
+her skirt past what looked needed against her own reference. Haruto barely
+moves either way, since 0.60 was never far from the skeleton's own hem to begin
+with.
+
+**A short hem stays available to anyone who wants one.** The floor changes how
+much of a *requested* length lands, not how short `length` itself may be, so
+the owner's point that "short hems can be a choice, even where not originally
+planned" holds under the new default exactly as it did under the old one: a
+character who wants a short chibi silhouette asks for a short `skirt_length`,
+same as always.
+
+Five characters actually move: Satoko, Chiyo and Keiko's skirts, Reika's
+hakama, and `_underskirt` wherever it is worn, since all four read the same
+function. Kyoko and Tomohiro are untouched, since they wear trousers, which do
+not call `_skirt_hem_y` at all. Confirmed smooth across the whole build range,
+not just the two named ones, by rendering five points between chibi and
+realistic.
 
 ### Still below the line, and deliberately
 

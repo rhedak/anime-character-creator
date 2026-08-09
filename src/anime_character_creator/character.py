@@ -2830,11 +2830,23 @@ def _skirt_hem_y(sk: Skeleton, length: float | None) -> float:
     figure reads as a bell with no limbs, which is why chibi versions of a long
     garment are drawn shorter. Same reason the widths interpolate in the first
     place.
+
+    The pull-back is floored at half rather than running all the way down to
+    `sk.build`, which is 0.1 at the chibi build: at that strength two lengths as
+    far apart as 0.60 and 0.95 land within four pixels of each other, task
+    #103's report, and it is why Reika's near-floor-length reference hakama
+    used to read mid-thigh at the published build. `harness/hem/pullback.py`
+    swept five strengths against four references at both ends of the range in
+    use, Satoko's skirt through Reika's hakama; half was the owner's pick on
+    2026-08-10, enough to fix Reika without changing Satoko's already-settled
+    look past what the reference asks for. A short hem stays available to
+    anyone who wants one: this is how much of a *requested* length lands, not a
+    floor under how short `length` itself may be.
     """
     if length is None:
         return sk.hem_y
     asked = sk.hip_y + length * (sk.ankle_y - sk.hip_y)
-    return sk.hem_y + (asked - sk.hem_y) * sk.build
+    return sk.hem_y + (asked - sk.hem_y) * max(sk.build, 0.5)
 
 
 def _skirt_corner_y(sk: Skeleton, hem_y: float) -> float:
