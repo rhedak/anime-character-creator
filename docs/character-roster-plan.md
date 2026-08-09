@@ -655,6 +655,42 @@ The arc lives on in `harness/beard/hang.py`, resampled onto the same interface a
 the jaw track so the two can be put side by side again, which is the same
 arrangement `sideburn.py` uses for the geometry it replaced.
 
+### Where the beard ended up, and what holds it there
+
+Locked in on 2026-08-09 after four rounds in one day. The four sections above are
+in the order the work happened, which is the useful order for understanding why
+each number is what it is and a bad one for finding out what the part now does.
+So, the shape in one place:
+
+A strip down each side, riding the skull, narrow at the ear and widening late.
+The mass below it, its bottom the jaw's own line sunk by the depth of the growth.
+A top edge that stays off the cheek at the sides and lifts over the lip in the
+middle. The lips showing through it, lightly outlined. Drawn over the head and
+under the face, so the chin's outline does not cross it and the mouth does.
+
+| | | |
+| --- | --- | --- |
+| `_BEARD_TOP` | 0.63 | where the mass meets the face at the sides |
+| `_BEARD_SIDE_INSET` | 0.93 | how far out it sits, as a share of the skull |
+| `_BEARD_SIDEBURN_Y` | 0.02 | how high the strip climbs |
+| `_BEARD_SIDEBURN_OUT` | 0.99 | the strip's outer edge, same share |
+| `_BEARD_SIDEBURN_W_TOP` / `_W_BOT` | 0.08 / 0.17 | the strip, narrow at the ear |
+| `_BEARD_SIDEBURN_W_EASE` | 2.0 | and opening late rather than evenly |
+| `_BEARD_TASH_Y` / `_TASH_HALF` | 0.36 / 0.28 | the moustache lobe |
+| `_BEARD_LIP_W` / `_LIP_H` | 2.3 / 0.63 | the lips, in mouth half widths |
+| `beard_length` | 0.07 Reinhard, 0.17 Daizen | depth below the jaw |
+
+Six assertions hold the shape, and each was written after the failure it guards,
+which is why they check odd-looking things. The strip follows the contour rather
+than chording it, and never narrows on its way down. The strip and the jaw meet
+without a kink. The beard reaches above the mouth, and the face is drawn after
+it. The moustache is thicker than its own outline.
+
+**The last of those is the one to keep.** The moustache is not a number anybody
+sets: it is what is left between two constants that know nothing about each
+other, so either can close it without appearing to do anything. It shipped once
+at 3.3 pixels of hair inside a 4 pixel outline.
+
 ### Still below the line, and deliberately
 
 - **Krista's goggles.** Named in the table above as a first-draft feature and

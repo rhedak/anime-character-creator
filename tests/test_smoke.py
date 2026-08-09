@@ -767,6 +767,39 @@ def test_the_beard_reaches_over_the_mouth_and_the_mouth_survives_it(preset: str)
     )
 
 
+@pytest.mark.parametrize("preset", ["reinhard", "daizen"])
+@pytest.mark.parametrize("build", ["chibi", "realistic"])
+def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str, build: str) -> None:
+    """There has to be more hair above the lip than there is ink round it.
+
+    The moustache is not a number anybody sets. It is what is left between the
+    top edge's lobe and the top of the lip lozenge, and those are set by two
+    constants that know nothing about each other, so either can close the gap
+    without looking like it did anything. That is not hypothetical: shipped at
+    a lobe of 0.46 it came to 0.037 head radii, which on an 88 pixel head is 3.3
+    pixels of hair inside a 4 pixel outline, and the owner's report was that the
+    moustache read as a single black line. It was, almost exactly.
+
+    Stated against the stroke rather than as a fixed distance, because that is
+    the actual claim and it is the one that survives a change of scale: a band
+    thinner than its own outline is not a band. Twice the stroke is the floor;
+    what ships is about three times it.
+
+    There is an upper end too and it is not far away, but it is a judgement
+    rather than a threshold, so it is recorded and not asserted: at a lobe of
+    0.31 the shape climbs toward the nose and reads as a snout.
+    """
+    p = PRESETS[preset]
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    lip_top = character._MOUTH_Y - character._BEARD_LIP_H * 0.12 * p.face.mouth_width
+    band = (lip_top - character._BEARD_TASH_Y) * sk.head_r
+    stroke = character._stroke_w(sk)
+    assert band >= stroke * 2, (
+        f"{preset} at the {build} build has {band:.1f}px of moustache between the lobe and the "
+        f"lip, against a {stroke:.1f}px outline, so it reads as a line above the mouth"
+    )
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)
