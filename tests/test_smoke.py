@@ -595,6 +595,59 @@ def test_the_topknot_is_visible_and_still_fits(build: str) -> None:
     )
 
 
+@pytest.mark.parametrize("build", ["chibi", "realistic"])
+def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
+    """The strip's outer edge holds its distance from the skull all the way down.
+
+    The edge used to be a single quadratic from the top of the strip to the
+    bottom, and a quadratic can be told where to bulge but not made to agree
+    with a curve: its middle fell to 0.78 of the skull's half width while both
+    of its ends sat above 0.87, so what got drawn was a straight diagonal and
+    the strip between the two edges was a triangle. The owner's report was that
+    it should track the face, and this is that read as a number.
+
+    Measured as sag away from the edge's *own* two ends rather than as absolute
+    distance from the skull, which is the difference between testing the shape
+    and testing `_BEARD_SIDE_INSET`. That constant is a judgement about how much
+    cheek to leave and has moved twice; a chord fails this at any value of it.
+
+    Off the drawn path rather than off `_face_track`, since the bug being
+    guarded lives in how the points are joined up, not in where they are. Both
+    builds, because the jaw taper only exists at the tall end and an edge that
+    ignores the contour goes wrong there first.
+    """
+    p = PRESETS["reinhard"]
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    d = re.search(r'd="([^"]+)"', character._beard(sk, p)).group(1)
+    # Everything before the first curve: the move, then the left outer edge.
+    nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d.split("Q")[0])]
+    pts = list(zip(nums[0::2], nums[1::2], strict=True))
+    # This is the assert the old geometry trips: a chord has nothing between its
+    # two ends, so there is no sag to measure and the sag check never runs.
+    assert len(pts) > 4, (
+        f"the outer edge is {len(pts)} point(s) before its first curve, which is a chord across "
+        f"the cheek rather than a line following it"
+    )
+    shares = [
+        (
+            (sk.head_cx - px)
+            / sk.head_r
+            / character._head_edge_x((py - sk.head_cy) / sk.head_r, sk.build),
+            (py - sk.head_cy) / sk.head_r,
+        )
+        for px, py in pts
+    ]
+    (top_share, top_y), (bot_share, bot_y) = shares[0], shares[-1]
+    for share, y in shares:
+        f = (y - top_y) / (bot_y - top_y)
+        held = top_share + (bot_share - top_share) * f
+        assert abs(share - held) < 0.02, (
+            f"at {y:.2f} head radii the strip's edge is {share:.2f} of the way out to the "
+            f"skull's where its own ends put it at {held:.2f}, so it is cutting across the "
+            f"cheek instead of following it"
+        )
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)

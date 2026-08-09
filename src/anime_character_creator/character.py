@@ -2311,16 +2311,45 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
 # the two outlines merged into one jaw. That was right about the outline and
 # wrong about everything else: at the widest part of the face it left no cheek
 # either side, so the mass ran ear to ear and the beard read as a hood with a
-# face hole cut in it. Pulling it in to 0.87 puts skin back beside the beard,
+# face hole cut in it. Pulling it in to 0.87 put skin back beside the beard,
 # which is what says the hair is growing on a jaw rather than wrapped round one.
 # Four candidates were rendered against both references at head size and at tile
 # size, since this part fails in opposite directions at the two sizes.
+#
+# It then moved back out to 0.93 on 2026-08-09, when the sideburns came to ride
+# the same contour: the cheek is now held clear by the top edge's dive past the
+# mouth rather than by this number, so what 0.87 bought was no longer a cheek but
+# a band of skin between the strip and the hair above it, and a sideburn that
+# does not reach the hair is a strap. 0.98 was tried too and is the old failure
+# coming back, the beard meeting the hair along the whole side and closing the
+# face in. See `harness/beard/sideburn.py`, which carries the old two-quadratic
+# version alongside so the change can be judged as one.
 _BEARD_TOP = 0.63
-_BEARD_SIDE_INSET = 0.87
+_BEARD_SIDE_INSET = 0.93
 # How high the sideburn strip climbs the side of the face, in head radii from the
 # head centre. About level with the top of the ear: high enough to meet the hair,
 # and no higher, because a strip that carries on past the ear is a chinstrap.
 _BEARD_SIDEBURN_Y = 0.02
+# How far out the strip's outer edge starts, as a share of the skull's own edge.
+# Just inside rather than on it, so the outline's stroke has somewhere to sit: at
+# 1.00 half the line weight lands outside the head.
+_BEARD_SIDEBURN_OUT = 0.99
+# The strip's width in head radii, at the top and where it runs into the mass.
+#
+# **Wider at the bottom**, which is the way round a real sideburn goes and the
+# opposite of what was here. The strip used to start 0.31 head radii wide at eye
+# level and converge to 0.06 at the jaw, and a band whose two edges converge is a
+# triangle: it read as a cut-out or a chinstrap rather than as hair, on both
+# wearers, at both sizes. Against `ref/reinhard.png` the strip is narrow down the
+# front of the ear and only spreads where it meets the beard, so the taper is
+# inverted here and the numbers are small.
+#
+# The top width does one more job: it sets how much of the strip's top cut shows.
+# That cut is a horizontal, it sits level with the top of the ear, and a long one
+# reads as the edge of something worn rather than the top of some hair. At 0.08
+# what is left of it is short enough to sit under the fringe on both wearers.
+_BEARD_SIDEBURN_W_TOP = 0.08
+_BEARD_SIDEBURN_W_BOT = 0.17
 
 
 def _beard(sk: Skeleton, p: CharacterParams) -> str:
@@ -2378,18 +2407,38 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # thing that says the beard grows out of the head, and it costs two points on
     # each side of the path.
     #
-    # Narrow, and following the skull's own edge, so the strip hugs the cheek
-    # instead of standing off it. `_BEARD_SIDEBURN_Y` is where it reaches: high
-    # enough to meet the hair, and no higher, since a strip climbing past the ear
-    # is a chinstrap.
+    # Narrow, and **following the skull's own edge point by point**, so the strip
+    # hugs the cheek instead of standing off it. Both edges used to be one
+    # quadratic apiece, which chords across a curve rather than riding it: the
+    # control could set where the line bulged but not make it agree with the face,
+    # and what came out was two straight diagonals. `_face_track` samples the same
+    # contour the outline is drawn from, so the strip curves with the cheek at any
+    # build for free.
+    #
+    # `_BEARD_SIDEBURN_Y` is where it reaches: high enough to meet the hair, and
+    # no higher, since a strip climbing past the ear is a chinstrap.
     burn_y = _BEARD_SIDEBURN_Y
-    x_burn_out = _head_edge_x(burn_y, b) * 0.99
-    x_burn_in = x_burn_out * 0.70
+    # The inner edge runs lower than the outer one, down to where it meets the top
+    # edge's dive, so it gets its own span rather than sharing the outer one.
+    join_y = top + 0.14
+    outer = _face_track(burn_y, top, b, _BEARD_SIDEBURN_OUT, _BEARD_SIDE_INSET)
+    inner = _face_track(
+        burn_y,
+        join_y,
+        b,
+        _BEARD_SIDEBURN_OUT,
+        _BEARD_SIDE_INSET,
+        _BEARD_SIDEBURN_W_TOP,
+        _BEARD_SIDEBURN_W_BOT,
+    )
+
+    def line(pts: list[Point], s: int) -> str:
+        return "".join(f"L {cx + s * x * r:.1f} {cy + y * r:.1f} " for x, y in pts)
+
     d = (
         # Down the outside: sideburn, jaw, then out past the chin.
-        f"M {cx - x_burn_out * r:.1f} {cy + burn_y * r:.1f} "
-        f"Q {cx - x_top * r * 1.06:.1f} {cy + (burn_y + (top - burn_y) * 0.6) * r:.1f} "
-        f"{cx - x_top * r:.1f} {cy + top * r:.1f} "
+        f"M {cx - outer[0][0] * r:.1f} {cy + burn_y * r:.1f} "
+        f"{line(outer[1:], -1)}"
         f"Q {cx - x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
         f"{cx - x_wide * r:.1f} {cy + mid_y * r:.1f} "
         f"Q {cx - x_wide * r * 0.90:.1f} {cy + bottom * r:.1f} {cx:.1f} {cy + bottom * r:.1f} "
@@ -2397,21 +2446,18 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
         f"{cx + x_wide * r:.1f} {cy + mid_y * r:.1f} "
         f"Q {cx + x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
         f"{cx + x_top * r:.1f} {cy + top * r:.1f} "
-        f"Q {cx + x_top * r * 1.06:.1f} {cy + (burn_y + (top - burn_y) * 0.6) * r:.1f} "
-        f"{cx + x_burn_out * r:.1f} {cy + burn_y * r:.1f} "
-        # Across the top of the right sideburn and back down its inner edge.
-        f"L {cx + x_burn_in * r:.1f} {cy + burn_y * r:.1f} "
-        f"Q {cx + x_burn_in * r * 1.04:.1f} {cy + (burn_y + (top - burn_y) * 0.7) * r:.1f} "
-        f"{cx + x_top * r * 0.74:.1f} {cy + (top + 0.14) * r:.1f} "
+        # Back up the right side, then across the top of the strip and down its
+        # inner edge.
+        f"{line(outer[-2::-1], 1)}"
+        f"{line(inner, 1)}"
         # The top edge, which has to dive **below the mouth** in the middle. The
         # mouth sits at 0.55 head radii and the ends of this edge are just below
         # 0.63, so a shallow curve between them runs across the face above the
         # mouth and the beard comes out as a surgical mask, which is what the
         # first attempt drew. A quadratic's midpoint is a quarter of each end plus
         # half the control, so the control goes to roughly twice the depth wanted.
-        f"Q {cx:.1f} {cy + 1.02 * r:.1f} {cx - x_top * r * 0.74:.1f} {cy + (top + 0.14) * r:.1f} "
-        f"Q {cx - x_burn_in * r * 1.04:.1f} {cy + (burn_y + (top - burn_y) * 0.7) * r:.1f} "
-        f"{cx - x_burn_in * r:.1f} {cy + burn_y * r:.1f} "
+        f"Q {cx:.1f} {cy + 1.02 * r:.1f} {cx - inner[-1][0] * r:.1f} {cy + join_y * r:.1f} "
+        f"{line(inner[-2::-1], -1)}"
         f"Z"
     )
     return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
@@ -3544,6 +3590,38 @@ def _head_edge_x(y: float, build: float) -> float:
             return prev[0] + (cur[0] - prev[0]) * f
         prev = cur
     return prev[0]
+
+
+def _face_track(
+    y0: float,
+    y1: float,
+    build: float,
+    r0: float,
+    r1: float,
+    w0: float = 0.0,
+    w1: float = 0.0,
+    steps: int = 10,
+) -> list[Point]:
+    """Points down the skull's edge from `y0` to `y1`, in head radii.
+
+    Each point sits `r` of the way out to the edge and then `w` further in, both
+    interpolated across the span, so a caller can lay a band along the cheek that
+    holds its own width while the face under it narrows. The two knobs are not
+    the same thing and both are needed: a ratio alone gives a band that thins as
+    the jaw draws in, and a width alone gives one that ignores the taper.
+
+    Sampled off `_head_edge_x` rather than fitted, for the reason that helper
+    exists at all: it cannot drift away from the drawn outline. A polyline is
+    enough at the size this is looked at, ten segments over a quarter of the
+    skull being finer than the eight quadratics that draw the skull itself.
+    """
+    pts = []
+    for i in range(steps + 1):
+        f = i / steps
+        y = y0 + (y1 - y0) * f
+        x = _head_edge_x(y, build) * (r0 + (r1 - r0) * f) - (w0 + (w1 - w0) * f)
+        pts.append((x, y))
+    return pts
 
 
 def _head_shape(build: float) -> tuple[Point, list[Segment]]:

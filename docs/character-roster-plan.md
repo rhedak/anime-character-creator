@@ -480,6 +480,42 @@ visible **tie** and both its edges outside the hair mass, Tomohiro's jacket
 needed length, and Chiyo needed the headscarf that `aged()` could never have
 reached.
 
+### The sideburns, later the same day
+
+The owner's read on the beard the pass had just landed: the outer lines of the
+sideburns should track the shape of the face rather than use straight lines.
+They were straight for a reason worth naming, because it will come up again on
+any part welded to the head. **Each edge was a single quadratic** from the top
+of the strip to the bottom. A quadratic can be told where to bulge but it cannot
+be made to agree with a curve it does not share points with, so both edges left
+their ends at a plausible distance from the skull and chorded across everything
+in between: the outer one fell to 0.78 of the skull's half width at mid-span
+while both of its ends sat above 0.87.
+
+The fix is to stop approximating the contour and sample it. `_face_track` walks
+`_head_edge_x`, the same function the skull's own outline is drawn from, and
+returns a polyline held at a given share of the way out and a given width
+further in. Two knobs rather than one, because a share alone gives a band that
+thins as the jaw draws in and a width alone gives one that ignores the taper.
+
+Looking at it also turned up a second fault, and it was the one doing the
+damage: **the strip was widest at the top and converged to a point at the jaw**,
+0.31 head radii down to 0.06. Two edges that converge make a triangle, which is
+why it read as a cut-out or a chinstrap rather than as hair. `ref/reinhard.png`
+has the strip narrow down the front of the ear, spreading only where it meets
+the beard, so the taper is now inverted: 0.08 at the top, 0.17 at the join.
+
+`_BEARD_SIDE_INSET` moved 0.87 to 0.93 as a consequence. Its old value was tuned
+when there were no sideburns at all and the mass had to be kept off the cheek by
+width alone; the top edge's dive past the mouth does that now, so what 0.87
+bought was no longer a cheek but a band of skin between the strip and the hair
+above it, and a sideburn that does not reach the hair is a strap. 0.98 was tried
+and brings back the original hood.
+
+`harness/beard/sideburn.py` keeps the old two-quadratic version alongside the new
+one so the change can be judged as a single before-and-after, at head size and at
+tile size together, which is the only way this part has ever been judged safely.
+
 ### Still below the line, and deliberately
 
 - **Krista's goggles.** Named in the table above as a first-draft feature and
