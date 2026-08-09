@@ -2053,6 +2053,16 @@ def _tail_tie(sk: Skeleton) -> tuple[float, float]:
     return sk.head_cx + sk.head_r * 0.62, sk.head_cy - sk.head_r * 0.62
 
 
+# Where the cloth's lower edge meets the side of the head, in head radii: just
+# above the ear, which leaves a band of hair showing under it at the temples.
+_SCARF_EDGE_Y = -0.26
+# How far outside the hair the cloth sits, as a multiple of the cut's own half
+# width. Cloth has a thickness and a hem, so a scarf tied over hair stands very
+# slightly proud of it; at exactly 1.00 the two outlines land on each other and
+# read as one line, which says the cap is painted on.
+_SCARF_CLEAR = 1.04
+
+
 def _headscarf(sk: Skeleton, p: CharacterParams) -> str:
     """A cloth tied over the crown, with a knot at the side.
 
@@ -2074,11 +2084,19 @@ def _headscarf(sk: Skeleton, p: CharacterParams) -> str:
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     color = p.outfit.headscarf_color
     sw = _stroke_w(sk)
-    b = sk.build
-    # Where the cloth's lower edge meets the side of the head: just above the
-    # ear, which leaves a band of hair showing under it at the temples.
-    edge_y = -0.26
-    x_edge = _head_edge_x(edge_y, b)
+    edge_y = _SCARF_EDGE_Y
+    # **The hair's width, not the skull's.** This part already knew the rule and
+    # applied it in one axis only: `crown` below clears the cut rather than the
+    # bone, and this line took the bone. On a long cut that is a fifth of a head
+    # radius of hair standing outside the cloth tied over it, so the two outlines
+    # cross and the cap reads as a shape painted on the hair rather than as
+    # something put on. The owner's report on 2026-08-09.
+    #
+    # The height this is read at barely matters, which is worth knowing before
+    # anyone moves `edge_y`: across the whole band from -0.36 to -0.16 the cut's
+    # silhouette runs 1.217 to 1.248, because the falls are near vertical where
+    # they pass the temple. The skull over the same band moves twice as far.
+    x_edge = _hair_edge_x(edge_y, sk, p) * _SCARF_CLEAR
     # It has to clear the hair, not the skull, or it is buried the way the first
     # topknot was. The cuts top out near -1.28 head radii, and a scarf tied over
     # one sits on it rather than replacing it.
@@ -2088,7 +2106,7 @@ def _headscarf(sk: Skeleton, p: CharacterParams) -> str:
     # its endpoint's height runs flat into that endpoint, and every arrangement
     # of two or four of them that fixes the top breaks the sides. An arc states
     # the dome directly and cannot be flat anywhere.
-    rx = x_edge * 1.02 * r
+    rx = x_edge * r
     ry = (edge_y - crown) * r
     left_x = cx - rx
     right_x = cx + rx
@@ -3680,6 +3698,48 @@ def _head_edge_x(y: float, build: float) -> float:
             return prev[0] + (cur[0] - prev[0]) * f
         prev = cur
     return prev[0]
+
+
+def _hair_edge_x(y: float, sk: Skeleton, p: CharacterParams) -> float:
+    """How far off centre the *silhouette* sits at height `y`, in head radii.
+
+    The hair's own contour where the hair reaches that height, the skull's where
+    it does not, so a caller gets the outline a viewer actually sees rather than
+    the bone under it. `_head_edge_x` answers the other question and the two are
+    a head radius apart at the temples on a long cut.
+
+    Which is the distinction three parts have now got wrong in the same
+    direction. A hat, a tie or a knot sized against the skull sits inside the
+    hair it is supposed to be on, and what it reads as is a shape painted on the
+    hair rather than an object placed over it.
+
+    The widest crossing rather than the first: the contour can cross a height
+    more than once, at a lock's edge or a notch, and what a garment has to clear
+    is the outermost of them.
+
+    Walks the mass's quadratics rather than taking the style's word for it, for
+    the reason `_head_edge_x` walks the skull's: a second formula agrees with the
+    drawing until somebody retunes one of them.
+    """
+    start, segments = HAIRSTYLES[p.hairstyle].mass(_hair_fall(sk, p))
+    widest = _head_edge_x(y, sk.build)
+    prev = start
+    for ctrl, end in segments:
+        here = prev
+        for i in range(1, 25):
+            t = i / 24
+            u = 1.0 - t
+            nxt = (
+                u * u * prev[0] + 2 * u * t * ctrl[0] + t * t * end[0],
+                u * u * prev[1] + 2 * u * t * ctrl[1] + t * t * end[1],
+            )
+            lo, hi = sorted((here[1], nxt[1]))
+            if lo <= y <= hi and nxt[1] != here[1]:
+                f = (y - here[1]) / (nxt[1] - here[1])
+                widest = max(widest, abs(here[0] + (nxt[0] - here[0]) * f))
+            here = nxt
+        prev = end
+    return widest
 
 
 def _jaw_track(y0: float, build: float, drop: float, inset: float, steps: int = 12) -> list[Point]:

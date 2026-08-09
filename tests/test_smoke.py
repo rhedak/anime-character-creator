@@ -800,6 +800,41 @@ def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str, build
     )
 
 
+@pytest.mark.parametrize("hairstyle", sorted(HAIRSTYLES))
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_cap_covers_the_hair_it_is_tied_over(hairstyle: str, build: str) -> None:
+    """The cloth has to be at least as wide as the cut under it.
+
+    Sized against the skull it is a fifth of a head radius too narrow on a long
+    cut, so the hair stands outside the cloth tied over it, the two outlines
+    cross, and what it reads as is a shape painted on the hair rather than
+    something put on. That is the owner's report on 2026-08-09 and it is the
+    third part to make the same mistake: the tail and the knot were both sized
+    against the bone while sitting on the hair.
+
+    Every cut, not just the one wearer's, because a scarf is a garment and the
+    whole point of it being one is that anyone can put it on. Both builds,
+    because the hair and the skull do not change width together: `short_crop`
+    goes 1.28 to 1.00 across the range while the skull barely moves.
+
+    Read off the drawn arc rather than off the constant, so it fails if the
+    width goes back to being taken from `_head_edge_x`, which is the specific
+    regression worth catching.
+    """
+    p = replace(PRESETS["chiyo"], hairstyle=hairstyle)
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    d = re.search(r'd="([^"]+)"', character._headscarf(sk, p)).group(1)
+    rx = float(re.search(r"A ([\d.]+) ", d).group(1)) / sk.head_r
+    hair = character._hair_edge_x(character._SCARF_EDGE_Y, sk, p)
+    assert rx >= hair, (
+        f"the cap is {rx:.3f} head radii wide over {hairstyle} hair that is {hair:.3f} wide, "
+        f"so the cut stands outside the cloth tied over it"
+    )
+    # And still on the canvas. The dome now grows with the hair, so a longer or
+    # fuller cut moves it, and the failure at that end is a flat-sided cap.
+    assert sk.head_cx + rx * sk.head_r <= 400, f"the cap runs off the canvas at {rx:.3f}"
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)
