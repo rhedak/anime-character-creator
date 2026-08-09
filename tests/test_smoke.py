@@ -624,14 +624,22 @@ def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
     p = PRESETS["reinhard"]
     sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
     d = re.search(r'd="([^"]+)"', character._beard(sk, p)).group(1)
-    # Everything before the first curve: the move, then the left outer edge.
+    # The path opens at the top of the left strip and runs down it, so the strip
+    # is its leading run, taken until the height where the mass takes over. Bound
+    # by height rather than by counting points or by splitting on the first curve:
+    # both of those have already been made wrong once by a change elsewhere in the
+    # path, the second when the bottom stopped being drawn as quadratics.
     nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d.split("Q")[0])]
-    pts = list(zip(nums[0::2], nums[1::2], strict=True))
+    pts = []
+    for px, py in zip(nums[0::2], nums[1::2], strict=True):
+        if (py - sk.head_cy) / sk.head_r > character._BEARD_TOP + 0.01:
+            break
+        pts.append((px, py))
     # This is the assert the old geometry trips: a chord has nothing between its
     # two ends, so there is no sag to measure and the sag check never runs.
     assert len(pts) > 4, (
-        f"the outer edge is {len(pts)} point(s) before its first curve, which is a chord across "
-        f"the cheek rather than a line following it"
+        f"the outer edge is {len(pts)} point(s) between the top of the strip and the mass, "
+        f"which is a chord across the cheek rather than a line following it"
     )
     shares = [
         (
@@ -675,6 +683,23 @@ def test_the_sideburn_never_narrows_on_its_way_down(build: str) -> None:
     parse would add nothing to.
     """
     sk = build_skeleton(heads=BUILDS[build], frame=PRESETS["reinhard"].frame)
+    corner = character._face_track(
+        character._BEARD_SIDEBURN_Y,
+        character._BEARD_TOP,
+        sk.build,
+        character._BEARD_SIDEBURN_OUT,
+        character._BEARD_SIDE_INSET,
+    )[-1]
+    jaw = character._jaw_track(
+        character._BEARD_TOP,
+        sk.build,
+        PRESETS["reinhard"].beard_length,
+        character._BEARD_SIDE_INSET,
+    )[0]
+    assert math.dist(corner, jaw) < 1e-9, (
+        f"the strip ends at {corner} and the jaw starts at {jaw}, so the outline kinks where "
+        f"they meet, by an amount that moves with the build"
+    )
     inner = character._face_track(
         character._BEARD_SIDEBURN_Y,
         character._BEARD_TOP + 0.14,
@@ -695,6 +720,51 @@ def test_the_sideburn_never_narrows_on_its_way_down(build: str) -> None:
             f"at {y:.2f} head radii the strip pinches from {here:.3f} to {nxt:.3f}"
             f" (inner edge at {x:.3f})"
         )
+
+
+@pytest.mark.parametrize("preset", ["reinhard", "daizen"])
+def test_the_beard_reaches_over_the_mouth_and_the_mouth_survives_it(preset: str) -> None:
+    """A moustache, and a mouth still drawn on top of it.
+
+    Two halves of one change, and each is silent without the other. The beard
+    used to top out at about 0.895 head radii in the middle with the chin at
+    1.0, so it covered the last tenth of the chin and hung below, leaving bare
+    skin from the lip to the jaw: a shaved face on an unshaved neck, which is
+    the owner's report on 2026-08-09. Raising it fixes that and immediately
+    deletes the mouth, because the beard was drawn over the face.
+
+    So the beard has to reach above `_MOUTH_Y` somewhere near the centre, and
+    the face has to be drawn after the beard. Neither shows up as an error: a
+    beard that stops short still renders, and a swallowed mouth still renders.
+
+    The centre band is read off every number in the path, controls included,
+    which is looser than tracing the curve and enough here: the old shape's
+    only central point was the control that dived to 1.02, well the wrong side
+    of the mouth, so nothing about it could pass this by accident.
+
+    The order check is exactly that, an order check. It says these two blocks
+    are stacked the right way round, not that the mouth is visible: it would
+    still pass if the mouth left `_face` for a layer of its own, or if a later
+    part grew something over the lip. Both would have to be seen, not asserted.
+    """
+    p = PRESETS[preset]
+    sk = build_skeleton(heads=p.heads, frame=p.frame)
+    beard = character._beard(sk, p)
+    d = re.search(r'd="([^"]+)"', beard).group(1)
+    nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d)]
+    pts = list(zip(nums[0::2], nums[1::2], strict=True))
+    middle = [
+        (py - sk.head_cy) / sk.head_r for px, py in pts if abs(px - sk.head_cx) < sk.head_r * 0.15
+    ]
+    assert middle, "the beard has no point near the centre line at all"
+    assert min(middle) < character._MOUTH_Y, (
+        f"the beard's highest point near the centre is {min(middle):.2f} head radii and the "
+        f"mouth is at {character._MOUTH_Y}, so it stops below the lip and reads as a neckbeard"
+    )
+    svg = render_character(p, sk)
+    assert svg.index(beard) < svg.index(character._face(sk, p)), (
+        "the beard is drawn over the face, so the moustache paints out the mouth"
+    )
 
 
 def test_the_sheet_renders_and_stays_deterministic() -> None:

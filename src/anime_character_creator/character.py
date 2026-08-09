@@ -2303,6 +2303,13 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# Where `_face` draws the mouth, in head radii below the head's centre. Shared
+# rather than copied, because the beard is built around the mouth: the moustache
+# has to clear the lip and the jaw run has to meet it at the corner, and a beard
+# built around its own copy of this number agrees with the face on the day it is
+# written and silently stops agreeing the first time the mouth moves.
+_MOUTH_Y = 0.55
+
 # Where the beard's mass meets the face at the sides, and how far inside the
 # skull's edge it lands there. Named constants rather than literals so a sweep
 # can try candidates without editing the drawing code; see `harness/beard/`.
@@ -2365,24 +2372,51 @@ _BEARD_SIDEBURN_W_BOT = 0.17
 # also the shape `ref/reinhard.png` has, a thin line in front of the ear that
 # spreads at the jaw.
 _BEARD_SIDEBURN_W_EASE = 2.0
+# The moustache: how high it reaches at the centre, and how far out it runs
+# before the edge turns down the jaw. Both in head radii.
+#
+# This is what stops the beard reading as a neckbeard. The top edge used to dive
+# to about 0.895 in the middle with the chin at 1.0, so the mass covered the last
+# tenth of the chin and hung below it, leaving bare skin from the lower lip to the
+# jaw: shaved the face, kept the neck. The owner's call on 2026-08-09 was to bring
+# the coverage up over the chin and around the mouth.
+#
+# **Raising the edge is not the same as raising it evenly**, and that distinction
+# is the whole part. A level edge across the lower face is a surgical mask, which
+# is what the first attempt at this drew and what the dive existed to avoid. So
+# the edge stays low where it crosses the cheek and rises only in the middle, over
+# a span narrow enough to read as a moustache. `_BEARD_TASH_HALF` is that span;
+# past about 0.36 the lobe stops being a moustache and the mask comes back.
+_BEARD_TASH_Y = 0.46
+_BEARD_TASH_HALF = 0.24
+# The lips, showing through. Both as multiples of the mouth's own half width, so
+# the lozenge keeps its proportions on a character whose mouth is narrow; zero
+# draws none.
+#
+# Without this the hair round the mouth and the hair under it are one unbroken
+# field of colour, and a solid field over the whole lower face is a mask no
+# matter what its outline does. The lip is what makes the same shape read as a
+# moustache above and a beard below, and it is why a beard can cover the mouth
+# at all without swallowing the face.
+_BEARD_LIP_W = 2.3
+_BEARD_LIP_H = 0.63
 
 
 def _beard(sk: Skeleton, p: CharacterParams) -> str:
-    """Facial hair: a mass along the jaw, hanging below the chin.
+    """Facial hair: a mass round the mouth and the chin, hanging below the jaw.
 
     Welded to the skull the way the ear is, by sampling `_head_edge_x` rather
     than by assuming a circle, so it follows the jaw taper as the build gets
     taller instead of standing off the face at one end of the range.
 
-    Drawn over the face and under nothing, which is the only order that works:
-    under the face the mouth's line would sit on top of the beard and the chin
-    would show through it, and a beard is the one part that is *supposed* to
-    cover the jaw it grows on.
+    Drawn over the head and under the face, which is what lets the moustache
+    exist: the skull's chin outline would otherwise run across the mass, and the
+    mouth has to sit on top of the hair around it rather than under it.
 
-    A moustache is not separate. At the size this is looked at, the gap between
-    a moustache and the beard under it is a pixel, so the mass runs unbroken past
-    the mouth and the mouth's own stroke draws over it, which is what the shape
-    reads as anyway.
+    A moustache is not a separate part. It is the middle of this one path's top
+    edge, lifted over the lip, which is also why that edge is four curves: it has
+    to stay off the cheek at the sides and climb in the middle, and one curve can
+    only do one of those.
     """
     if p.beard_color is None:
         return ""
@@ -2395,26 +2429,18 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # its widest just above this, so every step upward here adds a band of face
     # width to the mass and the beard turns into a hood.
     top = _BEARD_TOP
+    # How deep the growth is, which since 2026-08-09 is a depth rather than a
+    # length: the bottom rides the jaw and this is how far it sinks below it. It
+    # used to set how far a swung arc reached past the chin, which is why the
+    # preset values dropped by more than half when the shape changed.
     drop = max(0.0, p.beard_length)
-    chin = _head_pt(180.0, 1.0, b)[1]
-    # **On** the skull's edge, not inside it. Tucked inside, the face's own
-    # outline runs across above the beard, the mass below reads as a separate
-    # object hanging off the chin, and what comes out is a scarf. Landing the top
-    # corners on the contour merges the two outlines into one jaw, which is how a
-    # beard is drawn. The cheek is kept clear by *height* instead: `top` sits
-    # below the head's widest point, so there is face above the beard rather than
-    # beside it.
-    x_top = _head_edge_x(top, b) * _BEARD_SIDE_INSET
-    # **Wider than the jaw at the bottom**, which is the part that matters and
-    # the part three attempts at this got wrong. A beard tucked inside the head's
-    # outline is invisible once the figure is shrunk to a tile, because nothing
-    # about the silhouette changed and colour alone is what goes first. Hanging
-    # it past the jaw puts a wedge on the outline, and a wedge under a chin reads
-    # as a beard at any size. It scales with the length, so a short groomed one
-    # stays close to the face and a full one squares off well outside it.
-    x_wide = _head_edge_x(min(0.98, chin - 0.06), b) + drop * 1.25
-    mid_y = chin + drop * 0.45
-    bottom = chin + drop
+    # Everything below rides `_BEARD_SIDE_INSET`, which keeps the mass **on** the
+    # skull's edge rather than inside it. Tucked inside, the face's own outline
+    # runs across above the beard, the mass below reads as a separate object
+    # hanging off the chin, and what comes out is a scarf. The cheek is kept clear
+    # by *height* instead: `top` sits below the head's widest point, so there is
+    # face above the beard rather than beside it.
+    #
     # **The sideburns are what make it read as facial hair at all.** Without them
     # the mass hangs under the jaw connected to nothing, and every version of that
     # came out as a scarf, a collar or a neck warmer no matter how it was shaped
@@ -2448,35 +2474,75 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
         _BEARD_SIDEBURN_W_EASE,
     )
 
+    # Where the top edge turns: the moustache's outer end sits a touch below the
+    # mouth so the two corners meet, which is where a beard and a moustache join
+    # on a face.
+    x_join = inner[-1][0]
+    corner_y = _MOUTH_Y + 0.02
+    tash_half = _BEARD_TASH_HALF
+    tash_y = _BEARD_TASH_Y
+
     def line(pts: list[Point], s: int) -> str:
         return "".join(f"L {cx + s * x * r:.1f} {cy + y * r:.1f} " for x, y in pts)
 
+    # The bottom, from the left top corner round to the right one: the jaw's own
+    # line, sunk by the depth of the growth.
+    #
+    # What was here was an arc swung wide of the jaw and squared off under the
+    # chin, a shape with bulk of its own rather than one following the face, and
+    # what it read as was hair on a neck. The jaw line is also the version that
+    # survives being made short, which is what the owner asked for on 2026-08-09:
+    # a shallow arc is a crescent that could be anything, while a jaw line is
+    # still a jaw at any depth. The arc is kept in `harness/beard/hang.py` so the
+    # two can be put side by side again.
+    jaw = _jaw_track(top, b, drop, _BEARD_SIDE_INSET)
+    bottom_d = f"{line(jaw, -1)}{line(jaw[-2::-1], 1)}"
+
     d = (
-        # Down the outside: sideburn, jaw, then out past the chin.
+        # Down the outside: sideburn, then round the bottom and back up.
         f"M {cx - outer[0][0] * r:.1f} {cy + burn_y * r:.1f} "
         f"{line(outer[1:], -1)}"
-        f"Q {cx - x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
-        f"{cx - x_wide * r:.1f} {cy + mid_y * r:.1f} "
-        f"Q {cx - x_wide * r * 0.90:.1f} {cy + bottom * r:.1f} {cx:.1f} {cy + bottom * r:.1f} "
-        f"Q {cx + x_wide * r * 0.90:.1f} {cy + bottom * r:.1f} "
-        f"{cx + x_wide * r:.1f} {cy + mid_y * r:.1f} "
-        f"Q {cx + x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
-        f"{cx + x_top * r:.1f} {cy + top * r:.1f} "
+        f"{bottom_d}"
         # Back up the right side, then across the top of the strip and down its
         # inner edge.
         f"{line(outer[-2::-1], 1)}"
         f"{line(inner, 1)}"
-        # The top edge, which has to dive **below the mouth** in the middle. The
-        # mouth sits at 0.55 head radii and the ends of this edge are just below
-        # 0.63, so a shallow curve between them runs across the face above the
-        # mouth and the beard comes out as a surgical mask, which is what the
-        # first attempt drew. A quadratic's midpoint is a quarter of each end plus
-        # half the control, so the control goes to roughly twice the depth wanted.
-        f"Q {cx:.1f} {cy + 1.02 * r:.1f} {cx - inner[-1][0] * r:.1f} {cy + join_y * r:.1f} "
+        # The top edge, right to left. Four curves rather than one, because it has
+        # to do two opposite things: stay off the cheek at the sides and climb
+        # over the lip in the middle. One curve between the two joins can only
+        # pick a single height and is wrong at one end whichever it picks, which
+        # is how this part produced both a surgical mask and a neckbeard from the
+        # same line. In from each join to the corner of the mouth, then up and
+        # across the moustache.
+        f"Q {cx + x_join * r * 0.99:.1f} {cy + (corner_y + (join_y - corner_y) * 0.34) * r:.1f} "
+        f"{cx + tash_half * r:.1f} {cy + corner_y * r:.1f} "
+        f"Q {cx + tash_half * r * 0.55:.1f} {cy + tash_y * r:.1f} {cx:.1f} {cy + tash_y * r:.1f} "
+        f"Q {cx - tash_half * r * 0.55:.1f} {cy + tash_y * r:.1f} "
+        f"{cx - tash_half * r:.1f} {cy + corner_y * r:.1f} "
+        f"Q {cx - x_join * r * 0.99:.1f} {cy + (corner_y + (join_y - corner_y) * 0.34) * r:.1f} "
+        f"{cx - x_join * r:.1f} {cy + join_y * r:.1f} "
         f"{line(inner[-2::-1], -1)}"
         f"Z"
     )
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    mass = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    if _BEARD_LIP_W <= 0:
+        return mass
+    # Outlined, at well under the usual weight. Unstroked was tried first, on the
+    # reasoning that the mouth's own line lands on this a layer later and a second
+    # ring round it would read as a second mouth, and that is true at full weight
+    # and false at this one: an outline here reads as the edge of a lip. It also
+    # has to be *some* outline, since a colour patch with no ink round it is the
+    # one soft edge in a drawing where everything else is hard-edged.
+    #
+    # Both radii ride `mouth_width`, so the lozenge stays the same shape on a
+    # character with a small mouth instead of turning into a different lozenge.
+    lip = 0.12 * p.face.mouth_width
+    return (
+        f"{mass}"
+        f'<ellipse cx="{cx:.1f}" cy="{cy + _MOUTH_Y * r:.1f}" '
+        f'rx="{lip * _BEARD_LIP_W * r:.1f}" ry="{lip * _BEARD_LIP_H * r:.1f}" '
+        f'fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{sw * 0.4:.1f}" />'
+    )
 
 
 def _glasses(sk: Skeleton, p: CharacterParams) -> str:
@@ -3608,6 +3674,35 @@ def _head_edge_x(y: float, build: float) -> float:
     return prev[0]
 
 
+def _jaw_track(y0: float, build: float, drop: float, inset: float, steps: int = 12) -> list[Point]:
+    """The lower skull from height `y0` round to the chin, sunk by `drop`.
+
+    The jaw's own line, moved down rather than replaced by an arc of somebody
+    else's shape. The sink ramps in from nothing at `y0`, so the curve leaves the
+    top corner where the sideburn left it instead of stepping away from it, and
+    the x scale ramps the other way, from the mass's inset at the top to the
+    skull's full width at the chin. Both ramps exist for the same reason: a beard
+    that starts exactly where the strip ended and ends exactly under the chin has
+    no seam anywhere, whatever the build does to the jaw underneath it.
+
+    Right side only, ending on the centre line, which is where `_head_pt` puts the
+    chin. The caller mirrors it.
+    """
+    deg0 = next((d for d in range(90, 181) if _head_pt(float(d), 1.0, build)[1] >= y0), 90)
+    pts = []
+    for i in range(steps + 1):
+        f = i / steps
+        x, y = _head_pt(deg0 + (180.0 - deg0) * f, 1.0, build)
+        pts.append((x * (inset + (1.0 - inset) * f), y + drop * f))
+    # `deg0` is a whole degree, so it lands at or just past `y0`, which leaves the
+    # first point up to a fiftieth of a head radius below where the strip ended.
+    # That is a kink rather than a gap, since the path runs a straight line into
+    # it, but it is a kink that moves with the build, and the point it should be
+    # at is known exactly.
+    pts[0] = (_head_edge_x(y0, build) * inset, y0)
+    return pts
+
+
 def _face_track(
     y0: float,
     y1: float,
@@ -4099,7 +4194,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.75" stroke-linecap="round" />'
         )
 
-    mouth_y = cy + r * 0.55
+    mouth_y = cy + r * _MOUTH_Y
     mouth_half = r * 0.12 * f.mouth_width
     parts.append(
         f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
@@ -4247,9 +4342,13 @@ def render_character(
         # face's outline unbroken across the ear and hangs the hair behind it.
         _ears(sk, p),
         _head(sk, p),
-        _face(sk, p),
-        # Over the face: a beard covers the jaw it grows on, and spectacles sit
-        # in front of the eyes rather than behind them.
+        # Over the head and under the face. Over the head because a beard covers
+        # the jaw it grows on, and the skull's own chin outline would otherwise
+        # run straight across it. Under the face because a moustache goes over the
+        # lip and the lip is drawn on top of it: with the beard above, raising the
+        # coverage to where the owner asked for it on 2026-08-09 simply deleted
+        # the mouth. Nothing else in `_face` reaches this far down, so the move
+        # costs nothing above.
         #
         # Lifting the hair or the ear back over the beard was tried on 2026-08-09,
         # to stop the three of them colliding at the temple, and neither can be
@@ -4262,6 +4361,8 @@ def render_character(
         # arrangement. The crowding is geometry; `_BEARD_SIDEBURN_W_TOP` is where
         # it lives.
         _beard(sk, p),
+        _face(sk, p),
+        # Over the face: spectacles sit in front of the eyes, not behind them.
         _glasses(sk, p),
         _hair_front(sk, p),
         # Last of the hair, unlike the tail, which is first. See `_hair_knot`: a

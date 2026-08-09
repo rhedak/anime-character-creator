@@ -356,7 +356,7 @@ DAIZEN = CharacterParams(
     eye_color="#7ea3bd",
     hair_knot=True,
     beard_color="#6e6a63",
-    beard_length=0.30,
+    beard_length=0.17,
     # Waiting on: an open haori over a kimono, an obi, and a full beard. The
     # navy is the haori's, the dark green underneath is the kimono's.
     outfit=Outfit(
@@ -589,7 +589,7 @@ REINHARD = CharacterParams(
     hair_length=0.22,
     eye_color="#8098a8",
     beard_color="#7d6540",
-    beard_length=0.19,
+    beard_length=0.07,
     # Waiting on: the uniform, the strap, and a short beard.
     outfit=Outfit(
         tunic_color=UNIFORM,

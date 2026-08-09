@@ -566,6 +566,86 @@ the figure is shrunk, so the tiles were magnified and compared as pixels rather
 than eyeballed at size. The beard survives: at tile size it is carried by the mass
 under the jaw, and the strip was never what was doing that work.
 
+### The moustache, and the mouth that had to move to allow it
+
+Third read on the same part, same day: the beard sat under the chin rather than
+on it, so it looked like a shaved face on an unshaved neck. The numbers agreed.
+The top edge dived to about 0.895 head radii in the middle with the chin at 1.0
+and the mouth at 0.55, so the mass covered the last tenth of the chin and hung
+below it, leaving bare skin from the lower lip all the way down to the jaw.
+
+**The trap here is that raising the edge and raising it evenly are not the same
+move.** A level edge across the lower face is a surgical mask, which is what this
+part drew on its first attempt and exactly what the diving edge existed to
+prevent. So the top edge is now four curves rather than one: in from each join to
+the corner of the mouth, then up and across a lobe narrow enough to read as a
+moustache. One curve between the two joins can only pick a single height and is
+wrong at one end whichever it picks, which is how the same line managed to
+produce both failures.
+
+**Two things had to change that were not the shape.**
+
+The mouth is drawn over the beard now, not under it. `_beard` moved from after
+`_face` to between `_head` and `_face`: over the head, because the skull's own
+chin outline would otherwise run straight across the mass, and under the face,
+because a moustache goes over the lip and the lip has to be drawn on top of it.
+With the old order the first raised edge simply deleted the mouth. Nothing else
+in `_face` reaches that far down, so the move costs nothing above, and only the
+two bearded characters' renders changed.
+
+And the lips show through, as a skin-toned lozenge the mouth's own stroke then
+lands on. Without it the hair round the mouth and the hair under it are one
+unbroken field, and **a solid field over the whole lower face is a mask whatever
+its outline does**. This was the difference between the first raised version,
+which read as something worn, and the shipped one: the lozenge is what makes the
+same silhouette read as a moustache above and a beard below.
+
+It carries an outline of its own, at 0.4 of the usual weight. It shipped unstroked
+first, on the reasoning that a ring round the mouth would read as a second mouth,
+and that turned out to be true only at full weight: rendered at four weights, the
+light one reads as the edge of a lip. It also has to be some outline, since a
+colour patch with no ink round it would be the one soft edge in a drawing whose
+whole style is hard-edged.
+
+`_MOUTH_Y` is now shared between `_face` and `_beard` rather than copied, since
+the moustache has to clear the lip and the jaw run has to meet it at the corner.
+A beard built around its own copy of 0.55 agrees with the face on the day it is
+written and stops agreeing the first time the mouth moves.
+
+Swept in `harness/beard/moustache.py` over the lobe's height and half width and
+the lip's width together, which is right because they trade against each other:
+a wider lobe needs a wider lip to stay a moustache.
+
+### The bottom line, and what a length means
+
+Fourth read, and the one that made the previous three land. Two asks together:
+shorten the hang below the chin, and try a bottom that follows the head's shape
+rather than an arc of its own.
+
+They turned out to be the same fix. The old bottom swung `drop * 1.25` wide of
+the jaw and squared off `drop` below the chin, owing its shape to nothing about
+the head under it, so the mass read as something hanging off a face rather than
+growing on one. `_jaw_track` walks the lower skull from the mass's top corner
+round to the chin and sinks each point by the depth of the growth, with the sink
+ramping in from nothing at the top and the width ramping out to the skull's full
+half width at the chin, so the curve leaves the sideburn exactly where the strip
+left it and there is no seam at either end at any build.
+
+**The shape is what lets the length come down.** A shallow arc is a thin crescent
+that could be anything, so the old bottom needed depth to read at all; a jaw line
+is still a jaw at any depth. With the arc gone the presets could be cut by well
+over half, Reinhard 0.19 to 0.07 and Daizen 0.30 to 0.17, and the hair came off
+the neck entirely.
+
+So `beard_length` now means a **depth** rather than a length: how far the growth
+sinks below the jaw, not how far a swung arc reaches past the chin. That is why
+the preset numbers moved so much for no visible change in how full either beard
+looks.
+
+The arc lives on in `harness/beard/hang.py`, resampled onto the same interface as
+the jaw track so the two can be put side by side again, which is the same
+arrangement `sideburn.py` uses for the geometry it replaced.
+
 ### Still below the line, and deliberately
 
 - **Krista's goggles.** Named in the table above as a first-draft feature and
