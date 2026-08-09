@@ -725,6 +725,28 @@ everywhere: a garment or accessory has to read the surface it sits on, not the
 frame that surface is built from, and a comment claiming it does so is not a
 substitute for the two functions sharing code.
 
+### The coat's two panels, unconnected at the neck
+
+A different kind of gap from the previous three: not a part sized against the
+wrong surface, but a shape that simply never reached the surface it needed to.
+The owner's report: Keiko's coat looks like two unconnected pieces rather than a
+labcoat joined behind the neck.
+
+The geometry agreed before any rendering did. Each panel's top ran in a single
+line from the throat point to the shoulder point, and both ends of that line sit
+at or below the shoulder line, so nothing in it ever rises to touch the neck.
+The whole strip of shoulder next to the neck was bare on both sides, on all
+three wearers, since one `_coat` covers Keiko's lab coat, Kyoko's long coat and
+Tomohiro's cropped jacket.
+
+The fix adds a third point per panel, between the two that were already there,
+that climbs to hug the side of the neck the way `_collar` already does elsewhere
+in this file. Found by rendering a grid against `ref/keiko.png`
+(`harness/coat/lapel.py`), since the two numbers, how far out and how high,
+trade against each other and neither can be picked from the geometry alone. Kept
+in named constants rather than in the render loop, `_COAT_LAPEL_OUT` and
+`_COAT_LAPEL_UP`.
+
 ### Still below the line, and deliberately
 
 - **Krista's goggles.** Named in the table above as a first-draft feature and

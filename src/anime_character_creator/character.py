@@ -2272,6 +2272,13 @@ def _hanging_sleeves(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# How far the lapel rises to meet the neck, and how far out from it, both as
+# multiples of `neck_half_w`. Named because they were found by rendering a grid
+# against `ref/keiko.png`, not picked from the geometry: see `harness/coat/lapel.py`.
+_COAT_LAPEL_OUT = 1.7
+_COAT_LAPEL_UP = 1.8
+
+
 def _coat(sk: Skeleton, p: CharacterParams) -> str:
     """An outer layer hanging open, as two panels with the body between them.
 
@@ -2289,6 +2296,15 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     and a skirt worn together do not disagree about which way cloth hangs, and
     they leave the arms alone: sleeves are the undersleeve's job, and a coat
     sleeve drawn here would land underneath the arm that is drawn after it.
+
+    Each panel's top used to run in one line straight from the throat to the
+    shoulder point, which never touches the neck at all: that line sits at or
+    below the shoulder height the whole way, so the strip of shoulder next to the
+    neck was bare skin on both sides and the two panels read as separate wedges
+    resting on the chest rather than one garment worn from the shoulders down.
+    The lapel point added between them is what a collar is drawn as everywhere
+    else in this file, cloth hugging the side of the neck, and it is what says
+    the two panels are the same coat rather than two.
     """
     if p.outfit.coat_color is None:
         return ""
@@ -2306,16 +2322,21 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     # agree; on a character with no skirt it is the same widening a coat does.
     out_hem = max(sk.hip_half_w * 1.06, _skirt_half_w(sk, hem_y) * 0.94)
     waist_y = sk.waist_y
+    throat_y = sy + sk.neck_half_w * 0.5
+    lapel_x = sk.neck_half_w * _COAT_LAPEL_OUT
+    lapel_y = sy - sk.neck_half_w * _COAT_LAPEL_UP
+    shoulder_y = sy + (waist_y - sy) * 0.16
     parts = []
     for s in (-1, 1):
         d = (
-            f"M {cx + s * gap_top:.1f} {sy + sk.neck_half_w * 0.5:.1f} "
-            f"L {cx + s * shoulder_w:.1f} {sy + (waist_y - sy) * 0.16:.1f} "
+            f"M {cx + s * gap_top:.1f} {throat_y:.1f} "
+            f"L {cx + s * lapel_x:.1f} {lapel_y:.1f} "
+            f"L {cx + s * shoulder_w:.1f} {shoulder_y:.1f} "
             f"Q {cx + s * shoulder_w * 1.02:.1f} {waist_y:.1f} "
             f"{cx + s * out_hem:.1f} {hem_y:.1f} "
             f"L {cx + s * gap_hem:.1f} {hem_y:.1f} "
             f"Q {cx + s * gap_top * 1.35:.1f} {waist_y:.1f} "
-            f"{cx + s * gap_top:.1f} {sy + sk.neck_half_w * 0.5:.1f} Z"
+            f"{cx + s * gap_top:.1f} {throat_y:.1f} Z"
         )
         parts.append(f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
     return "".join(parts)

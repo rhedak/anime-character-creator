@@ -889,6 +889,39 @@ def test_the_glasses_frame_the_eye_rather_than_a_second_guess_at_it(face, build:
         )
 
 
+@pytest.mark.parametrize("preset", ["keiko", "kyoko", "tomohiro"])
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_coats_lapel_actually_reaches_the_neck(preset: str, build: str) -> None:
+    """Each panel's top corner sits close beside the neck, not out at the shoulder.
+
+    The panel's top used to run in one line straight from the throat point to the
+    shoulder point, and that line never comes near the neck: both of its ends sit
+    at or below the shoulder line, so the whole strip of shoulder next to the neck
+    was bare on both sides. It rendered as two separate wedges resting on the
+    chest, which is the owner's report on 2026-08-09.
+
+    Checked as two things a coat and a floating wedge disagree on: the topmost
+    point of the panel has to rise above the shoulder line by a real margin, not
+    sit on it, and that point has to be close to the neck's own width rather than
+    out near the shoulder's, since a peak that rises but does so out at the
+    shoulder is a raised epaulette, not a lapel.
+    """
+    p = PRESETS[preset]
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    d = re.search(r'd="([^"]+)"', character._coat(sk, p)).group(1)
+    nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d.split("Z")[0])]
+    pts = list(zip(nums[0::2], nums[1::2], strict=True))
+    top_x, top_y = min(pts, key=lambda pt: pt[1])
+    assert top_y < sk.shoulder_y - sk.neck_half_w, (
+        f"{preset} {build}: the panel's highest point is {sk.shoulder_y - top_y:.1f}px above the "
+        f"shoulder line, which is not a lapel rising to the neck"
+    )
+    assert abs(top_x - sk.head_cx) < sk.neck_half_w * 2.2, (
+        f"{preset} {build}: the panel's peak sits {abs(top_x - sk.head_cx):.1f}px from centre, "
+        f"which is out near the shoulder rather than beside the neck"
+    )
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)
