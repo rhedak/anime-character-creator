@@ -204,6 +204,10 @@ class Outfit:
     # rather than its own garment means a buckle and a sash cannot disagree
     # about where the waist is.
     belt_scale: float = 1.0
+    # A cloth tied over the head, covering the crown and leaving the face and a
+    # little hair showing. Worn rather than grown, so it is here and not on
+    # `CharacterParams` beside the hair.
+    headscarf_color: str | None = None
     # An outer layer hanging open over whatever is worn under it: a cropped
     # jacket, a lab coat, a long coat. One garment rather than three, because
     # the three differ only in where the hem lands.
@@ -1168,6 +1172,20 @@ _CROP_FILL_INSET = 0.06
 # How far above the fringe's own edge the gold gives way to the pale tips, in
 # head radii. The blades run about 0.5 from notch to tip, so this is roughly how
 # much of each blade comes out pale.
+#
+# **0.26 is the design, not an approximation of the reference.** It was cut to
+# 0.14 on 2026-08-09 to bring it closer to `ref/satoshi.png`, which shows gold
+# nearly to the tips, and the owner reversed that the same day: at 0.14 the white
+# on his fringe is barely noticeable, and the wider split reads better. So this
+# is one of the places the reference is deliberately not the target, and the
+# standing rule applies, that the references are guides and the final call is by
+# eye. Do not "correct" it toward the canon again.
+#
+# It is also the only thing that sets his boundary. Sweeping `_HAIR_FADE` across
+# its whole range leaves his fringe byte-identical, because the lifted edge
+# already sits below the level line and so wins; Satoko is the mirror image,
+# untouched by this and set entirely by the clamp. The two cuts are independent
+# here, which is why his could be put back without moving her.
 _CROP_TONE_LIFT = 0.26
 # How far the lock divisions lean off vertical, and how far they run up from
 # their notch. Short: a division marks a join, it does not have to travel, and
@@ -1986,31 +2004,135 @@ def _hair_tail(sk: Skeleton, p: CharacterParams) -> str:
     """
     if p.hair_tail <= 0.0:
         return ""
-    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    cx, r = sk.head_cx, sk.head_r
     color = p.hair_color
     sw = _stroke_w(sk)
-    # Bound high at the back of the skull, which is what tells a ponytail from
-    # hair simply hanging: the tie sits above the ear, not at the nape.
-    tie_y = cy - r * 0.30
+    tie_x, tie_y = _tail_tie(sk)
     length = (sk.hip_y - sk.shoulder_y) * max(0.0, min(1.0, p.hair_tail))
-    tip_y = tie_y + r * 0.55 + length
+    tip_y = tie_y + r * 0.45 + length
     # Off to one side, and **outside the cut**. Measured on the shipped
     # hairstyles, the mass spans about 1.34 to 1.39 head radii either way, so a
     # tail drawn anywhere inside that is behind a filled shape wider than it is
     # and simply does not exist. The first attempt put the belly at 0.42 and drew
     # nothing at all. It has to swing clear of the hair before it falls.
-    side = 1
-    near = r * 1.05
-    belly = r * 1.72
+    # Both edges sit **outside the hair**, not just the outer one. The cut spans
+    # about 1.39 head radii and the torso is drawn over this as well, so a tail
+    # whose inner edge is at 1.02 has its whole body hidden behind one or the
+    # other and shows as a sliver. Starting the near edge past the cut is what
+    # makes it a bundle beside the head rather than a rim behind it.
+    belly = r * 1.88
+    near = r * 1.42
+    # Pinched at the tie and swelling below it, which is what a bundle of hair
+    # gathered in a band does, and what a strip of constant width does not: the
+    # first version ran the same width the whole way and read as one side of the
+    # haircut being longer than the other.
     d = (
-        f"M {cx + side * near * 0.55:.1f} {tie_y:.1f} "
-        f"Q {cx + side * belly:.1f} {tie_y + (tip_y - tie_y) * 0.28:.1f} "
-        f"{cx + side * belly * 0.86:.1f} {tip_y:.1f} "
-        f"Q {cx + side * near * 0.92:.1f} {tip_y - (tip_y - tie_y) * 0.16:.1f} "
-        f"{cx + side * near * 0.62:.1f} {tie_y + (tip_y - tie_y) * 0.34:.1f} "
+        f"M {tie_x:.1f} {tie_y:.1f} "
+        f"Q {cx + belly:.1f} {tie_y + (tip_y - tie_y) * 0.30:.1f} "
+        f"{cx + belly * 0.84:.1f} {tip_y:.1f} "
+        f"Q {cx + near * 0.86:.1f} {tip_y - (tip_y - tie_y) * 0.18:.1f} "
+        f"{cx + near * 0.52:.1f} {tie_y + (tip_y - tie_y) * 0.30:.1f} "
         f"Z"
     )
     return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+
+
+def _tail_tie(sk: Skeleton) -> tuple[float, float]:
+    """Where a ponytail is bound, in canvas coordinates.
+
+    Shared between the tail and the band that binds it, because the two only
+    read as one object while they agree, and they are drawn in different layers:
+    the tail goes behind the hair and the band in front of it.
+
+    High and back, level with the top of the ear rather than at the nape. That
+    height is most of what tells a ponytail from hair simply hanging down, and
+    the first version tied it at 0.30 head radii below centre, which is low
+    enough that the tail left the head beside the ear and read as a long side
+    lock.
+    """
+    return sk.head_cx + sk.head_r * 0.62, sk.head_cy - sk.head_r * 0.62
+
+
+def _headscarf(sk: Skeleton, p: CharacterParams) -> str:
+    """A cloth tied over the crown, with a knot at the side.
+
+    Over the hair and over the fringe, because a scarf covers what it is tied
+    over; the hair below its edge still shows, which is what stops it reading as
+    a swim cap.
+
+    It is the single strongest signal Chiyo's reference carries, and none of the
+    levers `aged()` has could reach it: age there is the aperture and the brow,
+    and a working woman's headscarf is neither. Worth having as a garment rather
+    than as part of a hairstyle, since it is a thing put on and taken off and
+    anyone could wear one.
+
+    The edge sits low at the sides and dips at the brow, which is how a scarf
+    tied at the back sits. Level across, it reads as a headband.
+    """
+    if p.outfit.headscarf_color is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    color = p.outfit.headscarf_color
+    sw = _stroke_w(sk)
+    b = sk.build
+    # Where the cloth's lower edge meets the side of the head: just above the
+    # ear, which leaves a band of hair showing under it at the temples.
+    edge_y = -0.26
+    x_edge = _head_edge_x(edge_y, b)
+    # It has to clear the hair, not the skull, or it is buried the way the first
+    # topknot was. The cuts top out near -1.28 head radii, and a scarf tied over
+    # one sits on it rather than replacing it.
+    crown = -1.33
+    # An elliptical arc, not a chain of quadratics. Two attempts at this with
+    # quadratics came out square-topped, because a quadratic whose control shares
+    # its endpoint's height runs flat into that endpoint, and every arrangement
+    # of two or four of them that fixes the top breaks the sides. An arc states
+    # the dome directly and cannot be flat anywhere.
+    rx = x_edge * 1.02 * r
+    ry = (edge_y - crown) * r
+    left_x = cx - rx
+    right_x = cx + rx
+    edge_py = cy + edge_y * r
+    d = (
+        f"M {left_x:.1f} {edge_py:.1f} "
+        f"A {rx:.1f} {ry:.1f} 0 0 1 {right_x:.1f} {edge_py:.1f} "
+        # The brow edge, dipping toward the face in the middle. A straight run
+        # between the two temples is a headband.
+        f"Q {cx:.1f} {cy + (edge_y + 0.30) * r:.1f} {left_x:.1f} {edge_py:.1f} Z"
+    )
+    # The knot, off to one side where a scarf is tied. Two small lobes, because
+    # one is a bump and two is a knot.
+    kx, ky = cx + x_edge * r * 0.94, cy - r * 0.52
+    lobe = r * 0.17
+    knot = "".join(
+        f'<ellipse cx="{kx + dx * lobe:.1f}" cy="{ky + dy * lobe:.1f}" rx="{lobe:.1f}" '
+        f'ry="{lobe * 0.82:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        for dx, dy in ((0.55, -0.5), (0.95, 0.6))
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />{knot}'
+
+
+def _hair_tie(sk: Skeleton, p: CharacterParams) -> str:
+    """The band a ponytail is gathered in, drawn over the hair.
+
+    Over, like the knot and unlike the tail, and for the same reason: the cut is
+    a filled shape wider than the skull, so anything behind it is gone. Without
+    this the tail emerges from the silhouette with nothing to say it was bound,
+    and a bundle of hair that is not visibly tied is just more hair.
+    """
+    if p.hair_tail <= 0.0:
+        return ""
+    x, y = _tail_tie(sk)
+    r = sk.head_r
+    sw = _stroke_w(sk)
+    w, h = r * 0.20, r * 0.13
+    return (
+        f'<ellipse cx="{x:.1f}" cy="{y:.1f}" rx="{w:.1f}" ry="{h:.1f}" '
+        f'fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="M {x - w * 0.72:.1f} {y - h * 0.30:.1f} '
+        f'L {x + w * 0.72:.1f} {y - h * 0.30:.1f}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+    )
 
 
 def _hair_knot(sk: Skeleton, p: CharacterParams) -> str:
@@ -2181,6 +2303,26 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# Where the beard's mass meets the face at the sides, and how far inside the
+# skull's edge it lands there. Named constants rather than literals so a sweep
+# can try candidates without editing the drawing code; see `harness/beard/`.
+#
+# The inset was 1.00, landing the top corners exactly on the skull's contour so
+# the two outlines merged into one jaw. That was right about the outline and
+# wrong about everything else: at the widest part of the face it left no cheek
+# either side, so the mass ran ear to ear and the beard read as a hood with a
+# face hole cut in it. Pulling it in to 0.87 puts skin back beside the beard,
+# which is what says the hair is growing on a jaw rather than wrapped round one.
+# Four candidates were rendered against both references at head size and at tile
+# size, since this part fails in opposite directions at the two sizes.
+_BEARD_TOP = 0.63
+_BEARD_SIDE_INSET = 0.87
+# How high the sideburn strip climbs the side of the face, in head radii from the
+# head centre. About level with the top of the ear: high enough to meet the hair,
+# and no higher, because a strip that carries on past the ear is a chinstrap.
+_BEARD_SIDEBURN_Y = 0.02
+
+
 def _beard(sk: Skeleton, p: CharacterParams) -> str:
     """Facial hair: a mass along the jaw, hanging below the chin.
 
@@ -2208,7 +2350,7 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # as high as it can go before the cheek starts disappearing: the head is at
     # its widest just above this, so every step upward here adds a band of face
     # width to the mass and the beard turns into a hood.
-    top = 0.62
+    top = _BEARD_TOP
     drop = max(0.0, p.beard_length)
     chin = _head_pt(180.0, 1.0, b)[1]
     # **On** the skull's edge, not inside it. Tucked inside, the face's own
@@ -2218,7 +2360,7 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # beard is drawn. The cheek is kept clear by *height* instead: `top` sits
     # below the head's widest point, so there is face above the beard rather than
     # beside it.
-    x_top = _head_edge_x(top, b)
+    x_top = _head_edge_x(top, b) * _BEARD_SIDE_INSET
     # **Wider than the jaw at the bottom**, which is the part that matters and
     # the part three attempts at this got wrong. A beard tucked inside the head's
     # outline is invisible once the figure is shrunk to a tile, because nothing
@@ -2229,8 +2371,25 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     x_wide = _head_edge_x(min(0.98, chin - 0.06), b) + drop * 1.25
     mid_y = chin + drop * 0.45
     bottom = chin + drop
+    # **The sideburns are what make it read as facial hair at all.** Without them
+    # the mass hangs under the jaw connected to nothing, and every version of that
+    # came out as a scarf, a collar or a neck warmer no matter how it was shaped
+    # or toned. A strip running up the side of the face to the hairline is the
+    # thing that says the beard grows out of the head, and it costs two points on
+    # each side of the path.
+    #
+    # Narrow, and following the skull's own edge, so the strip hugs the cheek
+    # instead of standing off it. `_BEARD_SIDEBURN_Y` is where it reaches: high
+    # enough to meet the hair, and no higher, since a strip climbing past the ear
+    # is a chinstrap.
+    burn_y = _BEARD_SIDEBURN_Y
+    x_burn_out = _head_edge_x(burn_y, b) * 0.99
+    x_burn_in = x_burn_out * 0.70
     d = (
-        f"M {cx - x_top * r:.1f} {cy + top * r:.1f} "
+        # Down the outside: sideburn, jaw, then out past the chin.
+        f"M {cx - x_burn_out * r:.1f} {cy + burn_y * r:.1f} "
+        f"Q {cx - x_top * r * 1.06:.1f} {cy + (burn_y + (top - burn_y) * 0.6) * r:.1f} "
+        f"{cx - x_top * r:.1f} {cy + top * r:.1f} "
         f"Q {cx - x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
         f"{cx - x_wide * r:.1f} {cy + mid_y * r:.1f} "
         f"Q {cx - x_wide * r * 0.90:.1f} {cy + bottom * r:.1f} {cx:.1f} {cy + bottom * r:.1f} "
@@ -2238,14 +2397,22 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
         f"{cx + x_wide * r:.1f} {cy + mid_y * r:.1f} "
         f"Q {cx + x_wide * r:.1f} {cy + (top + (mid_y - top) * 0.55) * r:.1f} "
         f"{cx + x_top * r:.1f} {cy + top * r:.1f} "
-        # Back along the top edge, which has to dive **below the mouth** in the
-        # middle. The mouth sits at 0.55 head radii and the ends of this edge are
-        # at 0.62, so a shallow curve between them runs across the face above the
-        # mouth and the beard comes out as a surgical mask, which is exactly what
-        # the first attempt drew. A quadratic's midpoint is a quarter of each end
-        # plus half the control, so the control goes to roughly twice the depth
-        # actually wanted.
-        f"Q {cx:.1f} {cy + 1.00 * r:.1f} {cx - x_top * r:.1f} {cy + top * r:.1f} Z"
+        f"Q {cx + x_top * r * 1.06:.1f} {cy + (burn_y + (top - burn_y) * 0.6) * r:.1f} "
+        f"{cx + x_burn_out * r:.1f} {cy + burn_y * r:.1f} "
+        # Across the top of the right sideburn and back down its inner edge.
+        f"L {cx + x_burn_in * r:.1f} {cy + burn_y * r:.1f} "
+        f"Q {cx + x_burn_in * r * 1.04:.1f} {cy + (burn_y + (top - burn_y) * 0.7) * r:.1f} "
+        f"{cx + x_top * r * 0.74:.1f} {cy + (top + 0.14) * r:.1f} "
+        # The top edge, which has to dive **below the mouth** in the middle. The
+        # mouth sits at 0.55 head radii and the ends of this edge are just below
+        # 0.63, so a shallow curve between them runs across the face above the
+        # mouth and the beard comes out as a surgical mask, which is what the
+        # first attempt drew. A quadratic's midpoint is a quarter of each end plus
+        # half the control, so the control goes to roughly twice the depth wanted.
+        f"Q {cx:.1f} {cy + 1.02 * r:.1f} {cx - x_top * r * 0.74:.1f} {cy + (top + 0.14) * r:.1f} "
+        f"Q {cx - x_burn_in * r * 1.04:.1f} {cy + (burn_y + (top - burn_y) * 0.7) * r:.1f} "
+        f"{cx - x_burn_in * r:.1f} {cy + burn_y * r:.1f} "
+        f"Z"
     )
     return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
 
@@ -3991,6 +4158,9 @@ def render_character(
         # a knot drawn behind the mass is invisible; drawn between the mass and
         # the fringe it is invisible too, because the fringe covers the crown.
         _hair_knot(sk, p),
+        _hair_tie(sk, p),
+        # Last of all the head: a scarf covers the hair it is tied over.
+        _headscarf(sk, p),
     ]
 
     body = "\n  ".join(layer for layer in layers if layer)

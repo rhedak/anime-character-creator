@@ -210,7 +210,7 @@ KYOKO = _before(
         skirt_color=None,
         tunic_tucked=True,
         boot_shaft=0.75,
-        coat_color="#3f434a",
+        coat_color="#575d67",
         coat_length=0.72,
     ),
 )
@@ -225,7 +225,7 @@ TOMOHIRO = _before(
         skirt_color=None,
         tunic_tucked=True,
         coat_color="#4a5442",
-        coat_length=0.30,
+        coat_length=0.44,
     ),
 )
 
@@ -327,6 +327,7 @@ CHIYO = CharacterParams(
         underskirt_color="#4f5347",
         pouch_color="#4f4133",
         skirt_length=0.78,
+        headscarf_color="#8d8064",
     ),
     frame=-0.2,
     # Firm and assessing rather than warm: the innkeeper who keeps the books,
@@ -354,12 +355,12 @@ DAIZEN = CharacterParams(
     hair_length=0.45,
     eye_color="#7ea3bd",
     hair_knot=True,
-    beard_color="#9a958c",
+    beard_color="#6e6a63",
     beard_length=0.30,
     # Waiting on: an open haori over a kimono, an obi, and a full beard. The
     # navy is the haori's, the dark green underneath is the kimono's.
     outfit=Outfit(
-        tunic_color="#293040",
+        tunic_color="#3d4a39",
         boot_color="#54402f",
         undersleeve_color="#2e352c",
         belt_color="#6b5334",
@@ -438,7 +439,7 @@ HARUTO = CharacterParams(
     hair_knot=True,
     # Waiting on: a kimono, a hakama and an obi, which is most of him.
     outfit=Outfit(
-        tunic_color="#33332e",
+        tunic_color="#454639",
         boot_color="#4a3c2e",
         undersleeve_color="#2a2a26",
         belt_color="#4b4239",
@@ -506,7 +507,7 @@ KRISTA = CharacterParams(
     hairstyle="long_traced",
     hair_length=0.42,
     eye_color="#6fb0ae",
-    hair_tail=0.75,
+    hair_tail=1.0,
     # Waiting on: the uniform, the strap, the belt crystals, a high ponytail and
     # goggles. The goggles and the ponytail are most of what makes her her at
     # tile size, so she is the least finished of the five officers.
@@ -587,8 +588,8 @@ REINHARD = CharacterParams(
     hairstyle="short_layered",
     hair_length=0.22,
     eye_color="#8098a8",
-    beard_color="#8f7550",
-    beard_length=0.12,
+    beard_color="#7d6540",
+    beard_length=0.19,
     # Waiting on: the uniform, the strap, and a short beard.
     outfit=Outfit(
         tunic_color=UNIFORM,

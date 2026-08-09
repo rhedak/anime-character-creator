@@ -431,13 +431,60 @@ built to get there, in the order it was built:
    the fringe, where the fringe covers the crown. It ends up last of all the
    hair, poking through.
 
+## The one-by-one pass, 2026-08-09
+
+Every character looked at beside its own reference rather than on the sheet.
+Two findings were worth more than the rest, and both were **systemic**: one
+part or one rule failing the same way on several characters at once, which is
+the kind of thing a per-character review finds and a sheet does not.
+
+**Satoko's two-tone boundary was level, and at the wrong height.** The canon
+keeps her blonde past the jaw and turns her pale over the last third of each
+fall; ours switched in a dead level line at eyebrow height, so she read as a
+white-haired woman in a blonde cap. The machinery was already right, and its own
+docstring names this failure: `Hairstyle.tip_edge` says a boundary that runs
+level "can only say pale below this height". `_HAIR_FADE` went 0.50 to 0.72.
+**The 0.50 was a recorded owner decision**, so this reverses one; it is one
+number to put back.
+
+**Satoshi was changed the same way and the owner reversed it the same day.**
+`_CROP_TONE_LIFT` went 0.26 to 0.14 to match `ref/satoshi.png`, which shows gold
+nearly to the tips; at 0.14 the white on his fringe is barely noticeable, and
+the owner's call is that the wider split reads better. It is back at 0.26 and
+that value is now **canon rather than an approximation of the reference**, which
+is worth stating plainly because the next person measuring against `ref/` will
+find the same discrepancy and reach for the same fix.
+
+The two turned out to be cleanly independent, which is what let his be put back
+without moving her: sweeping `_HAIR_FADE` across its whole range leaves his
+fringe byte-identical, because his lifted edge already sits below the level line
+and so wins, and she is untouched by the lift and set entirely by the clamp. His
+`ref-out/satoshi.svg` is byte-identical to what it was before the pass.
+
+This is the clearest case yet of the standing rule from `docs/gap-analysis.md`:
+the references are guides, not targets. A measured gap is a reason to look, not
+a reason to close it.
+
+**An outer layer needs a tone gap or it does not exist.** Measured across the
+six characters who wear a coat or a robe: Keiko 174 luminance apart and reading
+instantly, Tomohiro 19 and Reika 14 reading fine, Kyoko 5 and Haruto 8
+invisible, and Daizen's robe *byte-identical* to his tunic, so the fold line had
+been doing all the work alone. Both garments are built entirely around a
+boundary and neither states its own silhouette, so both vanish completely when
+what is under them matches, and they vanish while rendering perfectly. Now
+guarded by a test at a gap of 12.
+
+The other five were per-character and are recorded on their tasks: the beard
+needed **sideburns** before it stopped reading as a scarf, the ponytail needed a
+visible **tie** and both its edges outside the hair mass, Tomohiro's jacket
+needed length, and Chiyo needed the headscarf that `aged()` could never have
+reached.
+
 ### Still below the line, and deliberately
 
-- **Krista's goggles** and **Chiyo's headscarf**. Both are named in the
-  table above as first-draft features, so this is the one place the work
-  falls short of the stated bar rather than beneath it. Chiyo instead moved
-  to `long_traced` at a short length, which reads as hair scraped back and
-  fixed her reading as a boy at tile size; Krista has her ponytail.
+- **Krista's goggles.** Named in the table above as a first-draft feature and
+  still the one thing on that list not built. Chiyo's headscarf, the other
+  one, landed on 2026-08-09.
 - **The hakama**, which Haruto and Reika both want under their robes.
 - **Everything already listed** under "What first draft means": patterns,
   rank tabs, kanzashi, props.

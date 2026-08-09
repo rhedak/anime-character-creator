@@ -530,6 +530,40 @@ def test_the_disguise_changes_only_the_disguise(before: str, after: str) -> None
     assert was.hair_color != now.hair_color and was.hair_tip_color is None
 
 
+def _luminance(hex_color: str) -> float:
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i : i + 2], 16) for i in (0, 2, 4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+@pytest.mark.parametrize("preset", sorted(PRESETS))
+def test_an_outer_layer_is_visible_against_what_it_covers(preset: str) -> None:
+    """A coat or a robe needs a tone gap, or the garment is drawn and invisible.
+
+    Both garments are built entirely around a boundary: the coat is two panels
+    with the body showing between them, and the robe is a panel with a diagonal
+    edge. Neither states its own silhouette, so both vanish completely when the
+    layer under them is the same tone, and they vanish *while rendering
+    perfectly*, which is why nothing caught it.
+
+    Measured on 2026-08-09 across the six characters who wear one: Keiko at a gap
+    of 174 read instantly, Tomohiro at 19 and Reika at 14 read fine, Kyoko at 5
+    and Haruto at 8 were invisible, and Daizen's robe was byte-identical to his
+    tunic, so only the fold line was doing any work at all. 12 sits under the two
+    that read and above the three that did not.
+    """
+    outfit = PRESETS[preset].outfit
+    for field in ("coat_color", "robe_color"):
+        outer = getattr(outfit, field)
+        if outer is None:
+            continue
+        gap = abs(_luminance(outer) - _luminance(outfit.tunic_color))
+        assert gap >= 12.0, (
+            f"{preset}: {field} {outer} against tunic {outfit.tunic_color} is a gap of"
+            f" {gap:.1f}; the garment is drawn but nothing shows"
+        )
+
+
 @pytest.mark.parametrize("build", sorted(BUILDS))
 def test_the_topknot_is_visible_and_still_fits(build: str) -> None:
     """A knot has to clear the cut under it and stay inside the canvas margin.
