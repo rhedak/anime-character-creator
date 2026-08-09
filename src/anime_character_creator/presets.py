@@ -750,12 +750,6 @@ DISPLAY_NAMES: dict[str, str] = {
 
 # Who appears on a sheet, in the order they appear.
 #
-# One roster for now. The references are two of twelve that share ten members
-# and swap one slot each, Satoshi and Tomohiro against Satoko and Kyoko, which
-# matters for the book and does not matter for judging whether a design works.
-# Building both now would be two artifacts and two byte-compare corpora to keep
-# fresh for no gain, so the split is deferred rather than decided against.
-#
 # The four personas lead because they are the two characters the rest of the
 # cast is drawn to match, and the others follow alphabetically, which is an
 # order rather than a ranking.
@@ -777,6 +771,17 @@ ROSTERS: dict[str, tuple[str, ...]] = {
         "viktor",
     ),
 }
+# The other of the two reference rosters: Satoshi's persona rather than
+# Satoko's, so Tomohiro stays and Satoko and Kyoko drop, the owner's call on
+# 2026-08-09. Derived from `cast` rather than listed a second time, since
+# `cast` and `satoshi` share ten members and a second hand-written tuple is
+# exactly the thing that drifts the day a fifteenth character is added to one
+# list and not the other. `sorted()` gives the same alphabetical order `cast`
+# already uses for everyone after its four leads.
+ROSTERS["satoshi"] = (
+    "satoshi",
+    *sorted(n for n in ROSTERS["cast"] if n not in ("satoshi", "satoko", "kyoko")),
+)
 
 # Which characters get a realistic-build render checked into `ref-out/real/`.
 #

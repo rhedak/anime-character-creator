@@ -335,12 +335,18 @@ this field, and does leaving it unset draw nothing?
   `presets.py`, a `replace()` of three fields on each shipped preset.
 - **The "2" references were accidental** and are gone. `ref/satoko.png`
   and `ref/satoshi.png` stay the measured canon.
+- **Which roster does the checked-in sheet show?** Both, as of
+  2026-08-09: the owner asked for `sheet_satoshi`, Satoshi's persona
+  rather than Satoko's, Tomohiro in and Satoko and Kyoko out, Satoshi
+  first and the rest alphabetical. `ROSTERS["satoshi"]` is derived from
+  `ROSTERS["cast"]` rather than a second hand-written list, so the two
+  cannot drift apart the day a fifteenth character lands in one and not
+  the other. Wired into `refresh-ref-out.sh` as a page the same way
+  `sheet` and `cover` are, via `sheet_satoshi.sh`, since it goes stale on
+  the same shape changes `sheet` does.
 
 ## Open questions
 
-- **Which roster does the checked-in sheet show?** Both is two artifacts
-  and two byte-compare corpora. Child-only is one, and the parent sheet
-  becomes a flag.
 - **Does the sheet reuse the reference's layout** (4x3, dark ground,
   white labels, light card per tile) or state its own? Reusing it makes
   the comparison direct, which is worth something while the cast is

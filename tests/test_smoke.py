@@ -966,6 +966,34 @@ def test_ref_out_sheet_matches_the_code() -> None:
     assert committed.read_text() == sheet.render_sheet(), "sheet.svg is stale: ./refresh-ref-out.sh"
 
 
+def test_ref_out_sheet_satoshi_matches_the_code() -> None:
+    committed = REF_OUT / "sheet_satoshi.svg"
+    expected = sheet.render_sheet(replace(sheet.SheetParams(), roster="satoshi"))
+    assert committed.read_text() == expected, "sheet_satoshi.svg is stale: ./refresh-ref-out.sh"
+
+
+def test_the_satoshi_roster_is_satoshis_persona_not_satokos() -> None:
+    """The owner's call on 2026-08-09: Satoshi leads, then alphabetical, no Satoko or Kyoko.
+
+    This is the split `ROSTERS`'s own comment names as the two reference sheets:
+    ten shared members plus Satoshi and Tomohiro on one side, Satoko and Kyoko on
+    the other. `cast` carries the first; this is the second, and it is derived
+    from `cast` rather than a second hand-written list so the two cannot drift
+    apart the day a fifteenth character lands in one and not the other.
+    """
+    roster = ROSTERS["satoshi"]
+    assert roster[0] == "satoshi", "Satoshi has to lead his own roster"
+    assert "satoko" not in roster and "kyoko" not in roster, (
+        "this is Satoshi's persona; Satoko and Kyoko belong to the other one"
+    )
+    assert "tomohiro" in roster, "Tomohiro is Satoshi's own before-self and stays"
+    assert list(roster[1:]) == sorted(roster[1:]), "everyone after Satoshi should be alphabetical"
+    # Same membership as `cast` minus the two that were swapped out, which is the
+    # "share ten members" half of the split: nobody should be on one roster and
+    # not the other except the two pairs that differ on purpose.
+    assert set(roster) == set(ROSTERS["cast"]) - {"satoko", "kyoko"}
+
+
 def test_the_sheet_scales_every_figure_the_same() -> None:
     """One body scale across the grid, so nobody reads as taller than they are.
 

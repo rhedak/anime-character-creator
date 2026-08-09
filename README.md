@@ -68,6 +68,12 @@ is where a cast gets judged rather than a character: whether these people
 look like they come from one world is a question about the set. Render it
 with `./sheet.sh`.
 
+`ref-out/sheet_satoshi.svg` is the same page with the other of the two
+reference rosters: Satoshi's persona rather than Satoko's, so Tomohiro
+stays and Satoko and Kyoko drop. Ten of the twelve are the same
+characters as `sheet.svg`; `presets.ROSTERS["satoshi"]` is the one place
+that says which two swap. Render it with `./sheet_satoshi.sh`.
+
 The tables above link `ref-out/on-white/`, which is the same fourteen
 drawn on a white background. That exists for this page and nothing else:
 the outline is `#0d0d0d` and a dark theme here is about `#0d1117`, so a

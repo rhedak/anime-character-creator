@@ -79,7 +79,12 @@ displayed() {
 # characters, which means they go stale on any shape change rather than only on
 # their own, and the sheet goes stale on a new character too. That is why they
 # are refreshed here rather than by hand when somebody remembers.
-pages="cover sheet"
+#
+# `sheet_satoshi` is `sheet.py`'s other roster, `ROSTERS["satoshi"]`: Satoshi's
+# persona rather than Satoko's, so it goes stale on the same shape changes
+# `sheet` does and on a new character besides, which is why it is a page here
+# rather than a one-off render kept in `out/`.
+pages="cover sheet sheet_satoshi"
 npages=$(set -- $pages; echo $#)
 
 # Two command substitutions rather than one call read line by line: bash

@@ -17,13 +17,15 @@ Construction follows `cover.py`: authored geometry, flat tones, no gradients, an
 the figures come through `render_character` unchanged rather than being drawn a
 second way. What this adds over the cover is only a grid and some text.
 
-**The checked-in sheet shows every character there is, in one roster.** The
-references are two rosters of twelve that share ten members and swap one slot
-each (Satoshi/Tomohiro against Satoko/Kyoko), which matters for the book and does
-not matter yet for judging whether a design works. Reproducing that split now
-would mean two artifacts and two byte-compare corpora to keep fresh for no gain,
-so `ROSTERS` carries the one list and the swapped pair is a deferral rather than
-a decision against it.
+**Two checked-in sheets, one for each reference roster.** The references are
+two rosters of twelve that share ten members and swap one slot each,
+Satoshi and Tomohiro against Satoko and Kyoko: `ROSTERS["cast"]` carries all
+fourteen and is what `sheet.svg` draws, `ROSTERS["satoshi"]` is Satoshi's
+persona rather than Satoko's and is what `sheet_satoshi.svg` draws, derived
+from `cast` rather than listed a second time. The owner's call on
+2026-08-09; before that the split was deferred as not worth two artifacts
+to keep fresh for no gain, which stopped being true the day somebody
+wanted to look at both.
 """
 
 from __future__ import annotations
