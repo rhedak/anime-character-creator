@@ -753,12 +753,45 @@ trade against each other and neither can be picked from the geometry alone. Kept
 in named constants rather than in the render loop, `_COAT_LAPEL_OUT` and
 `_COAT_LAPEL_UP`.
 
+### The hakama, and the pleats that are the whole of what makes it one
+
+Task 22, tackled after the beard/coat/cap/glasses pass. Neither wearer had one:
+Haruto's legs were plain trousers with no garment over them at all, and Reika's
+"hakama" was `skirt_color`, a two-fold A-line skirt standing in for it, per its
+own preset comment.
+
+No new silhouette. `_hakama` calls the same `_skirt_path` that `_skirt` and
+`_underskirt` already draw, since a lower-body panel that flares off the
+skeleton's own hip and hem anchors is not a shape this garment needs its own
+version of. What a hakama actually is, at the size a character is looked at
+here, is **a comb of pleats running the full height of the panel**, in place of
+the ordinary skirt's two folds suggesting drape. That is the one thing added:
+seven thin lines in `shade()` of the base colour, from the waist to where the
+hem turns under, the same idiom `_underskirt` already uses for its own hem band,
+just over the whole panel instead of a strip at the bottom.
+
+New `Outfit` fields, `hakama_color` and `hakama_length`, rather than a pleat
+count on `skirt_color`: the two garments coexist on Haruto, trousers under a
+hakama that stops short of his boots, which only works if the layers are
+independent. Reika's teal moved from `skirt_color` to `hakama_color`, the field
+finally matching what the comment already called it.
+
+**Length exposed the same chibi-hem shortfall #103 already tracks.** `Outfit`
+fields measured hip(0)-ankle(1) are pulled back toward the skeleton's own,
+shorter hem at low builds, hard enough that `hakama_length=0.60` and `0.95`
+land within four pixels of each other at chibi. Reika's hakama is close to
+floor-length in her reference and reads shorter than that here for exactly the
+reason #103 names. Confirmed rather than assumed: at the realistic build, where
+the pull-back is nearly gone, both wearers' hakama read correctly against their
+references, so the geometry is right and the shortfall is `_skirt_hem_y`'s,
+not `_hakama`'s. Left as `#103`'s problem rather than reopened here, since a
+fix there fixes every length-based lower garment at once rather than this one.
+
 ### Still below the line, and deliberately
 
 - **Krista's goggles.** Named in the table above as a first-draft feature and
   still the one thing on that list not built. Chiyo's headscarf, the other
   one, landed on 2026-08-09.
-- **The hakama**, which Haruto and Reika both want under their robes.
 - **Everything already listed** under "What first draft means": patterns,
   rank tabs, kanzashi, props.
 
@@ -888,8 +921,9 @@ of her. She is Satoko, so she arrived with the first pair.
 
 - [x] **21. Robe geometry.** Crossed front, wide hanging sleeve, obi
       sash. The largest single piece of new shape work in the plan.
-- [ ] **22. Hakama.** Wide pleated lower garment, worn by Haruto and
-      Reika both.
+- [x] **22. Hakama.** Wide pleated lower garment, worn by Haruto and
+      Reika both. Landed 2026-08-09, after the beard/coat/cap/glasses
+      pass; see its own section below.
 - [x] **23. Haruto Kisaragi.** Black kimono and hakama, obi, laced boots,
       topknot. The topknot is a new cut with two wearers, and it stays
       here rather than becoming its own task only because Daizen is the

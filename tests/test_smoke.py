@@ -922,6 +922,41 @@ def test_the_coats_lapel_actually_reaches_the_neck(preset: str, build: str) -> N
     )
 
 
+@pytest.mark.parametrize("preset", ["haruto", "reika"])
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_hakama_is_pleated_not_a_plain_panel(preset: str, build: str) -> None:
+    """A comb of lines runs the full height of the panel, not just its hem.
+
+    `_skirt` draws two folds; a hakama is defined by having many, which is what
+    a plain A-line panel would be missing if `_hakama` had only reused
+    `_skirt_path` and stopped there. Counted rather than eyeballed, since seven
+    thin lines and two thin lines both render as "some lines" in a diff and the
+    difference only shows up as a count.
+    """
+    p = PRESETS[preset]
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    svg = character._hakama(sk, p)
+    lines = re.findall(r"<line ", svg)
+    assert len(lines) == 7, f"{preset} {build}: {len(lines)} pleats, expected the full comb of 7"
+
+
+@pytest.mark.parametrize("preset", ["haruto", "reika"])
+def test_the_hakama_is_drawn_over_whatever_is_on_the_legs(preset: str) -> None:
+    """The hakama's own layer comes after the legs in the stacking order.
+
+    Haruto wears trousers under a hakama that stops short of his boots; Reika
+    wears nothing under hers. Both only work if `_hakama` paints over the top
+    of whatever `_legs_and_boots` already drew rather than needing to know
+    which one it is, so this checks the order rather than either leg style.
+    """
+    p = PRESETS[preset]
+    sk = build_skeleton(heads=p.heads, frame=p.frame)
+    svg = render_character(p, sk)
+    assert svg.index(character._legs_and_boots(sk, p)) < svg.index(character._hakama(sk, p)), (
+        f"{preset}: the hakama is drawn before the legs, so the legs would paint over it"
+    )
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)

@@ -204,6 +204,18 @@ class Outfit:
     # rather than its own garment means a buckle and a sash cannot disagree
     # about where the waist is.
     belt_scale: float = 1.0
+    # A wide pleated lower garment worn over the legs, under an open kimono or
+    # robe: Haruto and Reika both wear one. Its own field rather than a pleat
+    # count on `skirt_color`, because the two are not the same shape at the
+    # same length: nobody wears both, but Haruto wears trousers under a hakama
+    # that stops short of his boots, which only works if the two are
+    # independent layers rather than one field pulling double duty.
+    hakama_color: str | None = None
+    # Same hip(0)-ankle(1) measure `skirt_length` uses. A hakama reads close to
+    # floor-length in both references; `None` takes the skeleton's own hem,
+    # which is shorter, so a hakama that wants the reference's length has to
+    # ask for it explicitly the way `skirt_length` already does.
+    hakama_length: float | None = None
     # A cloth tied over the head, covering the crown and leaving the face and a
     # little hair showing. Worn rather than grown, so it is here and not on
     # `CharacterParams` beside the hair.
@@ -2960,6 +2972,57 @@ def _apron(sk: Skeleton, p: CharacterParams) -> str:
     return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
 
 
+def _hakama(sk: Skeleton, p: CharacterParams) -> str:
+    """A wide pleated garment over the legs, from the waist to near the floor.
+
+    The same A-line panel `_skirt` and `_underskirt` already draw, not a second
+    silhouette invented for this: `_skirt_path`'s flare comes off the
+    skeleton's own hip and hem anchors, and a hakama sharing it is what keeps a
+    lower-body garment skeleton-relative instead of a shape with its own
+    private idea of how wide the hips are.
+
+    What actually makes it read as a hakama and not a plain skirt is the
+    pleats. `_skirt` draws two folds as a suggestion of drape; a hakama is
+    defined by them, so this draws a comb across the whole panel the way
+    `_underskirt` combs its own hem band, just over the full height instead of
+    a strip at the bottom. Flat colour and thin lines rather than a second
+    tone, the same call every other lower-body garment here makes: a wedge
+    wide enough to see is a plane this figure does not have room for twice.
+
+    Legs or trousers are drawn first and this paints over the top of them,
+    which is what lets the two coexist without this needing to know whether
+    the legs under it are bare or in trousers, or how long they run: Reika's
+    is close to floor-length over bare legs and Haruto's stops well short of
+    his boots, over trousers that carry the rest of the way down.
+    """
+    color = p.outfit.hakama_color
+    if color is None:
+        return ""
+    sw = _stroke_w(sk)
+    top_y = sk.waist_y
+    hem_y = _skirt_hem_y(sk, p.outfit.hakama_length)
+    d = _skirt_path(sk, top_y, hem_y)
+    shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    if not p.shaded:
+        return shape
+    # Pleats run to the corner where the panel turns under, not through it, so
+    # the turn stays one unbroken edge the way `_underskirt`'s does.
+    corner = _skirt_corner_y(sk, hem_y)
+    if corner - top_y <= sw * 4:
+        return shape
+    pleat_sw = max(1.0, sw * 0.4)
+    parts = [shape]
+    for i in range(-3, 4):
+        at = i / 3.5
+        x0 = sk.head_cx + _skirt_half_w(sk, top_y) * at
+        x1 = sk.head_cx + _skirt_half_w(sk, corner) * at
+        parts.append(
+            f'<line x1="{x0:.1f}" y1="{top_y:.1f}" x2="{x1:.1f}" y2="{corner:.1f}" '
+            f'stroke="{shade(color)}" stroke-width="{pleat_sw:.1f}" opacity="0.75" />'
+        )
+    return "".join(parts)
+
+
 def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.skirt_color
     if color is None:
@@ -4443,6 +4506,10 @@ def render_character(
         _legs_and_boots(sk, p),
         _underskirt(sk, p),
         _skirt(sk, p),
+        # Over the legs and whatever they wear, under the kimono top: the top of
+        # a hakama sits at the waist, so the tunic and the robe front drawn next
+        # cover its upper reach the same way they cover the top of a skirt.
+        _hakama(sk, p),
         # Behind the tunic: a kimono sleeve hangs off the shoulder seam, so the
         # torso's own outline has to close over the top of it.
         _hanging_sleeves(sk, p),

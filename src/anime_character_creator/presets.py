@@ -437,7 +437,7 @@ HARUTO = CharacterParams(
     hair_length=0.30,
     eye_color="#7d9188",
     hair_knot=True,
-    # Waiting on: a kimono, a hakama and an obi, which is most of him.
+    # Waiting on: an obi buckle to match the reference's sword furniture.
     outfit=Outfit(
         tunic_color="#454639",
         boot_color="#4a3c2e",
@@ -449,6 +449,13 @@ HARUTO = CharacterParams(
         robe_color="#2b2b26",
         sleeve_drop=0.55,
         belt_scale=2.6,
+        # Same tone as the kimono: the reference's hakama and robe read as one
+        # dark fabric, and it is the pleats and the outline that separate the
+        # two planes rather than a second colour. Stops well short of the
+        # boots, which is what leaves the dark trouser leg showing the way the
+        # reference does.
+        hakama_color="#2b2b26",
+        hakama_length=0.60,
     ),
     frame=0.7,
     face=FaceStyle(
@@ -549,17 +556,18 @@ REIKA = CharacterParams(
     hairstyle="long_traced",
     hair_length=0.95,
     eye_color="#4a3f3d",
-    # Waiting on: layered vestments with a trailing outer robe, a hakama, and
-    # the jewelled headpiece. The teal is the underskirt, which is the one thing
-    # about her that already reads from across a room.
+    # Waiting on: a trailing outer robe and the jewelled headpiece.
     outfit=Outfit(
         tunic_color="#b8bcbc",
         boot_color="#3a3a38",
         undersleeve_color="#e8e7e7",
         belt_color="#8d9291",
-        skirt_color="#4d9ca8",
-        underskirt_color="#b8bcbc",
-        skirt_length=0.95,
+        # The teal, which is the one thing about her that already reads from
+        # across a room, was standing in as `skirt_color` before the hakama
+        # existed as its own garment; it moves here rather than staying
+        # duplicated on both.
+        hakama_color="#4d9ca8",
+        hakama_length=0.95,
         robe_color="#c6cac9",
         sleeve_drop=0.70,
         belt_scale=2.2,
