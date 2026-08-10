@@ -315,10 +315,18 @@ SKIN = "#f2d4bb"
 
 CHIYO = CharacterParams(
     skin_tone=SKIN_WORN,
-    hair_color="#4a4640",
+    # Rust-copper rather than plain gray: the design document's "gray-streaked
+    # dark hair" was one more instance of the reference-image drift toward a
+    # narrow brown/black/gray band across nearly the whole side cast, not a
+    # story-load-bearing color. Kept monocolor rather than fading to gray at
+    # the tips (`hair_tip_color`, the mechanic built for Satoko's dye job):
+    # her headscarf covers most of the length that fade would land on, so a
+    # second tone would mostly be wasted. Warm amber eyes for the firm,
+    # hearth-grounded read the face already carries.
+    hair_color="#a85a35",
     hairstyle="long_traced",
     hair_length=0.16,
-    eye_color="#5a6a72",
+    eye_color="#c9963f",
     # Waiting on: a bib apron (hers covers the chest, where Satoko's hangs from
     # the belt) and a headscarf. Until then this is Satoko's layer stack in
     # innkeeper's browns, which is genuinely close: the reference is the same
@@ -356,12 +364,18 @@ CHIYO = CharacterParams(
 
 DAIZEN = CharacterParams(
     skin_tone=SKIN_WORN,
-    hair_color="#9a958c",
+    # Dark iron-blue-gray rather than plain gray, and gold eyes rather than
+    # the pale blue an earlier reference image happened to render: his own
+    # name carries this, 黒金 (Kurogane) pairing "black" with the character
+    # for gold/metal, so dark "black metal" hair and genuinely golden eyes are
+    # the character's own naming pun made literal rather than a departure
+    # from it. Beard matched to the hair below, one tone rather than two.
+    hair_color="#4a4f57",
     hairstyle="short_layered",
     hair_length=0.45,
-    eye_color="#7ea3bd",
+    eye_color="#d4a83c",
     hair_knot=True,
-    beard_color="#6e6a63",
+    beard_color="#4a4f57",
     beard_length=0.17,
     # Waiting on: an open haori over a kimono, an obi, and a full beard. The
     # navy is the haori's, the dark green underneath is the kimono's.
@@ -397,10 +411,14 @@ DAIZEN = CharacterParams(
 
 ELARA = CharacterParams(
     skin_tone="#e8c8ab",
-    hair_color="#4e2729",
+    # Deep wine-burgundy rather than the plain dark auburn a reference image
+    # settled on: controlled and deep rather than bright, matching a
+    # disciplined battle-mage rather than softening her. Moss-olive eyes,
+    # steady rather than warm, for the same reason.
+    hair_color="#6b2c35",
     hairstyle="short_layered",
     hair_length=0.34,
-    eye_color="#8a6b3f",
+    eye_color="#7c8a52",
     # Her scar is not waiting on anything: it is the part Satoko already has,
     # which is why she is the one who proves it generalises.
     outfit=Outfit(
@@ -445,10 +463,14 @@ ELARA = CharacterParams(
 
 HARUTO = CharacterParams(
     skin_tone=SKIN,
-    hair_color="#2e2c2a",
+    # Deep bottle-green rather than plain dark hair: rich and refined, the
+    # noble "liked by nearly everyone in the room." Burnt copper-orange eyes,
+    # sharp and hot against it, for the calculating undertone underneath the
+    # charm.
+    hair_color="#2f4a3c",
     hairstyle="short_layered",
     hair_length=0.30,
-    eye_color="#7d9188",
+    eye_color="#c3672e",
     hair_knot=True,
     # Waiting on: an obi buckle to match the reference's sword furniture.
     outfit=Outfit(
@@ -488,10 +510,15 @@ HARUTO = CharacterParams(
 
 KEIKO = CharacterParams(
     skin_tone=SKIN,
-    hair_color="#3b3230",
+    # Deep plum-violet rather than plain dark brown, with dusty rose-violet
+    # eyes: a near-monochrome look for a researcher who reads as consumed by
+    # her own work, haunted by what her trust in it cost. Warm and dusty
+    # rather than cool, which is what separates her from Reika below: the
+    # same violet family, opposite temperature.
+    hair_color="#5a3a52",
     hairstyle="long_traced",
     hair_length=0.55,
-    eye_color="#b8873f",
+    eye_color="#a58a92",
     # Waiting on: an open lab coat at full length, and spectacles. The charcoal
     # is the researcher's robes the coat hangs over.
     outfit=Outfit(
@@ -576,10 +603,15 @@ KRISTA = CharacterParams(
 
 REIKA = CharacterParams(
     skin_tone="#f6dcc6",
-    hair_color="#262a2e",
+    # Indigo-violet-black rather than plain black, with pale cool lilac-grey
+    # eyes in place of a merely "dark" iris: serene and ethereal rather than
+    # somber, matching a dogmatic, uncompromising priestess whose authority
+    # comes from faith rather than warmth. Same violet family as Keiko above,
+    # cool where hers is warm.
+    hair_color="#2a2438",
     hairstyle="long_traced",
     hair_length=0.95,
-    eye_color="#4a3f3d",
+    eye_color="#b7abc4",
     # Waiting on: a trailing outer robe and the jewelled headpiece.
     outfit=Outfit(
         tunic_color="#b8bcbc",
@@ -616,11 +648,16 @@ REIKA = CharacterParams(
 
 REINHARD = CharacterParams(
     skin_tone="#eccaa9",
-    hair_color="#a8865c",
+    # Cool ash-blond rather than the warmer light-brown/dark-blond a
+    # reference image landed on, and a pale storm-blue eye rather than a
+    # generic gray-blue: restrained rather than loud, matching a controlled,
+    # unreadable character who is not meant to visually announce himself.
+    # Beard matched to the hair below, one tone rather than two.
+    hair_color="#c2b58a",
     hairstyle="short_layered",
     hair_length=0.22,
-    eye_color="#8098a8",
-    beard_color="#7d6540",
+    eye_color="#7fa0b3",
+    beard_color="#c2b58a",
     beard_length=0.07,
     outfit=Outfit(
         tunic_color=UNIFORM,
@@ -663,10 +700,13 @@ REINHARD = CharacterParams(
 
 TENNO = CharacterParams(
     skin_tone=SKIN_WORN,
-    hair_color="#a09a90",
+    # Full silver-white rather than a duller "graying" tone: regal even
+    # diminished. Warm brown eyes carry the permanently apologetic read his
+    # writeup calls for.
+    hair_color="#c9c6c2",
     hairstyle="short_layered",
     hair_length=0.24,
-    eye_color="#8a6a45",
+    eye_color="#8a6a4a",
     # Waiting on: the uniform cut in khaki, and a cane, which is deferred with
     # the other props but is load-bearing for his pose.
     outfit=Outfit(
@@ -705,10 +745,14 @@ TENNO = CharacterParams(
 
 VIKTOR = CharacterParams(
     skin_tone="#f0cfb2",
-    hair_color="#2b2f36",
+    # Deep slate-teal rather than plain dark hair, against warm gold eyes:
+    # cool and moody on the surface, warmer and sharper underneath than he
+    # lets on, which is exactly his written trait, clocking the same thread
+    # as Reinhard and not bothering to chase it.
+    hair_color="#3c5c66",
     hairstyle="short_layered",
     hair_length=0.20,
-    eye_color="#8098a8",
+    eye_color="#c9a24a",
     # Lieutenant, Woden's Ravens (`characters.md`): the same issued kit as
     # the rest of the cast's Wodensreich soldiers.
     outfit=Outfit(
