@@ -225,6 +225,52 @@
       "requires": "belt"
     },
     {
+      "id": "crystal_1",
+      "label": "Crystal (outer left)",
+      "color": {
+        "field": "crystal_color_1",
+        "label": "Crystal (outer left)",
+        "optional": true
+      },
+      "requires": "belt"
+    },
+    {
+      "id": "crystal_2",
+      "label": "Crystal (inner left)",
+      "color": {
+        "field": "crystal_color_2",
+        "label": "Crystal (inner left)",
+        "optional": true
+      },
+      "requires": "belt"
+    },
+    {
+      "id": "crystal_3",
+      "label": "Crystal (inner right)",
+      "color": {
+        "field": "crystal_color_3",
+        "label": "Crystal (inner right)",
+        "optional": true
+      },
+      "requires": "belt"
+    },
+    {
+      "id": "crystal_4",
+      "label": "Crystal (outer right)",
+      "color": {
+        "field": "crystal_color_4",
+        "label": "Crystal (outer right)",
+        "optional": true
+      },
+      "bools": [
+        {
+          "field": "crystal_tongs",
+          "label": "Handling tongs (a small clipped tool)"
+        }
+      ],
+      "requires": "belt"
+    },
+    {
       "id": "apron",
       "label": "Apron",
       "color": {

@@ -136,6 +136,31 @@ BELT = GarmentSlot(
     ranges=(_range("belt_scale", "Belt height", 1.0, 3.0),),
 )
 APRON = GarmentSlot("apron", "Apron", _color("apron_color", "Apron"), requires="belt")
+CRYSTAL_1 = GarmentSlot(
+    "crystal_1",
+    "Crystal (outer left)",
+    _color("crystal_color_1", "Crystal (outer left)"),
+    requires="belt",
+)
+CRYSTAL_2 = GarmentSlot(
+    "crystal_2",
+    "Crystal (inner left)",
+    _color("crystal_color_2", "Crystal (inner left)"),
+    requires="belt",
+)
+CRYSTAL_3 = GarmentSlot(
+    "crystal_3",
+    "Crystal (inner right)",
+    _color("crystal_color_3", "Crystal (inner right)"),
+    requires="belt",
+)
+CRYSTAL_4 = GarmentSlot(
+    "crystal_4",
+    "Crystal (outer right)",
+    _color("crystal_color_4", "Crystal (outer right)"),
+    bools=(_bool("crystal_tongs", "Handling tongs (a small clipped tool)"),),
+    requires="belt",
+)
 SKIRT = GarmentSlot(
     "skirt",
     "Skirt",
@@ -209,6 +234,10 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     UNDERSKIRT,
     BELT,
     POUCH,
+    CRYSTAL_1,
+    CRYSTAL_2,
+    CRYSTAL_3,
+    CRYSTAL_4,
     APRON,
     COLLAR,
     PLACKET,

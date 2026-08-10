@@ -300,6 +300,12 @@ def aged(face: FaceStyle, years: float = 1.0) -> FaceStyle:
 UNIFORM = "#55636d"
 UNIFORM_BELT = "#2f2b28"
 UNIFORM_BOOTS = "#241f1d"
+# The four crystals every Wodensreich soldier in the cast carries clipped to
+# the belt, standard-issue Donarsblut stock rather than a personal palette,
+# so every uniformed character reads as drawing from the same kit. Chosen to
+# read distinctly from each other rather than to match `design.md`'s
+# type/attribute grid, which does not assign any type a canon color.
+CRYSTAL_KIT = ("#c0524a", "#4a7ac0", "#5aa06a", "#d9b23c")
 KHAKI = "#ae9f86"
 # Weathered, for the faces the document describes as older or worn. A duller,
 # slightly deeper skin than the young cast's, which is as much as a flat drawing
@@ -395,9 +401,8 @@ ELARA = CharacterParams(
     hairstyle="short_layered",
     hair_length=0.34,
     eye_color="#8a6b3f",
-    # Waiting on: the Wodensreich uniform, the cross-body strap and the belt
-    # crystals. Her scar is not waiting on anything: it is the part Satoko
-    # already has, which is why she is the one who proves it generalises.
+    # Her scar is not waiting on anything: it is the part Satoko already has,
+    # which is why she is the one who proves it generalises.
     outfit=Outfit(
         tunic_color=UNIFORM,
         boot_color=UNIFORM_BOOTS,
@@ -411,6 +416,14 @@ ELARA = CharacterParams(
         chest_pocket_color=UNIFORM,
         strap_color=UNIFORM_BELT,
         boot_shaft=1.0,
+        # Issued kit, not personal style: every Wodensreich soldier in the
+        # cast wears the same four (`CRYSTAL_KIT`), Krista included. What
+        # tells a Crystal Conclave mage from a line officer is the cutting
+        # tongs, which only she carries.
+        crystal_color_1=CRYSTAL_KIT[0],
+        crystal_color_2=CRYSTAL_KIT[1],
+        crystal_color_3=CRYSTAL_KIT[2],
+        crystal_color_4=CRYSTAL_KIT[3],
     ),
     frame=-0.1,
     face=FaceStyle(
@@ -532,6 +545,16 @@ KRISTA = CharacterParams(
         # read as part of the same kit rather than a separate accessory in
         # its own color.
         goggle_color=UNIFORM_BELT,
+        # The crystal harness canon gives her (`character_designs.md`):
+        # "several glowing mana crystals" on the belt. Same issued kit every
+        # Wodensreich soldier in the cast wears (`CRYSTAL_KIT`); what marks
+        # her specifically as Crystal Conclave rather than a line officer is
+        # the tongs below, hers alone.
+        crystal_color_1=CRYSTAL_KIT[0],
+        crystal_color_2=CRYSTAL_KIT[1],
+        crystal_color_3=CRYSTAL_KIT[2],
+        crystal_color_4=CRYSTAL_KIT[3],
+        crystal_tongs=True,
     ),
     frame=-0.2,
     face=FaceStyle(
@@ -599,7 +622,6 @@ REINHARD = CharacterParams(
     eye_color="#8098a8",
     beard_color="#7d6540",
     beard_length=0.07,
-    # Waiting on: the uniform, the strap, and a short beard.
     outfit=Outfit(
         tunic_color=UNIFORM,
         boot_color=UNIFORM_BOOTS,
@@ -613,6 +635,13 @@ REINHARD = CharacterParams(
         chest_pocket_color=UNIFORM,
         strap_color=UNIFORM_BELT,
         boot_shaft=1.0,
+        # Rank in Woden's Ravens (`characters.md`), and the expedition's own
+        # crystal cargo was his order: the issued kit belongs on him same as
+        # any other Wodensreich soldier in the cast.
+        crystal_color_1=CRYSTAL_KIT[0],
+        crystal_color_2=CRYSTAL_KIT[1],
+        crystal_color_3=CRYSTAL_KIT[2],
+        crystal_color_4=CRYSTAL_KIT[3],
     ),
     frame=1.0,
     face=FaceStyle(
@@ -680,7 +709,8 @@ VIKTOR = CharacterParams(
     hairstyle="short_layered",
     hair_length=0.20,
     eye_color="#8098a8",
-    # Waiting on: the uniform and the strap.
+    # Lieutenant, Woden's Ravens (`characters.md`): the same issued kit as
+    # the rest of the cast's Wodensreich soldiers.
     outfit=Outfit(
         tunic_color=UNIFORM,
         boot_color=UNIFORM_BOOTS,
@@ -694,6 +724,10 @@ VIKTOR = CharacterParams(
         chest_pocket_color=UNIFORM,
         strap_color=UNIFORM_BELT,
         boot_shaft=1.0,
+        crystal_color_1=CRYSTAL_KIT[0],
+        crystal_color_2=CRYSTAL_KIT[1],
+        crystal_color_3=CRYSTAL_KIT[2],
+        crystal_color_4=CRYSTAL_KIT[3],
     ),
     frame=0.8,
     face=FaceStyle(

@@ -232,6 +232,26 @@ class Outfit:
     # Where the coat's hem falls, shoulder (0) to ankle (1). Roughly: 0.30 a
     # jacket cropped at the waist, 0.62 below the knee, 0.75 mid-calf.
     coat_length: float = 0.55
+    # Four mana crystals clipped to the belt, two a side, the carrying rig
+    # Elara and Krista wear instead of a pouch: a crystal is dangerous to grip
+    # bare-handed (`valley_of_mist/docs/design.md`, "Donarsblut"), so it rides
+    # in a loop rather than a pocket, and stays visible rather than stowed.
+    # Four fields rather than one `crystal_color`, because the point of a
+    # working mage's rig is that the stock is not all the same type; each
+    # slot is independently optional, so a character can wear fewer than
+    # four, same as any other garment here. Left outer, left inner, right
+    # inner, right outer. Needs a belt to clip to, same as `pouch_color`.
+    crystal_color_1: str | None = None
+    crystal_color_2: str | None = None
+    crystal_color_3: str | None = None
+    crystal_color_4: str | None = None
+    # A small cutting/handling tool clipped beside the rig, standard Crystal
+    # Conclave kit for a stock nobody grips bare-handed. Optional and off by
+    # default: it is a second read at a scale where the crystals alone are
+    # already close to the floor, so it only earns its keep on a character
+    # deliberate enough about the kit to ask for it explicitly. Draws nothing
+    # unless a belt is worn.
+    crystal_tongs: bool = False
 
 
 @dataclass(frozen=True)
@@ -3953,6 +3973,109 @@ def _pouches(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# Where each crystal sits along the belt, as a fraction of `waist_half_w`
+# either side of centre, outer to inner. Kept inboard of the pouch's own
+# 0.68-0.76 span (`_pouches`) so a character wearing both does not stack a
+# gem on a flap: nothing in the cast does yet, but the rig and a pouch are
+# both belt-mounted kit and there is no reason a future character couldn't
+# wear both.
+_CRYSTAL_X_FRACS = (-0.60, -0.28, 0.28, 0.60)
+
+
+def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
+    """Up to four mana crystals clipped along the belt band, two a side.
+
+    Flat kite-shaped gems, no glow: a crystal is dangerous to grip
+    bare-handed (`valley_of_mist/docs/design.md`, "Donarsblut"), which is
+    what the rig is about, not a light source, and a glow at chibi scale
+    reads as clutter before it reads as danger anyway. The shape, the flat
+    color and the loop clipping it to the belt are what say "crystal", the
+    same way a flat rectangle with a flap says "pouch". Drawn after the belt
+    and pouches, in front of both, so the rig reads as riding over the band.
+    """
+    colors = (
+        p.outfit.crystal_color_1,
+        p.outfit.crystal_color_2,
+        p.outfit.crystal_color_3,
+        p.outfit.crystal_color_4,
+    )
+    if p.outfit.belt_color is None or all(c is None for c in colors):
+        return ""
+    cx = sk.head_cx
+    sw = _stroke_w(sk)
+    belt_h = (sk.hip_y - sk.waist_y) * 0.42 * max(0.2, p.outfit.belt_scale)
+    belt_y = sk.waist_y - belt_h * 0.35
+    band_cy = belt_y + belt_h * 0.5
+    # A little taller than the pouch's own head-relative size: a gem this
+    # small still has to read as faceted rather than as a dot.
+    h = sk.head_r * (0.30 + 0.12 * sk.build)
+    w = h * 0.58
+    parts = []
+    for frac, color in zip(_CRYSTAL_X_FRACS, colors, strict=True):
+        if color is None:
+            continue
+        gx = cx + frac * sk.waist_half_w
+        top = (gx, band_cy - h / 2)
+        right = (gx + w / 2, band_cy - h * 0.08)
+        bottom = (gx, band_cy + h / 2)
+        left = (gx - w / 2, band_cy - h * 0.08)
+        d = (
+            f"M {top[0]:.1f} {top[1]:.1f} "
+            f"L {right[0]:.1f} {right[1]:.1f} "
+            f"L {bottom[0]:.1f} {bottom[1]:.1f} "
+            f"L {left[0]:.1f} {left[1]:.1f} Z"
+        )
+        parts.append(
+            f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.8:.1f}" />'
+        )
+        # One facet line, top point to bottom point: the cheap cue that reads
+        # as a cut stone rather than a bead, without a second fill or a
+        # gradient.
+        parts.append(
+            f'<line x1="{top[0]:.1f}" y1="{top[1]:.1f}" x2="{bottom[0]:.1f}" y2="{bottom[1]:.1f}" '
+            f'stroke="{shade(color, 0.6)}" stroke-width="{sw * 0.5:.1f}" />'
+        )
+        # The loop clipping it to the belt: a short stroke standing in for a
+        # leather keeper, the same idea as the buckle's own keeper in `_belt`.
+        parts.append(
+            f'<line x1="{gx:.1f}" y1="{band_cy - h * 0.60:.1f}" x2="{gx:.1f}" y2="{top[1]:.1f}" '
+            f'stroke="{OUTLINE}" stroke-width="{sw * 0.6:.1f}" stroke-linecap="round" />'
+        )
+        # A leather strap wrapping the gem at its widest point, holding it to
+        # the belt rather than leaving it looking merely balanced there.
+        # Belt-colored so it reads as the same rig, not a second accessory.
+        strap_h = h * 0.24
+        strap_w = w * 1.22
+        strap_y = band_cy - h * 0.08 - strap_h / 2
+        parts.append(
+            f'<rect x="{gx - strap_w / 2:.1f}" y="{strap_y:.1f}" width="{strap_w:.1f}" '
+            f'height="{strap_h:.1f}" fill="{p.outfit.belt_color}" '
+            f'stroke="{OUTLINE}" stroke-width="{sw * 0.6:.1f}" />'
+        )
+    if p.outfit.crystal_tongs:
+        # A small crossed-tongs silhouette hanging below the outer right
+        # gem, on the thigh rather than beside it: further out at belt
+        # height sits behind the arm, the same room problem the pouches
+        # solve by hanging low instead of wide. Standard Crystal Conclave
+        # kit for a stock nobody grips bare-handed. Fixed neutral metal
+        # tone, like the belt buckle: not anyone's palette.
+        tx = cx + _CRYSTAL_X_FRACS[3] * sk.waist_half_w
+        ty = band_cy + h * 1.05
+        arm = h * 0.75
+        parts.append(
+            f'<line x1="{tx - arm * 0.22:.1f}" y1="{ty - arm * 0.55:.1f}" '
+            f'x2="{tx + arm * 0.28:.1f}" y2="{ty + arm * 0.55:.1f}" '
+            f'stroke="#8a8578" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        )
+        parts.append(
+            f'<line x1="{tx + arm * 0.22:.1f}" y1="{ty - arm * 0.55:.1f}" '
+            f'x2="{tx - arm * 0.28:.1f}" y2="{ty + arm * 0.55:.1f}" '
+            f'stroke="#8a8578" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        )
+        parts.append(f'<circle cx="{tx:.1f}" cy="{ty:.1f}" r="{sw * 0.6:.1f}" fill="#6b665c" />')
+    return "".join(parts)
+
+
 _HEAD_SEGMENTS = 8
 
 # How much width the whole skull loses by the adult end, as a fraction. The
@@ -4744,6 +4867,7 @@ def render_character(
         _coat(sk, p),
         _belt(sk, p),
         _pouches(sk, p),
+        _crystal_harness(sk, p),
         _arms(sk, p),
         # After the arms and before the ear: a standing collar wraps the throat,
         # so it belongs over the neck and the tunic's V, and it is the one
