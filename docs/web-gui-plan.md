@@ -2,9 +2,9 @@
 
 Plan for a browser-based character creator that a non-technical visitor
 can use without installing anything, hosted free and permanently.
-Written 2026-08-10 at `826e308` "add kristas goggles". Nothing here is
-built yet; this document exists so the open questions at the bottom get
-answered before any of it is.
+Written 2026-08-10 at `826e308` "add kristas goggles". The plan below
+predates the build; the page it describes is now live, see "What has
+to be built" at the bottom for what shipped and `web/` for the code.
 
 ## What is being built
 
