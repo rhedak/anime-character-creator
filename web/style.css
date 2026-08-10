@@ -120,17 +120,49 @@ h3 {
 }
 
 @media (max-width: 40rem) {
-  /* Sticky only makes sense beside a taller, independently-scrolling
-     controls column. Stacked single-column on mobile, a pinned preview
-     stays put while the controls scroll past underneath it, so its image,
-     buttons and "choose a different starting point" link end up overlapping
-     whatever control row happens to be scrolled to that same screen
-     position. Static keeps the preview in normal document flow instead.
+  /* Pinned to the top of the viewport rather than `sticky` in the grid: a
+     mobile visitor is here to watch the figure change as they touch a
+     control, which needs the preview on screen at all times, not just
+     until it scrolls past. `sticky` inside a single-column grid was tried
+     first and pinned the whole preview pane, image, buttons and the
+     "choose a different starting point" link alike, over whatever control
+     row the page happened to have scrolled to underneath it: the pane's
+     own height did not shrink to make room, so it read as broken text
+     rather than a pinned preview. `fixed` here is a deliberate size
+     instead, capped at `--mobile-preview-h` of the viewport, with the
+     image the flexible part inside it and the buttons and link fixed to
+     their own height, and the controls below carry a matching padding-top
+     so nothing starts out hidden underneath it.
      Declared after the unconditional rule above on purpose: an equal-
      specificity override has to come later in the file to win the cascade,
      a media query does not get special priority on its own. */
+  :root {
+    --mobile-preview-h: 44vh;
+  }
   .preview-pane {
-    position: static;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    height: var(--mobile-preview-h);
+    margin: 0;
+    padding: 0.6rem 1.25rem 0.5rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  .preview-pane .preview {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .preview-pane .preview-actions,
+  .preview-pane .back-link {
+    flex: none;
+  }
+  .controls-pane {
+    padding-top: calc(var(--mobile-preview-h) + 1rem);
   }
 }
 
@@ -148,6 +180,8 @@ h3 {
 .preview svg,
 .preview img {
   max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
 }
 
