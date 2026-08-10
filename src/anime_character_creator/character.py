@@ -3408,56 +3408,23 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     # hanging them off the hip would splay them to the corners of the body.
     tuck = sk.leg_half_w * 1.45
     gap = tuck + (sk.hip_half_w - w_top - tuck) * taper
-    # Bare legs are separately filled paths drawn in a loop, so if they ever met,
-    # the second one's fill would cover the first one's, and the crotch would
-    # come out as an asymmetric seam. This keeps a slot open no matter what frame
-    # widens the thigh or narrows the hip. The reference leaves each inner edge
-    # about 0.09 head radii off centre, which is where the presets land without
-    # the floor biting. Trousers are one path and would not need this, but they
-    # share the number so the boots stand in the same place either way.
+    # However the legs are covered, the boots go in the same two places, so the
+    # gap floor is shared rather than duplicated per branch. The reference leaves
+    # each inner edge about 0.09 head radii off centre, which is where the
+    # presets land without the floor biting.
     gap = max(gap, w_top + sk.leg_half_w * 0.2)
     if trousers:
         parts = [_trousers(sk, p, trousers, gap, w_top, w_knee, w_calf, w_ankle)]
-        for side in (-1, 1):
-            parts.append(_boot(sk, p, sk.head_cx + side * gap, w_ankle, w_knee, side))
-        return "".join(parts)
-
-    # A bare leg has to start at or above whatever hem is going to cover its top,
-    # and the skirt's hem moves with `skirt_length`. Pinning it to the skeleton's
-    # own hem leaves a band of bare canvas across the hips as soon as a skirt is
-    # asked to be shorter than that.
-    top_y = min(sk.hem_y, _skirt_hem_y(sk, p.outfit.skirt_length)) - 4
-    calf_y = sk.knee_y + (sk.ankle_y - sk.knee_y) * 0.35
-    # No tone down the leg. It was there to separate the two of them when both are
-    # the same flat colour, but they are separate paths with a slot between them,
-    # so the silhouette was already doing that, and a stripe down a leg reads the
-    # way one down a sleeve does.
-    parts = []
+    else:
+        # One seat, not two tubes with a gap between them: see `_bare_seat`. What
+        # used to be here drew each leg as its own closed path starting a few
+        # pixels above the skirt's hem, which left the hip and the top of the
+        # inner thigh as untouched canvas the instant nothing covered them, a
+        # skirt shorter than default, both garments off entirely, and read as
+        # the figure's legs not being attached to its body.
+        parts = [_bare_seat(sk, p, gap, w_top, w_knee, w_calf, w_ankle)]
     for side in (-1, 1):
-        cx = sk.head_cx + side * gap
-        d = (
-            f"M {cx - w_top:.1f} {top_y:.1f} L {cx + w_top:.1f} {top_y:.1f} "
-            f"Q {cx + w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx + w_knee:.1f} {sk.knee_y:.1f} "
-            f"Q {cx + w_calf:.1f} {calf_y:.1f} {cx + w_ankle:.1f} {sk.ankle_y:.1f} "
-            f"L {cx - w_ankle:.1f} {sk.ankle_y:.1f} "
-            f"Q {cx - w_calf:.1f} {calf_y:.1f} {cx - w_knee:.1f} {sk.knee_y:.1f} "
-            f"Q {cx - w_top:.1f} {sk.knee_y - (sk.knee_y - top_y) * 0.3:.1f} {cx - w_top:.1f} {top_y:.1f} Z"
-        )
-        # Outlined, at the same 0.85 weight the bare arm uses, because a bare leg
-        # is on show between the hem and the boot and every other shape in the
-        # drawing carries a contour there. It shipped as a bare fill on the
-        # assumption that a hem covered its top, which is true, and that the rest
-        # of it was covered too, which is not: the skirt reaches mid-calf on the
-        # adult and stops well above the boot at the chibi, so the chibi has had a
-        # pair of untouched skin-coloured shapes in a hard-edged drawing.
-        #
-        # Only the sides show. The top edge runs above the hem and the bottom
-        # edge inside the boot, both drawn after this, so neither doubles a line.
-        parts.append(
-            f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
-            f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" />'
-        )
-        parts.append(_boot(sk, p, cx, w_ankle, w_knee, side))
+        parts.append(_boot(sk, p, sk.head_cx + side * gap, w_ankle, w_knee, side))
     return "".join(parts)
 
 
@@ -3475,17 +3442,29 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
 _CROTCH_AT = 0.28
 
 
-def _trousers(
+def _leg_tuck_top_y(sk: Skeleton, p: CharacterParams) -> float:
+    """Where a garment covering both legs as one seat starts: inside the belt
+    band when the tunic is tucked, the hip otherwise. Shared by `_trousers` and
+    `_bare_seat` so a tucked tunic with no trousers still has something under
+    it rather than a gap the width of the belt.
+    """
+    belt_y, belt_h = _belt_band(sk)
+    return belt_y + belt_h * 0.5 if p.outfit.tunic_tucked else sk.hip_y
+
+
+def _seat_notch_d(
     sk: Skeleton,
-    p: CharacterParams,
-    color: str,
+    cx: float,
     gap: float,
+    top_y: float,
+    crotch_y: float,
     w_top: float,
     w_knee: float,
     w_calf: float,
     w_ankle: float,
 ) -> str:
-    """Trousers as one garment: a seat with a notch cut out of it, not two tubes.
+    """A seat with a notch cut out of it, not two tubes: one closed silhouette
+    from the waist to both ankles, meeting at `crotch_y` and parting below it.
 
     The canon draws no gap between the legs above the crotch and no seam across
     the top of the thigh either. Measured on both Satoshi sheets, the silhouette
@@ -3493,30 +3472,11 @@ def _trousers(
     floor, where background first appears between the legs, and from there the
     slot opens smoothly to about a third of the garment's width by the boot.
 
-    So this is one closed path, and the inseam is its own stroke rather than a
-    line drawn on. What was here before was a wedge drawn behind two separately
-    stroked tubes, and the wedge's lower V hung below the tunic's hem between
-    two legs that had a slot of canvas running all the way up between them: it
-    read as a flap hanging off the belt rather than as the seat of a garment.
-
-    Starts inside the belt band when the tunic is tucked, which is the other
-    half of the same fix. The trousers used to begin at the hip, a good part of
-    the way down from the belt, with the tunic covering the difference, so the
-    tunic hung in a band below its own belt and the trousers appeared to start
-    at the tunic's hem. Both references tuck the tunic in and start the trousers
-    at the belt. Untucked they still begin at the hip, since a tunic hanging to
-    the hip is over them either way and a waist drawn under it could only ever
-    show through some later change to the garment above.
+    Shared by `_trousers` and `_bare_seat`, which differ only in fill, outline
+    weight and whether a seam gets drawn on top: the crotch itself is the one
+    thing that must never draw two different ways depending on what the legs
+    are wearing.
     """
-    cx = sk.head_cx
-    belt_y, belt_h = _belt_band(sk)
-    # Rising into the belt is the tucked case only. Under a tunic that hangs to
-    # the hip there is nothing to see up there, and drawing it anyway would put
-    # the whole waist of the garment under another garment, where the only thing
-    # it could ever do is show through a later change to the one above it.
-    tucked = p.outfit.tunic_tucked
-    top_y = belt_y + belt_h * 0.5 if tucked else sk.hip_y
-    crotch_y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
     calf_y = sk.knee_y + (sk.ankle_y - sk.knee_y) * 0.35
     # The two outer edges run straight, at the leg's own width, from the belt all
     # the way to the ankle: the only taper in them is the leg's own 1.10 thigh to
@@ -3566,7 +3526,7 @@ def _trousers(
         )
 
     w_waist = gap + w_top
-    d = (
+    return (
         f"M {cx - w_waist:.1f} {top_y:.1f} L {cx + w_waist:.1f} {top_y:.1f} "
         + outer_down(1)
         + inner_up(1)
@@ -3574,12 +3534,110 @@ def _trousers(
         + outer_up(-1)
         + "Z"
     )
+
+
+def _trousers(
+    sk: Skeleton,
+    p: CharacterParams,
+    color: str,
+    gap: float,
+    w_top: float,
+    w_knee: float,
+    w_calf: float,
+    w_ankle: float,
+) -> str:
+    """Trousers as one garment: a seat with a notch cut out of it, not two tubes.
+
+    What was here before was a wedge drawn behind two separately stroked tubes,
+    and the wedge's lower V hung below the tunic's hem between two legs that had
+    a slot of canvas running all the way up between them: it read as a flap
+    hanging off the belt rather than as the seat of a garment. `_seat_notch_d`
+    is the fix, shared with the bare-skin case in `_bare_seat` below.
+
+    Starts inside the belt band when the tunic is tucked, which is the other
+    half of the same fix. The trousers used to begin at the hip, a good part of
+    the way down from the belt, with the tunic covering the difference, so the
+    tunic hung in a band below its own belt and the trousers appeared to start
+    at the tunic's hem. Both references tuck the tunic in and start the trousers
+    at the belt. Untucked they still begin at the hip, since a tunic hanging to
+    the hip is over them either way and a waist drawn under it could only ever
+    show through some later change to the garment above.
+    """
+    cx = sk.head_cx
+    top_y = _leg_tuck_top_y(sk, p)
+    crotch_y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
+    d = _seat_notch_d(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle)
     # Rounded joins, because the inseam meets itself at a point at the crotch and
     # SVG's default miter shoots a spike off any sharp corner. `_hair_mass` hit
     # the same thing at a lock's tip.
     return (
         f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" '
         f'stroke-linejoin="round" />' + _trouser_seams(sk, p, color, gap, w_top, top_y, crotch_y)
+    )
+
+
+# A fixed placeholder, not a character trait: nobody's design in
+# docs/mist-characters/character_designs.md specifies underwear, so there is
+# nothing for a per-character field to hold, the way there is for a tunic or a
+# skirt. A plain neutral cotton tone, the way OUTLINE is a plain neutral line
+# regardless of what it outlines.
+_UNDERWEAR_COLOR = "#e8e4dc"
+
+
+def _underpants(
+    sk: Skeleton, p: CharacterParams, gap: float, top_y: float, crotch_y: float, w_top: float
+) -> str:
+    """A modesty layer over the top of `_bare_seat`, not full-length: it never
+    reaches the point the legs part, so it needs no notch of its own and is
+    just a plain block with a shallow curved hem, the way a brief is cut higher
+    than trousers rather than a shorter copy of them.
+    """
+    cx = sk.head_cx
+    hem_y = crotch_y + (sk.knee_y - crotch_y) * 0.22
+    w_waist = gap + w_top
+    # A little narrower at the hem than the waist, which is what a hem gathered
+    # by elastic looks like rather than a straight-sided box.
+    w_hem = w_waist * 0.82
+    dip = (hem_y - top_y) * 0.10
+    d = (
+        f"M {cx - w_waist:.1f} {top_y:.1f} L {cx + w_waist:.1f} {top_y:.1f} "
+        f"L {cx + w_hem:.1f} {hem_y - dip:.1f} "
+        f"Q {cx:.1f} {hem_y:.1f} {cx - w_hem:.1f} {hem_y - dip:.1f} Z"
+    )
+    return (
+        f'<path d="{d}" fill="{_UNDERWEAR_COLOR}" stroke="{OUTLINE}" '
+        f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" stroke-linejoin="round" />'
+    )
+
+
+def _bare_seat(
+    sk: Skeleton,
+    p: CharacterParams,
+    gap: float,
+    w_top: float,
+    w_knee: float,
+    w_calf: float,
+    w_ankle: float,
+) -> str:
+    """Bare legs, as one silhouette rather than two separate tubes with a gap
+    between them, the same fix `_trousers` got and for the same reason: two
+    independent shapes leave a slot of background between them, which used to
+    run all the way up to the hip the moment nothing else covered it, skirt and
+    trousers both off, or a skirt shorter than default. A placeholder pair of
+    underpants rides on top, so the figure reads as dressed rather than as a
+    body with a hole cut in the middle of it.
+    """
+    cx = sk.head_cx
+    top_y = _leg_tuck_top_y(sk, p)
+    crotch_y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
+    d = _seat_notch_d(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle)
+    # No tone down the leg, same as the old two-tube version: a stripe down a
+    # leg reads the way one down a sleeve does, one flat surface with an outline
+    # doing the work instead.
+    return (
+        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
+        f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" stroke-linejoin="round" />'
+        + _underpants(sk, p, gap, top_y, crotch_y, w_top)
     )
 
 

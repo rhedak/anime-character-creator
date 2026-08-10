@@ -82,7 +82,7 @@
     },
     {
       "field": "hair_tip_color",
-      "label": "Hair tips",
+      "label": "Tip colour",
       "optional": true
     },
     {
@@ -154,19 +154,19 @@
     },
     {
       "id": "undersleeve",
-      "label": "Undersleeves",
+      "label": "Undersleeves (long sleeves underneath)",
       "color": {
         "field": "undersleeve_color",
-        "label": "Undersleeves",
+        "label": "Undersleeves (long sleeves underneath)",
         "optional": true
       }
     },
     {
       "id": "trouser",
-      "label": "Trousers",
+      "label": "Trousers (Pants)",
       "color": {
         "field": "trouser_color",
-        "label": "Trousers",
+        "label": "Trousers (Pants)",
         "optional": true
       }
     },
@@ -189,10 +189,10 @@
     },
     {
       "id": "underskirt",
-      "label": "Underskirt",
+      "label": "Underskirt (a second, longer skirt underneath)",
       "color": {
         "field": "underskirt_color",
-        "label": "Underskirt",
+        "label": "Underskirt (a second, longer skirt underneath)",
         "optional": true
       },
       "requires": "skirt"
@@ -263,19 +263,19 @@
     },
     {
       "id": "strap",
-      "label": "Strap",
+      "label": "Strap (cross-body strap)",
       "color": {
         "field": "strap_color",
-        "label": "Strap",
+        "label": "Strap (cross-body strap)",
         "optional": true
       }
     },
     {
       "id": "hakama",
-      "label": "Hakama",
+      "label": "Hakama (wide pleated trousers/skirt)",
       "color": {
         "field": "hakama_color",
-        "label": "Hakama",
+        "label": "Hakama (wide pleated trousers/skirt)",
         "optional": true
       },
       "ranges": [
@@ -289,10 +289,10 @@
     },
     {
       "id": "robe",
-      "label": "Robe",
+      "label": "Robe (open outer layer, kimono-style)",
       "color": {
         "field": "robe_color",
-        "label": "Robe",
+        "label": "Robe (open outer layer, kimono-style)",
         "optional": true
       },
       "ranges": [

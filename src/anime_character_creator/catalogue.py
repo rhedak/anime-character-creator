@@ -122,7 +122,9 @@ BOOTS = GarmentSlot(
 # is `Outfit`'s own presence rule and the reason none of these need a separate
 # on/off field.
 UNDERSLEEVE = GarmentSlot(
-    "undersleeve", "Undersleeves", _color("undersleeve_color", "Undersleeves")
+    "undersleeve",
+    "Undersleeves (long sleeves underneath)",
+    _color("undersleeve_color", "Undersleeves (long sleeves underneath)"),
 )
 BELT = GarmentSlot(
     "belt",
@@ -151,20 +153,25 @@ SKIRT = GarmentSlot(
     ranges=(_range("skirt_length", "Skirt length", 0.0, 1.0),),
 )
 UNDERSKIRT = GarmentSlot(
-    "underskirt", "Underskirt", _color("underskirt_color", "Underskirt"), requires="skirt"
+    "underskirt",
+    "Underskirt (a second, longer skirt underneath)",
+    _color("underskirt_color", "Underskirt (a second, longer skirt underneath)"),
+    requires="skirt",
 )
-TROUSER = GarmentSlot("trouser", "Trousers", _color("trouser_color", "Trousers"))
+TROUSER = GarmentSlot("trouser", "Trousers (Pants)", _color("trouser_color", "Trousers (Pants)"))
 POUCH = GarmentSlot("pouch", "Pouch", _color("pouch_color", "Pouch"), requires="belt")
 COLLAR = GarmentSlot("collar", "Collar", _color("collar_color", "Collar"))
 PLACKET = GarmentSlot("placket", "Buttons", _color("placket_color", "Buttons"))
 CHEST_POCKET = GarmentSlot(
     "chest_pocket", "Chest pocket", _color("chest_pocket_color", "Chest pocket")
 )
-STRAP = GarmentSlot("strap", "Strap", _color("strap_color", "Strap"))
+STRAP = GarmentSlot(
+    "strap", "Strap (cross-body strap)", _color("strap_color", "Strap (cross-body strap)")
+)
 ROBE = GarmentSlot(
     "robe",
-    "Robe",
-    _color("robe_color", "Robe"),
+    "Robe (open outer layer, kimono-style)",
+    _color("robe_color", "Robe (open outer layer, kimono-style)"),
     # Shoulder (0) to hip (1). The cast spans 0.44 (Tomohiro's jacket) to 0.70
     # (Reika's), and the docstring states the endpoints as meaningful rather
     # than merely legal, so the full range is exposed.
@@ -172,8 +179,8 @@ ROBE = GarmentSlot(
 )
 HAKAMA = GarmentSlot(
     "hakama",
-    "Hakama",
-    _color("hakama_color", "Hakama"),
+    "Hakama (wide pleated trousers/skirt)",
+    _color("hakama_color", "Hakama (wide pleated trousers/skirt)"),
     # Same hip-to-ankle measure as `skirt_length`, and the same fix applies.
     ranges=(_range("hakama_length", "Hakama length", 0.0, 1.0),),
 )
@@ -239,7 +246,7 @@ assert _outfit_fields_named() == _OUTFIT_FIELDS, (
 COLORS: tuple[ColorField, ...] = (
     ColorField("skin_tone", "Skin", optional=False),
     ColorField("hair_color", "Hair", optional=False),
-    ColorField("hair_tip_color", "Hair tips", optional=True),
+    ColorField("hair_tip_color", "Tip colour", optional=True),
     ColorField("eye_color", "Eyes", optional=False),
 )
 for _c in COLORS:

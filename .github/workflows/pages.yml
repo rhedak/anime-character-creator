@@ -8,7 +8,8 @@ name: Deploy the web tool to GitHub Pages
 # build step beyond a file copy.
 #
 # Gated on the same test suite CLAUDE.md requires green locally, so a push
-# that forgot to run refresh-ref-out.sh or refresh-catalogue.sh fails here
+# that forgot to run refresh-ref-out.sh, refresh-catalogue.sh or
+# refresh-bases.sh fails here
 # rather than publishing a page whose gallery or controls disagree with the
 # code that draws them.
 #
@@ -51,10 +52,11 @@ jobs:
       - name: Run the test suite
         run: uv run pytest -q
 
-      - name: Check ref-out/ and catalogue.json are current
+      - name: Check ref-out/, catalogue.json and bases/ are current
         run: |
           ./refresh-ref-out.sh --check
           ./refresh-catalogue.sh --check
+          ./refresh-bases.sh --check
 
       - name: Assemble the site
         run: ./web-stage.sh

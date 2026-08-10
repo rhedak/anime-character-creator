@@ -507,7 +507,7 @@ source rather than to the published read.
 > Neither is a legal condition. There is nothing here anyone intends to
 > enforce.
 >
-> **One more ask, about the cast.** Satoko, Krista and the rest are
+> **One more ask, about the cast.** Satoshi, Krista and the rest are
 > characters from *The Hero of the Mist Tragedy*. Start from any of
 > them and change whatever you like; what comes out is yours the same
 > as anything else here. The ask is only that you not present the

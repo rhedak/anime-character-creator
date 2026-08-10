@@ -88,16 +88,18 @@ function setStatus(text, isError) {
 // --- Gallery: built from ref-out/catalogue.json alone, before Python exists.
 // The cast gets its committed ref-out/<id>.svg, so this paints instantly, per
 // "a character is on screen immediately" in docs/web-gui-plan.md. The two
-// neutral bases have no committed art of their own (ref-out/ is "the
-// fourteen named characters and nothing else", see presets.py), so they show
-// a plain placeholder until Pyodide can draw them for real.
+// neutral bases get the same treatment from ref-out/bases/<id>.svg: a
+// separate small directory rather than ref-out/'s top level, since
+// NEUTRAL_BASES is deliberately not in PRESETS (see presets.py) and
+// refresh-ref-out.sh and the README's per-character test both read PRESETS.
+// refresh-bases.sh is the one script that knows the two exist.
 
 function buildGallery() {
   for (const entry of catalogue.starting_points.cast) {
     castGallery.appendChild(galleryCard(entry, `ref-out/${entry.id}.svg`));
   }
   for (const entry of catalogue.starting_points.bases) {
-    baseGallery.appendChild(galleryCard(entry, null));
+    baseGallery.appendChild(galleryCard(entry, `ref-out/bases/${entry.id}.svg`));
   }
 }
 
@@ -106,17 +108,11 @@ function galleryCard(entry, imgSrc) {
   card.type = "button";
   card.className = "gallery-card";
   card.dataset.startId = entry.id;
-  if (imgSrc) {
-    const img = document.createElement("img");
-    img.src = imgSrc;
-    img.alt = entry.label;
-    img.loading = "lazy";
-    card.appendChild(img);
-  } else {
-    const ph = document.createElement("div");
-    ph.className = "placeholder";
-    card.appendChild(ph);
-  }
+  const img = document.createElement("img");
+  img.src = imgSrc;
+  img.alt = entry.label;
+  img.loading = "lazy";
+  card.appendChild(img);
   const label = document.createElement("div");
   label.textContent = entry.label;
   card.appendChild(label);
@@ -253,11 +249,17 @@ function buildHairControls() {
   const tip = catalogue.colors.find((c) => c.field === "hair_tip_color");
   const tipRow = document.createElement("div");
   tipRow.className = "control-row";
-  const tipCheckbox = boolRow(tipRow, "hair_tip_on", "Tipped ends", state.hair_tip_color !== null, (on) => {
-    state.hair_tip_color = on ? state.hair_color : null;
-    buildHairControls();
-    scheduleRender();
-  });
+  const tipCheckbox = boolRow(
+    tipRow,
+    "hair_tip_on",
+    "Fade to a second colour at the ends",
+    state.hair_tip_color !== null,
+    (on) => {
+      state.hair_tip_color = on ? state.hair_color : null;
+      buildHairControls();
+      scheduleRender();
+    },
+  );
   hairControls.appendChild(tipRow);
   if (tipCheckbox.checked) {
     colorRow(hairControls, tip.field, tip.label, state.hair_tip_color, (v) => {

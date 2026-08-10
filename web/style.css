@@ -93,18 +93,12 @@ h3 {
   outline: none;
 }
 
-.gallery-card img,
-.gallery-card .placeholder {
+.gallery-card img {
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: contain;
   display: block;
   margin-bottom: 0.35rem;
-}
-
-.gallery-card .placeholder {
-  background: linear-gradient(180deg, #efeae2, #e6e0d6);
-  border-radius: 0.35rem;
 }
 
 .editor-layout {

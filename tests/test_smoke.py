@@ -70,6 +70,18 @@ def test_neutral_bases_render_and_stay_out_of_the_cast(base: str) -> None:
     assert base not in PRESETS
 
 
+@pytest.mark.parametrize("base", sorted(NEUTRAL_BASES))
+def test_ref_out_bases_match_the_code(base: str) -> None:
+    """`ref-out/bases/<id>.svg` is the web gallery's instant-paint art for the
+    two neutral bases, committed the way ref-out/'s own SVGs are. Guarded the
+    same way `refresh-ref-out.sh --check` guards those; run
+    `./refresh-bases.sh` when this fails."""
+    committed = (REF_OUT / "bases" / f"{base}.svg").read_text()
+    assert committed == render_character(NEUTRAL_BASES[base]), (
+        f"ref-out/bases/{base}.svg is stale; run ./refresh-bases.sh"
+    )
+
+
 def test_render_is_deterministic() -> None:
     """`ref-out/` is compared byte for byte, so two runs have to agree."""
     p = PRESETS["satoko"]
