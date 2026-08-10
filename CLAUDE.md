@@ -17,6 +17,15 @@ build, fully color-parametrized, no alternate hairstyles/outfits/poses
 yet. The stated direction is to "edge closer" to more detailed, less
 deformed proportions iteratively, starting from this simple base.
 
+Since 2026-08-10, `../valley_of_mist` (the novel this cast is written
+for) consumes this repo's output directly: `render.sh`/`cover.sh`/`sheet.sh`
+generate its character references, cover, and per-chapter inserts,
+replacing an AI image pipeline it used before (see that repo's
+`docs/character_designs.md`). This repo has no knowledge of that
+consumer; `sheet.py --members` is the one generic hook it added to make
+that possible, and it stays a plain preset-name list, not anything
+valley_of_mist-specific.
+
 ## Hard constraints
 
 - **No AI image generation, ever.** Every shape in `character.py` is

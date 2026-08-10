@@ -74,6 +74,15 @@ stays and Satoko and Kyoko drop. Ten of the twelve are the same
 characters as `sheet.svg`; `presets.ROSTERS["satoshi"]` is the one place
 that says which two swap. Render it with `./sheet_satoshi.sh`.
 
+`sheet.py` also takes `--members name1,name2,...`, an arbitrary subset
+overriding `--roster`, which is the hook `../valley_of_mist` (the novel
+this cast is for) uses to generate one character sheet per chapter,
+restricted to whoever that chapter actually names: see that repo's
+`valley_of_mist_tools/generate_assets.py`, which also draws its character
+references and cover from here (`render.sh`, `cover.sh`). This repo stays
+the generic drawing tool; that repo owns the chapter-scanning and
+publication-specific detail.
+
 The tables above link `ref-out/on-white/`, which is the same fourteen
 drawn on a white background. That exists for this page and nothing else:
 the outline is `#0d0d0d` and a dark theme here is about `#0d1117`, so a

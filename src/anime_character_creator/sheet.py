@@ -185,9 +185,17 @@ def main() -> None:
     ap.add_argument("--roster", default="cast", choices=sorted(ROSTERS))
     ap.add_argument("--build", default="chibi", choices=sorted(BUILDS))
     ap.add_argument("--columns", type=int, default=4)
+    ap.add_argument(
+        "--members",
+        default=None,
+        help="comma-separated preset names, overrides --roster",
+    )
     args = ap.parse_args()
 
-    p = replace(SheetParams(), roster=args.roster, build=args.build, columns=args.columns)
+    members = tuple(m.strip() for m in args.members.split(",")) if args.members else None
+    p = replace(
+        SheetParams(), roster=args.roster, build=args.build, columns=args.columns, members=members
+    )
     svg = render_sheet(p)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
