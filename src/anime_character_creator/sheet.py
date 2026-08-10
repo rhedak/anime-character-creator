@@ -156,11 +156,17 @@ def _tile(p: SheetParams, preset: str, x: float, y: float) -> str:
     )
 
 
-def render_sheet(p: SheetParams | None = None) -> str:
+def render_sheet(p: SheetParams | None = None, metadata: bool = False) -> str:
     """Draw one sheet and return the whole SVG document as a string.
 
     Deterministic, like `render_character` and `render_cover`: same params, same
     bytes, which is what lets `ref-out/` be compared rather than eyeballed.
+
+    `metadata` embeds an SVG `<metadata>` block naming every member and a link
+    that reproduces each of them; see `attribution.sheet_metadata_block`. Off
+    by default for the same reason `render_character`'s own flag is: the
+    committed sheets in `ref-out/` would otherwise churn on every unrelated
+    change.
     """
     p = p or SheetParams()
     names = members_of(p)
@@ -170,9 +176,15 @@ def render_sheet(p: SheetParams | None = None) -> str:
         x, y = _tile_origin(p, i)
         tiles.append(_tile(p, preset, x, y))
     body = "\n  ".join(tiles)
+    md = ""
+    if metadata:
+        from .attribution import sheet_metadata_block
+
+        md = f"  {sheet_metadata_block(names)}\n"
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w:.0f}" height="{h:.0f}" '
         f'viewBox="0 0 {w:.0f} {h:.0f}">\n'
+        f"{md}"
         f'  <rect width="{w:.0f}" height="{h:.0f}" fill="{p.palette.ground}" />\n'
         f"  {body}\n"
         f"</svg>\n"
@@ -190,13 +202,20 @@ def main() -> None:
         default=None,
         help="comma-separated preset names, overrides --roster",
     )
+    ap.add_argument(
+        "--metadata",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="embed a reproduction link for every member in the SVG/PNG "
+        "(default: on; --no-metadata to skip)",
+    )
     args = ap.parse_args()
 
     members = tuple(m.strip() for m in args.members.split(",")) if args.members else None
     p = replace(
         SheetParams(), roster=args.roster, build=args.build, columns=args.columns, members=members
     )
-    svg = render_sheet(p)
+    svg = render_sheet(p, metadata=args.metadata)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.with_suffix(".svg").write_text(svg)
@@ -205,7 +224,12 @@ def main() -> None:
     try:
         import cairosvg
 
-        cairosvg.svg2png(bytestring=svg.encode(), write_to=str(out.with_suffix(".png")), scale=2)
+        png_bytes = cairosvg.svg2png(bytestring=svg.encode(), scale=2)
+        if args.metadata:
+            from .attribution import sheet_png_with_metadata
+
+            png_bytes = sheet_png_with_metadata(png_bytes, members_of(p))
+        out.with_suffix(".png").write_bytes(png_bytes)
         print(f"wrote {out.with_suffix('.png')}")
     except ImportError:
         print("cairosvg not installed; skipping PNG export")

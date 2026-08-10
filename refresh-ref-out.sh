@@ -178,7 +178,14 @@ count=$((characters + npages))
 i=0
 while [ "$i" -lt "$characters" ]; do
     rel=${rel_of[$i]}
-    "$root/render.sh" --out "$stage/$rel" --preset "${preset_of[$i]}" --build "${build_of[$i]}" >/dev/null
+    # --no-metadata: the CLI embeds a reproduction link by default, but ref-out/
+    # is compared byte for byte (test_ref_out_matches_the_code calls
+    # render_character() directly, whose own default is off), and the block
+    # would also touch every committed file at once on a wording change to
+    # attribution.py's TOOL_URL or LICENSE_STATEMENT, the exact churn this
+    # comparison exists to avoid.
+    "$root/render.sh" --out "$stage/$rel" --preset "${preset_of[$i]}" --build "${build_of[$i]}" \
+        --no-metadata >/dev/null
     for ext in svg png; do
         if [ ! -s "$stage/$rel.$ext" ]; then
             echo "render produced no $rel.$ext, leaving ref-out/ alone" >&2
@@ -192,7 +199,7 @@ while [ "$i" -lt "$characters" ]; do
         # The README's copy. Rendered rather than composited afterwards, so it
         # goes through exactly the same path as the art and cannot drift from it.
         "$root/render.sh" --out "$stage/on-white/$rel" --preset "${preset_of[$i]}" \
-            --build "${build_of[$i]}" --background white >/dev/null
+            --build "${build_of[$i]}" --background white --no-metadata >/dev/null
         if [ ! -s "$stage/on-white/$rel.png" ]; then
             echo "render produced no on-white/$rel.png, leaving ref-out/ alone" >&2
             exit 1
@@ -205,7 +212,7 @@ done
 # ground over the whole canvas and there is no transparency for a card to sit
 # behind.
 for page in $pages; do
-    "$root/$page.sh" --out "$stage/$page" >/dev/null
+    "$root/$page.sh" --out "$stage/$page" --no-metadata >/dev/null
     for ext in svg png; do
         if [ ! -s "$stage/$page.$ext" ]; then
             echo "render produced no $page.$ext, leaving ref-out/ alone" >&2

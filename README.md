@@ -174,8 +174,8 @@ Garment flags, one per layer: `--tunic-color` (also spelled
 away, drop it from the preset, since the command line has no way to say
 "none".
 
-Shape flags: `--hairstyle` (`long_blunt`, `long_traced`, `short_crop`,
-`short_layered` or `short_tousled`),
+Shape flags: `--hairstyle` (`long_blunt`, `long_center_part`, `long_traced`,
+`short_crop`, `short_layered` or `short_tousled`),
 `--hair-length`, `--frame` (shoulder against hip, -1 to 1, only bites at
 taller builds).
 
@@ -196,6 +196,17 @@ any character. Individual knobs still win over it.
 Add `--flat` to disable the cel-shading shadow shapes and see the flat
 silhouette only. Output is written as both `.svg` (inspect/edit
 directly in a browser or Inkscape) and `.png` (if cairosvg works).
+
+Every render embeds a link that reproduces the exact character back into
+both files, by default: an SVG `<metadata>` block, and a PNG `tEXt` chunk
+(keyword `Source`, readable with any tool that reads PNG text, e.g.
+Pillow's `Image.open(...).text`) carrying the same link, so a file that
+leaves this repo, downloaded, shared, dropped into another project, stays
+reconstructable. `sheet.sh` does the same with one link per member and
+`cover.sh` with the featured character. Pass `--no-metadata` to skip it and
+get a plain, minimal file. (This is a CLI-only default: `render_character()`
+and friends default to *off* as a library, which is what keeps `ref-out/`
+byte-for-byte comparable; see `attribution.py`.)
 
 **The background is transparent**, so a render drops onto a scene as it
 is. Pass `--background white` (or any SVG paint) if you want it filled.

@@ -97,6 +97,13 @@ def main() -> None:
         "--background",
         help="paint a background, e.g. white; default is transparent, so the figure composites",
     )
+    ap.add_argument(
+        "--metadata",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="embed a link that reproduces this exact character in the SVG/PNG "
+        "(default: on; --no-metadata to skip)",
+    )
     args = ap.parse_args()
 
     base = PRESETS[args.preset] if args.preset else CharacterParams()
@@ -120,7 +127,7 @@ def main() -> None:
         if face:
             params = replace(params, face=replace(params.face, **face))
 
-    svg = render_character(params, background=args.background)
+    svg = render_character(params, background=args.background, metadata=args.metadata)
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -131,8 +138,13 @@ def main() -> None:
     try:
         import cairosvg
 
+        png_bytes = cairosvg.svg2png(bytestring=svg.encode(), scale=2)
+        if args.metadata:
+            from .attribution import png_with_metadata
+
+            png_bytes = png_with_metadata(png_bytes, params)
         png_path = out_path.with_suffix(".png")
-        cairosvg.svg2png(bytestring=svg.encode(), write_to=str(png_path), scale=2)
+        png_path.write_bytes(png_bytes)
         print(f"wrote {png_path}")
     except ImportError:
         print("cairosvg not installed; skipping PNG export (SVG is still valid, open it directly)")

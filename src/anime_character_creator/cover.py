@@ -232,10 +232,16 @@ def _text(p: CoverParams, line: str, y: float, size: float, font: str, spacing: 
     )
 
 
-def render_cover(p: CoverParams | None = None) -> str:
+def render_cover(p: CoverParams | None = None, metadata: bool = False) -> str:
     """Draw one cover and return the whole SVG document as a string.
 
     Deterministic, like `render_character`: same params, same bytes.
+
+    `metadata` embeds an SVG `<metadata>` block with a link that reproduces
+    the featured character (as `_placement` resolves it, expression and
+    all); see `attribution.metadata_block`. Off by default, the same reason
+    `render_character`'s own flag is: the committed cover in `ref-out/`
+    would otherwise churn on every unrelated change.
     """
     p = p or CoverParams()
     pal = p.palette
@@ -295,9 +301,15 @@ def render_cover(p: CoverParams | None = None) -> str:
         layers.append(_text(p, p.author, H * 0.945, H * 0.028, p.subtitle_font, H * 0.006))
 
     body = "\n  ".join(layer for layer in layers if layer)
+    md = ""
+    if metadata:
+        from .attribution import metadata_block
+
+        md = f"  {metadata_block(character)}\n"
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{p.width:.0f}" height="{H:.0f}" '
         f'viewBox="0 0 {p.width:.0f} {H:.0f}">\n'
+        f"{md}"
         f"  {body}\n"
         f"</svg>\n"
     )
@@ -325,6 +337,13 @@ def main() -> None:
     )
     ap.add_argument("--width", type=float, default=1000.0)
     ap.add_argument("--height", type=float, default=1500.0)
+    ap.add_argument(
+        "--metadata",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="embed a link that reproduces the featured character in the SVG/PNG "
+        "(default: on; --no-metadata to skip)",
+    )
     args = ap.parse_args()
 
     p = CoverParams(preset=args.preset, build=args.build, width=args.width, height=args.height)
@@ -338,7 +357,7 @@ def main() -> None:
     elif args.expression:
         p = replace(p, expression=args.expression)
 
-    svg = render_cover(p)
+    svg = render_cover(p, metadata=args.metadata)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.with_suffix(".svg").write_text(svg)
@@ -347,7 +366,13 @@ def main() -> None:
     try:
         import cairosvg
 
-        cairosvg.svg2png(bytestring=svg.encode(), write_to=str(out.with_suffix(".png")), scale=2)
+        png_bytes = cairosvg.svg2png(bytestring=svg.encode(), scale=2)
+        if args.metadata:
+            from .attribution import png_with_metadata
+
+            _, character, _, _, _ = _placement(p)
+            png_bytes = png_with_metadata(png_bytes, character)
+        out.with_suffix(".png").write_bytes(png_bytes)
         print(f"wrote {out.with_suffix('.png')}")
     except ImportError:
         print("cairosvg not installed; skipping PNG export")
