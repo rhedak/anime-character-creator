@@ -220,6 +220,11 @@ class Outfit:
     # little hair showing. Worn rather than grown, so it is here and not on
     # `CharacterParams` beside the hair.
     headscarf_color: str | None = None
+    # A pair of lenses on a strap, pushed up onto the forehead rather than worn
+    # over the eyes. Frame and strap color only; the lens tone is derived from
+    # it with `shade()` the same way a shadow tone is, lighter rather than
+    # darker, so a goggle color always ships with a glass that reads against it.
+    goggle_color: str | None = None
     # An outer layer hanging open over whatever is worn under it: a cropped
     # jacket, a lab coat, a long coat. One garment rather than three, because
     # the three differ only in where the hem lands.
@@ -2061,8 +2066,17 @@ def _tail_tie(sk: Skeleton) -> tuple[float, float]:
     the first version tied it at 0.30 head radii below centre, which is low
     enough that the tail left the head beside the ear and read as a long side
     lock.
+
+    Pulled out from 0.62 head radii above centre to 0.46, and right from 0.62
+    to 0.78, once Krista also carried goggles: the two were tuned without
+    knowledge of each other and the tie used to land inside the goggle strap's
+    own footprint, close enough that the strap only painted over its centre
+    and left the tie's own outline poking out past the right lens. Moved along
+    the same high-and-back direction rather than picked to dodge the strap, so
+    a character with the tail and no goggles is unaffected in anything that
+    would show at this size.
     """
-    return sk.head_cx + sk.head_r * 0.62, sk.head_cy - sk.head_r * 0.62
+    return sk.head_cx + sk.head_r * 0.78, sk.head_cy - sk.head_r * 0.46
 
 
 # Where the cloth's lower edge meets the side of the head, in head radii: just
@@ -2663,6 +2677,131 @@ def _glasses(sk: Skeleton, p: CharacterParams) -> str:
         parts.append(
             f'<path d="M {cx + s * (eye_dx + half_w):.1f} {eye_y:.1f} '
             f'L {cx + s * _head_edge_x(arm_y_hr, sk.build) * r:.1f} {arm_y:.1f}" {stroke} />'
+        )
+    return "".join(parts)
+
+
+# How far above the eye the lenses rest, in eye radii. Pushed up onto the
+# forehead rather than worn over the eyes, which is the one thing that tells a
+# pair of goggles from a pair of glasses; too small a lift and they read as
+# spectacles that missed the eyes rather than as a pair worn up.
+_GOGGLE_LIFT = 2.6
+# How much closer together the lenses sit than the eyes below them: two lenses
+# on a bridge sit close, where two eyes sit apart for the face to read.
+_GOGGLE_DX_SCALE = 0.72
+_GOGGLE_R_SCALE = 0.98
+# How far into the hairstyle's own edge each strap arm reaches, as a fraction
+# of that edge: short of it, not past it. The arm has to disappear under the
+# hair, and the hair mass only covers what is inside its own silhouette, so an
+# arm run out to or beyond the edge `_hair_edge_x` reports lands partly in open
+# air with nothing left to draw over it, which is what the first version of
+# this did. Inset rather than run exactly to the edge, so the tip sits solidly
+# inside the mass rather than riding its outline, where antialiasing or a
+# hairstyle a pixel narrower than the one this was tuned against could still
+# expose it.
+_GOGGLE_ARM_INSET = 0.85
+
+
+def _goggle_geometry(sk: Skeleton, p: CharacterParams) -> tuple[float, float, float]:
+    """`(lens_y, lens_r, lens_dx)`: where the lenses sit and how big they are.
+
+    Shared between `_goggles_strap`, drawn under the hair, and `_goggles`,
+    drawn over it, so the two halves of one object agree on where it sits
+    without a second copy of the numbers drifting apart, the same reason
+    `_eye_placement` exists.
+    """
+    eye_dx, eye_y, eye_r, _f = _eye_placement(sk, p)
+    lens_r = eye_r * _GOGGLE_R_SCALE
+    lens_dx = eye_dx * _GOGGLE_DX_SCALE
+    lens_y = eye_y - eye_r * _GOGGLE_LIFT
+    return lens_y, lens_r, lens_dx
+
+
+def _goggles_strap(sk: Skeleton, p: CharacterParams) -> str:
+    """The strap's two temple arms, drawn before the hair mass.
+
+    A strap that goes around the head runs under the hair at the sides, not
+    across the top of it, so unlike the rest of the goggles this half is drawn
+    before `_hair_front` rather than after: the hair mass is a filled shape
+    that already reads as being in front of the ear and the beard's sideburns
+    for the same reason, and an arm drawn here inherits that for free instead
+    of needing to fake a cut edge of its own.
+
+    Each arm starts at its own lens (`_goggle_geometry`'s `lens_dx`, so the
+    lens drawn later covers the seam) and runs out to a point inset from the
+    hairstyle's own edge, read with `_hair_edge_x` rather than `_head_edge_x`:
+    a strap sized to the skull stops well short of the hair, and it is
+    exactly this gap, between where the strap end sat and where the hair
+    actually is, that read as the strap stopping in mid-air rather than
+    continuing around the head.
+    """
+    if p.outfit.goggle_color is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    color = p.outfit.goggle_color
+    sw = _stroke_w(sk)
+    lens_y, lens_r, lens_dx = _goggle_geometry(sk, p)
+    strap_h = lens_r * 0.5
+    strap_y_hr = (lens_y - cy) / r
+    x_far = _hair_edge_x(strap_y_hr, sk, p) * r * _GOGGLE_ARM_INSET
+    parts = []
+    for side in (-1, 1):
+        x0 = cx + side * lens_dx
+        x1 = cx + side * x_far
+        parts.append(
+            f'<path d="M {x0:.1f} {lens_y - strap_h / 2:.1f} '
+            f"L {x1:.1f} {lens_y - strap_h / 2:.1f} "
+            f"L {x1:.1f} {lens_y + strap_h / 2:.1f} "
+            f'L {x0:.1f} {lens_y + strap_h / 2:.1f} Z" '
+            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        )
+    return "".join(parts)
+
+
+def _goggles(sk: Skeleton, p: CharacterParams) -> str:
+    """A pair of lenses on a bridge, pushed up onto the forehead.
+
+    Reads off `_eye_placement` the same way `_glasses` does, lifted above the
+    brow rather than framing the eye: this is what keeps the pair centred over
+    the face at every build, an eye that moves and a pair of goggles that does
+    not agree with it is the same drift `_glasses` was pulled off a second copy
+    of the eye to fix.
+
+    This is the half of the goggles drawn over the hair: the lenses themselves
+    and the bridge joining them, which cross the bare forehead and have
+    nothing to disappear into. `_goggles_strap` draws the other half, the
+    strap's two temple arms, before the hair mass instead of after it. Glass
+    is a lighter, paler tone of the frame color rather than a second color of
+    its own: `shade()` already derives a shadow tone from a base one, and a
+    lens is the same derivation run the other way, so a goggle color always
+    ships with a glass that reads against it instead of needing one
+    hand-picked to match.
+    """
+    if p.outfit.goggle_color is None:
+        return ""
+    cx = sk.head_cx
+    color = p.outfit.goggle_color
+    glass = shade(color, value_factor=1.8, saturation_boost=0.55)
+    sw = _stroke_w(sk)
+    lens_y, lens_r, lens_dx = _goggle_geometry(sk, p)
+    parts = [
+        # The bridge joining the lenses, under them so their own rims cover
+        # its ends rather than leaving a bar visible between two circles.
+        f'<path d="M {cx - lens_dx:.1f} {lens_y:.1f} L {cx + lens_dx:.1f} {lens_y:.1f}" '
+        f'fill="none" stroke="{color}" stroke-width="{lens_r * 0.5:.1f}" stroke-linecap="round" />',
+    ]
+    for side in (-1, 1):
+        lx = cx + side * lens_dx
+        parts.append(
+            f'<circle cx="{lx:.1f}" cy="{lens_y:.1f}" r="{lens_r:.1f}" '
+            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        )
+        parts.append(
+            f'<circle cx="{lx:.1f}" cy="{lens_y:.1f}" r="{lens_r * 0.72:.1f}" fill="{glass}" />'
+        )
+        parts.append(
+            f'<circle cx="{lx - lens_r * 0.24:.1f}" cy="{lens_y - lens_r * 0.24:.1f}" '
+            f'r="{lens_r * 0.16:.1f}" fill="white" opacity="0.75" />'
         )
     return "".join(parts)
 
@@ -4572,6 +4711,11 @@ def render_character(
         _face(sk, p),
         # Over the face: spectacles sit in front of the eyes, not behind them.
         _glasses(sk, p),
+        # Before the hair, unlike the rest of the goggles: a strap that goes
+        # around the head runs under the hair at the sides, and drawing its
+        # arms here is what lets the hair mass cover their ends the way it
+        # already covers the ear and the beard's sideburns.
+        _goggles_strap(sk, p),
         _hair_front(sk, p),
         # Last of the hair, unlike the tail, which is first. See `_hair_knot`: a
         # cut leaves under a tenth of a head radius of daylight above itself, so
@@ -4579,6 +4723,9 @@ def render_character(
         # the fringe it is invisible too, because the fringe covers the crown.
         _hair_knot(sk, p),
         _hair_tie(sk, p),
+        # After the fringe, like the scarf: the lenses and the bridge cross
+        # the bare forehead and sit over whatever hair reaches that far.
+        _goggles(sk, p),
         # Last of all the head: a scarf covers the hair it is tied over.
         _headscarf(sk, p),
     ]

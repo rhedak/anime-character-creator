@@ -143,7 +143,7 @@ is four pixels.
 | **Uniform** | standing collar, chest pocket pair, centre placket, waist belt, tall boot shaft, cross-body strap | rank tabs, shoulder boards, cuff piping, hip pockets, order-specific collar pins |
 | **Robe** | crossed front, wide hanging sleeve, obi at the waist | embroidery, the checked panels, sword furniture, layered inner collars |
 | **Open coat** | the open front over a visible inner layer, at the right length | pocket detail, lapel shape, the pattern woven into Kyoko's |
-| **Head** | beard, glasses, ponytail, topknot | goggles, kanzashi, hairpins, headscarf pattern |
+| **Head** | beard, glasses, goggles, ponytail, topknot | kanzashi, hairpins, headscarf pattern |
 | **Everyone** | hair colour and mass, eye colour, skin, silhouette, age | anything at all that needs a second tone to read |
 
 Two of those are worth stating as rules rather than rows. **A pattern is below
@@ -818,11 +818,70 @@ realistic.
 
 ### Still below the line, and deliberately
 
-- **Krista's goggles.** Named in the table above as a first-draft feature and
-  still the one thing on that list not built. Chiyo's headscarf, the other
-  one, landed on 2026-08-09.
 - **Everything already listed** under "What first draft means": patterns,
   rank tabs, kanzashi, props.
+
+### Krista's goggles, closed 2026-08-10
+
+The last first-draft feature on the table, after Chiyo's headscarf landed on
+2026-08-09. A new `Outfit.goggle_color`, on `_goggles`, drawn after the fringe
+and before the headscarf slot, the same place a strap worn around the head
+sits over the hair it crosses. Krista is the one wearer.
+
+Sized off `_eye_placement`, the way `_glasses` is, but lifted `_GOGGLE_LIFT`
+eye radii above the brow rather than framing it: pushed up onto the forehead
+is the one thing that tells a pair of goggles from a pair of glasses, so the
+function reads the eye's own geometry and climbs off it rather than carrying
+a fixed offset that would drift the moment an eye is retuned, same reasoning
+as the glasses fix at B7. The lens glass is not a color of its own: `shade()`
+already turns a base color into a darker shadow tone, and a lens is the same
+derivation the other way, lighter and paler, so any frame color ships with a
+glass that reads against it for free.
+
+**A genuine collision, once both were in the frame.** Krista is also the only
+ponytail wearer, and `_tail_tie`'s anchor (0.62 head radii up, 0.62 out) was
+tuned in isolation from the goggles that did not exist yet. The two landed
+close enough that the strap only covered the tie's centre, leaving its own
+outline poking out past the right lens, the same "read a second, drifted copy
+of the placement" failure this document keeps finding, except here the two
+parts genuinely do not share a source, a hair tie and a head strap are
+unrelated objects that simply chose the same real estate. Moved the tie out
+along its own high-and-back direction (0.78 out, 0.46 up) rather than picked
+to dodge the strap's exact shape, so it still reads as the same anchor point
+for anyone who ends up with the tail and no goggles. Tested against a
+hot-pink frame color to confirm the lens derivation holds outside the
+default steel-and-leather palette.
+
+### The strap that stopped at the skull, and the two fixes that got it under the hair
+
+The owner's follow-up: the strap only reached `_head_edge_x`, the skull's own
+width, so on Krista's hair, which is wider than her skull the way every cut in
+this generator is, it stopped visibly short of the hairline with a gap between
+the strap's end and where the hair actually started. Read as one ask with two
+phrasings, matching the width to the hair and making the strap disappear under
+it, but they are not the same fix: matching the width only moves where the gap
+sits, it does not close it, since a strap drawn over the hair still just ends
+wherever it is told to, in the open, with nothing to suggest it continues.
+
+Closing it needs the hair to actually cover the strap's tail, which needs the
+tail drawn *before* the hair mass, the same convention that already puts the
+ear and the beard's sideburns under it. Split the part in two: `_goggles_strap`
+draws the two temple arms before `_hair_front`, and the renamed `_goggles`
+keeps the lenses and the bridge, which cross bare forehead and have nothing to
+vanish into, so they stay after the hair as before. The two agree on where the
+goggles sit through a new `_goggle_geometry`, one more instance of the
+placement-drift fix this document keeps repeating.
+
+**Past the edge is not under the hair.** The first version of the arm read
+`_hair_edge_x` and then ran 25% *past* it, `_GOGGLE_ARM_CLEAR`, borrowing the
+headscarf's clearance logic, which extends a shape sitting *over* the hair so
+it fully covers the hair's own edge. An arm sitting *under* the hair needs the
+opposite: a point *inside* the hair's silhouette, since the hair only paints
+over what is inside its own outline, so a tip run past that outline lands in
+open air with nothing left to draw over it. This rendered as two strap ends
+floating past the hairline on both sides, plainly worse than the gap it was
+meant to close, and is why `_GOGGLE_ARM_INSET` (0.85, short of the edge) is
+the name and the number now, not `_GOGGLE_ARM_CLEAR`.
 
 ## Tasks
 

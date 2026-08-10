@@ -515,9 +515,6 @@ KRISTA = CharacterParams(
     hair_length=0.42,
     eye_color="#6fb0ae",
     hair_tail=1.0,
-    # Waiting on: the uniform, the strap, the belt crystals, a high ponytail and
-    # goggles. The goggles and the ponytail are most of what makes her her at
-    # tile size, so she is the least finished of the five officers.
     outfit=Outfit(
         tunic_color=UNIFORM,
         boot_color=UNIFORM_BOOTS,
@@ -531,6 +528,10 @@ KRISTA = CharacterParams(
         chest_pocket_color=UNIFORM,
         strap_color=UNIFORM_BELT,
         boot_shaft=1.0,
+        # Same leather as the belt and the cross-body strap, so the goggles
+        # read as part of the same kit rather than a separate accessory in
+        # its own color.
+        goggle_color=UNIFORM_BELT,
     ),
     frame=-0.2,
     face=FaceStyle(

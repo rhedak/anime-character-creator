@@ -982,6 +982,93 @@ def test_the_chibi_hem_pull_back_is_floored_at_half() -> None:
     )
 
 
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_goggles_lift_off_the_eye_rather_than_frame_it(build: str) -> None:
+    """The lenses sit well above the brow line, not over the eye.
+
+    Pushed up onto the forehead is the one thing that tells a pair of goggles
+    from a pair of glasses; a lift too small would draw a second `_glasses`
+    over the same aperture instead.
+    """
+    p = PRESETS["krista"]
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    svg = character._goggles(sk, p)
+    circles = re.findall(r'<circle cx="([-\d.]+)" cy="([-\d.]+)" r="([\d.]+)"', svg)
+    _dx, eye_y, eye_r, _f = character._eye_placement(sk, p)
+    brow_y = eye_y - eye_r * 1.30
+    lens_ys = {float(y) for _x, y, r in circles if float(r) > eye_r * 0.5}
+    assert lens_ys, f"{build}: found no lens-sized circles among {circles!r}"
+    for y in lens_ys:
+        assert y < brow_y - eye_r * 0.5, (
+            f"{build}: a lens at y={y:.1f} is not clearly above the brow at {brow_y:.1f}"
+        )
+
+
+def test_the_goggles_do_not_leave_the_ponytail_tie_exposed() -> None:
+    """The tie's bounding box mostly falls inside the goggle's own footprint.
+
+    Krista is the only wearer of both a bound ponytail and goggles, and the two
+    were tuned without knowledge of each other: `_tail_tie`'s original anchor,
+    0.62 head radii up and 0.62 out, put 41% of the tie's own bounding box
+    outside the goggle's, which painted over the tie's centre and left its
+    outline poking out past the right lens, visible as a stray arc beside the
+    strap. `_tail_tie` was moved out along the same high-and-back direction
+    (0.78 out, 0.46 up) rather than picked to dodge the strap's exact shape.
+    Checked as a fraction of the tie's own area rather than exactly zero,
+    since a sliver landing right at the lens's edge reads as a strap buckle and
+    is not the failure the owner reported.
+    """
+    p = PRESETS["krista"]
+    assert p.hair_tail > 0.0 and p.outfit.goggle_color is not None, (
+        "this test only means something for a character with both"
+    )
+    for build in sorted(BUILDS):
+        sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+        eye_dx, eye_y, eye_r, _f = character._eye_placement(sk, p)
+        lens_r = eye_r * character._GOGGLE_R_SCALE
+        lens_dx = eye_dx * character._GOGGLE_DX_SCALE
+        lens_y = eye_y - eye_r * character._GOGGLE_LIFT
+        lens_cx = sk.head_cx + lens_dx
+        tx, ty = character._tail_tie(sk)
+        tw, th = sk.head_r * 0.20, sk.head_r * 0.13
+        ox = max(0.0, min(lens_cx + lens_r, tx + tw) - max(lens_cx - lens_r, tx - tw))
+        oy = max(0.0, min(lens_y + lens_r, ty + th) - max(lens_y - lens_r, ty - th))
+        fraction = (ox * oy) / ((2 * tw) * (2 * th))
+        assert fraction < 0.05, (
+            f"{build}: {fraction:.0%} of the tie's bounding box sits outside the goggle's, "
+            f"which is the strap-and-tie collision the owner reported"
+        )
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_the_goggle_strap_arms_end_inside_the_hair_not_past_it(build: str) -> None:
+    """Each arm's outer tip lands inside the hairstyle's own silhouette.
+
+    `_goggles_strap` draws the arms before `_hair_front` so the hair mass
+    covers their ends, the same way it already covers the ear. That only works
+    if the tip is actually inside the hair's footprint: the first version ran
+    the arm past `_hair_edge_x`'s own edge as a "clearance," which is right for
+    the headscarf sitting over the hair but backwards here, and it put both
+    tips outside the hair entirely, floating in open air on either side of the
+    head, the owner's report against the first render of this fix.
+    """
+    p = PRESETS["krista"]
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    lens_y, _lens_r, _lens_dx = character._goggle_geometry(sk, p)
+    strap_y_hr = (lens_y - sk.head_cy) / sk.head_r
+    hair_edge = character._hair_edge_x(strap_y_hr, sk, p) * sk.head_r
+    svg = character._goggles_strap(sk, p)
+    paths = re.findall(r'<path d="([^"]+)"', svg)
+    assert len(paths) == 2, f"{build}: expected two arms, found {len(paths)}"
+    for d in paths:
+        xs = [float(v) for v in re.findall(r"-?\d+\.?\d*", d)][0::2]
+        tip = max(abs(x - sk.head_cx) for x in xs)
+        assert tip < hair_edge, (
+            f"{build}: an arm tip sits {tip:.1f}px from centre, past the hair's own "
+            f"edge at {hair_edge:.1f}px, which leaves it floating outside the hair"
+        )
+
+
 def test_the_sheet_renders_and_stays_deterministic() -> None:
     p = sheet.SheetParams()
     svg = sheet.render_sheet(p)
