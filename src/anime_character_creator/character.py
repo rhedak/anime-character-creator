@@ -309,13 +309,6 @@ class CharacterParams:
     shaded: bool = True
 
 
-def _capsule(x1: float, y1: float, x2: float, y2: float, width: float, color: str) -> str:
-    return (
-        f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="{color}" stroke-width="{width:.1f}" stroke-linecap="round" />'
-    )
-
-
 Point = tuple[float, float]
 Segment = tuple[Point, Point]
 
@@ -3535,7 +3528,7 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
         # the figure's legs not being attached to its body.
         parts = [_bare_seat(sk, p, gap, w_top, w_knee, w_calf, w_ankle)]
     for side in (-1, 1):
-        parts.append(_boot(sk, p, sk.head_cx + side * gap, w_ankle, w_knee, side))
+        parts.append(_boot(sk, p, sk.head_cx + side * gap, w_ankle, side))
     return "".join(parts)
 
 
@@ -3695,9 +3688,7 @@ def _trousers(
 _UNDERWEAR_COLOR = "#e8e4dc"
 
 
-def _underpants(
-    sk: Skeleton, p: CharacterParams, gap: float, top_y: float, crotch_y: float, w_top: float
-) -> str:
+def _underpants(sk: Skeleton, gap: float, top_y: float, crotch_y: float, w_top: float) -> str:
     """A modesty layer over the top of `_bare_seat`, not full-length: it never
     reaches the point the legs part, so it needs no notch of its own and is
     just a plain block with a shallow curved hem, the way a brief is cut higher
@@ -3748,7 +3739,7 @@ def _bare_seat(
     return (
         f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
         f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" stroke-linejoin="round" />'
-        + _underpants(sk, p, gap, top_y, crotch_y, w_top)
+        + _underpants(sk, gap, top_y, crotch_y, w_top)
     )
 
 
@@ -3787,9 +3778,7 @@ def _trouser_seams(
     return "".join(parts)
 
 
-def _boot(
-    sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, w_knee: float, side: int
-) -> str:
+def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int) -> str:
     """One boot: a shaft over the ankle, an instep, and a toe pointing a
     little outward, the pair standing in the canon's slight duck stance. The
     toe is what stopped this reading as a brown block: a symmetric rounded

@@ -12,10 +12,14 @@ for free, since every character is built from the same shape code. No
 animation. Backgrounds/text overlays may be added later as more SVG
 layers.
 
-Currently at PoC stage: one chibi (big head, short body) front-facing
-build, fully color-parametrized, no alternate hairstyles/outfits/poses
-yet. The stated direction is to "edge closer" to more detailed, less
-deformed proportions iteratively, starting from this simple base.
+Fourteen named characters (`presets.py`), each a first draft, all
+rendering at the chibi (big head, short body) front-facing build by
+default; `--build realistic` (or `--heads` for anything in between)
+renders the same character taller. Multiple hairstyles and a full
+garment system (`Outfit`) exist; poses do not. The stated direction is
+to "edge closer" to more detailed, less deformed proportions
+iteratively, starting from this simple base. See `README.md`'s Status
+section and `STATUS.md` for what is current.
 
 Since 2026-08-10, `../valley_of_mist` (the novel this cast is written
 for) consumes this repo's output directly: `render.sh`/`cover.sh`/`sheet.sh`

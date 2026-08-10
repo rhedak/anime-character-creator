@@ -7,7 +7,7 @@ not user documentation: see `README.md` for how to run it,
 measured comparison of the current renders against the canon, and
 `CLAUDE.md` for the rules that govern changes.
 
-Last updated: 2026-08-06, at `21850a5` "add new references", plus two
+Last updated: 2026-08-08, at `0652e73` "focus on chibis", plus two
 uncommitted canon passes: the first for language (stroke scaling, canon
 eyes, long-cut locks, pouches and buckle, boot toes and laces, mitten
 hands, realistic polish, off-centre parting; tasks 35-43), the second

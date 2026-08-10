@@ -176,7 +176,7 @@ def _backdrop(p: CoverParams) -> str:
     )
 
 
-def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float]:
+def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float, float]:
     """Where the figure lands on the page: its skeleton, its scale, its offset.
 
     Split out from drawing it because the mist in front has to be positioned off
