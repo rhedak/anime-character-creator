@@ -119,6 +119,21 @@ h3 {
   top: 1rem;
 }
 
+@media (max-width: 40rem) {
+  /* Sticky only makes sense beside a taller, independently-scrolling
+     controls column. Stacked single-column on mobile, a pinned preview
+     stays put while the controls scroll past underneath it, so its image,
+     buttons and "choose a different starting point" link end up overlapping
+     whatever control row happens to be scrolled to that same screen
+     position. Static keeps the preview in normal document flow instead.
+     Declared after the unconditional rule above on purpose: an equal-
+     specificity override has to come later in the file to win the cascade,
+     a media query does not get special priority on its own. */
+  .preview-pane {
+    position: static;
+  }
+}
+
 .preview {
   background: var(--panel);
   border: 1px solid var(--border);
