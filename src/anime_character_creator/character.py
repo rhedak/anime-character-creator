@@ -296,8 +296,8 @@ class CharacterParams:
     # before the head does on one of the two who wear one, and because a
     # character could dye one and not the other.
     beard_color: str | None = None
-    # How far the beard drops below the chin, in head radii: about 0.15 is the
-    # short groomed beard Reinhard wears, about 0.45 the full one Daizen does.
+    # How far the beard drops below the chin, in head radii: 0.07 is the short
+    # groomed beard Reinhard wears, 0.17 the fuller one Daizen does.
     beard_length: float = 0.15
     outfit: Outfit = field(default_factory=Outfit)
     face: FaceStyle = field(default_factory=FaceStyle)
@@ -3946,11 +3946,25 @@ def _belt(sk: Skeleton, p: CharacterParams) -> str:
     # detail that would say "belt" loudest on the three characters the depth is
     # there to dress. The cut-off sits between a wide belt and a narrow sash.
     obi = p.outfit.belt_scale > 1.6
-    if p.outfit.apron_color is None and not obi:
-        # Only where an apron does not hang over the belt's centre: with one
-        # there the buckle sits under the panel, which is why the canon shows
-        # Satoshi's and not chibi Satoko's. Metal is a fixed neutral tone, like
-        # the blush: it is not anyone's palette.
+    # With an apron, whether the buckle shows rides on the build: `ref/satoko-
+    # chibi.jpg`'s apron sits high enough to cover it, but `ref/satoko-real.jpg`
+    # does not, the buckle sitting clear above the panel with the strap's tail
+    # running down over it. So the old rule ("an apron hides it, full stop",
+    # true at chibi) undershot the realistic build, where the reference shows
+    # both the buckle and the hanging tie together. `sk.build > 0.5` is the
+    # same cut a bare-headed chibi nose uses for the same reason: a detail that
+    # only reads once the figure has grown into the room for it.
+    show_buckle = (p.outfit.apron_color is None or sk.build > 0.5) and not obi
+    # Whenever the buckle is not carrying the belt on its own: an obi (never
+    # gets a buckle) or an apron at any build below where the buckle joins it,
+    # same as before this build split existed. With both an apron and the
+    # buckle showing, the tie stays too, since that is the realistic build's
+    # own reference.
+    show_tie = not show_buckle or p.outfit.apron_color is not None
+    tie_top = y + h * 0.55
+    if show_buckle:
+        # Metal is a fixed neutral tone, like the blush: it is not anyone's
+        # palette.
         sw = _stroke_w(sk)
         bw, bh = h * 1.5, h * 1.08
         bx, by = cx - bw / 2, y + (h - bh) / 2
@@ -3977,30 +3991,41 @@ def _belt(sk: Skeleton, p: CharacterParams) -> str:
             f'height="{h * 0.84:.1f}" rx="{kw * 0.3:.1f}" fill="{shade(color, 0.7)}" '
             f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" />'
         )
-    else:
-        # With an apron over the belt the buckle is hidden behind the panel, which
-        # is why the canon draws Satoshi's and not Satoko's. What it draws instead
-        # is the strap's knotted end hanging down the apron's front, and that tie
-        # is the one thing on the assembly that says the panel hangs *from* the
-        # belt rather than being a pocket sewn across it.
+        # The tail continues from the buckle's own bottom edge when both show,
+        # so the strap reads as one piece running through the buckle rather
+        # than two unrelated ornaments stacked on the belt.
+        tie_top = by + bh
+    if show_tie:
+        # The strap's knotted end hanging down the apron's front, the one
+        # thing on the assembly that says the panel hangs *from* the belt
+        # rather than being a pocket sewn across it. Skips its own knot box
+        # when the buckle is also showing, since the buckle already anchors
+        # the strap and a second knot directly under it doubles up.
         sw = _stroke_w(sk)
         tie_w = h * 0.30
         knot_h = h * 0.55
-        knot_y = y + h * 0.55
-        parts.append(
-            f'<rect x="{cx - h * 0.42:.1f}" y="{knot_y:.1f}" width="{h * 0.84:.1f}" '
-            f'height="{knot_h:.1f}" rx="{knot_h * 0.35:.1f}" fill="{shade(color, 0.86)}" '
-            f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
-        )
+        knot_y = tie_top
+        if not show_buckle:
+            parts.append(
+                f'<rect x="{cx - h * 0.42:.1f}" y="{knot_y:.1f}" width="{h * 0.84:.1f}" '
+                f'height="{knot_h:.1f}" rx="{knot_h * 0.35:.1f}" fill="{shade(color, 0.86)}" '
+                f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
+            )
+        # Two different heights off the same knot, not one: the top edge sits
+        # inside where the knot box would be (or right at the buckle's own
+        # edge when there is no box), and the drop is measured from a full
+        # knot_h down, past where the box would end.
+        tail_start = knot_y + knot_h * 0.7 if not show_buckle else knot_y
+        tail_base = knot_y + knot_h if not show_buckle else knot_y
         for s, drop in ((-1, 0.62), (1, 0.48)):
             # Two ends of unequal length, because a knot with two equal tails
             # reads as a ribbon.
             x0 = cx + s * h * 0.20
             parts.append(
-                f'<path d="M {x0 - tie_w / 2:.1f} {knot_y + knot_h * 0.7:.1f} '
-                f"L {x0 + tie_w / 2:.1f} {knot_y + knot_h * 0.7:.1f} "
-                f"L {x0 + s * h * 0.10 + tie_w / 2:.1f} {knot_y + knot_h + (sk.hip_y - sk.waist_y) * drop:.1f} "
-                f"L {x0 + s * h * 0.10 - tie_w / 2:.1f} {knot_y + knot_h + (sk.hip_y - sk.waist_y) * drop:.1f} "
+                f'<path d="M {x0 - tie_w / 2:.1f} {tail_start:.1f} '
+                f"L {x0 + tie_w / 2:.1f} {tail_start:.1f} "
+                f"L {x0 + s * h * 0.10 + tie_w / 2:.1f} {tail_base + (sk.hip_y - sk.waist_y) * drop:.1f} "
+                f"L {x0 + s * h * 0.10 - tie_w / 2:.1f} {tail_base + (sk.hip_y - sk.waist_y) * drop:.1f} "
                 f'Z" fill="{shade(color, 0.86)}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
             )
     return "".join(parts)
@@ -4656,8 +4681,9 @@ def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tupl
     return d, lid
 
 
-def _eye(ex: float, ey: float, er: float, side: int, p: CharacterParams, sw: float) -> str:
-    f = p.face
+def _eye(
+    ex: float, ey: float, er: float, side: int, f: FaceStyle, eye_color: str, sw: float
+) -> str:
     d, lid = _eye_shape(ex, ey, er, side, f)
     clip_id = f"eye-{'l' if side < 0 else 'r'}"
 
@@ -4679,14 +4705,14 @@ def _eye(ex: float, ey: float, er: float, side: int, p: CharacterParams, sw: flo
     # with a distinct near-dark pupil inside that. Three flat tones, which is
     # what makes the eye read at a glance where a single disc read as a bead.
     parts.append(
-        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(p.eye_color, 0.45)}" />'
+        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(eye_color, 0.45)}" />'
     )
     parts.append(
-        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{p.eye_color}" />'
+        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{eye_color}" />'
     )
     parts.append(
         f'<circle cx="{ex:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * 0.40:.1f}" '
-        f'fill="{shade(p.eye_color, 0.18)}" />'
+        f'fill="{shade(eye_color, 0.18)}" />'
     )
     parts.append(
         f'<circle cx="{ex - iris_r * 0.42:.1f}" cy="{iris_cy - iris_r * 0.48:.1f}" r="{iris_r * 0.34:.1f}" fill="white" />'
@@ -4742,10 +4768,20 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     cy = sk.head_cy
     f = p.face
     if sk.build > 0:
+        # Measured directly off ref/satoko-real.jpg and ref/satoshi-real.jpg
+        # (aperture width/height read by eye off a pixel grid, since the
+        # automated `eyes` probe finds the iris highlight dot on this art
+        # rather than the aperture, a known failure of that tool on these
+        # two references): the realistic aperture runs about 2.2 times wider
+        # than tall, against the chibi's roughly 1.4, which is a flatter,
+        # more closed eye rather than a uniformly smaller one. The previous
+        # 0.20/0.10 reduction undershot that: it closed the aperture by
+        # about 15% at full build where closing it by about 30% lands on
+        # the measured ratio.
         f = replace(
             f,
-            eye_openness=f.eye_openness * (1.0 - 0.20 * sk.build),
-            eye_lower_lid=f.eye_lower_lid * (1.0 - 0.10 * sk.build),
+            eye_openness=f.eye_openness * (1.0 - 0.40 * sk.build),
+            eye_lower_lid=f.eye_lower_lid * (1.0 - 0.20 * sk.build),
         )
     # Canon face geometry, shared by every character; what differs per
     # character stays in FaceStyle. Eyes sit below the head's centre line and
@@ -4784,7 +4820,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             f'x2="{ex + side * eye_r:.1f}" y2="{brow_y - tilt:.1f}" '
             f'stroke="{brow_color}" stroke-width="{sw * f.brow_weight:.1f}" stroke-linecap="round" />'
         )
-        parts.append(_eye(ex, eye_y, eye_r, side, p, sw))
+        parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw))
 
     if sk.build > 0.5:
         # A nose, one short stroke leaning off to the left, only at builds

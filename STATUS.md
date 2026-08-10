@@ -859,6 +859,201 @@ hang clear of the tunic. What remains, ranked:
 4. **Then variety.** More hairstyles and a second outfit family. The
    hairstyle registry and `Outfit` are both built to take them now.
 
+## Direction, 2026-08-10
+
+The ranking under "Next steps" above is from 2026-08-06 and is largely
+overtaken by what happened after it: the hair rebuild, the shadow
+removal, the fringe and strand fixes, and the roster growing from two
+characters to fourteen with a full `Outfit` system behind them. Items 2
+and 3 there closed; item 4, variety, is done in the sense that the
+registries exist, not in the sense that they are populated with much
+past what the fourteen presets use.
+
+The owner's call, recorded here rather than only in conversation: the
+AI-generated references in `ref/` did the job they were brought in for,
+establishing the style and the initial fourteen-character roster, and
+are not a target for what comes next. Effort now goes to:
+
+1. **More GUI customization.** The `web/` page exposes a limited slice
+   of what `Outfit`/`FaceStyle`/the hairstyle registry can already do;
+   widen that, and add new hair/garment/prop options to the registries
+   themselves where the fourteen presets don't yet exercise something a
+   character might want.
+2. **A bigger roster.** New characters, including ones from other games
+   or stories the owner has written, designed directly as
+   `CharacterParams` in `presets.py` the way the current fourteen are.
+   These have no AI reference and are not measured against one; the
+   design intent (written or described) is the only source of truth.
+3. **Polish.** Refinement passes on what exists, judged by eye against
+   the established style rather than against `ref/`.
+
+**The one exception is the realistic build**, item 1 above the fold
+("Realistic garment details") and the deferred hair-compression finding
+earlier in this file: both are known, already-measured gaps against
+`ref/satoko-real.jpg`/`ref/satoshi-real.jpg`, and closing them is still
+in scope for the `gap-analysis` skill. Nothing else is benchmarked
+against `ref/` going forward; see `CLAUDE.md`, "Direction," and
+`docs/gap-analysis.md`'s scope note.
+
+Some ideas for the three items above, not yet decided on:
+
+- **Customization:** props (a held item, a weapon, glasses variants
+  beyond the current on/off), a second outfit family (the roster plan
+  already names candidates), independent recoloring of parts that
+  currently share a color field, a "randomize" button on the web page
+  constrained to combinations that are known to render cleanly.
+- **Roster:** new characters as `CharacterParams` in `presets.py`, same
+  pattern as the current fourteen, designed from written/described
+  intent rather than a reference image; reuse the `Hairstyle`/`Outfit`
+  registries as the menu of what's expressible before adding a one-off
+  field. An explicit non-`valley_of_mist` preset namespace/roster entry
+  once a second setting has more than one or two characters, so
+  `sheet.py --members` and the web catalogue don't have to assume one
+  cast.
+- **Polish:** a second pass at palette consistency across all fourteen
+  now that more of them exist side by side, expression coverage per
+  character (not every preset has been checked against every named
+  `Expression`), and closing whatever `docs/character-roster-plan.md`
+  still lists as below the first-draft line per character.
+
+**Order, decided 2026-08-10: the realistic build goes first**, ahead of
+all three items above. The chibi build works and is locked in; the
+realistic build does not, so customization/roster/polish effort would
+be spent on a build that is known to be off. See the next section.
+
+## Realistic build, 2026-08-10
+
+All fourteen presets rendered at `--build realistic` (`out/realistic-review/`,
+not committed, regenerate with `./render.sh --out out/realistic-review/<name>_real
+--preset <name> --build realistic --background white` per preset) and
+compared: each against its own chibi (`ref-out/`), and Satoko and
+Satoshi additionally against `ref/satoko-real.jpg` and
+`ref/satoshi-real.jpg`, which is the guide for the look the realistic
+build is after. Strips built with the `gap-analysis` skill's `probe.sh`.
+The four items below were worked in this order; results, not just
+findings, since three of the four turned out different once actually
+investigated rather than eyeballed.
+
+1. **Fixed: the eye aperture was never getting the build-based lidding
+   it was supposed to.** `_eye_placement` (character.py:4725) computed a
+   build-adjusted `FaceStyle` (smaller `eye_openness`/`eye_lower_lid` at
+   higher `sk.build`) and returned it, but `_eye()` (character.py:4660)
+   read `p.face` fresh instead of taking that adjusted value, so every
+   eye ever drawn used the raw, un-lidded preset numbers regardless of
+   build; only the brow line, which read the adjustment correctly in
+   `_face()`, ever reflected it. This is why every realistic-build face
+   read too round and open next to `ref/satoko-real.jpg` and
+   `ref/satoshi-real.jpg`: the constants tuning it were always inert.
+   Fixed by passing the adjusted `FaceStyle` through, and while there,
+   measured the two references directly (pixel grid by eye, since the
+   automated `eyes` probe finds the iris highlight dot on this art
+   rather than the aperture, a new addition to `PITFALLS.md`-worthy
+   failure modes) and retuned the reduction from `0.20`/`0.10` to
+   `0.40`/`0.20` to land on the reference's roughly 2.2:1 aperture
+   aspect ratio against the chibi's 1.4:1. Confirmed the chibi is
+   unaffected in any visible way (`sk.build` is 0.1 there, not exactly
+   0, so this does move the chibi's eyes by sub-pixel amounts;
+   `ref-out/` was refreshed to absorb it, see `cmp_satoko_guide2.png`
+   for the before/after against the same chibi crop). Every preset's
+   realistic build reads noticeably more mature after this one wiring
+   fix than any of the other three items below would have delivered.
+2. **Investigated, not fixed: hair volume compression at the realistic
+   build needs either a geometry refactor or a new trace, not a
+   constant.** The first attempt (scale the crop's fringe depth by the
+   same `v` that scales its crown) was wrong: `_CROP_BASE_TIP` is
+   calibrated so `v` is already ~1.0 at the realistic build (that is
+   the trace's own reference scale) and only inflates at the chibi end,
+   so scaling the fringe by `v` left the realistic build unchanged and
+   made the chibi's fringe measurably deeper — caught by
+   `test_ref_out_matches_the_code` failing on `satoshi`/`tomohiro`
+   after the edit, and reverted. The real fix needs the crown's
+   available headroom decoupled from the outline's single scale factor
+   (which also controls tip depth), or a fringe traced directly off
+   `ref/satoshi-real.jpg` the way the chibi one came from
+   `ref/satoshi-chibi-fringe.png`. Both are real pieces of work, not
+   available in this pass; the measurement stands (crown-to-hairline
+   band 1.035 head radii at chibi, 0.683 at realistic, fringe blade
+   length fixed at 0.506 either way) and is the starting point for
+   whoever picks this up.
+3. **Investigated, mostly not a bug.** Haruto's hakama appearing to
+   swallow his legs entirely was a false alarm: `hakama_color`
+   (`#2b2b26`) and `trouser_color` (`#2b2b27`) are one hex digit apart
+   by design (the preset's own comment says so), so the actual gap
+   between hem and boot is there at both builds, just invisible because
+   the two garments read as one fabric. Reika's case is real and
+   confirmed numerically (`_skirt_hem_y` vs. the boot's `top_y`): the
+   hem clears the boot at chibi (435.9 vs. 457.8) and runs into it at
+   realistic (454.9 vs. 435.0), with zero leg showing at the realistic
+   build (`out/realistic-review/hakama_recheck.png`). But
+   `hakama_length=0.95` is deliberately near-floor-length, and a real
+   floor-length garment on adult proportions plausibly does drape onto
+   the shoe with no gap. Whether that reads as intended or as a
+   collision is a look call, not a bug with an obvious fix, so it needs
+   the owner's eye on `hakama_recheck.png` rather than a guessed rule
+   like "always clear the boot by X."
+4. **Investigated and closed: not a regression.** The impression that
+   Daizen and Reinhard's beards merge into their collars at the
+   realistic build did not hold up numerically: beard-bottom against
+   `shoulder_y` for Daizen actually clears by more at the realistic
+   build (~4px above the shoulder line) than at chibi (~10px past it,
+   already overlapping), because `beard_length` is a fixed head-radii
+   drop while the neck itself gets visibly longer at taller builds. The
+   "merged" read was the small scale of the head-only crop making the
+   sideburn-to-collar transition hard to parse, not a build-dependent
+   defect; `_face_track`/`_jaw_track` already carry the beard's edge
+   correctly at both builds. Found and fixed a real but unrelated stale
+   comment along the way: `CharacterParams.beard_length`'s docstring
+   claimed Reinhard wears 0.15 and Daizen 0.45; the actual preset
+   values are 0.07 and 0.17.
+5. **The uniformed and coated cast hold up well, unchanged.** Tenno,
+   Viktor, Reinhard's uniform, Elara and Krista's crystal rig, Keiko's
+   lab coat, and Kyoko/Tomohiro's coat-over-tunic all still scale
+   cleanly to the realistic build.
+6. **Fixed: the belt buckle now shows at the realistic build with an
+   apron on.** The old rule in `_belt` (character.py:3948) suppressed
+   the buckle outright whenever an apron was worn, on the reasoning
+   that the apron covers it, true of `ref/satoko-chibi.jpg` but not of
+   `ref/satoko-real.jpg`, which shows the buckle sitting clear above
+   the apron with the strap's tail running down over the panel. Gated
+   the buckle on `sk.build > 0.5` (the same cut the chibi-only nose
+   already uses) rather than dropping the rule, so it still hides at
+   chibi and shows at realistic, together with the existing tie. First
+   attempt at this broke the tie for every obi-wearing, apron-less
+   character (Daizen, Haruto, Reika) by tying the tie's presence to
+   "has an apron" instead of "buckle isn't carrying the belt alone";
+   caught by `test_ref_out_matches_the_code` failing on all three, and
+   by the tail's own drop distance quietly changing for everyone else
+   once the two branches shared a variable that meant different things
+   in each (`knot_h*0.7` for where a drawn knot's own box ends is not
+   `knot_h` for where the tail's drop is measured from). Both caught
+   before landing; `ref-out/` now differs only where it should,
+   `real/satoko` and `real/chiyo` (the two apron-wearing presets),
+   confirmed by `./refresh-ref-out.sh --check` coming back clean
+   everywhere else.
+7. **Already done, contrary to what item 6 in "Next steps" above still
+   claimed.** Checked underskirt pleats and the sleeve's cap edge
+   against `ref/satoko-real.jpg` directly rather than trusting that
+   older note: both are already drawn (pleats: task 66; the sleeve's
+   cap already carries a distinct pointed edge, not a plain blend into
+   the shoulder). The pleat count and spacing read close to the
+   reference; the underskirt's hem is a smooth curve where the
+   reference scallops between pleats, and the sleeve's cap is more
+   ornate (a pointed zigzag) than the reference's plain rounded one.
+   Both are minor stylistic gaps, not the "missing entirely" gap the
+   old note described, and neither seemed worth a change without the
+   owner's call on which look is wanted.
+
+Net for this pass: two real, confirmed fixes shipped (item 1, eye
+lidding, and item 6, the belt buckle, both gated on `sk.build` so the
+chibi is untouched); one item that needs more scoping than a session
+affords (item 2, the crop fringe); two items that looked like bugs
+from a screenshot and were not, once measured (items 3's Haruto half
+and 4); one still genuinely open and owner-facing (item 3's Reika
+half); and one correction to a stale "still open" claim (item 7).
+Suggested next step, if continuing here: item 2's fringe work, since
+it is the remaining shared-code lever; otherwise this list is spent
+and the direction section above (customization/roster/polish) is next.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

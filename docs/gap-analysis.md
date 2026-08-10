@@ -10,6 +10,16 @@ The references are guides, not targets. What follows is measurement used
 to find what is wrong, not a list of numbers to converge on; the final
 call on any of it is by eye.
 
+**Scope, as of 2026-08-10:** the chibi build is locked in (`STATUS.md`)
+and its findings below are historical record, not an open backlog; only
+the realistic-build findings (the hair compression, the garment details)
+are still live work. New characters added past the original fourteen
+have no reference here at all and are not measured against `ref/`. See
+`CLAUDE.md`, "Direction." `STATUS.md`'s "Realistic build, 2026-08-10"
+section extends this to the eye-scale formula and to a roster-wide
+check of every preset's realistic build, not only Satoko/Satoshi; read
+it alongside this file rather than in place of it.
+
 ## Method and units
 
 Each reference was paired with its render, both cropped to the painted

@@ -16,10 +16,21 @@ Fourteen named characters (`presets.py`), each a first draft, all
 rendering at the chibi (big head, short body) front-facing build by
 default; `--build realistic` (or `--heads` for anything in between)
 renders the same character taller. Multiple hairstyles and a full
-garment system (`Outfit`) exist; poses do not. The stated direction is
-to "edge closer" to more detailed, less deformed proportions
-iteratively, starting from this simple base. See `README.md`'s Status
+garment system (`Outfit`) exist; poses do not. See `README.md`'s Status
 section and `STATUS.md` for what is current.
+
+**Direction, as of 2026-08-10:** the chibi build is locked in (see
+`STATUS.md`) and the AI-generated design references in `ref/` have
+done the job they were for, getting the style and the initial roster
+established. They are not a target for new work going forward. Effort
+now goes to three things: more GUI customization (hair/outfit/prop
+options beyond what the fourteen presets already use), a bigger roster
+(new characters, including ones from other games/stories, which have
+no AI reference at all and are designed directly in `presets.py`), and
+polish on what exists. The one place references still earn their keep
+is closing known, already-measured gaps in the **realistic** build
+(see "Direction" in `STATUS.md` and the `gap-analysis` skill); they are
+not consulted for chibi work or for new characters.
 
 Since 2026-08-10, `../valley_of_mist` (the novel this cast is written
 for) consumes this repo's output directly: `render.sh`/`cover.sh`/`sheet.sh`
@@ -101,12 +112,16 @@ wrong, and reformatting them would be editing the evidence.
   (`./render.sh --out out/tmp --preset satoko`) and view the PNG before
   calling it done, coordinates that look right in the math are
   routinely wrong visually; this is an iterate-by-looking project.
-- To compare the renders against `ref/`, use the `gap-analysis` skill
-  (`.claude/skills/gap-analysis/`) rather than writing measuring code
-  from scratch. Its `probe.sh` builds the normalized side-by-side strips
-  and takes the measurements, and its `PITFALLS.md` records the ways
-  naive pixel measurement gave wrong answers here. The standing result
-  is `docs/gap-analysis.md`.
+- The `gap-analysis` skill (`.claude/skills/gap-analysis/`) compares a
+  render against `ref/`. Its scope is the **realistic build only** now
+  that the chibi is locked in and the roster is growing past the
+  fourteen the references cover; do not reach for it, or for `ref/`, to
+  judge a chibi render or a new character with no reference of its own,
+  that is by eye against the design intent instead. When it does apply,
+  its `probe.sh` builds the normalized side-by-side strips and takes the
+  measurements rather than writing measuring code from scratch, and its
+  `PITFALLS.md` records the ways naive pixel measurement gave wrong
+  answers here. The standing result is `docs/gap-analysis.md`.
 - Keep the tooling green in the same change: `uv run ruff check .`,
   `uv run ruff format .`, `uv run pytest`. The test suite is a smoke
   check, it renders every preset and compares `ref-out/`, so a failure

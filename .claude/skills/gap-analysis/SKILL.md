@@ -1,14 +1,25 @@
 ---
 name: gap-analysis
-description: Compare the rendered characters against the canon reference art in ref/ and produce a prioritised gap analysis. Use when asked how close the output is to the references, what is still wrong, what to fix next, or to re-run the comparison after a shape pass to see what moved.
+description: Compare Satoko's or Satoshi's realistic-build render against the canon reference art in ref/ and produce a prioritised gap analysis. Scope is the realistic build only; the chibi build is locked in and new characters have no AI reference to compare against. Use when asked how close the realistic build is to the references, what is still wrong with it, what to fix next there, or to re-run the comparison after a realistic-build shape pass to see what moved.
 ---
 
-# Gap analysis: renders against the canon
+# Gap analysis: realistic-build renders against the canon
 
-Turns "how close are we?" into a ranked, evidenced list of what to change,
-with the measurement separated from the judgement. The output is a
-refreshed `docs/gap-analysis.md`, a set of comparison strips, and a
-summary that says which findings are measured and which are seen.
+**As of 2026-08-10 this skill's scope is the realistic build.** The chibi
+build is locked in (`STATUS.md`, "The chibis are locked in") and is not
+re-benchmarked against `ref/` for new work, and the fourteen-character
+roster is growing with characters that have no AI reference at all (new
+originals, characters from other games/stories). Reach for this skill
+only when the work at hand is closing a known realistic-build gap (hair
+compression, garment details, palette) against `ref/satoko-real.jpg` /
+`ref/satoshi-real.jpg`; for everything else, chibi or reference-less, the
+call is by eye against the design intent, not against `ref/`.
+
+Turns "how close is the realistic build to the canon?" into a ranked,
+evidenced list of what to change, with the measurement separated from the
+judgement. The output is a refreshed `docs/gap-analysis.md`, a set of
+comparison strips, and a summary that says which findings are measured
+and which are seen.
 
 **This is analysis, not a shape pass. Do not edit `character.py` while
 running it.** Acting on a finding is a separate piece of work, and mixing
