@@ -22,14 +22,20 @@ from anime_character_creator import (
     NEUTRAL_BASES,
     PRESETS,
     CharacterParams,
+    FaceStyle,
     Outfit,
     build_skeleton,
     render_character,
 )
 from anime_character_creator.catalogue import (
     COLORS,
+    FACE_BOOLS,
+    FACE_RANGES,
+    FACE_SCAR,
     GARMENTS,
+    HAIR_KNOT,
     HAIR_LENGTH,
+    HAIR_TAIL,
     HAIRSTYLE_LABELS,
     build_catalogue,
     to_json,
@@ -50,6 +56,21 @@ def test_every_garment_field_exists_on_outfit() -> None:
             assert r.field in names
         for b in g.bools:
             assert b.field in names
+
+
+def test_every_face_field_exists_on_facestyle() -> None:
+    names = {f.name for f in fields(FaceStyle)}
+    for r in FACE_RANGES:
+        assert r.field in names
+    for b in FACE_BOOLS:
+        assert b.field in names
+    assert FACE_SCAR.field in names
+
+
+def test_hair_tail_and_knot_fields_exist_on_character_params() -> None:
+    names = {f.name for f in fields(CharacterParams)}
+    assert HAIR_TAIL.field in names
+    assert HAIR_KNOT.field in names
 
 
 def test_every_hairstyle_label_is_a_real_hairstyle() -> None:
@@ -82,6 +103,21 @@ def test_hair_length_extremes_render(build: str) -> None:
         ET.fromstring(svg)
 
 
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_hair_tail_extremes_render(build: str) -> None:
+    for value in (HAIR_TAIL.lo, HAIR_TAIL.hi):
+        p = replace(CharacterParams(), hair_tail=value)
+        svg = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
+        ET.fromstring(svg)
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_hair_knot_renders(build: str) -> None:
+    p = replace(CharacterParams(), hair_knot=True)
+    svg = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
+    ET.fromstring(svg)
+
+
 def _turned_on(base: Outfit, field: str) -> Outfit:
     """`base` with one more optional color set, so a companion range on that
     slot actually draws something rather than being silently skipped."""
@@ -104,6 +140,27 @@ def test_every_garment_range_extreme_renders(build: str) -> None:
                 svg = render_character(p, build_skeleton(frame=p.frame, **sk_args))
                 root = ET.fromstring(svg)
                 assert root.tag.endswith("svg")
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_face_range_extremes_render(build: str) -> None:
+    sk = build_skeleton(heads=BUILDS[build])
+    for r in FACE_RANGES:
+        for value in (r.lo, r.hi):
+            p = CharacterParams(face=replace(FaceStyle(), **{r.field: value}))
+            svg = render_character(p, sk)
+            root = ET.fromstring(svg)
+            assert root.tag.endswith("svg")
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_face_scar_options_render(build: str) -> None:
+    sk = build_skeleton(heads=BUILDS[build])
+    for value, _label in FACE_SCAR.options:
+        p = CharacterParams(face=replace(FaceStyle(), scar_side=value))
+        svg = render_character(p, sk)
+        root = ET.fromstring(svg)
+        assert root.tag.endswith("svg")
 
 
 def test_catalogue_json_matches_ref_out() -> None:

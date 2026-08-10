@@ -28,7 +28,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, fields
 
-from .character import HAIRSTYLES, CharacterParams, Outfit
+from .character import HAIRSTYLES, CharacterParams, FaceStyle, Outfit
 from .presets import DISPLAY_NAMES, NEUTRAL_BASES, PRESETS
 
 
@@ -58,6 +58,17 @@ class BoolField:
 
 
 @dataclass(frozen=True)
+class SelectField:
+    field: str
+    label: str
+    # Value/label pairs, in display order. Value is whatever the real field
+    # holds (an int, for `scar_side`), not a string re-encoding of it, so the
+    # bridge never has to translate a selection back into the model's own
+    # type.
+    options: tuple[tuple[object, str], ...]
+
+
+@dataclass(frozen=True)
 class GarmentSlot:
     """One layer of `Outfit`: its color and whatever else travels with it.
 
@@ -82,6 +93,7 @@ def _existing_fields(cls: type) -> frozenset[str]:
 
 _OUTFIT_FIELDS = _existing_fields(Outfit)
 _CHARACTER_FIELDS = _existing_fields(CharacterParams)
+_FACE_FIELDS = _existing_fields(FaceStyle)
 
 
 def _color(field: str, label: str, *, optional: bool = True) -> ColorField:
@@ -97,6 +109,21 @@ def _range(field: str, label: str, lo: float, hi: float) -> RangeField:
 def _bool(field: str, label: str) -> BoolField:
     assert field in _OUTFIT_FIELDS, f"Outfit has no field {field!r}"
     return BoolField(field, label)
+
+
+def _face_range(field: str, label: str, lo: float, hi: float) -> RangeField:
+    assert field in _FACE_FIELDS, f"FaceStyle has no field {field!r}"
+    return RangeField(field, label, lo, hi)
+
+
+def _face_bool(field: str, label: str) -> BoolField:
+    assert field in _FACE_FIELDS, f"FaceStyle has no field {field!r}"
+    return BoolField(field, label)
+
+
+def _face_select(field: str, label: str, options: tuple[tuple[object, str], ...]) -> SelectField:
+    assert field in _FACE_FIELDS, f"FaceStyle has no field {field!r}"
+    return SelectField(field, label, options)
 
 
 # Always worn, so no toggle: a character with `tunic_color=None` is not
@@ -287,6 +314,15 @@ for _c in COLORS:
 HAIR_LENGTH = RangeField("hair_length", "Hair length", 0.0, 1.0)
 assert HAIR_LENGTH.field in _CHARACTER_FIELDS
 
+# A gathered tail and a crown knot: both drawn over any cut (`_hair_tail`,
+# `_hair_knot`), not part of `Hairstyle` itself, and both already carried by a
+# real preset (Krista's tail, Daizen's and Haruto's knots) but never exposed
+# here before now. Shoulder (0) to hip (1), same as `HAIR_LENGTH`'s own scale.
+HAIR_TAIL = RangeField("hair_tail", "Tail (ponytail/braid)", 0.0, 1.0)
+assert HAIR_TAIL.field in _CHARACTER_FIELDS
+HAIR_KNOT = BoolField("hair_knot", "Top-knot")
+assert HAIR_KNOT.field in _CHARACTER_FIELDS
+
 # `HAIRSTYLES` is the real registry; this only checks it still has the five
 # keys the cast currently uses; sorted so a new cut appears in one place, here
 # and in `HAIRSTYLES` itself, and needs no companion edit.
@@ -296,10 +332,42 @@ HAIRSTYLE_LABELS: dict[str, str] = {
     "long_traced": "Long",
     "short_crop": "Short crop",
     "short_tousled": "Short, tousled",
+    "long_center_part": "Long, center part",
 }
 assert set(HAIRSTYLE_LABELS) == set(HAIRSTYLES), (
     "HAIRSTYLE_LABELS and HAIRSTYLES have drifted apart; a cut was added or "
     "removed on one side without the other"
+)
+
+# `FaceStyle` carries fourteen floats, and `docs/web-gui-plan.md` calls the
+# whole set "a mixing desk, not a limited set of choices" and keeps it out of
+# the catalogue entirely. What follows is a deliberately smaller, curated
+# subset: the fields that read as "what shape are the eyes" and "is there a
+# scar", not the ones that read as "what mood is this face making right now"
+# (`brow_tilt`, `mouth_curve`, `blush`, ...) or duplicate what a preset
+# already states at rest (`eye_openness`, `eye_lower_lid`, `brow_weight`).
+# Bounds are the min and max actually used across the fourteen presets (see
+# `presets.py`), the same "rendered and judged" rule `skirt_length` and
+# `coat_length` already follow above, widened by a small margin so the
+# default chibi face sits inside every range rather than at its edge.
+FACE_RANGES: tuple[RangeField, ...] = (
+    _face_range("eye_size", "Eye size", 0.80, 1.05),
+    _face_range("eye_width", "Eye width (round to narrow)", 0.85, 1.10),
+    _face_range("eye_tilt", "Eye tilt", 0.0, 0.20),
+    _face_range("eye_corner", "Eye corner (round to sharp)", 0.30, 0.65),
+    _face_range("iris_size", "Iris size", 0.60, 0.80),
+)
+for _fr in FACE_RANGES:
+    assert _fr.field in _FACE_FIELDS
+
+FACE_BOOLS: tuple[BoolField, ...] = (_face_bool("glasses", "Glasses"),)
+for _fb in FACE_BOOLS:
+    assert _fb.field in _FACE_FIELDS
+
+# Stated from the viewer's side, matching `FaceStyle.scar_side`'s own
+# docstring: "Right cheek" here is the viewer's right, the character's left.
+FACE_SCAR: SelectField = _face_select(
+    "scar_side", "Scar", ((0, "None"), (-1, "Left cheek"), (1, "Right cheek"))
 )
 
 
@@ -328,6 +396,14 @@ def _range_json(r: RangeField) -> dict[str, object]:
 
 def _bool_json(b: BoolField) -> dict[str, object]:
     return {"field": b.field, "label": b.label}
+
+
+def _select_json(s: SelectField) -> dict[str, object]:
+    return {
+        "field": s.field,
+        "label": s.label,
+        "options": [{"value": v, "label": lbl} for v, lbl in s.options],
+    }
 
 
 def _garment_json(g: GarmentSlot) -> dict[str, object]:
@@ -363,7 +439,14 @@ def build_catalogue() -> dict[str, object]:
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)
         ],
         "hair_length": _range_json(HAIR_LENGTH),
+        "hair_tail": _range_json(HAIR_TAIL),
+        "hair_knot": _bool_json(HAIR_KNOT),
         "garments": [_garment_json(g) for g in GARMENTS],
+        "face": {
+            "ranges": [_range_json(r) for r in FACE_RANGES],
+            "bools": [_bool_json(b) for b in FACE_BOOLS],
+            "select": _select_json(FACE_SCAR),
+        },
     }
 
 

@@ -680,6 +680,88 @@ def _long_strands(length: float) -> list[tuple[Point, list[Segment]]]:
     ]
 
 
+def _center_part_hairline_shape(length: float) -> tuple[Point, list[Segment], list[Segment]]:
+    """`_hairline_shape`, with the fringe parted at the centre instead of swept
+    to one side: two even sweeps off a single peak at x=0, mirrored left and
+    right, in place of the one asymmetric sweep off a part right of centre
+    that cut carries. Everything else, both falls, the crown closure, is
+    that function's own geometry unchanged, since this cut reuses
+    `_hair_mass_shape` and `_fall_edge` outright and has to retrace their
+    seams exactly or the double-line the hair contract warns about (see
+    `_hairline_shape`) shows up here too.
+    """
+
+    def y(f: float) -> float:
+        return _fall(f, length)
+
+    start: Point = (-1.22, y(1.00))
+    line: list[Segment] = [
+        ((-1.18, y(0.97)), (-1.08, y(0.85))),
+        ((-0.98, y(0.60)), (-0.90, y(0.28))),
+        ((-0.92, 0.70), (-0.88, 0.35)),
+        # The part: two even sweeps off one peak at the crown's own centre
+        # line. This is the entire visual difference from `_hairline_shape`;
+        # everything else in this function is copied from it verbatim.
+        ((-0.68, 0.14), (-0.42, -0.14)),
+        ((-0.18, -0.36), (0.00, -0.46)),
+        ((0.18, -0.36), (0.42, -0.14)),
+        ((0.68, 0.14), (0.88, 0.35)),
+        ((0.92, 0.70), (0.90, y(0.28))),
+        ((0.98, y(0.60)), (1.08, y(0.85))),
+        ((1.18, y(0.97)), (1.22, y(1.00))),
+    ]
+    _, right_edge = _fall_edge(length)
+    _, left_down = _reverse(*_mirror(*_fall_edge(length)))
+    back: list[Segment] = [
+        *right_edge,
+        ((1.05, 0.10), (1.00, -0.30)),
+        ((0.84, -1.16), (0.00, -1.10)),
+        ((-0.84, -1.16), (-1.00, -0.30)),
+        ((-1.05, 0.10), (-_FALL_CHEEK_X, _HAIR_CHEEK_Y)),
+        *left_down,
+    ]
+    return start, line, back
+
+
+def _center_part_strands(length: float) -> list[tuple[Point, list[Segment]]]:
+    """Division lines for the centre-part cut: mirrored sweeps off the part
+    in place of `_long_strands`' off-centre crown sweeps and fringe flicks.
+    The fall-dividing lines (`outer_lock` and the shorter inner pair) are
+    `_long_strands`' own, unchanged, since both cuts share the same fall."""
+
+    def y(f: float) -> float:
+        return _fall(f, length)
+
+    outer_lock: tuple[Point, list[Segment]] = (
+        (1.14, 0.10),
+        [((1.42, y(0.28)), (1.38, y(0.58))), ((1.32, y(0.78)), (1.36, y(0.94)))],
+    )
+    sweep_outer: tuple[Point, list[Segment]] = (
+        (-0.30, -0.86),
+        [((-0.54, -0.68), (-0.72, -0.44))],
+    )
+    sweep_inner: tuple[Point, list[Segment]] = (
+        (-0.12, -0.82),
+        [((-0.28, -0.62), (-0.40, -0.40))],
+    )
+    flick: tuple[Point, list[Segment]] = (
+        (-0.14, -0.60),
+        [((-0.26, -0.48), (-0.36, -0.32))],
+    )
+    return [
+        sweep_outer,
+        _mirror(*sweep_outer),
+        sweep_inner,
+        _mirror(*sweep_inner),
+        outer_lock,
+        _mirror(*outer_lock),
+        ((1.04, 0.40), [((1.18, y(0.30)), (1.15, y(0.55)))]),
+        ((-1.04, 0.40), [((-1.18, y(0.30)), (-1.15, y(0.55)))]),
+        flick,
+        _mirror(*flick),
+    ]
+
+
 def _short_mass_shape(tip: float) -> tuple[Point, list[Segment]]:
     """A short layered cut: the skull, side locks coming down in front of the
     ears to ragged points, and the nape tucked up behind the jaw.
@@ -1740,6 +1822,15 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # shaggy ear-length cut at 1. The old (0.42, 1.00) range described the
         # bob this used to be, with locks reaching for the jaw.
         tip_range=(0.25, 0.70),
+    ),
+    "long_center_part": Hairstyle(
+        _hair_mass_shape,
+        _center_part_hairline_shape,
+        _long_fall_edges,
+        _hair_tip_edge,
+        strands=_center_part_strands,
+        # No `tip_range` and no `volume`, same as `long_blunt`: same mass, same
+        # fall, so the same body-relative `hair_length` measure applies.
     ),
     "long_traced": Hairstyle(
         _long_traced_mass,

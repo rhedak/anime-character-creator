@@ -69,6 +69,7 @@ const editorSection = document.getElementById("editor-section");
 const previewEl = document.getElementById("preview");
 const colorsControls = document.getElementById("colors-controls");
 const hairControls = document.getElementById("hair-controls");
+const faceControls = document.getElementById("face-controls");
 const garmentsControls = document.getElementById("garments-controls");
 const downloadSvgBtn = document.getElementById("download-svg");
 const downloadPngBtn = document.getElementById("download-png");
@@ -144,6 +145,14 @@ function setField(field, value) {
   }
 }
 
+function faceValue(field) {
+  return state.face[field];
+}
+
+function setFaceField(field, value) {
+  state.face[field] = value;
+}
+
 function colorRow(container, field, label, value, onInput) {
   const row = document.createElement("div");
   row.className = "control-row";
@@ -179,6 +188,31 @@ function rangeRow(container, field, label, lo, hi, value, onInput) {
   row.append(lbl, input);
   container.appendChild(row);
   return input;
+}
+
+function selectRow(container, field, label, options, value, onInput) {
+  const row = document.createElement("div");
+  row.className = "control-row";
+  const id = `field-${field}`;
+  const lbl = document.createElement("label");
+  lbl.htmlFor = id;
+  lbl.textContent = label;
+  const select = document.createElement("select");
+  select.id = id;
+  for (const opt of options) {
+    const option = document.createElement("option");
+    option.value = String(opt.value);
+    option.textContent = opt.label;
+    if (opt.value === value) option.selected = true;
+    select.appendChild(option);
+  }
+  select.addEventListener("input", () => {
+    const chosen = options.find((opt) => String(opt.value) === select.value);
+    onInput(chosen.value);
+  });
+  row.append(lbl, select);
+  container.appendChild(row);
+  return select;
 }
 
 function boolRow(container, field, label, value, onInput) {
@@ -267,6 +301,45 @@ function buildHairControls() {
       scheduleRender();
     });
   }
+
+  rangeRow(
+    hairControls,
+    "hair_tail",
+    catalogue.hair_tail.label,
+    catalogue.hair_tail.min,
+    catalogue.hair_tail.max,
+    state.hair_tail,
+    (v) => {
+      state.hair_tail = v;
+      scheduleRender();
+    },
+  );
+
+  boolRow(hairControls, "hair_knot", catalogue.hair_knot.label, state.hair_knot, (v) => {
+    state.hair_knot = v;
+    scheduleRender();
+  });
+}
+
+function buildFaceControls() {
+  faceControls.innerHTML = "";
+  for (const r of catalogue.face.ranges) {
+    rangeRow(faceControls, r.field, r.label, r.min, r.max, faceValue(r.field), (v) => {
+      setFaceField(r.field, v);
+      scheduleRender();
+    });
+  }
+  for (const b of catalogue.face.bools) {
+    boolRow(faceControls, b.field, b.label, faceValue(b.field), (v) => {
+      setFaceField(b.field, v);
+      scheduleRender();
+    });
+  }
+  const s = catalogue.face.select;
+  selectRow(faceControls, s.field, s.label, s.options, faceValue(s.field), (v) => {
+    setFaceField(s.field, v);
+    scheduleRender();
+  });
 }
 
 function buildGarmentControls() {
@@ -410,6 +483,7 @@ function selectStartingPoint(id) {
   editorSection.hidden = false;
   buildColorControls();
   buildHairControls();
+  buildFaceControls();
   buildGarmentControls();
   renderPreview();
   updateAddressBar();
@@ -615,6 +689,7 @@ async function main() {
       editorSection.hidden = false;
       buildColorControls();
       buildHairControls();
+      buildFaceControls();
       buildGarmentControls();
       renderPreview();
     } catch (e) {

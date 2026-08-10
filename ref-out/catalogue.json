@@ -97,6 +97,10 @@
       "label": "Long, blunt"
     },
     {
+      "id": "long_center_part",
+      "label": "Long, center part"
+    },
+    {
       "id": "long_traced",
       "label": "Long"
     },
@@ -118,6 +122,16 @@
     "label": "Hair length",
     "min": 0.0,
     "max": 1.0
+  },
+  "hair_tail": {
+    "field": "hair_tail",
+    "label": "Tail (ponytail/braid)",
+    "min": 0.0,
+    "max": 1.0
+  },
+  "hair_knot": {
+    "field": "hair_knot",
+    "label": "Top-knot"
   },
   "garments": [
     {
@@ -385,5 +399,63 @@
         "optional": true
       }
     }
-  ]
+  ],
+  "face": {
+    "ranges": [
+      {
+        "field": "eye_size",
+        "label": "Eye size",
+        "min": 0.8,
+        "max": 1.05
+      },
+      {
+        "field": "eye_width",
+        "label": "Eye width (round to narrow)",
+        "min": 0.85,
+        "max": 1.1
+      },
+      {
+        "field": "eye_tilt",
+        "label": "Eye tilt",
+        "min": 0.0,
+        "max": 0.2
+      },
+      {
+        "field": "eye_corner",
+        "label": "Eye corner (round to sharp)",
+        "min": 0.3,
+        "max": 0.65
+      },
+      {
+        "field": "iris_size",
+        "label": "Iris size",
+        "min": 0.6,
+        "max": 0.8
+      }
+    ],
+    "bools": [
+      {
+        "field": "glasses",
+        "label": "Glasses"
+      }
+    ],
+    "select": {
+      "field": "scar_side",
+      "label": "Scar",
+      "options": [
+        {
+          "value": 0,
+          "label": "None"
+        },
+        {
+          "value": -1,
+          "label": "Left cheek"
+        },
+        {
+          "value": 1,
+          "label": "Right cheek"
+        }
+      ]
+    }
+  }
 }
