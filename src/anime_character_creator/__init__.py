@@ -29,7 +29,7 @@ from .character import (
     render_character,
 )
 from .colorutil import shade
-from .presets import DISPLAY_NAMES, EXPRESSIONS, PRESETS, REALISTIC_REFS, ROSTERS
+from .presets import DISPLAY_NAMES, EXPRESSIONS, NEUTRAL_BASES, PRESETS, REALISTIC_REFS, ROSTERS
 from .skeleton import BUILDS, DEFAULT_BUILD, DEFAULT_HEADS, Skeleton, build_skeleton
 
 __all__ = [
@@ -39,6 +39,7 @@ __all__ = [
     "DISPLAY_NAMES",
     "EXPRESSIONS",
     "HAIRSTYLES",
+    "NEUTRAL_BASES",
     "PRESETS",
     "REALISTIC_REFS",
     "ROSTERS",

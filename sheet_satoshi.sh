@@ -16,6 +16,8 @@ if [ ! -x "$root/.venv/bin/python" ]; then
     exit 1
 fi
 
-export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-}:/opt/homebrew/lib"
+# Both prefixes, since Homebrew lives at /opt/homebrew on Apple Silicon and
+# /usr/local on Intel, and the two do not agree on which machine wrote this.
+export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-}:/opt/homebrew/lib:/usr/local/lib"
 exec "$root/.venv/bin/python" -m anime_character_creator.sheet --roster satoshi \
     --out out/sheet_satoshi/sheet_satoshi "$@"

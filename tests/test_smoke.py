@@ -22,6 +22,7 @@ from anime_character_creator import (
     DISPLAY_NAMES,
     EXPRESSIONS,
     HAIRSTYLES,
+    NEUTRAL_BASES,
     PRESETS,
     REALISTIC_REFS,
     ROSTERS,
@@ -53,6 +54,20 @@ def test_named_characters_render(preset: str, build: str) -> None:
 def test_every_hairstyle_renders_on_a_default_character(hairstyle: str) -> None:
     svg = render_character(CharacterParams(hairstyle=hairstyle))
     ET.fromstring(svg)
+
+
+@pytest.mark.parametrize("base", sorted(NEUTRAL_BASES))
+def test_neutral_bases_render_and_stay_out_of_the_cast(base: str) -> None:
+    """The web tool's starting points, per `docs/web-gui-plan.md`.
+
+    They render like any preset, but they are not presets: `PRESETS` is the
+    fourteen named characters the README and `ref-out/` publish, and a base has
+    no design to publish there.
+    """
+    svg = render_character(NEUTRAL_BASES[base])
+    root = ET.fromstring(svg)
+    assert root.tag.endswith("svg")
+    assert base not in PRESETS
 
 
 def test_render_is_deterministic() -> None:

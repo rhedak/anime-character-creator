@@ -4611,6 +4611,7 @@ def render_character(
     p: CharacterParams | None = None,
     sk: Skeleton | None = None,
     background: str | None = None,
+    metadata: bool = False,
 ) -> str:
     """Draw one character and return the whole SVG document as a string.
 
@@ -4637,6 +4638,11 @@ def render_character(
     Nothing is written to disk and nothing is rasterized here. The document is
     deterministic: the same arguments give the same bytes, which is what lets
     `ref-out/` be compared rather than eyeballed.
+
+    `metadata` embeds an SVG `<metadata>` block naming the tool, the licence
+    and a link that reproduces `p`; see `attribution.metadata_block`. Off by
+    default, so the fourteen files under `ref-out/` do not churn on every
+    unrelated change: the web tool is what turns it on.
     """
     p = p or CharacterParams()
     sk = sk or build_skeleton(heads=p.heads, frame=p.frame)
@@ -4735,9 +4741,18 @@ def render_character(
     # painted over: an absent rect is the transparency, there is no other way to
     # say it in SVG.
     bg = f'  <rect width="100%" height="100%" fill="{background}" />\n' if background else ""
+    # A local import: `attribution` imports `character_url` from `urlstate`,
+    # which imports `CharacterParams` from here, so importing it at module
+    # level would be a cycle. Only paid for when `metadata=True` asks for it.
+    md = ""
+    if metadata:
+        from .attribution import metadata_block
+
+        md = f"  {metadata_block(p)}\n"
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{sk.canvas_w:.0f}" height="{sk.canvas_h:.0f}" '
         f'viewBox="0 0 {sk.canvas_w:.0f} {sk.canvas_h:.0f}">\n'
+        f"{md}"
         f"{bg}"
         f"  {body}\n"
         f"</svg>\n"

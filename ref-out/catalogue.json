@@ -1,0 +1,343 @@
+{
+  "starting_points": {
+    "cast": [
+      {
+        "id": "chiyo",
+        "label": "Chiyo"
+      },
+      {
+        "id": "daizen",
+        "label": "Daizen Kurogane"
+      },
+      {
+        "id": "elara",
+        "label": "Elara Sturm"
+      },
+      {
+        "id": "haruto",
+        "label": "Haruto Kisaragi"
+      },
+      {
+        "id": "keiko",
+        "label": "Keiko Natsume"
+      },
+      {
+        "id": "krista",
+        "label": "Krista Bastler"
+      },
+      {
+        "id": "kyoko",
+        "label": "Kyoko"
+      },
+      {
+        "id": "reika",
+        "label": "Reika Mizuki"
+      },
+      {
+        "id": "reinhard",
+        "label": "Reinhard von Falkenrath"
+      },
+      {
+        "id": "satoko",
+        "label": "Satoko"
+      },
+      {
+        "id": "satoshi",
+        "label": "Satoshi"
+      },
+      {
+        "id": "tenno",
+        "label": "Tenno Amatsuki"
+      },
+      {
+        "id": "tomohiro",
+        "label": "Tomohiro"
+      },
+      {
+        "id": "viktor",
+        "label": "Viktor Grau"
+      }
+    ],
+    "bases": [
+      {
+        "id": "female",
+        "label": "Female base"
+      },
+      {
+        "id": "male",
+        "label": "Male base"
+      }
+    ]
+  },
+  "colors": [
+    {
+      "field": "skin_tone",
+      "label": "Skin",
+      "optional": false
+    },
+    {
+      "field": "hair_color",
+      "label": "Hair",
+      "optional": false
+    },
+    {
+      "field": "hair_tip_color",
+      "label": "Hair tips",
+      "optional": true
+    },
+    {
+      "field": "eye_color",
+      "label": "Eyes",
+      "optional": false
+    }
+  ],
+  "hairstyles": [
+    {
+      "id": "long_blunt",
+      "label": "Long, blunt"
+    },
+    {
+      "id": "long_traced",
+      "label": "Long"
+    },
+    {
+      "id": "short_crop",
+      "label": "Short crop"
+    },
+    {
+      "id": "short_layered",
+      "label": "Short, layered"
+    },
+    {
+      "id": "short_tousled",
+      "label": "Short, tousled"
+    }
+  ],
+  "hair_length": {
+    "field": "hair_length",
+    "label": "Hair length",
+    "min": 0.0,
+    "max": 1.0
+  },
+  "garments": [
+    {
+      "id": "tunic",
+      "label": "Tunic",
+      "color": {
+        "field": "tunic_color",
+        "label": "Tunic",
+        "optional": false
+      },
+      "bools": [
+        {
+          "field": "tunic_tucked",
+          "label": "Tucked in"
+        }
+      ]
+    },
+    {
+      "id": "boots",
+      "label": "Boots",
+      "color": {
+        "field": "boot_color",
+        "label": "Boots",
+        "optional": false
+      },
+      "ranges": [
+        {
+          "field": "boot_shaft",
+          "label": "Boot height",
+          "min": 0.0,
+          "max": 1.0
+        }
+      ]
+    },
+    {
+      "id": "undersleeve",
+      "label": "Undersleeves",
+      "color": {
+        "field": "undersleeve_color",
+        "label": "Undersleeves",
+        "optional": true
+      }
+    },
+    {
+      "id": "trouser",
+      "label": "Trousers",
+      "color": {
+        "field": "trouser_color",
+        "label": "Trousers",
+        "optional": true
+      }
+    },
+    {
+      "id": "skirt",
+      "label": "Skirt",
+      "color": {
+        "field": "skirt_color",
+        "label": "Skirt",
+        "optional": true
+      },
+      "ranges": [
+        {
+          "field": "skirt_length",
+          "label": "Skirt length",
+          "min": 0.0,
+          "max": 1.0
+        }
+      ]
+    },
+    {
+      "id": "underskirt",
+      "label": "Underskirt",
+      "color": {
+        "field": "underskirt_color",
+        "label": "Underskirt",
+        "optional": true
+      },
+      "requires": "skirt"
+    },
+    {
+      "id": "belt",
+      "label": "Belt",
+      "color": {
+        "field": "belt_color",
+        "label": "Belt",
+        "optional": true
+      },
+      "ranges": [
+        {
+          "field": "belt_scale",
+          "label": "Belt height",
+          "min": 1.0,
+          "max": 3.0
+        }
+      ]
+    },
+    {
+      "id": "pouch",
+      "label": "Pouch",
+      "color": {
+        "field": "pouch_color",
+        "label": "Pouch",
+        "optional": true
+      },
+      "requires": "belt"
+    },
+    {
+      "id": "apron",
+      "label": "Apron",
+      "color": {
+        "field": "apron_color",
+        "label": "Apron",
+        "optional": true
+      },
+      "requires": "belt"
+    },
+    {
+      "id": "collar",
+      "label": "Collar",
+      "color": {
+        "field": "collar_color",
+        "label": "Collar",
+        "optional": true
+      }
+    },
+    {
+      "id": "placket",
+      "label": "Buttons",
+      "color": {
+        "field": "placket_color",
+        "label": "Buttons",
+        "optional": true
+      }
+    },
+    {
+      "id": "chest_pocket",
+      "label": "Chest pocket",
+      "color": {
+        "field": "chest_pocket_color",
+        "label": "Chest pocket",
+        "optional": true
+      }
+    },
+    {
+      "id": "strap",
+      "label": "Strap",
+      "color": {
+        "field": "strap_color",
+        "label": "Strap",
+        "optional": true
+      }
+    },
+    {
+      "id": "hakama",
+      "label": "Hakama",
+      "color": {
+        "field": "hakama_color",
+        "label": "Hakama",
+        "optional": true
+      },
+      "ranges": [
+        {
+          "field": "hakama_length",
+          "label": "Hakama length",
+          "min": 0.0,
+          "max": 1.0
+        }
+      ]
+    },
+    {
+      "id": "robe",
+      "label": "Robe",
+      "color": {
+        "field": "robe_color",
+        "label": "Robe",
+        "optional": true
+      },
+      "ranges": [
+        {
+          "field": "sleeve_drop",
+          "label": "Sleeve drop",
+          "min": 0.0,
+          "max": 1.0
+        }
+      ]
+    },
+    {
+      "id": "coat",
+      "label": "Coat",
+      "color": {
+        "field": "coat_color",
+        "label": "Coat",
+        "optional": true
+      },
+      "ranges": [
+        {
+          "field": "coat_length",
+          "label": "Coat length",
+          "min": 0.3,
+          "max": 0.85
+        }
+      ]
+    },
+    {
+      "id": "headscarf",
+      "label": "Headscarf",
+      "color": {
+        "field": "headscarf_color",
+        "label": "Headscarf",
+        "optional": true
+      }
+    },
+    {
+      "id": "goggles",
+      "label": "Goggles",
+      "color": {
+        "field": "goggle_color",
+        "label": "Goggles",
+        "optional": true
+      }
+    }
+  ]
+}

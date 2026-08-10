@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Anime Character Creator</title>
+<meta name="description" content="Pick a character, change colours, swap hairstyles and garments. Runs entirely in your browser." />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="page-header">
+  <h1>Anime Character Creator</h1>
+  <p class="tagline">
+    Every character here is drawn by code, not by hand and not by an image
+    model. Pick a starting point, change what you like, and download the
+    result. Runs entirely in your browser: nothing you do here is sent
+    anywhere.
+  </p>
+  <p class="header-links">
+    <a href="https://www.honeyfeed.fm/novels/32712" target="_blank" rel="noopener">
+      Read the novel these characters are from
+    </a>
+    &middot;
+    <a href="https://github.com/rhedak/anime-character-creator" target="_blank" rel="noopener">
+      View the source
+    </a>
+  </p>
+</header>
+
+<main>
+  <p id="status" class="status" role="status" aria-live="polite">Loading the character gallery&hellip;</p>
+
+  <section id="gallery-section" aria-label="Starting points">
+    <h2>Start from</h2>
+    <div id="cast-gallery" class="gallery" aria-label="The cast"></div>
+    <h3>Or build your own</h3>
+    <div id="base-gallery" class="gallery" aria-label="Neutral bases"></div>
+  </section>
+
+  <section id="editor-section" hidden>
+    <div class="editor-layout">
+      <div class="preview-pane">
+        <div id="preview" class="preview" aria-live="polite"></div>
+        <div class="preview-actions">
+          <button id="download-svg" type="button">Download SVG</button>
+          <button id="download-png" type="button">Download PNG</button>
+          <button id="copy-link" type="button">Copy link</button>
+          <span id="copy-link-status" class="copy-status" aria-live="polite"></span>
+        </div>
+        <p class="back-link"><button id="back-to-gallery" type="button" class="link-button">&larr; choose a different starting point</button></p>
+      </div>
+
+      <div class="controls-pane">
+        <fieldset id="colors-fieldset">
+          <legend>Colours</legend>
+          <div id="colors-controls"></div>
+        </fieldset>
+
+        <fieldset id="hair-fieldset">
+          <legend>Hair</legend>
+          <div id="hair-controls"></div>
+        </fieldset>
+
+        <fieldset id="garments-fieldset">
+          <legend>Garments</legend>
+          <div id="garments-controls"></div>
+        </fieldset>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="licensing">
+  <h2>What you can do with what you make here</h2>
+  <p>
+    The code that draws these characters is open source under the MIT
+    licence, and what you make with it is yours. Use it wherever you like,
+    including commercially. No permission needed, no fee, no need to ask.
+  </p>
+  <p>Two things asked rather than required.</p>
+  <p>Please link back, to this page or to the code, wherever a character ends up.</p>
+  <p>Please do not present these as hand-drawn. A program drew them, and saying so costs you nothing.</p>
+  <p>Neither is a legal condition. There is nothing here anyone intends to enforce.</p>
+  <p>
+    <strong>One more ask, about the cast.</strong> Satoko, Krista and the
+    rest are characters from <em>The Hero of the Mist Tragedy</em>. Start
+    from any of them and change whatever you like; what comes out is yours
+    the same as anything else here. The ask is only that you not present the
+    result as being that character. The names, and who they are, belong to
+    the story.
+  </p>
+  <p>
+    The novel is free to read at
+    <a href="https://www.honeyfeed.fm/novels/32712" target="_blank" rel="noopener">honeyfeed.fm</a>.
+  </p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

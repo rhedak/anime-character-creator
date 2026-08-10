@@ -1,0 +1,74 @@
+name: Deploy the web tool to GitHub Pages
+
+# docs/web-gui-plan.md: GitHub Pages serves static files; the visitor's own
+# browser runs the real Python via Pyodide. This workflow's only job is to
+# assemble that static site with web-stage.sh (index.html/app.js/style.css
+# plus ref-out/ and src/anime_character_creator/, which the page fetches as
+# plain relative paths) and hand it to Pages. No server-side rendering, no
+# build step beyond a file copy.
+#
+# Gated on the same test suite CLAUDE.md requires green locally, so a push
+# that forgot to run refresh-ref-out.sh or refresh-catalogue.sh fails here
+# rather than publishing a page whose gallery or controls disagree with the
+# code that draws them.
+#
+# One manual step this workflow cannot do for you: Settings -> Pages ->
+# Build and deployment -> Source must be set to "GitHub Actions" once, by
+# hand, in the repository's web UI.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install cairo
+        # For cairosvg, which the test suite's ref-out/ comparisons and
+        # PNG-producing tests need. The web tool itself never touches cairo:
+        # its PNG export runs in the visitor's browser off a <canvas>.
+        run: sudo apt-get update && sudo apt-get install -y libcairo2
+
+      - run: uv sync
+
+      - name: Run the test suite
+        run: uv run pytest -q
+
+      - name: Check ref-out/ and catalogue.json are current
+        run: |
+          ./refresh-ref-out.sh --check
+          ./refresh-catalogue.sh --check
+
+      - name: Assemble the site
+        run: ./web-stage.sh
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out/web-stage
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

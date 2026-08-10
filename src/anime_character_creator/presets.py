@@ -809,6 +809,47 @@ ROSTERS["satoshi"] = (
 REALISTIC_REFS: tuple[str, ...] = ("satoko", "satoshi")
 
 
+# ---------------------------------------------------------------------------
+# Neutral bases, for the web tool rather than the novel.
+#
+# `docs/web-gui-plan.md` settles on three kinds of starting point: the named
+# cast above, and a neutral male and female base for a visitor who wants to
+# make a character of their own rather than recolour Krista. These are that
+# pair, and they stay out of `PRESETS`, `DISPLAY_NAMES` and `ROSTERS` on
+# purpose: that dict is the fourteen named characters and nothing else, the
+# README table and `ref-out/` are keyed off it, and a base has no design to
+# publish there, only defaults to hand a visitor.
+#
+# Undyed, unscarred, no beard, no accessories, and coloured with
+# `CharacterParams`' and `Outfit`'s own stock defaults rather than a palette
+# invented for this document: the point of a base is that nothing about it has
+# been decided yet, and the first thing the web tool's colour controls do is
+# override every one of these anyway. What the two differ on is silhouette,
+# because that is the one choice a colour picker cannot make: a skirt or
+# trousers, and a haircut to match. `BASE_FEMALE` changes nothing from
+# `CharacterParams()`'s own defaults, which already draw the skirted silhouette
+# `Outfit` was built around; `BASE_MALE` swaps in trousers and `short_crop`,
+# at 0.65, the length the cut was traced at (see `SATOSHI`, which carries the
+# same value for the same reason).
+BASE_FEMALE = CharacterParams()
+
+BASE_MALE = CharacterParams(
+    hairstyle="short_crop",
+    hair_length=0.65,
+    outfit=Outfit(
+        skirt_color=None,
+        trouser_color="#4f7a52",
+    ),
+)
+
+# Keyed by the same short lowercase names the web catalogue will use, per the
+# plan's "male base" and "female base". A separate dict rather than folded
+# into `PRESETS`, for the reason given above.
+NEUTRAL_BASES: dict[str, CharacterParams] = {
+    "female": BASE_FEMALE,
+    "male": BASE_MALE,
+}
+
 # Named expressions, checked in for the same reason a character is: a mood that
 # worked once should be reusable rather than re-derived from four numbers
 # someone half remembers. Each is a delta, so any of these goes on any

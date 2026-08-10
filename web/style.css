@@ -1,0 +1,265 @@
+:root {
+  --bg: #faf8f5;
+  --panel: #ffffff;
+  --ink: #262220;
+  --ink-soft: #5a534e;
+  --border: #e2dcd4;
+  --accent: #4a6845;
+  --accent-ink: #ffffff;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+.page-header {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 1rem;
+  text-align: center;
+}
+
+.page-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.9rem;
+}
+
+.tagline {
+  color: var(--ink-soft);
+  max-width: 40rem;
+  margin: 0 auto 0.75rem;
+}
+
+.header-links a {
+  color: var(--accent);
+}
+
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 2rem;
+}
+
+.status {
+  text-align: center;
+  color: var(--ink-soft);
+  min-height: 1.4em;
+}
+
+.status.error {
+  color: #9c3b3b;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+h3 {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: 0.75rem;
+}
+
+.gallery-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.gallery-card:hover,
+.gallery-card:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.gallery-card img,
+.gallery-card .placeholder {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.gallery-card .placeholder {
+  background: linear-gradient(180deg, #efeae2, #e6e0d6);
+  border-radius: 0.35rem;
+}
+
+.editor-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 22rem) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 40rem) {
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.preview-pane {
+  position: sticky;
+  top: 1rem;
+}
+
+.preview {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  min-height: 20rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview svg,
+.preview img {
+  max-width: 100%;
+  height: auto;
+}
+
+.preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  align-items: center;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.back-link {
+  margin-top: 0.5rem;
+}
+
+.copy-status {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.controls-pane fieldset {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem 1rem;
+  background: var(--panel);
+}
+
+.controls-pane legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.5rem 0;
+  flex-wrap: wrap;
+}
+
+.control-row label {
+  min-width: 7rem;
+  font-size: 0.9rem;
+}
+
+.control-row input[type="range"] {
+  flex: 1;
+  min-width: 6rem;
+}
+
+.control-row input[type="color"] {
+  width: 2.2rem;
+  height: 1.8rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+}
+
+.garment-block {
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.garment-block:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.garment-block[data-off="true"] .garment-details {
+  display: none;
+}
+
+.garment-details {
+  padding-left: 1.5rem;
+}
+
+.licensing {
+  max-width: 44rem;
+  margin: 2rem auto 0;
+  padding: 1.5rem 1.25rem 3rem;
+  border-top: 1px solid var(--border);
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.licensing h2 {
+  color: var(--ink);
+  font-size: 1.1rem;
+}
+
+.licensing a {
+  color: var(--accent);
+}

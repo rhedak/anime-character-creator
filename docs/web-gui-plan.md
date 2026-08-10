@@ -482,11 +482,13 @@ the library directly. The web tool turns it on.
 
 ### The wording, as it should appear on the page
 
-A draft, to be read as page copy rather than as a licence. Two
-placeholders in it still need filling: the novel's title and its URL.
-`docs/mist-characters/character_designs.md` names the setting, Okiri and
-Wodensreich, but never the work itself, so those are the owner's to
-supply.
+A draft, to be read as page copy rather than as a licence. The novel is
+*The Hero of the Mist Tragedy*, published at
+`https://www.honeyfeed.fm/novels/32712`, filled in below. Its source
+lives at `../valley_of_mist/tragic_hero`, a private sister repo; the
+published text is the "tragic hero" fork rather than that repo's main
+branch, which matters only if this document is ever asked to link to
+source rather than to the published read.
 
 > **What you can do with what you make here**
 >
@@ -506,12 +508,14 @@ supply.
 > enforce.
 >
 > **One more ask, about the cast.** Satoko, Krista and the rest are
-> characters from *[NOVEL TITLE]*. Start from any of them and change
-> whatever you like; what comes out is yours the same as anything else
-> here. The ask is only that you not present the result as being that
-> character. The names, and who they are, belong to the story.
+> characters from *The Hero of the Mist Tragedy*. Start from any of
+> them and change whatever you like; what comes out is yours the same
+> as anything else here. The ask is only that you not present the
+> result as being that character. The names, and who they are, belong
+> to the story.
 >
-> The novel is free to read at *[NOVEL URL]*.
+> The novel is free to read at
+> *https://www.honeyfeed.fm/novels/32712*.
 
 Three notes on why it is worded that way. It says what a visitor *can*
 do first, because that is what they came to find out. It labels the two
@@ -533,14 +537,39 @@ actually worth asking for.
 
 In order, with the first item genuinely first.
 
-1. **The Pyodide spike**, with the kill condition above. Nothing below
-   this line matters until Krista appears in a browser.
-2. **Two neutral base presets** in `presets.py`, male and female.
-3. **`catalogue.py`**, plus its build-time JSON emitter and the pytest
-   guards listed above.
-4. **The metadata parameter** on `render_character()`, off by default.
-5. **The page itself** in `web/`, the Actions deploy, and the PNG and
-   URL-encoding pieces.
+1. **Done, 2026-08-10.** The Pyodide spike. Krista imported and rendered
+   in a real browser off the unmodified package; the kill condition
+   never fired.
+2. **Done.** Two neutral base presets, `BASE_FEMALE` and `BASE_MALE` in
+   `presets.py`, exposed as `NEUTRAL_BASES` and kept out of `PRESETS` for
+   the reason given where they're defined.
+3. **Done.** `catalogue.py`, `refresh-catalogue.sh` as its build-time
+   emitter (`ref-out/catalogue.json`, committed the way the SVGs are),
+   and the pytest guards in `tests/test_catalogue.py`.
+4. **Done.** The `metadata` parameter on `render_character()`, off by
+   default; `attribution.py` builds the block, `urlstate.py` is the
+   encode/decode a link and the metadata's own reproduction link both
+   share.
+5. **Done.** The page in `web/`, staged flat by `web-stage.sh` (index.html
+   plus `ref-out/` and `src/anime_character_creator/` as siblings, which
+   is what the page's relative fetches need), the Actions deploy at
+   `.github/workflows/pages.yml`, and PNG export (canvas, then a spliced
+   `tEXt` chunk for attribution) alongside the URL-encoded share link.
+   Tested end to end in a real Chrome tab: gallery paints before Pyodide
+   is up, every preset and both bases render and edit live, downloads
+   carry working metadata, and a malformed `?c=` link fails to the
+   gallery rather than to a broken page.
 
 The licence work that used to head this list is done; the licensing
 section above is its record.
+
+**Left undone, deliberately.** The self-hosted Pyodide fallback this
+document names as a mitigation for a blocked CDN: it means vendoring the
+whole Pyodide asset bundle, tens of megabytes, and nothing here has
+measured whether that CDN block is a real problem for this audience
+rather than a hedge. jsDelivr only, for now.
+
+**Left for the owner.** GitHub Pages does not turn on by pushing code:
+Settings → Pages → Build and deployment → Source has to be set to "GitHub
+Actions" once, by hand, in the repository's own web UI. Nothing above can
+do that step.
