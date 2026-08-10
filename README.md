@@ -275,9 +275,12 @@ next.
   function of `head_r` and the anchor y-values, not fixed pixels, so
   adjusting proportions (e.g. moving away from chibi later) doesn't
   require touching every shape.
-- **Flat color + one shadow tone per surface**, hard-edged (no
-  gradients), matches the target cel-shaded anime look and is cheap
-  to render.
+- **Flat color, hard-edged (no gradients), and no shading plane across
+  a garment.** Matches the target cel-shaded anime look and is cheap to
+  render. A second tone is for small elements, a pouch flap, a boot
+  cuff, the turn under a hem, where it reads as thickness; a tunic,
+  skirt or trouser leg stays one flat color and gets its form from the
+  outline and the line work.
 - **Iterate on shape, not variety, first.** Get one hairstyle/outfit
   looking right before adding a second, a shape template with wrong
   proportions is wrong for every character generated from it.
