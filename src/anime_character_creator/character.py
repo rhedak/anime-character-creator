@@ -1409,14 +1409,42 @@ _CROP_BASE_TIP = 0.872
 # mismatch `STATUS.md` already had measured (crown-to-hairline band 1.035
 # head radii at chibi, 0.683 at realistic, against a fixed fringe). Traced
 # with `harness/trace/real/satoshi_real.py`, the same region-grown method
-# `satoko_real.py` uses. `_CROP_REAL_TEMPLE_L/R` and `_CROP_REAL_CROWN_AT`
-# are this trace's own version of `_CROP_TEMPLE_L/R`/`_CROP_CROWN_AT`,
-# picked by the same rule those were, the segment ending just above the
-# ear and the one ending nearest the crown's own centre: the index numbers
-# do not carry over, since this list is 23 segments long against the
-# chibi trace's 26.
-_CROP_REAL_START: Point = (-1.036, 0.357)
+# `satoko_real.py` uses.
+#
+# The first version of this trace (2026-08-11) grew from one seed near the
+# crown and stopped at both ears: the reference draws a separate sideburn
+# tuft below each ear, a few small pointed locks with no hair-coloured
+# pixels joining them to the crown mass, so a single seed's flood fill
+# never reached them and the resulting silhouette simply stopped above the
+# ears, leaving the jaw unframed. That read as worse than the chibi-scaled
+# shape it replaced, which happened to reach nearly to the jaw already
+# (its own trace goes to 0.86 head radii on the side against this one's
+# 0.36), the wrong kind of "more faithful": faithful to the crown, wrong
+# about how far the hair actually goes. Confirmed disconnected rather than
+# assumed: a fresh flood fill seeded inside either tuft gives a blob a few
+# hundred pixels wide, nothing like the ~14000-pixel main mass. Four more
+# seeds, two per side, since each side's tuft is itself two separate blobs,
+# fixed it; the trace now reaches the jaw on both sides, matching the
+# reference and the chibi build, which already framed the head properly.
+#
+# `_CROP_REAL_TEMPLE_L/R` and `_CROP_REAL_CROWN_AT` are this trace's own
+# version of `_CROP_TEMPLE_L/R`/`_CROP_CROWN_AT`, picked by the same rule
+# those were, the segment ending just above the ear and the one ending
+# nearest the crown's own centre: the index numbers do not carry over,
+# since this list is 42 segments long against the chibi trace's 26, most
+# of the extra length being the two sideburn tufts this trace did not use
+# to carry at all.
+_CROP_REAL_START: Point = (-0.411, 0.968)
 _CROP_REAL_EDGE: list[Segment] = [
+    ((-0.429, 0.963), (-0.436, 0.935)),
+    ((-0.455, 0.935), (-0.498, 0.977)),
+    ((-0.517, 0.870), (-0.548, 0.812)),
+    ((-0.581, 0.845), (-0.615, 0.878)),
+    ((-0.633, 0.790), (-0.648, 0.719)),
+    ((-0.684, 0.735), (-0.745, 0.771)),
+    ((-0.714, 0.550), (-0.747, 0.449)),
+    ((-0.859, 0.414), (-0.895, 0.326)),
+    ((-0.965, 0.341), (-1.036, 0.357)),
     ((-0.993, 0.196), (-0.998, 0.070)),
     ((-1.046, 0.064), (-1.094, 0.057)),
     ((-1.012, -0.066), (-1.016, -0.179)),
@@ -1435,15 +1463,82 @@ _CROP_REAL_EDGE: list[Segment] = [
     ((0.468, -1.163), (0.554, -1.136)),
     ((0.537, -1.078), (0.519, -1.019)),
     ((0.653, -0.969), (0.751, -0.863)),
-    ((0.840, -0.667), (0.999, -0.531)),
-    ((1.070, -0.544), (0.895, -0.437)),
+    ((0.848, -0.661), (1.009, -0.514)),
+    ((0.952, -0.475), (0.895, -0.437)),
     ((0.926, -0.268), (0.998, -0.105)),
     ((1.052, -0.091), (0.882, -0.062)),
     ((0.862, 0.115), (0.930, 0.357)),
+    ((0.850, 0.392), (0.770, 0.427)),
+    ((0.756, 0.513), (0.757, 0.635)),
+    ((0.691, 0.589), (0.625, 0.543)),
+    ((0.594, 0.595), (0.635, 0.757)),
+    ((0.631, 0.795), (0.534, 0.709)),
+    ((0.516, 0.772), (0.504, 0.873)),
+    ((0.478, 0.865), (0.432, 0.812)),
+    ((0.402, 0.856), (0.388, 0.961)),
+    ((0.380, 0.992), (0.337, 0.925)),
+    ((0.318, 0.948), (0.299, 0.979)),
 ]
-_CROP_REAL_TEMPLE_L = 1
-_CROP_REAL_TEMPLE_R = 20
-_CROP_REAL_CROWN_AT = 11
+# The two sideburn tufts sit close enough to the skull's own jaw/cheek
+# edge that at `_CROP_REAL_SCALE` alone, most of each tuft lands behind
+# the head shape drawn over it rather than past it: checked directly
+# against `_head_edge_x`, several of the tuft's own points sit inside the
+# skull's edge, not outside it, and several more clear it by only a few
+# hundredths of a head radius, thin enough that the tuft still reads as a
+# broken scribble rather than visible hair. This is the same "clear the
+# skull" problem `_EAR_OUT` already exists to solve for the ear, and it
+# gets the same kind of fix: an outward push, x only, since y is already
+# the tuft's own measured reach and does not need moving. The ranges are
+# this trace's own two tufts and stop exactly where each one already
+# cleared the skull on its own: edge indices 0-7 (left) and 32-41
+# (right); `_CROP_REAL_START` is the left tuft's own tip, pushed the same
+# way.
+#
+# Pushing every point in those ranges the same amount overshot: a few of
+# them, at the same height as the ear itself (`_EAR_TOP_Y` to
+# `_EAR_BOT_Y`), moved from inside the ear's own outline, correctly
+# leaving it visible, to past it, so the pushed hair and the ear fought
+# over the same few pixels there. That turned out to be one case of a
+# wider problem, not unique to the push: `_ears` draws only the sliver
+# standing clear of the skull, from the skull's own edge out to
+# `_EAR_OUT` past it, and only within that same height band. Checked
+# directly at the realistic build, the only build this trace ever runs
+# at, that sliver spans about `_CROP_REAL_EAR_X` in head radii. Several
+# of the mass's own points, not only the pushed ones, land inside that
+# exact strip at that exact height (the pre-existing zigzag right above
+# the ear included), so the hair's own outline and the ear's outline were
+# both drawing into the same few pixels regardless of the push, which is
+# the tangle the owner flagged rather than a clean ear in a clean window
+# the way the canon draws it and the way `_crop_hairline_shape` already
+# gives the fringe higher up ("the front hair stops above the ear on
+# purpose"). Any such point retreats to the skull's own edge instead,
+# computed directly with `_head_edge_x` rather than a guessed margin,
+# ceding the strip to the ear. Points at ear height but already outside
+# that strip, on either side of it, are untouched: retreating them too
+# would pull in hair that was never competing with the ear to begin with.
+_CROP_REAL_SIDEBURN_PUSH = 1.3
+# -1 stands for `_CROP_REAL_START` itself, the left tuft's own tip.
+_CROP_REAL_SIDEBURN_L = range(-1, 8)
+_CROP_REAL_SIDEBURN_R = range(32, 42)
+_CROP_REAL_EAR_X = (0.717, 0.967)
+
+
+def _crop_real_point(i: int, pt: Point) -> Point:
+    """A point from `_CROP_REAL_EDGE` (or `_CROP_REAL_START` at `i=-1`), at
+    render size."""
+    x, y = pt
+    at_ear_height = _EAR_TOP_Y <= y <= _EAR_BOT_Y
+    if at_ear_height and _CROP_REAL_EAR_X[0] <= abs(x) <= _CROP_REAL_EAR_X[1]:
+        edge_x = _head_edge_x(y, 1.0)
+        x = math.copysign(min(abs(x), edge_x), x)
+    elif not at_ear_height and (i in _CROP_REAL_SIDEBURN_L or i in _CROP_REAL_SIDEBURN_R):
+        x = x * _CROP_REAL_SIDEBURN_PUSH
+    return _scale_point((x, y), _CROP_REAL_SCALE)
+
+
+_CROP_REAL_TEMPLE_L = 10
+_CROP_REAL_TEMPLE_R = 29
+_CROP_REAL_CROWN_AT = 20
 # The `fall` this trace was measured at: Satoshi's own `hair_length=0.65` (the
 # range's neutral value, the length the crop was traced at in the first
 # place) run through the realistic build's chin-hip span. Same reasoning
@@ -1556,9 +1651,9 @@ def _crop_outline(fall: float) -> tuple[Point, list[Segment]]:
     needed its proportions to change with the build would not come out that flat.
     """
     if abs(fall - _CROP_REAL_FALL) < _CROP_REAL_TOL:
-        return _scale_point(_CROP_REAL_START, _CROP_REAL_SCALE), [
-            (_scale_point(c, _CROP_REAL_SCALE), _scale_point(e, _CROP_REAL_SCALE))
-            for c, e in _CROP_REAL_EDGE
+        return _crop_real_point(-1, _CROP_REAL_START), [
+            (_crop_real_point(i, c), _crop_real_point(i, e))
+            for i, (c, e) in enumerate(_CROP_REAL_EDGE)
         ]
     v = fall / _CROP_BASE_TIP
     start = (_CROP_START[0] * v, _CROP_START[1] * v)

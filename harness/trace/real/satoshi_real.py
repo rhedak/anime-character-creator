@@ -34,7 +34,21 @@ def _is_hairish(px: tuple[int, int, int]) -> bool:
     return (not greenish) and (not near_black) and s > 250
 
 
-_SEEDS = [(int(CX), int(CY - 0.7 * R))]
+# The crown seed's flood fill stops at both ears: the reference draws the
+# sideburn tufts below each ear as separate pointed locks, not connected to
+# the main crown mass by any hair-coloured pixels, so a single seed never
+# reaches them (checked directly: a fresh flood fill from a pixel in either
+# tuft gives a blob a few hundred pixels wide, nothing like the ~14000-pixel
+# main mass, so they are genuinely disconnected in the source art, not an
+# artefact of this mask). Two extra seeds per side, since each side's tuft
+# is itself two separate blobs rather than one.
+_SEEDS = [
+    (int(CX), int(CY - 0.7 * R)),
+    (505, 220),
+    (513, 212),
+    (368, 197),
+    (380, 220),
+]
 
 
 def _region() -> list[list[bool]]:

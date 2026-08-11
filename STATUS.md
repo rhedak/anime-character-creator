@@ -1053,6 +1053,159 @@ half); and one correction to a stale "still open" claim (item 7).
 Suggested next step, if continuing here: item 2's fringe work, since
 it is the remaining shared-code lever; otherwise this list is spent
 and the direction section above (customization/roster/polish) is next.
+(Item 2 is done, 2026-08-11: see the section below.)
+
+## Realistic build, 2026-08-11
+
+Item 2 above got the trace it needed: `rhedak/real_builds` (`93463eb`)
+adds a real, direct trace of both `ref/satoko-real.jpg` and
+`ref/satoshi-real.jpg` (`harness/trace/real/satoko_real.py`,
+`satoshi_real.py`), used at the exact `fall` value each was measured
+at instead of stretching the chibi contour past where it was ever
+measured to go. Compared the new renders against `main` and against
+both references with the `gap-analysis` skill's `probe.sh`.
+
+A code review of that commit before this comparison found and fixed
+three real defects that shipped alongside the trace, none of them
+visible from a glance at the golden PNGs:
+
+1. **Fixed: Satoko's pale-tip lift used a chibi-relative scale factor
+   against a contour that no longer scales that way.** `_long_scaled`
+   switches to the fixed real trace at Satoko/Kyoko's `fall`, but
+   `_long_traced_tip_edge` still multiplied its lift by `fall /
+   _LONG_BASE_TIP`, a factor that only means something against the
+   chibi contour's own stretch. Added `_LONG_REAL_TONE_LIFT`, a
+   separate constant for the real branch. Picked by rendering a sweep
+   (0, 0.3, 0.62, 1.06, 1.6, 2.4) rather than by formula: every
+   nonzero value poked a small gold wedge through the pale at the foot
+   of one fall or the other, a six-samples-per-segment threshold
+   artifact against the fade clamp rather than something that moves
+   smoothly with the constant, and 0 was the only value clear of it on
+   either side.
+2. **Fixed: Satoshi's realistic crown painted a few antialiased pixels
+   into row 0 of the canvas.** `_CROP_REAL_SCALE`'s comment compared
+   the crown's apex only against the full `hair_margin` ceiling, not
+   against the ceiling minus the outline stroke's own outer half that
+   `hair_margin`'s own comment says it has to clear. `1.03` cleared
+   the wrong number. `1.005` clears the real one, confirmed by reading
+   the exported PNG's own top row back rather than trusting the
+   arithmetic alone, since antialiasing bleeds the stroke a pixel or
+   so past its analytic centre.
+3. **Fixed: the real trace's dispatch had no build or identity guard.**
+   Both `_long_scaled` and `_crop_outline` switch to the measured trace
+   on a bare `abs(fall - target) < tolerance` check. At 0.05, Krista's
+   own `fall` (a different `hair_length` on the same `long_traced` cut)
+   drifted into Satoko's window at some `--heads` values away from
+   6.0, silently swapping in Satoko's hair. Tightened
+   `_LONG_REAL_TOL` to 0.001, tight enough to still catch Satoko/Kyoko
+   at exactly `--build realistic` and to shrink Krista's (and Keiko's)
+   accidental windows to a few thousandths of a head, well past
+   anything typed by hand.
+
+Two related questions went to the owner rather than being decided in
+code: **left as-is**, `BASE_MALE`'s `hair_length=0.65` matching
+Satoshi's exactly, and so inheriting his measured trace at the
+realistic build, the same sharing Kyoko and Tomohiro already do on
+purpose; and **left open, undecided by design**, the fact that the fix
+only covers `--heads` at (almost exactly) 6.0, so a taller custom
+build still falls through to the pre-fix chibi-scaled crown and its
+crossing lines. Extending the real trace's own tips further for taller
+builds was the alternative on the table; the owner's call was to
+tighten the match instead and leave taller builds a documented gap
+rather than invent geometry no reference measures.
+
+Against the references, with the review fixes in: Satoko's crown no
+longer crosses itself and now follows a natural, photo-close parting;
+Satoshi's crown-to-fringe headroom is now the measured proportion
+instead of the reused chibi one. The comparison also turned up a real
+bug in the trace itself, since fixed:
+
+**Fixed: Satoshi's realistic hair stopped above both ears instead of
+framing the head down to the jaw.** First read as strand lines
+crossing the ear silhouette, a rendering-layer problem; it was not.
+`ref/satoshi-real.jpg` draws a sideburn tuft below each ear as a few
+small pointed locks with no hair-coloured pixels joining them to the
+crown mass, so `harness/trace/real/satoshi_real.py`'s single seed near
+the crown never reached them (checked directly: a fresh flood fill
+from a pixel inside either tuft gives a blob a few hundred pixels
+wide, nothing like the ~14000-pixel main mass). The resulting
+silhouette stopped at the ear on both sides, worse framing than the
+chibi-scaled shape it replaced, which happened to reach nearly to the
+jaw already (0.86 head radii on the side against the real trace's own
+0.36) and read fine (the owner's own check: "our chibi satoshi already
+has hair properly framing his face"). Four more seeds, two per side
+since each side's tuft is itself two separate blobs, fixed the trace
+at the source; `_CROP_REAL_EDGE` grew from 23 segments to 42 and now
+reaches the jaw on both sides, `_CROP_REAL_TEMPLE_L/R` and
+`_CROP_REAL_CROWN_AT` moved to the same anatomical points at their new
+indices.
+
+That alone still read as too weak once rendered: most of both tufts
+landed *behind* `_head`'s own skull shape, which is drawn over the hair
+and paints right over whatever falls inside its edge. Checked directly
+against `_head_edge_x` rather than assumed: several of the tuft's own
+points sit inside the skull's edge, not outside it, and several more
+clear it by only a few hundredths of a head radius, thin enough to read
+as a broken scribble rather than visible hair. This is the same problem
+`_EAR_OUT` already exists to solve for the ear, and it got the same
+fix: `_CROP_REAL_SIDEBURN_PUSH` pushes each tuft's own points further
+out from the head centre, x only, so the traced shape clears the skull
+instead of mostly hiding behind it. Scoped to exactly the new segments
+(edge indices 0-7 left, 32-41 right); the already-fine trace in between
+is untouched.
+
+Owner's eye caught a second round: even with that push, the hair and the
+ear still visibly fought each other right at the ear. Pushing the tuft
+out had moved a few of its points from inside the ear's own outline,
+correctly leaving it visible, to level with it instead, and separately,
+a few points from the *original* trace (not the new tuft, the
+pre-existing zigzag right above the ear noted as a "minor blemish" and
+left alone the first time) sit in that same strip on their own, push or
+no push. Both are one problem: `_ears` only draws the sliver standing
+clear of the skull, from the skull's own edge out to `_EAR_OUT`, within
+`_EAR_TOP_Y` to `_EAR_BOT_Y`, and several of the mass's points, at
+exactly that height, land inside that same narrow strip, so the hair's
+outline and the ear's outline were drawing into the same few pixels
+regardless of the push. `_crop_real_point` now retreats any such point
+to the skull's own edge (`_head_edge_x`, computed directly, hardcoded at
+the realistic build's own `1.0` since this trace never runs at any
+other), ceding the strip to the ear the same way the fringe already
+cedes it higher up. Points at ear height but already clear of that
+strip are left alone. Confirmed by rendering both sides at 5-6x: the ear
+now shows a visible sliver of its own rim on the side that had none
+before, and the tangle is markedly reduced, though not perfectly clean,
+the raw zigzag's sharp turns still add some density even where they no
+longer overlap the ear outline. Good enough to stop chasing by hand;
+further cleanup here is re-trace territory (a coarser or re-seeded pass
+specifically over the ear-height band), not another point-by-point
+patch.
+
+What is still open, ranked:
+
+1. **Checked, kept as-is: `_LONG_REAL_SCALE=1.2`.** At a tight 3x head
+   crop it reads wider than `ref/satoko-real.jpg`'s closer silhouette;
+   rendered 1.0/1.1/1.2 side by side at full figure height to check
+   whether that held up away from the zoom, and at that scale, the
+   scale a viewer actually sees this at, the three barely differ and
+   1.2 does not read as wrong. The 3x crop was overstating a subtle
+   effect. No change.
+2. **Garment details against `ref/`** (this file's "Next steps" item 1,
+   `docs/gap-analysis.md` gap 8, unchanged by this pass): Satoshi's
+   sleeves are plain to the wrist where the reference rolls a
+   three-quarter cuff; Satoko's skirt is flat where the reference
+   tiers. Lower priority under the 2026-08-10 direction call, which
+   points most effort at customization/roster/polish rather than more
+   reference-chasing.
+3. **Reika's hakama still meets her boot with no leg showing** (item 3
+   above, unchanged, still the owner's call).
+
+Net for this pass: item 2 from 2026-08-10 is done, four real defects
+in the commit that did it are fixed (three in the code review, one in
+the reference comparison that followed), two questions the code review
+raised went to the owner rather than being guessed at, and Satoshi's
+realistic build now properly frames his head the way the chibi build
+already did. Suggested order: item 1 above is a cheap side-quest;
+items 2 and 3 stay where the 2026-08-10 direction call put them.
 
 ## Conventions worth remembering
 
