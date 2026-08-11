@@ -326,6 +326,14 @@ this field, and does leaving it unset draw nothing?
   direction of edging toward less deformed proportions is unaffected;
   what shrank is the set of committed artifacts.
 
+  **Reopened 2026-08-11.** The owner asked for every named character's
+  realistic render in `ref-out/real/`, so `REALISTIC_REFS` grew back to
+  `tuple(PRESETS)`. This does not undo the paragraph above: the README
+  table is still chibi-only, and Satoko and Satoshi remain the only two
+  ever judged against a reference. The other twelve now have a
+  checked-in realistic render to look at, not a claim that it was
+  measured against anything.
+
 ## Answered since
 
 - **Kyoko and Tomohiro are not a parent and child pair.** They are

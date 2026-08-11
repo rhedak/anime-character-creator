@@ -51,12 +51,14 @@ copied face keeps it only until somebody tunes an eye. See
 `docs/character-roster-plan.md`.
 
 The table is the chibi, which is the build this project publishes. The
-realistic build still works on anything (`--build realistic`), but its
-renders are **deferred**: the owner's call on 2026-08-08 was that the
-tall figures do not work well enough yet and the chibi is where the
-project is. Two of them are checked in under `ref-out/real/`, for Satoko
-and Satoshi, who are the only characters whose realistic build was ever
-measured against a reference. They are not displayed here.
+realistic build still works on anything (`--build realistic`), and all
+fourteen are checked in under `ref-out/real/` too, but they are not
+displayed here: the owner's call on 2026-08-08 was that the tall figures
+do not work well enough yet and the chibi is where the project is. Only
+Satoko and Satoshi's realistic renders have ever been measured against a
+reference (`ref/satoko-real.jpg`, `ref/satoshi-real.jpg`); the other
+twelve are unjudged previews, checked in on the owner's 2026-08-11 call
+so every character has one, not a claim that they hold up.
 
 `ref-out/cover.svg` is there too: a book cover composed around one of
 them by `cover.py`, which is the same drawing code with a backdrop, mist
@@ -99,9 +101,10 @@ the code no longer produces:
 ./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
 ```
 
-It renders every character in `PRESETS` at the chibi build, the short
-list in `REALISTIC_REFS` at the realistic build too, and both pages, so
-adding a character means adding it to `presets.py` and nothing else.
+It renders every character in `PRESETS` at the chibi build, every name
+in `REALISTIC_REFS` (currently the same fourteen) at the realistic
+build too, and both pages, so adding a character means adding it to
+`presets.py` and nothing else.
 Everything else generated goes to `out/`, which is not checked in.
 
 Current shape set: head (a circle at chibi scale, narrowing to a jaw as

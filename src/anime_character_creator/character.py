@@ -6,6 +6,7 @@ scales as one unit via the skeleton's head_r.
 
 from __future__ import annotations
 
+import itertools
 import math
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
@@ -3465,20 +3466,44 @@ def _skirt_corner_y(sk: Skeleton, hem_y: float) -> float:
 
 
 def _skirt_path(
-    sk: Skeleton, top_y: float, hem_y: float, top_w: float | None = None, hem_w: float | None = None
+    sk: Skeleton,
+    top_y: float,
+    hem_y: float,
+    top_w: float | None = None,
+    hem_w: float | None = None,
+    scallop: int = 0,
+    scallop_dip: float = 0.0,
 ) -> str:
     """An A-line skirt panel. Widths default to the flare the skeleton implies,
     but a layer underneath can pass its own: an underskirt that kept flaring past
-    the hem above it would stick out sideways as a shelf rather than hanging."""
+    the hem above it would stick out sideways as a shelf rather than hanging.
+
+    `scallop` waves the flat run of the hem into that many peaks (0 keeps the
+    single straight line every caller but `_underskirt` still wants), each pair
+    joined by one shallow dip of `scallop_dip`, rather than the underskirt
+    stating its own hem shape: the peaks land exactly on the two points the
+    corner curves already return to, so a scalloped call and a flat one close
+    on the same silhouette everywhere else.
+    """
     cx = sk.head_cx
     top_w = _skirt_half_w(sk, top_y) if top_w is None else top_w
     hem_w = _skirt_half_w(sk, hem_y) if hem_w is None else hem_w
     corner = _skirt_corner_y(sk, hem_y)
+    if scallop >= 2:
+        span = hem_w * 0.6
+        xs = [cx - span + span * 2 * i / (scallop - 1) for i in range(scallop)]
+        dip_y = hem_y + scallop_dip * 2
+        hem_line = "".join(
+            f"Q {(x0 + x1) / 2:.1f} {dip_y:.1f} {x1:.1f} {hem_y:.1f} "
+            for x0, x1 in itertools.pairwise(xs)
+        )
+    else:
+        hem_line = f"L {cx + hem_w * 0.6:.1f} {hem_y:.1f} "
     return (
         f"M {cx - top_w:.1f} {top_y:.1f} "
         f"L {cx - hem_w:.1f} {corner:.1f} "
         f"Q {cx - hem_w:.1f} {hem_y:.1f} {cx - hem_w * 0.6:.1f} {hem_y:.1f} "
-        f"L {cx + hem_w * 0.6:.1f} {hem_y:.1f} "
+        f"{hem_line}"
         f"Q {cx + hem_w:.1f} {hem_y:.1f} {cx + hem_w:.1f} {corner:.1f} "
         f"L {cx + top_w:.1f} {top_y:.1f} "
         f"Z"
@@ -3494,6 +3519,18 @@ def _skirt_path(
 # How far the underskirt hangs past the skirt's hem, as a fraction of the
 # hip-to-ankle span.
 _UNDERSKIRT_DROP = 0.13
+# The underskirt's hem sags rather than running flat, `ref/satoko-real.jpg`'s
+# own line. First guess here was a scallop per pleat, several small dips
+# across the hem; rendered against the reference it was visibly wrong, one
+# continuous shallow sag between the two side corners, not a row of teeth. Two
+# peaks is the whole shape then, the two points the corner curves already
+# land on, with one dip between them at `_UNDERSKIRT_SCALLOP_DIP` of the
+# hip-to-ankle span. Picked by eye off a render sweep the way
+# `_CROP_REAL_EAR_MARGIN` was: 0.018 read as barely there, 0.045 and 0.06
+# both sagged deep enough to look heavy against the pleats above it, 0.03
+# matched the reference's own depth.
+_UNDERSKIRT_SCALLOP = 2
+_UNDERSKIRT_SCALLOP_DIP = 0.03
 # How far down the apron hangs, as a share of the skirt's own drop from the
 # apron's top edge to the skirt's hem. A share rather than a fixed lift off that
 # hem, which is what the apron used to take: measured hip to ankle, the lift was
@@ -3516,7 +3553,14 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
     # of the canon: theirs has already narrowed toward the legs by then. It is
     # also what made the chibi's dark band under a wide hem read as a tray.
     hem_w = _skirt_half_w(sk, skirt_hem) * 0.86
-    d = _skirt_path(sk, sk.waist_y, hem_y, hem_w=hem_w)
+    # The wave only reads as cloth where the band under it is deep enough to
+    # hold a pleat line, the same cutoff the pleats below already use: on a
+    # chibi the visible strip is a few pixels, and waving a few-pixel line is
+    # noise, not a fold.
+    deep = hem_y - skirt_hem > _stroke_w(sk) * 4
+    scallop = _UNDERSKIRT_SCALLOP if deep else 0
+    dip = (sk.ankle_y - sk.hip_y) * _UNDERSKIRT_SCALLOP_DIP
+    d = _skirt_path(sk, sk.waist_y, hem_y, hem_w=hem_w, scallop=scallop, scallop_dip=dip)
     shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
     if not p.shaded:
         return shape
@@ -3527,7 +3571,9 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
     # Starting the band exactly where the panel turns under means it is the
     # panel's own hem cap, at the same width, so it cannot overhang.
     band_y = _skirt_corner_y(sk, hem_y)
-    band = _skirt_path(sk, band_y, hem_y, top_w=hem_w, hem_w=hem_w)
+    band = _skirt_path(
+        sk, band_y, hem_y, top_w=hem_w, hem_w=hem_w, scallop=scallop, scallop_dip=dip
+    )
     parts = [shape, f'<path d="{band}" fill="{shade(color)}" opacity="0.7" />']
     # Pleats, as lines rather than as tone, the same call the outer skirt's folds
     # got: the canon adult's underskirt is a pleated skirt and the vertical fold
@@ -3535,9 +3581,9 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
     # since nothing higher is ever seen, and they run to the band, not through it,
     # so the turn under the hem stays one unbroken edge.
     #
-    # Only where the band is deep enough to hold them. On a chibi the visible
-    # strip is a few pixels and a row of lines across it reads as a comb.
-    if hem_y - skirt_hem > _stroke_w(sk) * 4:
+    # Only where the band is deep enough to hold them (the same `deep` the wave
+    # above is gated on).
+    if deep:
         pleat_sw = max(1.0, _stroke_w(sk) * 0.45)
         for i in range(-3, 4):
             at = i / 3.5

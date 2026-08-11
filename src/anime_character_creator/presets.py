@@ -872,19 +872,26 @@ ROSTERS["satoshi"] = (
 
 # Which characters get a realistic-build render checked into `ref-out/real/`.
 #
-# The owner's call on 2026-08-08: "the real ones don't work so well so I suggest
-# we defer them, the chibis are where the music is at." So the chibi is the
-# build this project publishes, and the tall figures move to a subdirectory that
-# says what they are. The pair below are the two that were measured against
-# `ref/satoko-real.jpg` and `ref/satoshi-real.jpg`, so they are the only ones
-# whose realistic render was ever judged against anything.
+# The owner's call on 2026-08-08 was to defer the build entirely: "the real
+# ones don't work so well so I suggest we defer them, the chibis are where the
+# music is at." So the chibi became the build this project publishes, and the
+# tall figures moved to a subdirectory that says what they are, down to just
+# Satoko and Satoshi, the two ever measured against a reference
+# (`ref/satoko-real.jpg`, `ref/satoshi-real.jpg`).
 #
-# This is a **publishing** decision and it lives on its own rather than as a
-# field on `CharacterParams`, which is about who a character is. Nothing stops
-# `--build realistic` on any preset, and `BUILDS` is untouched: the direction of
-# the project is still to edge toward less deformed proportions, so the build
-# stays available and only the checked-in artifacts shrink.
-REALISTIC_REFS: tuple[str, ...] = ("satoko", "satoshi")
+# Reopened on 2026-08-11: the owner asked for every named character's
+# realistic render in `ref-out/real/`, not only the pair with a reference to
+# judge against. `tuple(PRESETS)` rather than a second hand-written list, the
+# same reasoning `ROSTERS["satoshi"]` already uses for not repeating `cast`:
+# a name typed twice is a name that drifts, and a new preset already lands in
+# `ref-out/` at chibi with no second step, so the realistic build should not
+# need one either.
+#
+# This is still a **publishing** decision and lives on its own rather than as
+# a field on `CharacterParams`, which is about who a character is. Nothing
+# stops `--build realistic` on any preset, and `BUILDS` is untouched: the
+# build itself was never deferred, only which renders of it were checked in.
+REALISTIC_REFS: tuple[str, ...] = tuple(PRESETS)
 
 
 # ---------------------------------------------------------------------------

@@ -13,7 +13,7 @@
 #
 #   ref-out/<name>.svg|png           the chibi, every character, transparent
 #   ref-out/on-white/<name>.png      the same, on white, for the README only
-#   ref-out/real/<name>.svg|png      the realistic build, deferred, a short list
+#   ref-out/real/<name>.svg|png      the realistic build, every character, not displayed
 #
 # The files at the top are the art itself and are transparent, which is what
 # makes them usable as they are. The copies under on-white/ exist only because
@@ -24,14 +24,17 @@
 # drawing, one paint behind it, and nothing outside the README should reach for
 # the on-white copies.
 #
-# real/ is a deferral, not an archive. The owner's call on 2026-08-08 was that
-# the tall figures do not work well enough to publish and the chibi is where the
-# project is, so they moved out of the top level and lost their on-white copies,
-# which existed only to be displayed. `presets.REALISTIC_REFS` is the short list
-# that still gets one; every other character is chibi-only here. Nothing about
-# the realistic *build* changed, and `--build realistic` still works on anything.
+# real/ is not what the README shows. The owner's call on 2026-08-08 was that
+# the tall figures did not work well enough to publish and the chibi is where
+# the project is, so they moved out of the top level and lost their on-white
+# copies, which existed only to be displayed; `presets.REALISTIC_REFS` was a
+# short list of two while that held. Reopened 2026-08-11: every named
+# character gets one now, `REALISTIC_REFS` is `tuple(PRESETS)`, so a new
+# preset lands here with no second step, the same as it already does at
+# chibi. What has not changed is the README table, still chibi-only; getting
+# a checked-in render is not the same decision as getting displayed.
 #
-# Characters come from `presets.PRESETS`, the realistic short list from
+# Characters come from `presets.PRESETS`, the realistic list from
 # `presets.REALISTIC_REFS` and builds from `skeleton.BUILDS`, all read out of the
 # installed package, so adding a character here is adding it there. Nothing about
 # the names below is baked in.
@@ -109,8 +112,8 @@ for build in $builds; do
     fi
 done
 
-# Every name on the short list has to be a character, or a typo there silently
-# drops a realistic render instead of failing.
+# Every name in the realistic list has to be a character, or a typo there
+# silently drops a realistic render instead of failing.
 for preset in $realistic; do
     case " $presets " in
         *" $preset "*) ;;
@@ -144,9 +147,9 @@ build_of=()
 rel_of=()
 for preset in $presets; do
     for build in $builds; do
-        # The chibi is published for everyone; the realistic build only for the
-        # short list. A character not on it simply has no tall render, which is
-        # the deferral rather than a gap.
+        # The chibi is published for everyone; the realistic build only for
+        # `REALISTIC_REFS`, currently everyone too, but the check stays in
+        # case a future preset is ever left off it on purpose.
         if [ "$build" != chibi ]; then
             case " $realistic " in
                 *" $preset "*) ;;

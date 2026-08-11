@@ -1241,6 +1241,84 @@ realistic build now properly frames his head the way the chibi build
 already did. Suggested order: item 1 above is a cheap side-quest;
 items 2 and 3 stay where the 2026-08-10 direction call put them.
 
+Items 2 and 3 above were picked back up the same day, on the owner's
+go-ahead. One of the two halves of item 2 turned out not to be work at
+all.
+
+**Retracted rather than built: Satoshi's rolled sleeve cuff.** Gap 8
+names it, but this file's own "Style canon" section already settled
+the question on 2026-08-07: the rolled forearm cuff "appears only in
+the satoshi pair, whose style is not the target, so it stays out," the
+same call that keeps his references to his haircut, trousers and belt
+buckle and nothing else about his design. Gap 8 either predates that
+call or missed it. Drawing the cuff would mean reopening a decision
+already on the record rather than closing a gap, so it is not built;
+this half of item 2 is struck rather than done.
+
+**Satoko's skirt tiering, built, and the first reading of the
+reference was wrong.** The first attempt scalloped the underskirt's
+hem into a small dip under each pleat, several teeth across the whole
+width. Rendered against `ref/satoko-real.jpg` rather than trusted by
+eye off the crop alone, that was visibly the wrong shape: the
+reference's hem is one continuous shallow sag between its two rounded
+corners, not a row of scallops, the fabric dipping once in the middle
+the way a hem actually settles under its own weight. `_skirt_path`
+grew a `scallop`/`scallop_dip` pair (0 keeps every existing caller's
+flat line, unchanged silhouette everywhere but `_underskirt`), and
+`_underskirt` calls it with two peaks, the same two points the
+existing corner curves already land on, and one dip between them.
+Depth is `_UNDERSKIRT_SCALLOP_DIP`, picked off a render sweep the same
+way `_CROP_REAL_EAR_MARGIN` was: 0.018 of the hip-to-ankle span barely
+read as a fold, 0.045 and 0.06 sagged deep enough to look heavy under
+the pleat lines above it, 0.03 matched the reference's own depth.
+Gated on the same `hem_y - skirt_hem > stroke*4` check the pleat lines
+already use, so it only shows where the band is deep enough to hold a
+wave and the chibi, where that band is a few-pixel sliver, is
+untouched: `./refresh-ref-out.sh --check` came back changed only for
+`real/satoko`, the one skirt-wearing preset the byte check tracks.
+Checked directly on Chiyo (also skirt-plus-underskirt) at the
+realistic build too, since nothing pins her render byte for byte;
+reads the same. Keiko's skirt shares the code path but is worn under a
+full-length coat that hides it at every build, so there was nothing to
+check by eye there.
+
+**Reika's hakama, checked and kept as-is.** Rendered at the realistic
+build and read at 3x zoom right at the hem-to-boot boundary, the exact
+test this file's own note called for: a collision would cross the two
+outlines mid-shape and leave a notch or an X, and this does not, the
+hem's own rounded corner simply runs down to the boot's own top edge
+in one unbroken line, both boots reading as tucked under the hem
+rather than fought with it. That is drape, not a defect, so
+`hakama_length` is untouched; the earlier finding (hem meets boot with
+zero leg showing) stands as a description, not as a bug report.
+
+Net for this second pass: item 2 splits into one retraction (the
+Satoshi cuff, contradicted by a standing call rather than open) and
+one real fix (Satoko's underskirt hem), and item 3 closes as checked,
+kept as-is, the same shape as item 1's scale check. Nothing here
+touches the chibi: `./refresh-ref-out.sh --check` differs only in
+`real/satoko`.
+
+**All fourteen now have a realistic render checked in, the owner's
+call the same day.** `presets.REALISTIC_REFS` was a short list of two,
+Satoko and Satoshi, the only pair ever measured against a reference;
+it is `tuple(PRESETS)` now, so a new preset gets a `ref-out/real/`
+render the same way it already gets a chibi one, with no second list
+to remember. `./refresh-ref-out.sh` wrote the twelve new files
+(`daizen`, `elara`, `haruto`, `keiko`, `krista`, `kyoko`, `reika`,
+`reinhard`, `tenno`, `tomohiro`, `viktor`, and `chiyo`); Satoko and
+Satoshi's own `real/` renders were untouched, since nothing about their
+shapes changed here. Looked at each of the twelve by eye rather than
+just trusting the smoke test: nothing broken, no clipped canvas edge,
+no crossed outline. This is a publishing change, not a judgment: the
+other twelve have not been measured against anything, `ref/` has no
+realistic-build reference for any of them, and the README keeps showing
+the chibi only. Updated everywhere else this tuple was described as a
+short list: `refresh-ref-out.sh`'s own comments, `README.md`,
+`docs/api.md`, `docs/web-gui-plan.md`, and a follow-up note in
+`docs/character-roster-plan.md`'s decision log rather than rewriting
+its 2026-08-08 entry.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

@@ -270,9 +270,11 @@ a toggle, never a continuous slider.
 
 Related: `refresh-ref-out.sh` records that the tall figures moved out of
 the top level on 2026-08-08 because the owner's call was that they do
-not work well enough to publish, and `presets.REALISTIC_REFS` is down to
-Satoko and Satoshi. That ruling was about the README, and whether it
-also governs the web tool is one of the open questions below.
+not work well enough to publish. `presets.REALISTIC_REFS` went back to
+every character on 2026-08-11, but that only means all fourteen get a
+checked-in `ref-out/real/` render, not that they are displayed anywhere;
+the README ruling was about the README specifically, and whether it also
+governs the web tool is still one of the open questions below.
 
 **Length floats can be sliders that visibly do nothing.**
 `harness/hem/pullback.py` documents that `_skirt_hem_y` blends the

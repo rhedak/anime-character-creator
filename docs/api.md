@@ -210,16 +210,23 @@ supposed to stay the same underneath.
 ## REALISTIC_REFS
 
 Which characters get a realistic-build render checked into
-`ref-out/real/`. A tuple of preset names, currently `("satoko",
-"satoshi")`.
+`ref-out/real/`. A tuple of preset names, `tuple(PRESETS)`, so every
+character named there gets one automatically.
 
 The chibi is the build this project publishes; the tall figures were
-deferred on 2026-08-08 because they do not work well enough yet. This is
-a **publishing** decision, so it lives on its own rather than as a field
-on `CharacterParams`, which is about who a character is. `BUILDS` is
-untouched and `--build realistic` still works on anything; what shrank is
-the set of committed artifacts. `refresh-ref-out.sh` reads this name out
-of the package, the way it reads `PRESETS` and `BUILDS`.
+deferred from the README on 2026-08-08 because they did not work well
+enough yet, and `REALISTIC_REFS` shrank to just Satoko and Satoshi, the
+two ever measured against a reference. Reopened 2026-08-11: the owner
+asked for every character's realistic render checked in, not only the
+pair with a reference to judge against, so the tuple grew back to match
+`PRESETS`. Neither change touches the README, which still shows the
+chibi only; a checked-in `real/` render and a displayed one are separate
+decisions. This is still a **publishing** decision, so it lives on its
+own rather than as a field on `CharacterParams`, which is about who a
+character is. `BUILDS` is untouched and `--build realistic` still works
+on anything; what moved is the set of committed artifacts.
+`refresh-ref-out.sh` reads this name out of the package, the way it
+reads `PRESETS` and `BUILDS`.
 
 ## EXPRESSIONS and Expression
 
