@@ -1494,44 +1494,56 @@ _CROP_REAL_EDGE: list[Segment] = [
 # (right); `_CROP_REAL_START` is the left tuft's own tip, pushed the same
 # way.
 #
-# Pushing every point in those ranges the same amount overshot: a few of
-# them, at the same height as the ear itself (`_EAR_TOP_Y` to
-# `_EAR_BOT_Y`), moved from inside the ear's own outline, correctly
-# leaving it visible, to past it, so the pushed hair and the ear fought
-# over the same few pixels there. That turned out to be one case of a
-# wider problem, not unique to the push: `_ears` draws only the sliver
+# Pushing every point in those ranges the same amount overshot in one
+# direction and undershot in another. `_ears` draws only the sliver
 # standing clear of the skull, from the skull's own edge out to
-# `_EAR_OUT` past it, and only within that same height band. Checked
+# `_EAR_OUT` past it, within `_EAR_TOP_Y` to `_EAR_BOT_Y`; checked
 # directly at the realistic build, the only build this trace ever runs
-# at, that sliver spans about `_CROP_REAL_EAR_X` in head radii. Several
-# of the mass's own points, not only the pushed ones, land inside that
-# exact strip at that exact height (the pre-existing zigzag right above
-# the ear included), so the hair's own outline and the ear's outline were
-# both drawing into the same few pixels regardless of the push, which is
-# the tangle the owner flagged rather than a clean ear in a clean window
-# the way the canon draws it and the way `_crop_hairline_shape` already
-# gives the fringe higher up ("the front hair stops above the ear on
-# purpose"). Any such point retreats to the skull's own edge instead,
-# computed directly with `_head_edge_x` rather than a guessed margin,
-# ceding the strip to the ear. Points at ear height but already outside
-# that strip, on either side of it, are untouched: retreating them too
-# would pull in hair that was never competing with the ear to begin with.
+# at, that sliver spans about `_CROP_REAL_EAR_X` in head radii. A first
+# pass read the tangle at that height as hair and ear fighting over the
+# same pixels and pulled the hair back to the skull's own edge there,
+# which cleared the tangle but was the wrong read of the reference: the
+# canon does not leave the ear in a clean skin-only window, it runs the
+# hair on past the ear, behind it, and the ear sits in front of that,
+# poking out of a continuous mass rather than out of a gap in one. Pulled
+# back to the skull, the mass could not do that, and read as thinner at
+# the ear than anywhere else on the tuft instead of continuous through
+# it. So at ear height the mass now pushes *out*, past the ear's own
+# outer edge with a margin (`_CROP_REAL_EAR_MARGIN`, picked by rendering
+# 0 to 0.2 and reading the results, not calculated), rather than back to
+# the skull: far enough that the ear's own fill fully covers the seam
+# between them, so the ear reads as sitting on top of the hair instead of
+# next to a gap in it. Everywhere else in the two ranges the push is
+# still the simple outward scale.
 _CROP_REAL_SIDEBURN_PUSH = 1.3
 # -1 stands for `_CROP_REAL_START` itself, the left tuft's own tip.
 _CROP_REAL_SIDEBURN_L = range(-1, 8)
 _CROP_REAL_SIDEBURN_R = range(32, 42)
 _CROP_REAL_EAR_X = (0.717, 0.967)
+_CROP_REAL_EAR_MARGIN = 0.1
+# The push to the floor is a big jump for a point that was not already
+# close to it, and applying it only exactly within `_EAR_TOP_Y`/
+# `_EAR_BOT_Y` left one such jump right at the boundary on the right
+# side: the last unpushed point above the ear stood at 0.886, the first
+# pushed one immediately below it at 1.072, and that one segment's own
+# curve folded back on itself, which is a self-crossing path, not a
+# rounding error, and left a small hole of bare canvas exactly at the
+# fold. `_CROP_REAL_EAR_BUFFER` extends the floor a little above and
+# below the ear's own height, so the point that used to make that jump
+# now gets pushed too and the step disappears; picked as the smallest
+# buffer that rendered with no such hole on either side, checked at 4x.
+_CROP_REAL_EAR_BUFFER = 0.1
 
 
 def _crop_real_point(i: int, pt: Point) -> Point:
     """A point from `_CROP_REAL_EDGE` (or `_CROP_REAL_START` at `i=-1`), at
     render size."""
     x, y = pt
-    at_ear_height = _EAR_TOP_Y <= y <= _EAR_BOT_Y
-    if at_ear_height and _CROP_REAL_EAR_X[0] <= abs(x) <= _CROP_REAL_EAR_X[1]:
-        edge_x = _head_edge_x(y, 1.0)
-        x = math.copysign(min(abs(x), edge_x), x)
-    elif not at_ear_height and (i in _CROP_REAL_SIDEBURN_L or i in _CROP_REAL_SIDEBURN_R):
+    at_ear_height = _EAR_TOP_Y - _CROP_REAL_EAR_BUFFER <= y <= _EAR_BOT_Y + _CROP_REAL_EAR_BUFFER
+    if at_ear_height:
+        floor = _CROP_REAL_EAR_X[1] + _CROP_REAL_EAR_MARGIN
+        x = math.copysign(max(abs(x), floor), x)
+    elif i in _CROP_REAL_SIDEBURN_L or i in _CROP_REAL_SIDEBURN_R:
         x = x * _CROP_REAL_SIDEBURN_PUSH
     return _scale_point((x, y), _CROP_REAL_SCALE)
 

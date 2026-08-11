@@ -1180,6 +1180,40 @@ further cleanup here is re-trace territory (a coarser or re-seeded pass
 specifically over the ear-height band), not another point-by-point
 patch.
 
+**That retreat was the wrong read of the reference, per the owner.**
+`ref/satoshi-real.jpg` does not leave the ear in a clean skin-only
+window; the hair runs on past it, behind it, and the ear sits in front
+of that, poking out of a continuous mass rather than out of a gap in
+one. Retreating the mass to the skull's edge at ear height fixed the
+tangle by removing the hair that should have been there instead of by
+fixing how it met the ear. `_crop_real_point` now pushes *out* at ear
+height instead of back in, past the ear's own outer edge with a margin
+(`_CROP_REAL_EAR_MARGIN = 0.1`, picked by rendering 0 to 0.2 and reading
+the results the same way `_CROP_REAL_SIDEBURN_PUSH` was) so the ear's
+own fill fully covers the seam between them rather than the two outlines
+meeting at it. Confirmed at 4x on both sides and at full figure size:
+hair now runs continuously behind the ear the way the reference does,
+the ear still reads as its own shape in front of it, and the earlier
+"clean gap" version's thin-at-the-ear look is gone.
+
+**One side of that push left a real hole, caught by the owner on
+Satoshi's own left ear specifically.** Pushing to the floor only exactly
+within `_EAR_TOP_Y`/`_EAR_BOT_Y` left a sharp step at the boundary
+wherever the last point outside it was not already close to the floor:
+on that side
+the last unpushed point stood at 0.886, the first pushed one right after
+it at 1.072, and that single segment's curve folded back on itself
+rather than bulging smoothly, a self-crossing path rather than a
+rounding error, and left a small triangle of bare canvas exactly at the
+fold, easy to miss at a glance since it sits inside the hair mass rather
+than on its outer silhouette. The other side had no visible hole only
+because its own last unpushed point happened to already sit close to the
+floor, not because the underlying logic was any safer there.
+`_CROP_REAL_EAR_BUFFER` extends the floor a little above and below the
+ear's own height, so the point that used to make the jump gets pushed
+too and the step disappears on both sides; picked as the smallest buffer
+that rendered with no such hole on either side, checked at 4x.
+
 What is still open, ranked:
 
 1. **Checked, kept as-is: `_LONG_REAL_SCALE=1.2`.** At a tight 3x head
