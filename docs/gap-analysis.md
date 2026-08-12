@@ -881,6 +881,91 @@ residual against his own reference rather than a second per-character
 knob, on the owner's explicit steer toward Satoko's eyes rather than an
 average of the two. `iris_size` and `eye_dx` are untouched, per gap 6.
 
+### 11. What gap 10 left in the realistic eye: spacing, and the iris riding on the aspect
+
+**2026-08-12, analysis only, realistic build, both characters.** Gap 10's
+aperture-width fix shipped and holds up: Satoko's aspect now reads 1.60
+against her own 1.60, computed from the emitted path rather than ink.
+Measuring what is left, the same way, ranked by how much of the
+remaining "not quite it" impression each carries:
+
+| | Satoko ref | Satoko ours | Satoshi ref | Satoshi ours |
+| --- | --- | --- | --- | --- |
+| aperture aspect (w/h) | 1.60 | 1.60 | 1.43 | 1.71 |
+| iris / aperture height | 0.72 | 0.72 | 0.75 | 0.72 |
+| iris / aperture width | 0.50 | 0.45 | 0.53 | 0.42 |
+| eye_dx / aperture width | 0.82 | 1.12 | 0.88 | 1.13 |
+
+**Measured: eye spacing is the biggest single number here, and it is
+new.** `eye_dx` is not build-gated, so it carries the chibi's own
+canon-derived `r * 0.46` (gap 6) into the realistic build unchanged. As
+a ratio to the eye's own width, scale-free so it needs no cross-image
+assumption, ours comes out 30% to 37% bigger than either reference: the
+skin between the two eyes reads wider than either photo, visible
+directly on the full-face strips already in `out/eyegap/` (not checked
+in). This is the same shape of gap gap 10 closed for width: a chibi-era
+constant riding unchanged into a build it was never measured against.
+
+**Measured: the iris fills its own aperture's height almost exactly
+right, on both characters, and that is not the source of the "iris
+looks small" read.** Satoko's is exact (0.72 against 0.72); Satoshi's
+is 4% under. What actually drives the visible gap is width, and for
+Satoshi that traces entirely to the aspect residual gap 10 already
+named and left alone on purpose (his own reference wants 1.43, not
+1.60): `(iris/height) / aspect` predicts his iris/width almost exactly
+(0.72/1.71 = 0.42, measured 0.42), so this is gap 10's known residual
+showing up a second way, not a new gap. Satoko's own width shortfall
+(0.50 against 0.45) is smaller and does not have the same clean
+explanation, since her aspect already matches; it may just be that her
+reference's iris is a few pixels wider than tall (measured 20x18, not
+circular) against a `<circle>` that can only ever be round. Too small a
+number on too small a feature to call either way without a better
+reference read than a 20x18px crop allows.
+
+**Closed, the owner's call on 2026-08-12, together with the corner and
+the spacing below: "the reference's eyes look warm and sharp, ours look
+dead and boring."** The pupil ratio was seen but not confirmed to a
+number in this entry's first pass, on a 2-3px call on a 21px feature,
+the same size as the uncertainty itself; asked to act on the qualitative
+read anyway. `_eye()` grew a `pupil_ratio` parameter (default 0.40,
+matching the old literal), and `_face` now passes
+`0.40 + _PUPIL_REALISTIC_GROW * sk.build`, `_PUPIL_REALISTIC_GROW = 0.10`,
+landing on 0.50 at full build, picked by render sweep against
+`ref/satoko-real.jpg` rather than the noisy pixel count: 0.50 read
+closest, 0.55 and 0.60 started to dominate the iris more than the
+reference does. Global and not per-character as flagged, so every
+preset's realistic build gets the bigger pupil; build-gated the same as
+everything else here, so chibi keeps its own.
+
+**Closed, same decision: the canon's outer corner reads sharper than
+ours, and now it is measured against something.** `reach = 0.55 *
+eye_corner` in `_eye_shape` controls it; doubled at full build
+(`eye_corner * (1.0 + 1.0 * sk.build)`), landing Satoko's 0.45 at 0.90.
+Picked by render sweep against her reference: past about 1.0 the corner
+reads as a point rather than a corner. Satoshi's own reference is
+rounder than hers (his 1.4 aspect against her 1.6, already the aspect
+residual gap 10 left), so his doubled corner (1.00) overshoots his own
+photo a little, the same anchored-to-Satoko tradeoff as everywhere else
+in this pass, not a new decision.
+
+**Closed: `eye_dx` narrowed at the realistic build, the same shape as
+gap 10's own width fix, and the same reopening of gap 6's deliberate
+chibi call.** `r * 0.46` (unchanged, still gap 6's canon measurement for
+the chibi) now carries `* (1.0 - 0.27 * sk.build)`, landing on Satoko's
+own measured eye_dx-to-aperture-width ratio (0.82 against our 1.12
+before this). Confirmed by full-face overlay, not the ratio alone, after
+gap 10's own lesson about trusting a ratio without looking: 0.27 reads
+as the reference's spacing without crossing into a crowded look at
+higher reductions tried in the same sweep (0.35 started to).
+
+All three checked across the full roster at the realistic build, not
+only the two with a reference: no collision with Keiko's glasses,
+Daizen's or Reinhard's beards, or either scar mark. Chibi confirmed
+sub-pixel for all three, the same `sk.build = 0.1, not 0` situation
+every build-gated fix in this file already lives with.
+`./refresh-ref-out.sh` and `./refresh-bases.sh` both ran; ruff and
+`pytest -q` (346 passed) green.
+
 ## Suggested order
 
 1. ~~Gap 4 (reshape the shadow wedges, or ask about dropping the garment
@@ -923,3 +1008,11 @@ order, which makes them good filler work between the larger passes.
    build-gated `eye_width` reduction, matched to `ref/satoko-real.jpg` by
    the owner's pick between the two references. The iris residual this
    gap named stands on Satoshi only, against his own photo, not acted on.
+10. ~~Gap 11 (eye spacing, corner sharpness, pupil size)~~. **Done,
+    2026-08-12**, all three the same day found: `eye_dx` narrowed and
+    `eye_corner` doubled at the realistic build, both matched to
+    `ref/satoko-real.jpg`, and `_eye()`'s pupil ratio grown the same way,
+    global rather than per-character. The owner's framing going in was
+    "the reference's eyes look warm and sharp, ours look dead and
+    boring," which these three were judged against by eye as well as by
+    number.

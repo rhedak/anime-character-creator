@@ -1391,6 +1391,133 @@ chibi strip: reads as one even line around the aperture rather than a
 thick brow-like arc over a thinner rim. `./refresh-ref-out.sh` and
 `./refresh-bases.sh` both ran again; ruff and `pytest -q` green.
 
+**Asked next to match `out/real/satoko.png`'s mouth and nose to
+`ref/satoko-real.jpg`, done the same day.** Applied the lesson from the
+eye-width mistake immediately rather than after a wrong first shot: read
+both features off the reference at the same head-radius scale the eye
+fixes validated, from the emitted path/formula rather than off a raster,
+and checked full-face before touching anything.
+
+The mouth's *position* needed nothing: the first pass forgot to subtract
+the reference photo's own top margin before dividing by figure height
+(the exact `PITFALLS.md` mistake this file already had written down),
+which made `mouth_y` and the nose's `nose_y` look 15-20% too high on the
+face. Redone with the figure's actual ink top (36px, giving H = 1112,
+matching the tool's own number), both landed within 2% of the
+reference, already correct, unchanged.
+
+Width was real. The mouth measured about 0.334 head radii across on the
+reference against our own 0.18 (`0.12 * mouth_width * 2` at Satoko's
+0.75), a 1.86x gap. `_MOUTH_REALISTIC_WIDEN = 0.85` widens it at higher
+`sk.build` the same way the eye's width reduction narrows the aperture,
+landing at 1.85x at full realistic build and left alone at chibi
+(`0.12 * mouth_width` is a per-character value already, never measured
+against a reference at chibi, which stays locked in). Checked the chibi
+delta directly rather than assumed: 2px wider on a ~1000px canvas,
+smaller than the eye fix's own accepted sub-pixel move.
+
+The nose was a different construction, not just a size gap. The old
+single stroke, "leaning off to one side," turned out not to be a
+simplification of the canon's nose so much as half of a different one:
+`ref/satoko-real.jpg` draws a nostril shadow as two short mirrored
+marks, each angling down from an outer point near the brow line to an
+inner point just short of centre, close to touching but not quite.
+Rebuilt as two strokes instead of one, measured off the reference the
+same way (outer end 0.094 r from centre, inner end 0.028 r, 0.033 r
+drop). Both changes are shared across every preset, since neither the
+mouth stroke nor the nose was ever per-character beyond `mouth_width`
+and both are already build-gated (the nose only drew past `sk.build >
+0.5` to begin with); checked Daizen and Reinhard's moustaches, which
+cover this part of the face entirely and read unchanged, and the rest
+of the roster on a realistic-build strip: no collision, no clipping.
+`./refresh-ref-out.sh` and `./refresh-bases.sh` both ran; ruff and
+`pytest -q` (346 passed) green.
+
+**Followed immediately by: the owner's eye caught that position still
+needed work, after this file had just called it close.** The mouth's
+position had been read as already correct via mouth_y as a fraction of
+figure height H, which turned out to be the wrong normalisation for a
+facial feature: H includes hair and body, and this reference's hair
+height as a fraction of H does not match ours, so a mouth that lands at
+the right H-fraction can still sit wrong relative to the skull actually
+drawn under it. Re-derived as a fraction of the eye-to-chin span
+instead, using only landmarks read off the same image on each side (no
+cross-image scale assumption): that framing needed a chin position, and
+the chin did not have one stable reading to give it, tried three times.
+The jaw's outline on this reference is open at the bottom centre, skin
+tone running straight into the neck with no line between them, and each
+attempt to find a "chin" instead found something else: the collar's own
+V-neck (a true taper to a single pixel, the tell this file's own
+`PITFALLS.md` already names), then a point 27px lower down the neck
+past where the jaw actually ends. Abandoned the arithmetic and picked
+both `_MOUTH_REALISTIC_DROP` and `_NOSE_REALISTIC_DROP` (0.18 each, same
+value so their already-correct spacing from each other does not change)
+by a render sweep against the reference at matched scale instead,
+`_face()` call-site additions again, `_MOUTH_Y` and the nose's own
+`0.36` untouched.
+
+That surfaced a real collision the width and shape changes had not: the
+beard's own mouth-hole ellipse (`_beard`, skin-toned, cut into the fur to
+show the lip) reads `_MOUTH_Y` directly, so once the actual mouth stroke
+moved out from under it at the realistic build, Daizen and Reinhard
+rendered with a stray dark line inside the fur below an empty hole.
+Fixed by moving the hole's own `cy` by the same `_MOUTH_REALISTIC_DROP`;
+its width already cleared the mouth's realistic-build widening without
+needing the same treatment. Caught by rendering and looking directly at
+the mouth region on both bearded presets, not by the smoke tests, which
+have no assertion that would have caught two shapes drifting apart like
+this. Confirmed the chibi move is small (3px on a ~970px canvas, the
+nose untouched there since it never draws below `sk.build > 0.5`),
+re-checked the full roster on a wider strip after the beard fix, and
+`./refresh-ref-out.sh` / `./refresh-bases.sh` / ruff / `pytest -q` (346
+passed) all green again.
+
+**Asked for a gap analysis of the eyes specifically, which became gap
+11, then asked to act on all three of its findings the same day: "the
+reference's eyes look warm and sharp, ours look dead and boring."**
+Landed as three build-gated changes, each picked by render sweep
+against `ref/satoko-real.jpg` rather than solved from a ratio alone,
+gap 10's own lesson.
+
+1. **Eye spacing.** `eye_dx` (`r * 0.46`, gap 6's own chibi canon
+   measurement, never build-gated) now carries `* (1.0 - 0.27 *
+   sk.build)`, landing on Satoko's measured eye_dx-to-aperture-width
+   ratio. Reopens gap 6's chibi call the same way gap 10's width fix
+   reopened the aspect reading; the owner's explicit go-ahead this time
+   covered it directly.
+2. **Corner sharpness.** `eye_corner` doubles at full build
+   (`* (1.0 + 1.0 * sk.build)`), landing Satoko's 0.45 at 0.90; past
+   about 1.0 in the sweep it read as a point rather than a corner.
+   Satoshi's own reference is rounder than hers, so his doubled value
+   overshoots his own photo a little, the same anchored-to-Satoko
+   tradeoff as the width fix, not a new one.
+3. **Pupil size.** `_eye()` grew a `pupil_ratio` parameter (default
+   0.40, the old literal, so every other caller is unaffected) and
+   `_face` passes `0.40 + _PUPIL_REALISTIC_GROW * sk.build`,
+   `_PUPIL_REALISTIC_GROW = 0.10`. This one is global, not
+   per-character, the one place in this pass where a fix touches every
+   preset's eye construction rather than riding a value that was
+   already per-character or already build-local.
+
+All three checked full-face against both references, not just tight
+eye crops (gap 10's other lesson), and across the whole roster at the
+realistic build: no collision with Keiko's glasses, Daizen's or
+Reinhard's beards, or either scar mark. Chibi confirmed sub-pixel for
+all three. `./refresh-ref-out.sh` and `./refresh-bases.sh` both ran;
+ruff and `pytest -q` (346 passed) green.
+
+**Then asked, the same day, to break from the reference on purpose:
+slightly bigger eyes.** Not a gap-analysis item, since there is no
+reference number to chase when the owner's own taste is the target.
+`eye_r`'s realistic-build shrink went from 0.22 to 0.12 (`r * 0.26 * (1.0
+- 0.12 * sk.build) * f.eye_size`, was `0.22`), picked by render sweep
+(0.22 down to 0.00) for "slightly larger" without the two eyes crowding
+each other or the brow. Checked the same way as everything else in this
+pass: full-face against both references (still visibly close to them,
+just a size step past what either draws), the whole roster for
+collisions, chibi delta under half a pixel. `./refresh-ref-out.sh` and
+`./refresh-bases.sh` ran; ruff and `pytest -q` (346 passed) green.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

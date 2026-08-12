@@ -2843,6 +2843,41 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
 # written and silently stops agreeing the first time the mouth moves.
 _MOUTH_Y = 0.55
 
+# How much wider the mouth gets at the realistic build, on top of
+# `mouth_width`'s own per-character value. Measured off `ref/satoko-real.jpg`
+# at the same head-radius scale the eye fixes validated: about 0.334 r across
+# against our own 0.18 r (`0.12 * mouth_width * 2` at Satoko's 0.75), a 1.86x
+# gap. Build-gated rather than folded into the shared `0.12` or into
+# `mouth_width` itself, the same call as the eye aperture's width: the mouth
+# was never measured against a reference at chibi, which is locked in, so
+# this only widens it at builds partway or all the way to realistic.
+_MOUTH_REALISTIC_WIDEN = 0.85
+
+# How much further down the mouth sits at the realistic build, in head radii,
+# on top of `_MOUTH_Y`. Added at the call site rather than folded into
+# `_MOUTH_Y` itself, which the beard also reads (`corner_y`, the moustache
+# lozenge, `_jaw_track`); moving that would drag Daizen's and Reinhard's
+# beard geometry at both builds along with it.
+#
+# Picked by a render sweep against `ref/satoko-real.jpg` rather than solved
+# from a measured chin position: the chin turned out not to have one stable
+# reading to solve against. The jaw's own outline is open at the bottom
+# centre on this reference, skin-toned all the way into the neck with no
+# line between them, and depending on where the scan stopped it read as
+# 0.226 r above "the chin" in one pass and 0.508 r above it in another, from
+# the same image. Full-face comparisons at matched scale settle it instead:
+# 0.18 lands the mouth and nose where the reference has them relative to
+# the jaw actually visible in frame, without the two crowding each other.
+_MOUTH_REALISTIC_DROP = 0.18
+
+# How much further down the nose sits at the realistic build, in head radii,
+# on top of its own `0.36`. Local to the nose, and already build-gated by
+# `sk.build > 0.5`, so no shared constant is at risk the way `_MOUTH_Y` is.
+# Same value and the same reasoning as `_MOUTH_REALISTIC_DROP`: dropping
+# both by the same amount is also what keeps the gap between them, already
+# correct, from changing.
+_NOSE_REALISTIC_DROP = 0.18
+
 # Where the beard's mass meets the face at the sides, and how far inside the
 # skull's edge it lands there. Named constants rather than literals so a sweep
 # can try candidates without editing the drawing code; see `harness/beard/`.
@@ -3078,9 +3113,18 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # Both radii ride `mouth_width`, so the lozenge stays the same shape on a
     # character with a small mouth instead of turning into a different lozenge.
     lip = 0.12 * p.face.mouth_width
+    # `cy` here has to track `_face`'s own `mouth_y`, which drops further at
+    # the realistic build than `_MOUTH_Y` alone (`_MOUTH_REALISTIC_DROP`):
+    # left at plain `_MOUTH_Y`, the actual mouth stroke drawn on top of this
+    # moved out from under the hole meant to frame it and rendered as a
+    # stray line inside the fur below the lip, on both bearded presets. The
+    # lozenge's own width already clears the mouth's realistic-build widening
+    # without needing the same treatment (`_BEARD_LIP_W` at 2.3 against the
+    # mouth's own worst case of `mouth_width * 1.85`).
+    lip_y = cy + (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.build) * r
     return (
         f"{mass}"
-        f'<ellipse cx="{cx:.1f}" cy="{cy + _MOUTH_Y * r:.1f}" '
+        f'<ellipse cx="{cx:.1f}" cy="{lip_y:.1f}" '
         f'rx="{lip * _BEARD_LIP_W * r:.1f}" ry="{lip * _BEARD_LIP_H * r:.1f}" '
         f'fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{sw * 0.4:.1f}" />'
     )
@@ -5058,6 +5102,15 @@ _EYE_ASPECT = 1.28
 # weight of line now.
 _EYE_OUTLINE_W = 0.85
 
+# How much bigger the pupil gets, as a fraction of the iris radius, at the
+# realistic build, on top of `_eye()`'s own default of 0.40. Global rather
+# than per-character or a `FaceStyle` field, since gap 11 read this as a
+# house-wide construction choice, not something either preset's own numbers
+# ever varied; build-gated the same way everything else in this pass is, so
+# the chibi's own pupil is untouched. Picked by render sweep against
+# `ref/satoko-real.jpg`.
+_PUPIL_REALISTIC_GROW = 0.10
+
 
 def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tuple[str, str]:
     """Eye aperture as a closed almond, plus its upper lid on its own so the
@@ -5099,7 +5152,14 @@ def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tupl
 
 
 def _eye(
-    ex: float, ey: float, er: float, side: int, f: FaceStyle, eye_color: str, sw: float
+    ex: float,
+    ey: float,
+    er: float,
+    side: int,
+    f: FaceStyle,
+    eye_color: str,
+    sw: float,
+    pupil_ratio: float = 0.40,
 ) -> str:
     d, lid = _eye_shape(ex, ey, er, side, f)
     clip_id = f"eye-{'l' if side < 0 else 'r'}"
@@ -5134,7 +5194,7 @@ def _eye(
         f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{eye_color}" />'
     )
     parts.append(
-        f'<circle cx="{ex:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * 0.40:.1f}" '
+        f'<circle cx="{ex:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * pupil_ratio:.1f}" '
         f'fill="{shade(eye_color, 0.18)}" />'
     )
     parts.append(
@@ -5246,6 +5306,20 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
             # way gap 8 leaves per-character residuals against the shared
             # Satoko-anchored silhouette elsewhere.
             eye_width=f.eye_width * (1.0 - 0.21 * sk.build),
+            # The canon's outer corner comes to a real point; ours rounded
+            # off well short of it (gap 11, seen but not measured there).
+            # `reach = 0.55 * eye_corner` in `_eye_shape` is what controls
+            # it, so doubling `eye_corner` at full build doubles how far
+            # the control point slides toward the apex/base, which is what
+            # sliding it does: 0 sits it on the corner (round), further
+            # along leaves the corner shallower (pointed). Picked by
+            # render sweep against `ref/satoko-real.jpg`: 0.45 doubled to
+            # 0.90 matches her corner; past about 1.0 it starts reading as
+            # a point rather than a corner. Satoshi's own reference is
+            # rounder than hers (his measured aspect is 1.4 against her
+            # 1.6), so this is the same anchored-to-Satoko tradeoff gap 10
+            # already made for width, not a new decision.
+            eye_corner=f.eye_corner * (1.0 + 1.0 * sk.build),
         )
     # Canon face geometry, shared by every character; what differs per
     # character stays in FaceStyle. Eyes sit below the head's centre line and
@@ -5254,9 +5328,25 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     # as the build climbs: the canon draws the realistic iris about a quarter
     # smaller against the head than the chibi's, which is how an adult face
     # avoids going saucer-eyed while the chibi stays big-eyed.
+    #
+    # The 0.46 itself is gap 6's own canon measurement for the chibi, kept
+    # exactly as it was there; narrowed only at higher `sk.build` rather
+    # than changed outright, the same shape of fix as `eye_width` above.
+    # Measured off `ref/satoko-real.jpg` as a ratio to the eye's own
+    # (already-corrected) aperture width, scale-free so no cross-image
+    # assumption is needed: hers comes to 0.82 against our 1.12 before this,
+    # a 27% reduction to land on it, confirmed by full-face overlay rather
+    # than trusted from the ratio alone (gap 11).
     eye_y = cy + r * 0.16
-    eye_dx = r * 0.46
-    eye_r = r * 0.26 * (1.0 - 0.22 * sk.build) * f.eye_size
+    eye_dx = r * 0.46 * (1.0 - 0.27 * sk.build)
+    # Was 0.22 (this comment's own history, above). Not a reference match:
+    # the owner's call on 2026-08-12 was bigger eyes than either photo
+    # draws, after the rest of gap 11 landed, so there was no ratio to
+    # solve for here, only a render sweep (0.22 down to 0.00) picked by eye
+    # for "slightly larger" without crowding the brow or the two eyes into
+    # each other. 0.12 still shrinks the realistic eye from the chibi's
+    # own size, just by less than before.
+    eye_r = r * 0.26 * (1.0 - 0.12 * sk.build) * f.eye_size
     return eye_dx, eye_y, eye_r, f
 
 
@@ -5270,6 +5360,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     # 0.45 rather than a softer tint because the brows are what carry
     # expression now the eyes stay open: too faint and the face goes blank.
     brow_color = shade(p.hair_color, 0.45)
+    pupil_ratio = 0.40 + _PUPIL_REALISTIC_GROW * sk.build
     parts = []
 
     for side in (-1, 1):
@@ -5284,22 +5375,38 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             f'x2="{ex + side * eye_r:.1f}" y2="{brow_y - tilt:.1f}" '
             f'stroke="{brow_color}" stroke-width="{sw * f.brow_weight:.1f}" stroke-linecap="round" />'
         )
-        parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw))
+        parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio))
 
     if sk.build > 0.5:
-        # A nose, one short stroke leaning off to the left, only at builds
-        # where the face has room for it. The chibi face reads through eyes
-        # and mouth alone, which is why the canon chibi draws none either.
-        nose_y = cy + r * 0.36
-        nose_len = r * 0.09 * sk.build
-        parts.append(
-            f'<path d="M {cx + r * 0.012:.1f} {nose_y - nose_len:.1f} '
-            f'Q {cx - r * 0.020:.1f} {nose_y - nose_len * 0.3:.1f} {cx - r * 0.028:.1f} {nose_y:.1f}" '
-            f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.75" stroke-linecap="round" />'
-        )
+        # Two short strokes, mirrored, only at builds where the face has
+        # room for them. The chibi face reads through eyes and mouth
+        # alone, which is why the canon chibi draws none either.
+        #
+        # Used to be one stroke, off to one side, which was never a
+        # simplification of the canon's own nose so much as a different
+        # construction: `ref/satoko-real.jpg` draws a nostril shadow as a
+        # pair of short marks, each angling down from an outer point near
+        # the brow line to an inner point just short of the centre, close
+        # to touching but not quite. Measured directly off that reference
+        # at the same head-radius scale the eye fixes validated: each
+        # mark's outer end sits about 0.094 r out from centre, its inner
+        # end about 0.028 r out, and it drops about 0.033 r between the
+        # two.
+        nose_y = cy + r * (0.36 + _NOSE_REALISTIC_DROP * sk.build)
+        nose_out = r * 0.094 * sk.build
+        nose_in = r * 0.028 * sk.build
+        nose_drop = r * 0.033 * sk.build
+        for side in (-1, 1):
+            parts.append(
+                f'<path d="M {cx + side * nose_out:.1f} {nose_y - nose_drop:.1f} '
+                f"Q {cx + side * (nose_out + nose_in) / 2:.1f} {nose_y - nose_drop * 0.4:.1f} "
+                f'{cx + side * nose_in:.1f} {nose_y:.1f}" '
+                f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.75" '
+                f'stroke-linecap="round" />'
+            )
 
-    mouth_y = cy + r * _MOUTH_Y
-    mouth_half = r * 0.12 * f.mouth_width
+    mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.build)
+    mouth_half = r * 0.12 * f.mouth_width * (1.0 + _MOUTH_REALISTIC_WIDEN * sk.build)
     parts.append(
         f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
         f'Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f}" '
