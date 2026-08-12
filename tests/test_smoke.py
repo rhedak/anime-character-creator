@@ -21,12 +21,14 @@ from anime_character_creator import (
     BUILDS,
     DISPLAY_NAMES,
     EXPRESSIONS,
+    EYESTYLES,
     HAIRSTYLES,
     NEUTRAL_BASES,
     PRESETS,
     REALISTIC_REFS,
     ROSTERS,
     CharacterParams,
+    FaceStyle,
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
     cover,
@@ -53,6 +55,33 @@ def test_named_characters_render(preset: str, build: str) -> None:
 @pytest.mark.parametrize("hairstyle", sorted(HAIRSTYLES))
 def test_every_hairstyle_renders_on_a_default_character(hairstyle: str) -> None:
     svg = render_character(CharacterParams(hairstyle=hairstyle))
+    ET.fromstring(svg)
+
+
+@pytest.mark.parametrize("eye_style", sorted(EYESTYLES))
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_every_eyestyle_renders_on_a_default_character(eye_style: str, build: str) -> None:
+    p = CharacterParams(face=FaceStyle(eye_style=eye_style))
+    svg = render_character(p, build_skeleton(heads=BUILDS[build]))
+    ET.fromstring(svg)
+
+
+def test_realistic_eyestyle_is_every_preset_s_own_default() -> None:
+    """`eye_style` defaults to "realistic" on `FaceStyle` itself, so a preset
+    that never mentions it renders exactly as it did before `EYESTYLES`
+    existed; this is what keeps `ref-out/` byte-identical across that
+    change."""
+    for name in sorted(PRESETS):
+        assert PRESETS[name].face.eye_style == "realistic"
+
+
+@pytest.mark.parametrize("glow", [0.0, 0.5, 1.0])
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_eye_glow_extremes_render_on_the_anime_style(glow: float, build: str) -> None:
+    """`eye_glow` is only read by `EYESTYLES["anime"]`; 0 turns its two
+    secondary highlights off rather than erroring, per the owner's ask."""
+    p = CharacterParams(face=FaceStyle(eye_style="anime", eye_glow=glow))
+    svg = render_character(p, build_skeleton(heads=BUILDS[build]))
     ET.fromstring(svg)
 
 

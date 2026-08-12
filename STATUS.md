@@ -1580,6 +1580,66 @@ stayed a later item, as agreed going in: the natural template is an
 different shape of change from tuning ranges on the eye construction
 that exists now, and bigger than this pass.
 
+## Eye styles: `EYESTYLES` and the anime construction, 2026-08-12
+
+The "later" item above, the same day. Asked to design a "classical
+anime" eye style off `ref-local/anime-chibi.png`, prototyped it by
+monkeypatching `_eye` in a throwaway script rather than editing
+`character.py` directly (this project's own render-and-look rule, kept
+even for a design pass with nothing committed yet), iterated against
+the reference until it read right, then asked to make it real.
+
+**The reference's construction turned out to be a different shape, not
+a retuning of the existing one.** No separate pupil: the iris reads as
+one dark body. The "glossy" look is two flat, off-centre highlights
+standing in for a reflection, not `_eye_realistic`'s concentric rings:
+a warm crescent low in the iris and a cooler, larger one toward the
+temple, mirrored by `side` the same way everything else in this file
+already mirrors. Rounded corners and a big, nearly aperture-filling
+iris are not new geometry either, just `FaceStyle` numbers the
+realistic construction never gets set to (`eye_corner=0`,
+`iris_size≈0.90`, generous `eye_openness`/`eye_lower_lid`). The
+aperture itself, `_eye_shape`, is unchanged and shared by both styles.
+
+**Shipped as `EYESTYLES`, a plain `dict[str, Callable]` keyed the way
+`HAIRSTYLES` keys hairstyles**, since an eye, unlike a haircut, is one
+callable rather than several that have to agree with each other; no
+wrapper dataclass earns its keep here. `_eye` renamed to
+`_eye_realistic`; `_eye_anime` is the new one. `FaceStyle` grew
+`eye_style: str = "realistic"` (so every existing preset's own
+`ref-out/` stays byte-identical, confirmed by `refresh-ref-out.sh
+--check` after) and `eye_glow: float = 1.0`.
+
+**`eye_glow` is the control the owner asked for, in the same
+conversation that saw the design**: "make the inner glow... smaller or
+turn it off entirely." Multiplies the radius of `_eye_anime`'s two
+secondary highlights only, not the one main highlight, whose own
+comment says turning *that* off would read as unlit rather than merely
+less glossy. At 0 the two glow circles have zero radius, which draws
+nothing, a clean off rather than a special case. Confirmed by render
+sweep (0.0 / 0.5 / 1.0): 0.0 leaves one flat highlight on a dark iris,
+noticeably less "sparkly," exactly the ask; 1.0 matches the traced
+reference.
+
+Checked: `eye_style="anime"` on Satoko, Satoshi, Krista (goggles) and
+Keiko (glasses) through the real code path, not the prototype's
+monkeypatch, no collision. `eye_style="anime"` composes sensibly even
+without the round-tuned `FaceStyle` numbers, confirming the style only
+changes what is inside the aperture, never the aperture itself. No
+preset's own `eye_style` was changed from the "realistic" default;
+this is additive only. `ruff`, `ruff format`, and `pytest -q` (361
+passed, 11 new: both styles at both builds, every preset's own
+`eye_style` still "realistic", and the glow sweep at both builds) all
+green. `./refresh-ref-out.sh --check`, `./refresh-bases.sh --check` and
+`./refresh-catalogue.sh --check` all green and untouched.
+
+**Left for later, not asked for yet:** exposing `eye_style`/`eye_glow`
+in the web tool's catalogue (same shape of decision as `mouth_width`
+joining `FACE_RANGES` above, not done automatically here since nobody
+asked); any preset actually switching to the anime style; the
+reference's eyelash-tuft and eyelid-crease details, which `_eye_anime`
+does not attempt.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

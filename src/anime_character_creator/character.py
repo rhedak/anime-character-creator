@@ -57,6 +57,27 @@ class FaceStyle:
     # Iris against the aperture's smaller half-axis. Below 1 leaves white
     # sclera showing all the way around it.
     iris_size: float = 0.72
+    # Which of `EYESTYLES` draws the eye. "realistic" (the default, and every
+    # preset's own choice) is the rim-mid-pupil construction the rest of this
+    # file's eye comments describe. "anime" is the other one there so far, a
+    # from-scratch construction traced off `ref-local/anime-chibi.png` rather
+    # than a variant of the first: no separate pupil, an iris that reads as
+    # one dark body with two off-centre flat highlights standing in for a
+    # glossy reflection instead of `_eye_realistic`'s concentric rings. Aims
+    # for what that reference calls "classical anime" chibi eyes, big and
+    # round, not what this project already draws. It reads the same
+    # `eye_width`/`eye_corner`/`iris_size`/... as the realistic construction;
+    # a preset opting in still has to set those toward round and big itself,
+    # the way the anime prototype's own prompt did, since the style only
+    # changes what the *inside* of the aperture looks like, never the
+    # aperture itself.
+    eye_style: str = "realistic"
+    # How large `eye_style="anime"`'s two secondary highlights read, as a
+    # multiplier on the size the reference was traced at: 1.0 matches it, 0
+    # turns them off outright and leaves only the one main highlight, which
+    # is what the owner asked to be able to reach rather than only the fixed
+    # look. Unread by every other style.
+    eye_glow: float = 1.0
     # 0 is level. Positive drops the inner ends (stern), negative raises them.
     brow_tilt: float = 0.0
     brow_weight: float = 1.0
@@ -5103,7 +5124,7 @@ _EYE_ASPECT = 1.28
 _EYE_OUTLINE_W = 0.85
 
 # How much bigger the pupil gets, as a fraction of the iris radius, at the
-# realistic build, on top of `_eye()`'s own default of 0.40. Global rather
+# realistic build, on top of `_eye_realistic()`'s own default of 0.40. Global rather
 # than per-character or a `FaceStyle` field, since gap 11 read this as a
 # house-wide construction choice, not something either preset's own numbers
 # ever varied; build-gated the same way everything else in this pass is, so
@@ -5151,7 +5172,7 @@ def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tupl
     return d, lid
 
 
-def _eye(
+def _eye_realistic(
     ex: float,
     ey: float,
     er: float,
@@ -5213,6 +5234,116 @@ def _eye(
         f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" stroke-linecap="round" />'
     )
     return "".join(parts)
+
+
+# How big `_eye_anime`'s two glow highlights read at `eye_glow=1.0`, as a
+# fraction of the iris radius: how far each is offset from the iris centre,
+# then its own radius. Traced off `ref-local/anime-chibi.png` by eye, render
+# sweep, the way every constant in this file that started as a picture
+# started. `_BOTTOM` is the warm crescent low in the iris that reference
+# reads as light bouncing up off the lower lid; `_OUTER` is the cooler,
+# larger one hugging the side toward the temple; neither is the reference's
+# main highlight, which `_eye_anime` draws at a fixed size, never `eye_glow`
+# gated, since turning that one off would leave the eye reading as unlit
+# rather than merely less glossy.
+_EYE_ANIME_BOTTOM_OFFSET = 0.72
+_EYE_ANIME_BOTTOM_R = 0.46
+_EYE_ANIME_OUTER_OFFSET = 0.68
+_EYE_ANIME_OUTER_R = 0.52
+
+
+def _eye_anime(
+    ex: float,
+    ey: float,
+    er: float,
+    side: int,
+    f: FaceStyle,
+    eye_color: str,
+    sw: float,
+    pupil_ratio: float = 0.40,
+) -> str:
+    """`EYESTYLES["anime"]`. Same aperture as `_eye_realistic`, everything
+    inside it different: no separate pupil, and the iris reads as one dark
+    body with two flat, off-centre highlights standing in for a glossy
+    reflection rather than `_eye_realistic`'s concentric rings. Traced off
+    `ref-local/anime-chibi.png`, which draws a "classical anime" chibi eye,
+    round and iris-filling, not what the rest of this file draws; matching
+    it took a different construction, not new numbers on the old one.
+
+    `pupil_ratio` is accepted and ignored: this style has no separate pupil
+    for it to size, and every caller already passes it positionally to
+    `EYESTYLES[f.eye_style]` without knowing which style is on the other
+    end.
+    """
+    d, lid = _eye_shape(ex, ey, er, side, f)
+    clip_id = f"eyeA-{'l' if side < 0 else 'r'}"
+
+    # Same sizing rule as `_eye_realistic`, and the same reasoning: bound by
+    # whichever half-axis of the aperture is smaller, so a narrow eye still
+    # shows its aperture's own outline at the corners instead of the iris
+    # overrunning it.
+    iris_r = f.iris_size * min(er * f.eye_width, er * (f.eye_openness + f.eye_lower_lid) / 2)
+    iris_cy = ey + er * (f.eye_lower_lid - f.eye_openness) / 2
+
+    # `local` is measured outward from the iris centre before the `side`
+    # mirror, same convention `_eye_shape` itself uses: negative is toward
+    # the nose, positive toward the temple, so a single set of numbers
+    # mirrors correctly for either eye rather than needing a copy per side.
+    def local(lx: float, ly: float) -> tuple[float, float]:
+        return ex + side * lx, iris_cy + ly
+
+    parts = [
+        f'<defs><clipPath id="{clip_id}"><path d="{d}" /></clipPath>'
+        f'<clipPath id="{clip_id}-iris"><circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" />'
+        f"</clipPath></defs>"
+    ]
+    parts.append(
+        f'<path d="{d}" fill="white" stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" />'
+    )
+    parts.append(f'<g clip-path="url(#{clip_id})">')
+    # The one dark body a real iris and pupil merge into on this reference;
+    # see the module comment above for why there is no second, darker circle
+    # the way `_eye_realistic` draws one.
+    parts.append(
+        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(eye_color, 0.42)}" />'
+    )
+    # The two glow highlights, clipped to the iris circle itself rather than
+    # just the aperture, so shrinking them at low `eye_glow` reveals the dark
+    # iris around them rather than the white of the aperture.
+    parts.append(f'<g clip-path="url(#{clip_id}-iris)">')
+    bx, by = local(0, iris_r * _EYE_ANIME_BOTTOM_OFFSET)
+    parts.append(
+        f'<circle cx="{bx:.1f}" cy="{by:.1f}" r="{iris_r * _EYE_ANIME_BOTTOM_R * f.eye_glow:.1f}" '
+        f'fill="{shade(eye_color, 1.55, 0.6)}" />'
+    )
+    ox, oy = local(iris_r * _EYE_ANIME_OUTER_OFFSET, 0)
+    parts.append(
+        f'<circle cx="{ox:.1f}" cy="{oy:.1f}" r="{iris_r * _EYE_ANIME_OUTER_R * f.eye_glow:.1f}" '
+        f'fill="{shade(eye_color, 1.35, 0.45)}" />'
+    )
+    parts.append("</g>")
+    # The one highlight `eye_glow` never touches: turning off the glossy
+    # crescents above should read as a flatter eye, not an unlit one.
+    hx, hy = local(-iris_r * 0.30, -iris_r * 0.32)
+    parts.append(f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="{iris_r * 0.29:.1f}" fill="white" />')
+    parts.append("</g>")
+    parts.append(
+        f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" '
+        f'stroke-linecap="round" />'
+    )
+    return "".join(parts)
+
+
+# Which `eye_style` names exist, keyed the way `HAIRSTYLES` keys hairstyles:
+# a plain dict from name to the callable that draws it, so a new style is an
+# addition here rather than a branch somewhere else. Every entry takes the
+# same call signature `_eye_realistic` and `_eye_anime` both already share,
+# `(ex, ey, er, side, f, eye_color, sw, pupil_ratio)`, whether or not that
+# particular style reads every argument.
+EYESTYLES: dict[str, Callable[..., str]] = {
+    "realistic": _eye_realistic,
+    "anime": _eye_anime,
+}
 
 
 def _scar(sk: Skeleton, side: int) -> str:
@@ -5375,7 +5506,9 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             f'x2="{ex + side * eye_r:.1f}" y2="{brow_y - tilt:.1f}" '
             f'stroke="{brow_color}" stroke-width="{sw * f.brow_weight:.1f}" stroke-linecap="round" />'
         )
-        parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio))
+        parts.append(
+            EYESTYLES[f.eye_style](ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio)
+        )
 
     if sk.build > 0.5:
         # Two short strokes, mirrored, only at builds where the face has

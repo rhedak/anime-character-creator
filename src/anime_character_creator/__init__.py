@@ -20,6 +20,7 @@ how the parts fit together.
 from __future__ import annotations
 
 from .character import (
+    EYESTYLES,
     HAIRSTYLES,
     CharacterParams,
     Expression,
@@ -38,6 +39,7 @@ __all__ = [
     "DEFAULT_HEADS",
     "DISPLAY_NAMES",
     "EXPRESSIONS",
+    "EYESTYLES",
     "HAIRSTYLES",
     "NEUTRAL_BASES",
     "PRESETS",
