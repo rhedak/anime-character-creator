@@ -39,6 +39,23 @@ from .character import OUTLINE, render_character
 from .presets import DISPLAY_NAMES, PRESETS, ROSTERS
 from .skeleton import BUILDS, build_skeleton
 
+CHARACTER_DESCRIPTIONS: dict[str, str] = {
+    "satoko": "Innkeeper's girl, local expedition guide",
+    "satoshi": "Innkeeper's boy, local expedition guide",
+    "kyoko": "Former assistant researcher to Natsume",
+    "tomohiro": "Former assistant researcher to Natsume",
+    "chiyo": "Innkeeper of Kiriguchi",
+    "daizen": "Merchant of the Kurogane house",
+    "elara": "Woden Soldier, Captain of the Expedition's soldiers",
+    "haruto": "Okiri Lord who got to keep his title after the Woden Annexation",
+    "keiko": "Former Okiri head researcher, now Woden assistant researcher",
+    "krista": "Woden Crystal specialist and Woden head researcher, rank Magus-Sergeant",
+    "reika": "High Priestess and first Kiri-no-Miko",
+    "reinhard": "Woden Oberst-Researcher, Leader of the Expedition and Investigator",
+    "tenno": "Former King of Okiri, now a porter to the Woden",
+    "viktor": "Lieutenant of the Woden's Ravens, Reinhard's second in command",
+}
+
 
 @dataclass(frozen=True)
 class SheetPalette:
@@ -75,8 +92,9 @@ class SheetParams:
     margin: float = 20.0
     # Room above each card for its name. A band rather than an overlay: a label
     # inside the card would sit on the figure at the sizes that matter.
-    label_h: float = 34.0
+    label_h: float = 60.0
     label_size: float = 21.0
+    description_size: float = 13.0
     label_font: str = "Helvetica, Arial, sans-serif"
     # How much of a tile's height the figure fills, and where its soles land.
     # Both fractions of the tile, so the figure keeps its place when a tile is
@@ -116,18 +134,62 @@ def _tile_origin(p: SheetParams, i: int) -> tuple[float, float]:
     return x, y
 
 
-def _label(p: SheetParams, name: str, x: float, y: float) -> str:
-    """The character's name, centred over its card.
+def _break_description(text: str, max_chars: int = 45) -> list[str]:
+    """Break description into lines, breaking at word boundaries."""
+    words = text.split()
+    lines = []
+    current_line = []
+    current_length = 0
+
+    for word in words:
+        word_length = len(word) + (1 if current_line else 0)
+        if current_length + word_length > max_chars and current_line:
+            lines.append(" ".join(current_line))
+            current_line = [word]
+            current_length = len(word)
+        else:
+            current_line.append(word)
+            current_length += word_length
+
+    if current_line:
+        lines.append(" ".join(current_line))
+
+    return lines
+
+
+def _label(p: SheetParams, preset: str, display_name: str, x: float, y: float) -> str:
+    """The character's name and role description, centred over its card.
 
     Plain fill, no outline. The cover's title needs a stroke because it sits on
     a picture; this sits on a flat dark ground where a stroke would only thicken
     the letters.
     """
-    return (
-        f'<text x="{x + p.tile_w / 2:.1f} " y="{y + p.label_h - 9:.1f}" text-anchor="middle" '
+    description = CHARACTER_DESCRIPTIONS.get(preset, "")
+    name_y = y + 16.0
+    desc_y = y + 32.0
+    name_svg = (
+        f'<text x="{x + p.tile_w / 2:.1f}" y="{name_y:.1f}" text-anchor="middle" '
         f'font-family="{p.label_font}" font-size="{p.label_size:.1f}" font-weight="bold" '
-        f'fill="{p.palette.label}">{name}</text>'
+        f'fill="{p.palette.label}">{display_name}</text>'
     )
+    desc_svg = ""
+    if description:
+        lines = _break_description(description, max_chars=45)
+        line_height = p.description_size * 1.2
+        start_y = desc_y - (len(lines) - 1) * line_height / 2
+
+        tspans = []
+        for line in lines:
+            tspans.append(
+                f'<tspan x="{x + p.tile_w / 2:.1f}" dy="{line_height:.1f}">{line}</tspan>'
+            )
+
+        desc_svg = (
+            f'\n    <text x="{x + p.tile_w / 2:.1f}" y="{start_y:.1f}" text-anchor="middle" '
+            f'font-family="{p.label_font}" font-size="{p.description_size:.1f}" '
+            f'fill="{p.palette.label}" opacity="0.8" font-style="italic">{"".join(tspans)}</text>'
+        )
+    return name_svg + desc_svg
 
 
 def _tile(p: SheetParams, preset: str, x: float, y: float) -> str:
@@ -151,7 +213,7 @@ def _tile(p: SheetParams, preset: str, x: float, y: float) -> str:
     return (
         f'<rect x="{x:.1f}" y="{top:.1f}" width="{p.tile_w:.1f}" height="{p.tile_h:.1f}" '
         f'fill="{p.palette.card}" />\n'
-        f"  {_label(p, DISPLAY_NAMES[preset], x, y)}\n"
+        f"  {_label(p, preset, DISPLAY_NAMES[preset], x, y)}\n"
         f'  <g transform="translate({fx:.1f} {fy:.1f}) scale({k:.4f})">\n  {body}\n  </g>'
     )
 
