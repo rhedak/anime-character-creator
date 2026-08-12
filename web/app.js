@@ -67,6 +67,7 @@ const castGallery = document.getElementById("cast-gallery");
 const baseGallery = document.getElementById("base-gallery");
 const editorSection = document.getElementById("editor-section");
 const previewEl = document.getElementById("preview");
+const buildControls = document.getElementById("build-controls");
 const colorsControls = document.getElementById("colors-controls");
 const hairControls = document.getElementById("hair-controls");
 const faceControls = document.getElementById("face-controls");
@@ -230,6 +231,21 @@ function boolRow(container, field, label, value, onInput) {
   row.append(input, lbl);
   container.appendChild(row);
   return input;
+}
+
+// `catalogue.build` is a plain `SelectField` on `heads` (see catalogue.py:
+// BUILD), the same shape as the face section's scar select, so `selectRow`
+// and the generic `fieldValue`/`setField` (already CharacterParams-level,
+// not face-level) are all this needs; no bridge change, since `heads` was
+// already a `CharacterParams` field the state object round-trips whether or
+// not anything here ever wrote to it.
+function buildBuildControls() {
+  buildControls.innerHTML = "";
+  const b = catalogue.build;
+  selectRow(buildControls, b.field, b.label, b.options, fieldValue(b.field), (v) => {
+    setField(b.field, v);
+    scheduleRender();
+  });
 }
 
 function buildColorControls() {
@@ -481,6 +497,7 @@ function selectStartingPoint(id) {
   state = JSON.parse(stateJson);
   gallerySection.hidden = true;
   editorSection.hidden = false;
+  buildBuildControls();
   buildColorControls();
   buildHairControls();
   buildFaceControls();
@@ -687,6 +704,7 @@ async function main() {
       state = JSON.parse(stateJson);
       gallerySection.hidden = true;
       editorSection.hidden = false;
+      buildBuildControls();
       buildColorControls();
       buildHairControls();
       buildFaceControls();

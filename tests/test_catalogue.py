@@ -28,6 +28,7 @@ from anime_character_creator import (
     render_character,
 )
 from anime_character_creator.catalogue import (
+    BUILD,
     COLORS,
     FACE_BOOLS,
     FACE_RANGES,
@@ -71,6 +72,26 @@ def test_hair_tail_and_knot_fields_exist_on_character_params() -> None:
     names = {f.name for f in fields(CharacterParams)}
     assert HAIR_TAIL.field in names
     assert HAIR_KNOT.field in names
+
+
+def test_build_field_exists_on_character_params() -> None:
+    names = {f.name for f in fields(CharacterParams)}
+    assert BUILD.field in names
+
+
+def test_build_options_are_exactly_the_named_builds() -> None:
+    """`BUILD` offers the two entries in `BUILDS` and nothing else: never the
+    continuous slider `docs/web-gui-plan.md`'s "Knobs that are traps" warns
+    against."""
+    assert {value for value, _label in BUILD.options} == set(BUILDS.values())
+
+
+@pytest.mark.parametrize("value,_label", BUILD.options)
+def test_build_options_render(value: float, _label: str) -> None:
+    p = replace(CharacterParams(), heads=value)
+    svg = render_character(p, build_skeleton(heads=value, frame=p.frame))
+    root = ET.fromstring(svg)
+    assert root.tag.endswith("svg")
 
 
 def test_every_hairstyle_label_is_a_real_hairstyle() -> None:

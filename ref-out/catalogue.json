@@ -69,6 +69,20 @@
       }
     ]
   },
+  "build": {
+    "field": "heads",
+    "label": "Build",
+    "options": [
+      {
+        "value": 2.4,
+        "label": "Chibi"
+      },
+      {
+        "value": 6.0,
+        "label": "Realistic"
+      }
+    ]
+  },
   "colors": [
     {
       "field": "skin_tone",
@@ -431,6 +445,12 @@
         "label": "Iris size",
         "min": 0.6,
         "max": 0.8
+      },
+      {
+        "field": "mouth_width",
+        "label": "Mouth width",
+        "min": 0.6,
+        "max": 1.05
       }
     ],
     "bools": [

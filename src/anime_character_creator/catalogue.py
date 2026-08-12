@@ -4,9 +4,13 @@
 change colours, and swap between the hairstyles and garments that already
 exist", deliberately short of a full parameter editor. `CharacterParams` alone
 cannot answer that: it is `dataclasses.fields()` away from FaceStyle's fourteen
-floats, `shaded`, and a continuous `heads` slider over builds nobody has
-looked at, none of which belong on a page for someone who has never opened a
-terminal (see "Knobs that are traps" in that document).
+floats and `shaded`, a killed behaviour with a live field still attached to
+it, neither of which belong on a page for someone who has never opened a
+terminal (see "Knobs that are traps" in that document). `heads` used to be in
+that list too, as "a continuous slider over builds nobody has looked at"; it
+is exposed now, but still never as that slider, only as `BUILD`'s two-option
+choice between the named entries in `BUILDS`, which is the form the plan
+document itself said would be acceptable.
 
 So this module is the curated middle: a small, explicit list of which fields
 are public, in which order, with which labels and ranges, built once here
@@ -30,6 +34,7 @@ from dataclasses import dataclass, fields
 
 from .character import HAIRSTYLES, CharacterParams, FaceStyle, Outfit
 from .presets import DISPLAY_NAMES, NEUTRAL_BASES, PRESETS
+from .skeleton import BUILDS
 
 
 @dataclass(frozen=True)
@@ -123,6 +128,11 @@ def _face_bool(field: str, label: str) -> BoolField:
 
 def _face_select(field: str, label: str, options: tuple[tuple[object, str], ...]) -> SelectField:
     assert field in _FACE_FIELDS, f"FaceStyle has no field {field!r}"
+    return SelectField(field, label, options)
+
+
+def _char_select(field: str, label: str, options: tuple[tuple[object, str], ...]) -> SelectField:
+    assert field in _CHARACTER_FIELDS, f"CharacterParams has no field {field!r}"
     return SelectField(field, label, options)
 
 
@@ -296,6 +306,21 @@ assert _outfit_fields_named() == _OUTFIT_FIELDS, (
     f"extra {_outfit_fields_named() - _OUTFIT_FIELDS}"
 )
 
+# The named builds, `heads` under the hood but never the continuous slider
+# `docs/web-gui-plan.md`'s "Knobs that are traps" warns against: only the
+# two entries in `BUILDS` have ever been rendered and judged, so the control
+# offers exactly those two rather than the type's full domain. Chibi is the
+# default (`CharacterParams.heads`'s own default), same as everywhere else
+# in this tool; realistic was deliberately left off the web tool on
+# 2026-08-10 while its face read noticeably worse than the chibi's, which
+# the eye, mouth and nose passes since then (`STATUS.md`) were aimed at
+# closing. Reopened here on the strength of that work, not by re-litigating
+# the original call, which stands as a record of why it was off rather than
+# as a reason to leave it off now.
+BUILD = _char_select(
+    "heads", "Build", ((BUILDS["chibi"], "Chibi"), (BUILDS["realistic"], "Realistic"))
+)
+
 # Character-level colors, the ones every figure has regardless of what it
 # wears. `hair_tip_color` is optional the same way a garment is: unset means
 # single-tone hair.
@@ -342,20 +367,34 @@ assert set(HAIRSTYLE_LABELS) == set(HAIRSTYLES), (
 # `FaceStyle` carries fourteen floats, and `docs/web-gui-plan.md` calls the
 # whole set "a mixing desk, not a limited set of choices" and keeps it out of
 # the catalogue entirely. What follows is a deliberately smaller, curated
-# subset: the fields that read as "what shape are the eyes" and "is there a
-# scar", not the ones that read as "what mood is this face making right now"
-# (`brow_tilt`, `mouth_curve`, `blush`, ...) or duplicate what a preset
-# already states at rest (`eye_openness`, `eye_lower_lid`, `brow_weight`).
+# subset: the fields that read as "what shape are the eyes and mouth" and
+# "is there a scar", not the ones that read as "what mood is this face making
+# right now" (`brow_tilt`, `mouth_curve`, `blush`, ...) or duplicate what a
+# preset already states at rest (`eye_openness`, `eye_lower_lid`,
+# `brow_weight`).
 # Bounds are the min and max actually used across the fourteen presets (see
 # `presets.py`), the same "rendered and judged" rule `skirt_length` and
 # `coat_length` already follow above, widened by a small margin so the
 # default chibi face sits inside every range rather than at its edge.
+# `mouth_width`'s default (1.0, `BASE_FEMALE`/`BASE_MALE`'s own value) sits
+# above every named preset's own 0.66-0.80, which is why its own high end
+# is 1.05 rather than a margin over the cast alone.
+#
+# `eye_corner` reads differently at the two builds now that `_eye_placement`
+# doubles it at the realistic one (`STATUS.md`, 2026-08-12): this range's own
+# top of 0.65 becomes an effective 1.3 there. Checked directly rather than
+# derated for it, since the "malformed combinations are the visitor's own
+# responsibility" call in `docs/web-gui-plan.md` already covers a sharper
+# corner than either reference draws: 0.65 at the realistic build renders a
+# sharp but intact corner, not a self-intersecting one, at both ends of every
+# other range here too.
 FACE_RANGES: tuple[RangeField, ...] = (
     _face_range("eye_size", "Eye size", 0.80, 1.05),
     _face_range("eye_width", "Eye width (round to narrow)", 0.85, 1.10),
     _face_range("eye_tilt", "Eye tilt", 0.0, 0.20),
     _face_range("eye_corner", "Eye corner (round to sharp)", 0.30, 0.65),
     _face_range("iris_size", "Iris size", 0.60, 0.80),
+    _face_range("mouth_width", "Mouth width", 0.60, 1.05),
 )
 for _fr in FACE_RANGES:
     assert _fr.field in _FACE_FIELDS
@@ -434,6 +473,7 @@ def build_catalogue() -> dict[str, object]:
             "cast": [{"id": s.id, "label": s.label} for s in _cast_points()],
             "bases": [{"id": s.id, "label": s.label} for s in _base_points()],
         },
+        "build": _select_json(BUILD),
         "colors": [_color_json(c) for c in COLORS],
         "hairstyles": [
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)

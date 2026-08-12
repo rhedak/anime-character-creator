@@ -1518,6 +1518,68 @@ just a size step past what either draws), the whole roster for
 collisions, chibi delta under half a pixel. `./refresh-ref-out.sh` and
 `./refresh-bases.sh` ran; ruff and `pytest -q` (346 passed) green.
 
+## Web tool: realistic build and mouth width, 2026-08-12
+
+Proposed after the eye/mouth/nose passes above: let the web tool select
+the realistic build (chibi stays the default), expose eye/nose/mouth
+there, and, as a later item, more eye styles. Agreed with the shape of
+it, flagged one interaction to check before shipping, and one piece
+(nose) that turned out not to be exposable yet at all.
+
+**Shipped:** `catalogue.py` grew a `BUILD` select (`heads`, "Chibi" /
+"Realistic", chibi default) and `mouth_width` joined `FACE_RANGES`.
+Reopens the 2026-08-10 "chibi only" call on purpose, recorded as a
+reopening rather than a rewrite in `docs/web-gui-plan.md`: the call
+stands as an accurate record of why realistic was off, and the passes
+since then are what changed. No bridge change was needed. `heads` was
+already a `CharacterParams` field the state object round-trips
+end to end regardless of whether any control ever wrote to it, so the
+web layer's own "learns no geometry" rule holds without a single new
+line in the Python bridge.
+
+**The interaction flagged before starting turned out fine, checked
+rather than assumed.** `eye_corner`'s committed range (0.30-0.65)
+becomes an effective 0.60-1.30 once `_eye_placement` doubles it at the
+realistic build. Rendered it directly rather than lowering the ceiling
+on the strength of the arithmetic alone, gap 10's own lesson: 0.65
+renders a sharp but intact corner at the realistic build, not a
+self-intersecting one, and the "malformed combinations are the
+visitor's own responsibility" call in `docs/web-gui-plan.md` already
+covers a corner sharper than either reference draws. Checked the other
+four ranges' own extremes at the realistic build the same way while at
+it, since none of them had been rendered at that build before either;
+all clean. Left the range alone.
+
+**Nose is not "expose it," it is "there is nothing to expose yet."**
+Unlike eye and mouth, nose carries no `FaceStyle` field at all: it is
+fixed shape logic with no per-character variation. Left as its own
+follow-up rather than folded in here, since it means designing a
+parameter first, not just adding a line to `FACE_RANGES`.
+
+**Tested end to end**, not just reviewed: staged the site with
+`web-stage.sh`, served it locally, and drove a real headless Chrome
+against it with Playwright (installed ad hoc via `uv run --with
+playwright`, not added to the project's own dependencies). Confirmed
+the build select offers exactly "Chibi"/"Realistic", picking Satoko
+then switching to Realistic changes the rendered SVG, the mouth-width
+slider appears and renders at its catalogue maximum together with
+Realistic, and picking a different starting point resets Build back to
+chibi. No console or page errors. `docs/web-gui-plan.md`'s own
+"machine has no browser and no route to the Pyodide CDN" caveat did not
+hold on this machine; recorded there rather than left stale.
+
+`ruff`, `ruff format`, `pytest -q` (350 passed, 4 new: `BUILD`'s field
+check, its options matching `BUILDS` exactly, and one render test per
+option), and `./refresh-catalogue.sh --check` all green.
+`./refresh-ref-out.sh --check` and `./refresh-bases.sh --check` also
+green and untouched, correctly: nothing here changed `character.py`.
+
+Eye styles (anime vs. realistic as discrete, swappable constructions)
+stayed a later item, as agreed going in: the natural template is an
+`EYESTYLES` registry mirroring `HAIRSTYLES`'s existing pattern, a
+different shape of change from tuning ranges on the eye construction
+that exists now, and bigger than this pass.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

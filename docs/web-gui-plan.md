@@ -365,6 +365,15 @@ honest.
 `BUILDS` stay out of the catalogue entirely, which also removes the
 worst of the trap knobs above.
 
+**Reopened 2026-08-12.** Not by re-litigating the call above, which
+stands as an accurate record of why the realistic build was left off:
+its face read noticeably worse than the chibi's at the time. The eye,
+mouth and nose passes since then (`STATUS.md`) were aimed at closing
+exactly that gap, and closed enough of it that showing the build became
+worth doing again. `BUILD` in `catalogue.py` exposes it as the toggle
+this document already said would be the acceptable form, never the
+continuous `heads` slider: two options, chibi still the default.
+
 **3. Three kinds of starting point: the named cast, a neutral male base
 and a neutral female base.** The cast is what demonstrates the
 generator and is a marketing surface for the novels; the neutral bases
@@ -561,6 +570,24 @@ In order, with the first item genuinely first.
    is up, every preset and both bases render and edit live, downloads
    carry working metadata, and a malformed `?c=` link fails to the
    gallery rather than to a broken page.
+6. **Done, 2026-08-12.** The realistic build reopened (decision 2,
+   above) as `BUILD` in `catalogue.py`, a two-option select on `heads`
+   wired through `web/app.js`'s new `buildBuildControls()`; no bridge
+   change, since `heads` was already a `CharacterParams` field the
+   state object round-trips whether or not a control ever wrote to it.
+   `mouth_width` added to `FACE_RANGES` alongside it, the same day, on
+   the same "shape, not mood" line the rest of that list already draws.
+   Tested end to end with Playwright driving a real headless Chrome
+   against `web-stage.sh`'s output (this machine turned out to have a
+   route to both the Pyodide and the Playwright browser CDNs, so the
+   "no browser, no route to the Pyodide CDN" caveat on item 1 no longer
+   holds): picking Satoko, switching Build to Realistic, and confirming
+   the preview SVG actually changes; the mouth-width slider at its
+   catalogue maximum on top of Realistic, the one combination new here
+   that the two features hadn't been tried together on; and that
+   picking a different starting point resets Build back to chibi.
+   Nose has no field to expose yet, unlike eye and mouth, which is its
+   own follow-up (see `STATUS.md`) rather than bundled into this one.
 
 The licence work that used to head this list is done; the licensing
 section above is its record.
