@@ -263,10 +263,18 @@ deliberately abandoned. This is a sharper trap than the two below,
 because it is a documented reversal rather than an unexamined range.
 It stays out of the catalogue.
 
-**`heads` is a slider over builds nobody has looked at.** It spans 2.4
-to 6.0, and this project's entire method is iterate-by-looking. Only the
-two named `BUILDS` have actually been judged. Expose the named builds as
-a toggle, never a continuous slider.
+**`heads` was a slider over builds nobody had looked at.** It spans 2.4 to
+6.0, and this project's entire method is iterate-by-looking. Only the two
+named `BUILDS` have actually been judged, so the original rule was to
+expose the named builds as a toggle, never a continuous slider. That rule
+was deliberately reversed on 2026-08-12: `catalogue.py`'s `BUILD` is a
+slider over 2..7 now, with the two named `BUILDS` carried as snap buttons
+the visitor can jump back to. The reversal keeps the original worry's
+force, it just moves where it bites: the middle of the range and both ends
+beyond the named builds are unjudged and known rough in places (the
+realistic hair trace only holds at heads 6, see `STATUS.md`), and the snaps
+are the agreed mitigation, not an excuse to stop judging a value before
+shipping it.
 
 Related: `refresh-ref-out.sh` records that the tall figures moved out of
 the top level on 2026-08-08 because the owner's call was that they do

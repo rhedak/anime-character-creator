@@ -233,19 +233,36 @@ function boolRow(container, field, label, value, onInput) {
   return input;
 }
 
-// `catalogue.build` is a plain `SelectField` on `heads` (see catalogue.py:
-// BUILD), the same shape as the face section's scar select, so `selectRow`
-// and the generic `fieldValue`/`setField` (already CharacterParams-level,
-// not face-level) are all this needs; no bridge change, since `heads` was
-// already a `CharacterParams` field the state object round-trips whether or
-// not anything here ever wrote to it.
+// `catalogue.build` is a `BuildField`: a continuous slider over `heads`
+// with the named `BUILDS` carried as `snaps` (see catalogue.py: BUILD, and
+// the owner's 2026-08-12 call recorded there). The slider is the control;
+// each snap is a button that sets the same field and nudges the slider back
+// to the value, so a visitor who drifts into the unjudged middle can always
+// get home. `fieldValue`/`setField` are already CharacterParams-level, and
+// `heads` was already a `CharacterParams` field the state object round-trips,
+// so no bridge change is needed.
 function buildBuildControls() {
   buildControls.innerHTML = "";
   const b = catalogue.build;
-  selectRow(buildControls, b.field, b.label, b.options, fieldValue(b.field), (v) => {
+  const input = rangeRow(buildControls, b.field, b.label, b.min, b.max, fieldValue(b.field), (v) => {
     setField(b.field, v);
     scheduleRender();
   });
+  const snaps = document.createElement("div");
+  snaps.className = "control-row";
+  for (const snap of b.snaps) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "snap-button";
+    btn.textContent = snap.label;
+    btn.addEventListener("click", () => {
+      input.value = String(snap.value);
+      setField(b.field, snap.value);
+      scheduleRender();
+    });
+    snaps.appendChild(btn);
+  }
+  buildControls.appendChild(snaps);
 }
 
 function buildColorControls() {

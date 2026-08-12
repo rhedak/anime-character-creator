@@ -71,8 +71,10 @@
   },
   "build": {
     "field": "heads",
-    "label": "Build",
-    "options": [
+    "label": "Body build",
+    "min": 2.0,
+    "max": 7.0,
+    "snaps": [
       {
         "value": 2.4,
         "label": "Chibi"
@@ -117,6 +119,10 @@
     {
       "id": "long_traced",
       "label": "Long"
+    },
+    {
+      "id": "long_traced_real",
+      "label": "Long, realistic"
     },
     {
       "id": "short_crop",

@@ -7,10 +7,10 @@ cannot answer that: it is `dataclasses.fields()` away from FaceStyle's fourteen
 floats and `shaded`, a killed behaviour with a live field still attached to
 it, neither of which belong on a page for someone who has never opened a
 terminal (see "Knobs that are traps" in that document). `heads` used to be in
-that list too, as "a continuous slider over builds nobody has looked at"; it
-is exposed now, but still never as that slider, only as `BUILD`'s two-option
-choice between the named entries in `BUILDS`, which is the form the plan
-document itself said would be acceptable.
+that list too, as "a continuous slider over builds nobody has looked at", and
+even now it is only `BUILD`'s slider with the named `BUILDS` carried as snaps
+to jump back to (the owner's 2026-08-12 call, recorded next to `BUILD`), not
+a raw field with no way home.
 
 So this module is the curated middle: a small, explicit list of which fields
 are public, in which order, with which labels and ranges, built once here
@@ -74,6 +74,20 @@ class SelectField:
 
 
 @dataclass(frozen=True)
+class BuildField:
+    """The one control `heads` is allowed to be: a slider over the build
+    range, with the named `BUILDS` carried as snaps a visitor can jump back
+    to. The slider's own ends are the range that has been chosen to stay
+    open, not `BUILDS`'s min and max, so the two stay distinguishable."""
+
+    field: str
+    label: str
+    lo: float
+    hi: float
+    snaps: tuple[tuple[float, str], ...]
+
+
+@dataclass(frozen=True)
 class GarmentSlot:
     """One layer of `Outfit`: its color and whatever else travels with it.
 
@@ -128,11 +142,6 @@ def _face_bool(field: str, label: str) -> BoolField:
 
 def _face_select(field: str, label: str, options: tuple[tuple[object, str], ...]) -> SelectField:
     assert field in _FACE_FIELDS, f"FaceStyle has no field {field!r}"
-    return SelectField(field, label, options)
-
-
-def _char_select(field: str, label: str, options: tuple[tuple[object, str], ...]) -> SelectField:
-    assert field in _CHARACTER_FIELDS, f"CharacterParams has no field {field!r}"
     return SelectField(field, label, options)
 
 
@@ -306,19 +315,24 @@ assert _outfit_fields_named() == _OUTFIT_FIELDS, (
     f"extra {_outfit_fields_named() - _OUTFIT_FIELDS}"
 )
 
-# The named builds, `heads` under the hood but never the continuous slider
-# `docs/web-gui-plan.md`'s "Knobs that are traps" warns against: only the
-# two entries in `BUILDS` have ever been rendered and judged, so the control
-# offers exactly those two rather than the type's full domain. Chibi is the
-# default (`CharacterParams.heads`'s own default), same as everywhere else
-# in this tool; realistic was deliberately left off the web tool on
-# 2026-08-10 while its face read noticeably worse than the chibi's, which
-# the eye, mouth and nose passes since then (`STATUS.md`) were aimed at
-# closing. Reopened here on the strength of that work, not by re-litigating
-# the original call, which stands as a record of why it was off rather than
-# as a reason to leave it off now.
-BUILD = _char_select(
-    "heads", "Build", ((BUILDS["chibi"], "Chibi"), (BUILDS["realistic"], "Realistic"))
+# The build, `heads` under the hood. It used to be offered only as the two
+# named `BUILDS`, never the continuous slider `docs/web-gui-plan.md`'s
+# "Knobs that are traps" warned against, on the ground that nothing between
+# the two had been rendered and judged. The owner's call on 2026-08-12 was
+# to open the middle anyway and carry the named builds as snaps instead,
+# since the skeleton holds across the whole range by construction (`sk.build`
+# lerps on it) and the snaps guarantee a visitor can always get back to the
+# two states that have actually been judged. The slider runs 2..7, wider
+# than the 2.4..6.0 the named builds span, so the ends stay the chosen open
+# range rather than masquerading as the judgements; above 6 the widths
+# clamp and the figure just gets longer (see skeleton.py), which is the
+# documented trade-off for the low end.
+BUILD = BuildField(
+    "heads",
+    "Body build",
+    2.0,
+    7.0,
+    tuple((v, name.capitalize()) for name, v in BUILDS.items()),
 )
 
 # Character-level colors, the ones every figure has regardless of what it
@@ -348,13 +362,13 @@ assert HAIR_TAIL.field in _CHARACTER_FIELDS
 HAIR_KNOT = BoolField("hair_knot", "Top-knot")
 assert HAIR_KNOT.field in _CHARACTER_FIELDS
 
-# `HAIRSTYLES` is the real registry; this only checks it still has the five
-# keys the cast currently uses; sorted so a new cut appears in one place, here
-# and in `HAIRSTYLES` itself, and needs no companion edit.
+# `HAIRSTYLES` is the real registry; this only labels it. A new cut appears in
+# one place, here and in `HAIRSTYLES` itself, and needs no companion edit.
 HAIRSTYLE_LABELS: dict[str, str] = {
     "long_blunt": "Long, blunt",
     "short_layered": "Short, layered",
     "long_traced": "Long",
+    "long_traced_real": "Long, realistic",
     "short_crop": "Short crop",
     "short_tousled": "Short, tousled",
     "long_center_part": "Long, center part",
@@ -459,6 +473,16 @@ def _select_json(s: SelectField) -> dict[str, object]:
     }
 
 
+def _build_json(b: BuildField) -> dict[str, object]:
+    return {
+        "field": b.field,
+        "label": b.label,
+        "min": b.lo,
+        "max": b.hi,
+        "snaps": [{"value": v, "label": lbl} for v, lbl in b.snaps],
+    }
+
+
 def _garment_json(g: GarmentSlot) -> dict[str, object]:
     out: dict[str, object] = {
         "id": g.id,
@@ -487,7 +511,7 @@ def build_catalogue() -> dict[str, object]:
             "cast": [{"id": s.id, "label": s.label} for s in _cast_points()],
             "bases": [{"id": s.id, "label": s.label} for s in _base_points()],
         },
-        "build": _select_json(BUILD),
+        "build": _build_json(BUILD),
         "colors": [_color_json(c) for c in COLORS],
         "hairstyles": [
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)

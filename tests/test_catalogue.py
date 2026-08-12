@@ -95,15 +95,19 @@ def test_build_field_exists_on_character_params() -> None:
     assert BUILD.field in names
 
 
-def test_build_options_are_exactly_the_named_builds() -> None:
-    """`BUILD` offers the two entries in `BUILDS` and nothing else: never the
-    continuous slider `docs/web-gui-plan.md`'s "Knobs that are traps" warns
-    against."""
-    assert {value for value, _label in BUILD.options} == set(BUILDS.values())
+def test_build_snaps_are_exactly_the_named_builds() -> None:
+    """`BUILD` carries the two entries in `BUILDS` as snaps, and nothing else:
+    the slider is the open control now (the owner's 2026-08-12 call, recorded
+    at catalogue.py: BUILD), but the only values it may offer as jump-backs
+    are the two that have been rendered and judged."""
+    assert {value for value, _label in BUILD.snaps} == set(BUILDS.values())
 
 
-@pytest.mark.parametrize("value,_label", BUILD.options)
-def test_build_options_render(value: float, _label: str) -> None:
+@pytest.mark.parametrize("value", [BUILD.lo, BUILD.hi, *[v for v, _l in BUILD.snaps]])
+def test_build_values_render(value: float) -> None:
+    """The slider's ends and each snap have to render. The whole open range
+    2..7 is deliberately *not* swept: that is the point of the snaps, the
+    middle has only been judged at the named builds."""
     p = replace(CharacterParams(), heads=value)
     svg = render_character(p, build_skeleton(heads=value, frame=p.frame))
     root = ET.fromstring(svg)

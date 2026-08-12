@@ -423,8 +423,8 @@ def _mirrored(edge: tuple[Point, list[Segment]]) -> list[tuple[Point, list[Segme
 
 
 def _scale_point(pt: Point, k: float) -> Point:
-    """A point scaled by `k` from the head centre. Shared by whichever traced
-    contour is being blown up from its as-measured size, long or crop."""
+    """A point scaled by `k` from the head centre. Used by the crop and the
+    long-real traces to blow a measured contour up to house size."""
     return (pt[0] * k, pt[1] * k)
 
 
@@ -1029,131 +1029,10 @@ _LONG_LINE: list[Segment] = [
 # run a long way and the canon turns them pale over roughly their last third.
 _LONG_BASE_TIP = 1.677
 _LONG_TONE_LIFT = 0.62
-# How far inside the silhouette the front hair's fill boundary is pulled.
-_LONG_FILL_INSET = 0.05
 # How far the hairline's two ends are pulled toward the centre, in head radii.
 _LONG_LINE_TUCK = 0.04
 # Which segment ends on the crown's apex, so the two sides can be taken apart.
-# Holds for both the chibi trace below and the realistic one further down:
-# both put the same number of segments between a fall's tip and the crown, so
-# the split lands in the same place in either list.
 _LONG_CROWN_AT = 9
-
-# Satoko's realistic-build hair, traced directly off `ref/satoko-real.jpg`
-# rather than scaled up from the chibi trace above. The chibi crown, run
-# through `_long_scaled`, used to stand in for the adult one too: only the
-# fall stretched, and the crown, sized for the chibi's own 2.5x hair
-# clearance, rode along unchanged onto a head with much less room for it. The
-# strand lines cut for that fuller crown then crossed and doubled back on
-# themselves over the smaller one, which is the "lines overlap" the owner
-# flagged. `harness/trace/real/satoko_real.py` carries the trace: a hair-
-# colour region grown from a seed in the crown, since there is no isolated
-# hair crop for this reference the way `../satoko.py`'s chibi trace has, and
-# reading ink on the full photo would confuse the mass's edge with the
-# tunic's the moment a bearing crossed both, the same failure the fringe
-# trace hit and solved the same way, by region rather than by ink.
-_LONG_REAL_EDGE_START: Point = (-0.609, 1.875)
-_LONG_REAL_EDGE: list[Segment] = [
-    ((-0.654, 1.953), (-0.699, 2.031)),
-    ((-0.832, 1.572), (-0.859, 1.273)),
-    ((-0.976, 1.374), (-1.050, 1.393)),
-    ((-1.055, 1.376), (-1.061, 1.359)),
-    ((-0.978, 0.829), (-0.933, 0.606)),
-    ((-0.928, 0.053), (-0.870, -0.334)),
-    ((-0.837, -0.460), (-0.783, -0.590)),
-    ((-0.702, -0.733), (-0.579, -0.859)),
-    ((-0.471, -0.941), (-0.346, -1.006)),
-    ((-0.152, -1.078), (0.056, -1.071)),
-    ((0.329, -0.999), (0.571, -0.879)),
-    ((0.698, -0.755), (0.785, -0.613)),
-    ((0.840, -0.471), (0.881, -0.338)),
-    ((0.935, 0.061), (0.955, 0.694)),
-    ((1.015, 0.927), (1.074, 1.374)),
-    ((1.015, 1.402), (0.870, 1.290)),
-    ((0.832, 1.570), (0.710, 2.061)),
-]
-_LONG_REAL_LINE_START: Point = (-0.566, 1.599)
-_LONG_REAL_LINE: list[Segment] = [
-    ((-0.634, 1.105), (-0.695, 0.571)),
-    ((-0.695, 0.264), (-0.679, -0.036)),
-    ((-0.622, -0.036), (-0.574, -0.050)),
-    ((-0.396, -0.163), (-0.253, -0.262)),
-    ((-0.219, -0.230), (-0.186, -0.199)),
-    ((-0.113, -0.232), (-0.060, -0.261)),
-    ((0.027, -0.343), (0.130, -0.454)),
-    ((0.183, -0.532), (0.224, -0.616)),
-    ((0.256, -0.518), (0.308, -0.424)),
-    ((0.434, -0.274), (0.583, -0.124)),
-    ((0.624, -0.080), (0.680, -0.071)),
-    ((0.689, -0.021), (0.704, 0.025)),
-    ((0.715, 0.317), (0.705, 0.613)),
-    ((0.637, 1.116), (0.588, 1.597)),
-]
-# The `fall` (`_hair_fall`'s return value) this trace was measured at: Satoko's
-# own `hair_length=0.45` run through the realistic build's own chin-hip span.
-# It is not a build number because `fall` already is one, folding build and
-# hair_length into a single figure, and this trace is only valid at the
-# specific silhouette it was read off, not at "any adult build" or "any
-# length". A longer or shorter cut would need its own trace, which is the
-# `docs/character-roster-plan.md`-style work the owner deferred to a later
-# pass; the same goes for anything taller than `--build realistic` itself,
-# since `fall` keeps growing past heads 6 (the body keeps lengthening even
-# though the head-relative anchors are already clamped) and carries no trace
-# of its own to fall back on out there.
-#
-# `_LONG_REAL_TOL` used to be 0.05, wide enough that a `--heads` some way off
-# 6.0 could still land inside it: Krista's own `fall` (2.751 at exactly
-# `realistic`, a different length on the same cut) drifts up to 2.86-2.89 by
-# `--heads` 6.2-6.5 and was wrongly picked up there. 0.001 is tight enough to
-# still catch Satoko and Kyoko at `--build realistic` (their computed `fall`
-# is 2.8765, 0.0005 off the constant above, which is only the gap from
-# writing it down to three places, not something the tolerance needs to
-# cover on its own) while shrinking Krista's and Keiko's accidental windows
-# from about 0.2 of a head to a few thousandths, well past anything a
-# `--heads` typed by hand would land on. It does not remove the possibility
-# outright, a bare `fall` match can never rule out every coincidence, only
-# make one implausible: this was a deliberate, narrower call than threading
-# `heads` through the whole hairstyle dispatch, made because the taller-build
-# gap above is already out of scope for this trace.
-_LONG_REAL_FALL = 2.877
-_LONG_REAL_TOL = 0.001
-# The trace above is faithful to the photo and reads thin next to the chibi:
-# this house's whole style is built on a chibi's generous, larger-than-life
-# hair, and a silhouette sized exactly to an adult reference loses that
-# weight even though it is the more "correct" contour. Scaled up from the
-# head centre rather than re-measured bigger, since the shape that fixed the
-# overlapping lines is worth keeping; only its size against the head was
-# ever the complaint. Capped under 1.26: `build_skeleton`'s `hair_margin` at
-# the realistic build puts the ceiling no hair ink may cross at 1.36 head
-# radii above centre, and the traced crown's own apex already sits at 1.078,
-# so anything scaled past about 1.26 paints into the canvas edge.
-_LONG_REAL_SCALE = 1.2
-# How far above the real trace's own lower edge the gold gives way to the
-# pale tips, in the same head radii the trace's points are in. `_LONG_TONE_LIFT`
-# is this cut's chibi value and does not carry over as it stands: it is
-# multiplied there by `fall / _LONG_BASE_TIP`, a scale factor that only
-# means something against the chibi-scaled edge, which stretches with
-# `fall`. The real trace's edge does not stretch, it is a fixed, already-
-# adult shape, so that multiplier (about 1.7 at this trace's own `fall`) was
-# being applied to the wrong basis.
-#
-# 0 rather than some other positive number: swept 0, 0.3, 0.62, 1.06, 1.6 and
-# 2.4 against a render. None of them move the split most of the mass reads
-# at, which `_fade_y`'s own clamp sets regardless of `lift` for every point
-# already above it, that is most of the mass at this trace's depth. What
-# every *nonzero* value in that sweep did instead was poke a small gold
-# wedge through the pale at the foot of one fall or the other, the same
-# defect the docstring above already names, and which side it poked through
-# did not move smoothly with `lift`: left at 0.3, right at 0.62, left again
-# at 1.06, right at 1.6, neither at 2.4. That is the six-samples-per-segment
-# walk crossing the fade threshold at a different sample for a different
-# `lift`, a threshold effect rather than a continuous one, so do not expect
-# some nearby value to be smoothly better or worse than 0. 0 is simply the
-# one value tried that hit neither side, and it costs nothing obvious to
-# read off: this trace's own two tips already sit within 0.03 head radii of
-# each other (`_LONG_REAL_EDGE`'s two endpoints), so a level cut and a
-# tip-following one do not visibly differ here anyway.
-_LONG_REAL_TONE_LIFT = 0.0
 
 
 def _long_scaled(fall: float) -> tuple[Point, list[Segment]]:
@@ -1171,15 +1050,14 @@ def _long_scaled(fall: float) -> tuple[Point, list[Segment]]:
     stops a long cut lengthening with the body at all. That is the thing the
     body-relative branch of `_hair_fall` exists for.
 
-    Except right at `_LONG_REAL_FALL`, where a real trace exists and is used
-    outright instead of stretching the chibi one further than it was ever
-    measured to go.
+    The realistic build used to switch this to a separate trace off
+    `ref/satoko-real.jpg` (`_LONG_REAL_*`, `harness/trace/real/satoko_real.py`),
+    used only at the exact `fall` it was measured at. The owner's call on
+    2026-08-12 was to remove that override: once the build slider made every
+    value in between reachable, the chibi contour stretched past where it was
+    ever measured read better than the "correct" adult trace, so this stretch
+    now runs at every `fall`, the realistic build included.
     """
-    if abs(fall - _LONG_REAL_FALL) < _LONG_REAL_TOL:
-        return _scale_point(_LONG_REAL_EDGE_START, _LONG_REAL_SCALE), [
-            (_scale_point(c, _LONG_REAL_SCALE), _scale_point(e, _LONG_REAL_SCALE))
-            for c, e in _LONG_REAL_EDGE
-        ]
     span = _LONG_BASE_TIP - _HAIR_CHEEK_Y
     k = (fall - _HAIR_CHEEK_Y) / span if span else 1.0
 
@@ -1193,14 +1071,7 @@ def _long_scaled(fall: float) -> tuple[Point, list[Segment]]:
 def _long_line(fall: float) -> tuple[Point, list[Segment]]:
     """The traced hairline, with the stretch that the falls get and the face does
     not: above the cheek line it is pinned to the head, below it it rides the
-    fall down. Same `_LONG_REAL_FALL` exception `_long_scaled` has, and for the
-    same reason: the traced hairline is already the realistic-build answer,
-    not a chibi one waiting to be stretched further."""
-    if abs(fall - _LONG_REAL_FALL) < _LONG_REAL_TOL:
-        return _scale_point(_LONG_REAL_LINE_START, _LONG_REAL_SCALE), [
-            (_scale_point(c, _LONG_REAL_SCALE), _scale_point(e, _LONG_REAL_SCALE))
-            for c, e in _LONG_REAL_LINE
-        ]
+    fall down."""
     span = _LONG_BASE_TIP - _HAIR_CHEEK_Y
     k = (fall - _HAIR_CHEEK_Y) / span if span else 1.0
 
@@ -1253,23 +1124,27 @@ def _long_traced_hairline(fall: float) -> tuple[Point, list[Segment], list[Segme
     exactly the band between the hairline and the silhouette, which is what the
     hair *is*. The two short connectors across each fall's bottom are the only
     invented geometry here.
+
+    Straight chords, not bowed ones and not a radial inset: a control placed off
+    the line between two silhouette points can leave it (that used to put the
+    fill 0.010 head radii outside the outline at a tip), and a radial inset used
+    to pull the fill 0.05-0.10 head radii inside the outline along the falls,
+    leaving an unfilled band between the gold and the stroke that read worst at
+    the tips where the lock is only a few hundredths wide. Chords of the mass
+    stay inside the silhouette on their own, and both mass tips are path ends so
+    the fill reaches the tip of each fall rather than cutting the corner.
     """
     start, edge = _long_scaled(fall)
     hs, hg = _long_line(fall)
     end = hg[-1][1]
     mass_start, mass_back = _reverse(start, edge)
-    inset = 1.0 - _LONG_FILL_INSET
-    # Straight chords, not bowed ones: a control placed off the line between two
-    # points on the silhouette can leave it, which at a fall's bottom tip put the
-    # fill 0.010 head radii outside its own outline.
+    # Right tip, full reverse silhouette to the left tip, then back to the
+    # hairline. Both tips are endpoints so the tip wedges fill solid.
     back: list[Segment] = [
-        (((end[0] + mass_start[0]) / 2, (end[1] + mass_start[1]) / 2), mass_start)
+        (((end[0] + mass_start[0]) / 2, (end[1] + mass_start[1]) / 2), mass_start),
+        *mass_back,
+        (((start[0] + hs[0]) / 2, (start[1] + hs[1]) / 2), hs),
     ]
-    back += [
-        ((c[0] * inset, c[1] * inset), (e[0] * inset, e[1] * inset)) for c, e in mass_back[:-1]
-    ]
-    last = mass_back[-1][1]
-    back.append((((last[0] + hs[0]) / 2, (last[1] + hs[1]) / 2), hs))
     return hs, hg, back
 
 
@@ -1290,10 +1165,7 @@ def _long_traced_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
     of each fall.
     """
     start, edge = _long_scaled(fall)
-    if abs(fall - _LONG_REAL_FALL) < _LONG_REAL_TOL:
-        lift = _LONG_REAL_TONE_LIFT
-    else:
-        lift = _LONG_TONE_LIFT * (fall / _LONG_BASE_TIP)
+    lift = _LONG_TONE_LIFT * (fall / _LONG_BASE_TIP)
     top = min(e[1] for _, e in edge)
     bottom = max(e[1] for _, e in edge)
     fade = _fade_y(top, bottom)
@@ -1322,31 +1194,7 @@ def _long_traced_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
 def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
     """The two sweep lines the canon draws off the parting, and one down each
     fall. They scale with the mass, since they live on it.
-
-    Except at `_LONG_REAL_FALL`: these points are fixed in head radii, tuned
-    against the chibi crown's own 2.5x hair clearance, and `_long_scaled`
-    stopped inflating that crown up to realistic-build size once the real
-    trace existed. Left in place, they sat where the old, bigger crown used
-    to be, well outside the new, tighter one, which is the crossing,
-    doubled-back lines the owner flagged as "just doesn't work." Two lines
-    placed by eye against `ref/satoko-real.jpg`, the same way the chibi ones
-    were: the reference is not run through this trace's own pipeline, since
-    a couple of soft, nearly-straight strokes off a parting do not carry
-    enough contrast for a region grow or a bearing sweep to find on their own.
     """
-    if abs(fall - _LONG_REAL_FALL) < _LONG_REAL_TOL:
-        return [
-            (
-                _scale_point(start, _LONG_REAL_SCALE),
-                [(_scale_point(c, _LONG_REAL_SCALE), _scale_point(e, _LONG_REAL_SCALE))],
-            )
-            for start, c, e in (
-                ((-0.16, -0.92), (-0.42, -0.68), (-0.62, -0.32)),
-                ((0.20, -0.94), (0.46, -0.70), (0.66, -0.34)),
-                ((-0.92, 0.10), (-0.98, 0.75), (-0.94, 1.35)),
-                ((0.94, 0.10), (1.00, 0.75), (0.96, 1.35)),
-            )
-        ]
     v = fall / _LONG_BASE_TIP
     out = []
     for x0, y0, cx0, cy0, x1, y1 in (
@@ -1361,6 +1209,181 @@ def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
                 [((side * 1.10 * v, 0.70 * v), (side * 1.06 * v, 1.30 * v))],
             )
         )
+    return out
+
+
+# Satoko's realistic-build hair, traced off `ref/satoko-real.jpg`
+# (`harness/trace/real/satoko_real.py`). Used to be an invisible override on
+# `long_traced` at one exact `fall`; the owner's call on 2026-08-12 was that
+# the chibi stretch of `long_traced` reads better as the default, and that
+# this measured adult silhouette should live as its own pickable cut instead
+# (`long_traced_real`). The crown is the adult one; the falls stretch with
+# `fall` the same way `_long_scaled` stretches the chibi contour, so the cut
+# works at any build/length even though it was only measured once. At the
+# chibi end it will look tight: that is accepted, the GUI is for trying
+# things.
+_LONG_REAL_EDGE_START: Point = (-0.609, 1.875)
+_LONG_REAL_EDGE: list[Segment] = [
+    ((-0.654, 1.953), (-0.699, 2.031)),
+    ((-0.832, 1.572), (-0.859, 1.273)),
+    ((-0.976, 1.374), (-1.050, 1.393)),
+    ((-1.055, 1.376), (-1.061, 1.359)),
+    ((-0.978, 0.829), (-0.933, 0.606)),
+    ((-0.928, 0.053), (-0.870, -0.334)),
+    ((-0.837, -0.460), (-0.783, -0.590)),
+    ((-0.702, -0.733), (-0.579, -0.859)),
+    ((-0.471, -0.941), (-0.346, -1.006)),
+    ((-0.152, -1.078), (0.056, -1.071)),
+    ((0.329, -0.999), (0.571, -0.879)),
+    ((0.698, -0.755), (0.785, -0.613)),
+    ((0.840, -0.471), (0.881, -0.338)),
+    ((0.935, 0.061), (0.955, 0.694)),
+    ((1.015, 0.927), (1.074, 1.374)),
+    ((1.015, 1.402), (0.870, 1.290)),
+    ((0.832, 1.570), (0.710, 2.061)),
+]
+_LONG_REAL_LINE_START: Point = (-0.566, 1.599)
+_LONG_REAL_LINE: list[Segment] = [
+    ((-0.634, 1.105), (-0.695, 0.571)),
+    ((-0.695, 0.264), (-0.679, -0.036)),
+    ((-0.622, -0.036), (-0.574, -0.050)),
+    ((-0.396, -0.163), (-0.253, -0.262)),
+    ((-0.219, -0.230), (-0.186, -0.199)),
+    ((-0.113, -0.232), (-0.060, -0.261)),
+    ((0.027, -0.343), (0.130, -0.454)),
+    ((0.183, -0.532), (0.224, -0.616)),
+    ((0.256, -0.518), (0.308, -0.424)),
+    ((0.434, -0.274), (0.583, -0.124)),
+    ((0.624, -0.080), (0.680, -0.071)),
+    ((0.689, -0.021), (0.704, 0.025)),
+    ((0.715, 0.317), (0.705, 0.613)),
+    ((0.637, 1.116), (0.588, 1.597)),
+]
+# House-weight blow-up from the head centre. Same number the override used:
+# 1.2 keeps the measured shape under the realistic hair ceiling (apex 1.078
+# * 1.2 < 1.36) while matching the chibi cut's generous volume better than
+# a 1.0 silhouette sized exactly to the photo.
+_LONG_REAL_SCALE = 1.2
+# Deeper tip of the two falls, after scale. The stretch maps this onto
+# `fall` the way `_LONG_BASE_TIP` maps the chibi contour.
+_LONG_REAL_BASE_TIP = max(
+    _scale_point(_LONG_REAL_EDGE_START, _LONG_REAL_SCALE)[1],
+    max(_scale_point(e, _LONG_REAL_SCALE)[1] for _, e in _LONG_REAL_EDGE),
+)
+# Pale-tip lift on the adult contour. 0 was the only value that did not poke
+# a gold wedge through either fall at the measured silhouette; other falls
+# may look odd, which is the trade the GUI accepts.
+_LONG_REAL_TONE_LIFT = 0.0
+# Same crown split index as the chibi long trace: both put nine segments
+# between a fall tip and the crown apex.
+_LONG_REAL_CROWN_AT = 9
+
+
+def _long_real_q(fall: float) -> Callable[[Point], Point]:
+    """Map a house-scaled real-trace point so the falls land at `fall`."""
+    span = _LONG_REAL_BASE_TIP - _HAIR_CHEEK_Y
+    k = (fall - _HAIR_CHEEK_Y) / span if span else 1.0
+
+    def q(pt: Point) -> Point:
+        y = pt[1]
+        return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
+
+    return q
+
+
+def _long_real_scaled(fall: float) -> tuple[Point, list[Segment]]:
+    """The adult mass contour, scaled to house weight, falls stretched to `fall`."""
+    q = _long_real_q(fall)
+    start = q(_scale_point(_LONG_REAL_EDGE_START, _LONG_REAL_SCALE))
+    edge = [
+        (q(_scale_point(c, _LONG_REAL_SCALE)), q(_scale_point(e, _LONG_REAL_SCALE)))
+        for c, e in _LONG_REAL_EDGE
+    ]
+    return start, edge
+
+
+def _long_real_line(fall: float) -> tuple[Point, list[Segment]]:
+    """The adult hairline, same fall stretch as the mass."""
+    q = _long_real_q(fall)
+    line = [
+        (q(_scale_point(c, _LONG_REAL_SCALE)), q(_scale_point(e, _LONG_REAL_SCALE)))
+        for c, e in _LONG_REAL_LINE
+    ]
+    hs0 = q(_scale_point(_LONG_REAL_LINE_START, _LONG_REAL_SCALE))
+    start = (hs0[0] + _LONG_LINE_TUCK, hs0[1])
+    ctrl, end = line[-1]
+    line[-1] = (ctrl, (end[0] - _LONG_LINE_TUCK, end[1]))
+    return start, line
+
+
+def _long_real_mass(fall: float) -> tuple[Point, list[Segment]]:
+    start, edge = _long_real_scaled(fall)
+    end = edge[-1][1]
+    return start, [*edge, (((end[0] + start[0]) / 2, max(end[1], start[1]) + 0.16), start)]
+
+
+def _long_real_fall_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    start, edge = _long_real_scaled(fall)
+    return [
+        _reverse(edge[_LONG_REAL_CROWN_AT][1], edge[_LONG_REAL_CROWN_AT + 1 :]),
+        (start, edge[: _LONG_REAL_CROWN_AT + 1]),
+    ]
+
+
+def _long_real_hairline(fall: float) -> tuple[Point, list[Segment], list[Segment]]:
+    """Same close as `_long_traced_hairline`: both mass tips as path ends, no
+    radial inset, straight chords on the silhouette."""
+    start, edge = _long_real_scaled(fall)
+    hs, hg = _long_real_line(fall)
+    end = hg[-1][1]
+    mass_start, mass_back = _reverse(start, edge)
+    back: list[Segment] = [
+        (((end[0] + mass_start[0]) / 2, (end[1] + mass_start[1]) / 2), mass_start),
+        *mass_back,
+        (((start[0] + hs[0]) / 2, (start[1] + hs[1]) / 2), hs),
+    ]
+    return hs, hg, back
+
+
+def _long_real_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    start, edge = _long_real_scaled(fall)
+    lift = _LONG_REAL_TONE_LIFT
+    top = min(e[1] for _, e in edge)
+    bottom = max(e[1] for _, e in edge)
+    fade = _fade_y(top, bottom)
+    floor = bottom + 1.0
+    wide = max(abs(e[0]) for _, e in edge) + 0.25
+    pts: list[Point] = []
+    prev = start
+    for ctrl, end in edge:
+        for i in range(1, 7):
+            t = i / 6
+            x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * ctrl[0] + t**2 * end[0]
+            y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * ctrl[1] + t**2 * end[1]
+            pts.append((x, max(y - lift, fade)))
+        prev = end
+    chain: list[Segment] = []
+    here: Point = (-wide, fade)
+    for q in [*pts, (wide, fade), (wide, floor), (-wide, floor), (-wide, fade)]:
+        chain.append((((here[0] + q[0]) / 2, (here[1] + q[1]) / 2), q))
+        here = q
+    return [((-wide, fade), chain)]
+
+
+def _long_real_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """Adult crown sweeps (fixed) and fall lines (stretched with the mass)."""
+    q = _long_real_q(fall)
+    out: list[tuple[Point, list[Segment]]] = []
+    for start, c, e in (
+        ((-0.16, -0.92), (-0.42, -0.68), (-0.62, -0.32)),
+        ((0.20, -0.94), (0.46, -0.70), (0.66, -0.34)),
+        ((-0.92, 0.10), (-0.98, 0.75), (-0.94, 1.35)),
+        ((0.94, 0.10), (1.00, 0.75), (0.96, 1.35)),
+    ):
+        s = q(_scale_point(start, _LONG_REAL_SCALE))
+        cc = q(_scale_point(c, _LONG_REAL_SCALE))
+        ee = q(_scale_point(e, _LONG_REAL_SCALE))
+        out.append((s, [(cc, ee)]))
     return out
 
 
@@ -1575,16 +1598,15 @@ _CROP_REAL_TEMPLE_R = 29
 _CROP_REAL_CROWN_AT = 20
 # The `fall` this trace was measured at: Satoshi's own `hair_length=0.65` (the
 # range's neutral value, the length the crop was traced at in the first
-# place) run through the realistic build's chin-hip span. Same reasoning
-# `_LONG_REAL_FALL` documents: `fall` already folds build and hair_length
-# together, so this is only valid at the specific silhouette it was read
-# off. Tomohiro shares it unchanged, the same way Kyoko shares Satoko's.
+# place) run through the realistic build's chin-hip span. `fall` already
+# folds build and hair_length together, so this is only valid at the
+# specific silhouette it was read off. Tomohiro shares it unchanged.
 _CROP_REAL_FALL = 0.87215
 _CROP_REAL_TOL = 0.01
-# Scaled up from the head centre for the same reason `_LONG_REAL_SCALE` is:
-# a silhouette sized exactly to the reference reads thin next to a chibi's
-# generous hair, and the shape that fixed the crown-vs-fringe mismatch is
-# worth keeping at a bigger size rather than re-measuring bigger. Capped
+# Scaled up from the head centre: a silhouette sized exactly to the
+# reference reads thin next to a chibi's generous hair, and the shape that
+# fixed the crown-vs-fringe mismatch is worth keeping at a bigger size
+# rather than re-measuring bigger. Capped
 # under where the crown's own apex (1.307 head radii here) would cross
 # `build_skeleton`'s realistic-build hair ceiling of 1.36. That ceiling
 # bounds all hair ink, the outline stroke's outer half included (see
@@ -2220,6 +2242,15 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # is what keeps a long haircut the same haircut when the build changes;
         # a head-relative range would freeze her hair at one length and it would
         # ride up the adult's back.
+    ),
+    "long_traced_real": Hairstyle(
+        _long_real_mass,
+        _long_real_hairline,
+        _long_real_fall_edge,
+        _long_real_tip_edge,
+        strands=_long_real_strands,
+        # Same body-relative length as `long_traced`. The silhouette is the
+        # adult photo trace; the falls still stretch with `fall`.
     ),
     "short_crop": Hairstyle(
         _crop_mass_shape,
