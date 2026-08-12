@@ -33,6 +33,7 @@ from anime_character_creator.catalogue import (
     FACE_BOOLS,
     FACE_RANGES,
     FACE_SCAR,
+    FACE_SELECTS,
     GARMENTS,
     HAIR_KNOT,
     HAIR_LENGTH,
@@ -65,7 +66,22 @@ def test_every_face_field_exists_on_facestyle() -> None:
         assert r.field in names
     for b in FACE_BOOLS:
         assert b.field in names
-    assert FACE_SCAR.field in names
+    for s in FACE_SELECTS:
+        assert s.field in names
+
+
+def test_every_face_select_option_is_a_real_eye_style_or_scar() -> None:
+    """A select's values have to be values the generator actually reads.
+
+    The eye-style select's values come from `EYESTYLES` itself, so this is
+    mainly guarding the scar side: it can only offer what `_scar` accepts.
+    """
+    from anime_character_creator import EYESTYLES
+
+    eye_style = next(s for s in FACE_SELECTS if s.field == "eye_style")
+    assert {v for v, _l in eye_style.options} == set(EYESTYLES)
+    scar = next(s for s in FACE_SELECTS if s.field == "scar_side")
+    assert {v for v, _l in scar.options} == {0, -1, 1}
 
 
 def test_hair_tail_and_knot_fields_exist_on_character_params() -> None:

@@ -459,23 +459,39 @@
         "label": "Glasses"
       }
     ],
-    "select": {
-      "field": "scar_side",
-      "label": "Scar",
-      "options": [
-        {
-          "value": 0,
-          "label": "None"
-        },
-        {
-          "value": -1,
-          "label": "Left cheek"
-        },
-        {
-          "value": 1,
-          "label": "Right cheek"
-        }
-      ]
-    }
+    "selects": [
+      {
+        "field": "eye_style",
+        "label": "Eye style",
+        "options": [
+          {
+            "value": "realistic",
+            "label": "Realistic"
+          },
+          {
+            "value": "anime",
+            "label": "Anime"
+          }
+        ]
+      },
+      {
+        "field": "scar_side",
+        "label": "Scar",
+        "options": [
+          {
+            "value": 0,
+            "label": "None"
+          },
+          {
+            "value": -1,
+            "label": "Left cheek"
+          },
+          {
+            "value": 1,
+            "label": "Right cheek"
+          }
+        ]
+      }
+    ]
   }
 }

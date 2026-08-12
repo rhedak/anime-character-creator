@@ -32,7 +32,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, fields
 
-from .character import HAIRSTYLES, CharacterParams, FaceStyle, Outfit
+from .character import EYESTYLES, HAIRSTYLES, CharacterParams, FaceStyle, Outfit
 from .presets import DISPLAY_NAMES, NEUTRAL_BASES, PRESETS
 from .skeleton import BUILDS
 
@@ -409,6 +409,20 @@ FACE_SCAR: SelectField = _face_select(
     "scar_side", "Scar", ((0, "None"), (-1, "Left cheek"), (1, "Right cheek"))
 )
 
+# Which of `EYESTYLES` draws the eye, exposed the way the plan's "swap
+# between the hairstyles that already exist" treats hairstyles: the two
+# styles are already in the generator, this just lets a visitor pick. Values
+# come from `EYESTYLES` itself, keyed as a plain dict the way `HAIRSTYLES`
+# keys hairstyles, so a third style added there shows up here with no second
+# list to keep in step.
+FACE_EYE_STYLE: SelectField = _face_select(
+    "eye_style", "Eye style", tuple((name, name.capitalize()) for name in EYESTYLES)
+)
+
+FACE_SELECTS: tuple[SelectField, ...] = (FACE_EYE_STYLE, FACE_SCAR)
+for _fs in FACE_SELECTS:
+    assert _fs.field in _FACE_FIELDS
+
 
 @dataclass(frozen=True)
 class StartingPoint:
@@ -485,7 +499,7 @@ def build_catalogue() -> dict[str, object]:
         "face": {
             "ranges": [_range_json(r) for r in FACE_RANGES],
             "bools": [_bool_json(b) for b in FACE_BOOLS],
-            "select": _select_json(FACE_SCAR),
+            "selects": [_select_json(s) for s in FACE_SELECTS],
         },
     }
 

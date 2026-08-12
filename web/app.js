@@ -351,11 +351,12 @@ function buildFaceControls() {
       scheduleRender();
     });
   }
-  const s = catalogue.face.select;
-  selectRow(faceControls, s.field, s.label, s.options, faceValue(s.field), (v) => {
-    setFaceField(s.field, v);
-    scheduleRender();
-  });
+  for (const s of catalogue.face.selects) {
+    selectRow(faceControls, s.field, s.label, s.options, faceValue(s.field), (v) => {
+      setFaceField(s.field, v);
+      scheduleRender();
+    });
+  }
 }
 
 function buildGarmentControls() {
