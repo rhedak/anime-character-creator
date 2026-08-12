@@ -782,6 +782,105 @@ Residual, and it is the other direction: at 0.75 H the chibi is 20%
 it is the skirt's own length and rise rather than its flare, and it did
 not move with this.
 
+### 10. The realistic-build eye aperture is too wide, and the iris is a consequence
+
+**2026-08-11, realistic build only.** Reopens the "roughly 2.2:1" reference
+reading behind STATUS.md's 2026-08-10 eye-lidding fix (item 1 of that
+pass), which retuned `_eye_placement`'s build-based reduction to
+`eye_openness`/`eye_lower_lid` from `0.20`/`0.10` to `0.40`/`0.20` on that
+number. That reading was a "pixel grid by eye" pass on both realistic
+references, the same method used here, so this is one manual read
+disagreeing with an earlier one on the same references, not a tooling
+fix; `probe.py eyes` still cannot read either (PITFALLS.md, "blob
+detectors find highlights and gaps, not just eyes"). This does **not**
+reopen gap 6 or the chibi's `_EYE_ASPECT = 1.28` / `iris_size = 0.72`:
+both builds were checked and the chibi is untouched by anything below.
+
+The aspect number itself turned out to be the wrong thing to chase.
+Measuring width and height separately, each as its own fraction of H, on
+`ref/satoko-real.jpg` and `ref/satoshi-real.jpg` and on
+`ref-out/real/satoko.png` and `ref-out/real/satoshi.png`, with the same
+ink-to-ink convention on both sides (outer edge of the drawn stroke to
+outer edge, since that is what a JPEG reference gives you, and the
+comparison is only fair if our side is read the same way rather than
+computed from the path centreline):
+
+| | Satoko ref | Satoko ours | ratio | Satoshi ref | Satoshi ours | ratio |
+| --- | --- | --- | --- | --- | --- | --- |
+| aperture width / H | 0.036 | 0.057 | 1.6x | 0.035 | 0.067 | 1.9x |
+| aperture height / H | 0.023 | 0.025 | 1.1x | 0.025 | 0.025 | 1.0x |
+| aspect (w/h) | 1.6 | 2.3 | | 1.4 | 2.7 | |
+| iris / H | 0.017 | 0.013 | 0.8x | 0.019 | 0.012 | 0.6x |
+
+Height already lands within measurement noise for both characters, so
+the 2026-08-10 fix's actual shipped numbers hold up; what does not hold
+up is the aspect ratio that was quoted to justify them, which this pass
+cannot reproduce on either reference (1.6 and 1.4 measured here, not
+2.2). Width is the real gap, 60% to 90% too wide, present on **both**
+characters and bigger on Satoshi, which is what a strip crop shows
+directly and is not an artefact of measurement convention: the skin gap
+between the two apertures is visibly narrower than either reference's,
+each eye reaching further toward both the nose and the temple
+(`out/eyecheck2/satoshi_ref_tight.png` vs `satoshi_ours_tight.png`,
+`satoko_ref_tight.png` vs `satoko_ours_tight.png`, not checked in, see
+`.claude/skills/gap-analysis/probe.sh strip --band 0.09,0.135 --zoom 10`
+to regenerate). `eye_dx` (centre spacing) is not implicated; gap 6
+already found it sits close to right and nothing here contradicts that.
+The width comes from the aperture's own half-width, which is
+`_EYE_ASPECT * eye_width`, unchanged between builds today. Nothing
+currently narrows it at higher `sk.build` the way `_eye_placement`
+already narrows the height.
+
+The undersized iris follows from the same cause rather than being a
+second gap: `_eye`'s `iris_r` is bound by
+`min(er * eye_width, er * (eye_openness + eye_lower_lid) / 2)`, and with
+height already correctly shrunk but width untouched, the height term is
+what limits it at the realistic build, so the iris comes out sized for
+an aperture narrower than the one actually drawn around it. Narrowing
+the aperture width would raise the height term's competing width value
+too, which changes which term binds; the two need re-measuring together
+once the aperture fix lands; this is not a case for touching `iris_size`
+on its own, which gap 6 already flagged as a decision taken deliberately
+(0.72, raised specifically so the chibi's iris fills its wide aperture)
+and should not be undone at either build without the owner's say.
+
+**Closed, the owner's call on 2026-08-11: match `ref/satoko-real.jpg`,
+"as I like them the most."** `_eye_placement` grew a build-gated
+`eye_width` reduction alongside the existing height one, the same shape
+this entry expected, and two wrong values shipped before the right one.
+
+Matching our own ink width to the reference's ink width by that
+arithmetic alone points at a reduction near 0.99: a stroke bulges past a
+sharp corner by roughly its own width regardless of how narrow the
+underlying path is, so that bulge stops shrinking with `eye_width` long
+before the path does, and 0.99 renders as a black sliver, not a closer
+match. A render sweep against `ref/satoko-real.jpg`, chosen by eye
+against that same ink-corrupted signal in a tight crop, landed on 0.50
+instead, and shipped: it looked like a narrower almond next to a small
+crop of one eye, and was actually wrong in the other direction. Overlaid
+full-face against the reference (the owner's own check, not a tight
+crop) it read round and crowded, if anything worse than before, because
+0.50 shrinks the width to 10.1 against a height of 10.1, aspect 1.0, an
+even rounder eye than the ungated chibi value it replaced. Both mistakes
+share a cause: measuring ink on a render of a path this small and this
+sharply cornered tells you about the stroke, not the path, on either
+side of the comparison.
+
+`_eye_shape`'s aperture is closed-form, so there was no need to measure
+ink at all. Solving `2w / (top + bot) = 1.6` (Satoko's own measured
+aspect, and `top + bot` is the height, already confirmed close and
+untouched by this) for the reduction gives 0.21. Confirmed two ways: the
+emitted path's own bounds (16.1 x 10.1, aspect 1.59, read straight off
+the SVG rather than off a raster), and the same full-face overlay this
+time held up. Sub-pixel at chibi either way (`sk.build` is 0.1 there,
+not 0, same as the existing height reduction) and checked by eye across
+all fourteen presets' realistic renders, not just the two with a
+reference, after landing on 0.21. Satoshi's own photo wants narrower
+still (his measured aspect is 1.4 against Satoko's 1.6) and is left as a
+residual against his own reference rather than a second per-character
+knob, on the owner's explicit steer toward Satoko's eyes rather than an
+average of the two. `iris_size` and `eye_dx` are untouched, per gap 6.
+
 ## Suggested order
 
 1. ~~Gap 4 (reshape the shadow wedges, or ask about dropping the garment
@@ -819,3 +918,8 @@ not move with this.
 
 Gap 8's items are independent of each other and can be picked off in any
 order, which makes them good filler work between the larger passes.
+
+9. ~~Gap 10 (realistic eye aperture width)~~. **Done, 2026-08-11**: a
+   build-gated `eye_width` reduction, matched to `ref/satoko-real.jpg` by
+   the owner's pick between the two references. The iris residual this
+   gap named stands on Satoshi only, against his own photo, not acted on.

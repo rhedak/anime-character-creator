@@ -1319,6 +1319,78 @@ short list: `refresh-ref-out.sh`'s own comments, `README.md`,
 `docs/character-roster-plan.md`'s decision log rather than rewriting
 its 2026-08-08 entry.
 
+**Asked to trace `ref/satoshi-real.jpg`'s eye and match ours to it,
+which turned into gap 10 of `docs/gap-analysis.md` and stopped there,
+per that skill's own "analysis, not a shape pass" rule.** First pass
+computed our own aperture from `_eye_placement`'s formula and got an
+aspect of 2.17, matching the 2.2 the 2026-08-10 eye-lidding fix quotes
+for both references, and concluded there was no gap. The owner asked
+for Satoko to be measured the same way before deciding anything, which
+is what turned up the actual finding: measured on both references with
+a consistent ink-to-ink convention (not the path centreline, which
+undercounts the stroke), Satoshi's aperture is 1.4 and Satoko's 1.6, not
+2.2 on either. Height alone matches both references within noise, so
+the 2026-08-10 fix's shipped height numbers hold up; width is 60% to
+90% too wide on both characters and visibly so on a matched-scale strip
+crop (`out/eyecheck2/`, not checked in), which is what the too-round
+look actually traces to, not the height. The undersized-looking iris
+follows from that: `iris_r`'s governing term is the aperture height,
+correctly sized, competing against a width term that is not, so it
+comes out sized for a narrower eye than the one drawn around it.
+Nothing here touches `iris_size` (0.72, gap 6's deliberate call) or the
+chibi (`_EYE_ASPECT`, `eye_dx`, both unchanged and rechecked).
+
+**Decided and shipped the same day: match `ref/satoko-real.jpg`, "as I
+like them the most."** `_eye_placement` grew a build-gated `eye_width`
+reduction alongside the existing height one, and two wrong values
+shipped before the right one, both from the same mistake: measuring ink
+on a render instead of computing the path.
+
+Solving the ratios directly by matching our ink width to the
+reference's ink width does not work: a stroke bulges past a sharp
+corner by roughly its own width no matter how narrow the underlying
+path is, so past some point the number being matched is the stroke, not
+the aperture, and a reduction near 0.99 renders as a black sliver with
+no almond left. A render sweep chosen by eye against that same
+ink-corrupted signal, in a tight one-eye crop, landed on 0.50 instead,
+and that shipped first. **The owner caught it**: overlaid full-face
+against the reference, it looked worse, not better, and reading the
+emitted SVG path directly showed why: the aperture at 0.50 comes out
+10.1 x 10.1, aspect 1.0, rounder than the ungated value it replaced, not
+flatter. A crop tight enough to fill the frame with one eye made a
+uniformly-shrunk circle look like a narrowed almond; only the full-face
+comparison the owner asked for showed it wasn't.
+
+`_eye_shape`'s aperture is closed-form, so there was never a need to
+measure ink. Solving `2w / (top + bot) = 1.6` (Satoko's own measured
+aspect, `top + bot` the height, already confirmed close and untouched)
+for the reduction gives 0.21, confirmed by reading the path's own bounds
+(16.1 x 10.1, aspect 1.59) rather than a raster, and by the same
+full-face overlay this time holding up. Checked by eye across all
+fourteen presets' realistic renders after landing on 0.21, plus both
+neutral web-gallery bases: no clipping, no pinched corners, no collision
+with Keiko's glasses. Confirmed sub-pixel at chibi either way
+(`sk.build = 0.1`, not 0, same situation the height reduction already
+lives with). Satoshi's own reference wants narrower still (1.4 against
+Satoko's 1.6) and stands as a named residual against his own photo, on
+the owner's steer toward Satoko specifically rather than an average of
+the two; not a second knob. `./refresh-ref-out.sh` and
+`./refresh-bases.sh` both had to run, since `eye_width` reaches the two
+neutral web-gallery bases the same way it reaches every preset; ruff and
+`pytest -q` (346 passed) are green after.
+
+**Also the owner's call the same day: the upper and lower half-circles
+of the eye outline now carry the same weight.** `_eye()` used to redraw
+the upper lid heavier than the rest of the aperture, `sw * 1.6` over
+`sw * 0.85`, the canon's own heavy-lash-line convention (see gap 6's
+notes on it). Both are now `sw * _EYE_OUTLINE_W` (0.85), a new module
+constant rather than two call sites repeating the same literal, at both
+builds since neither read is build-gated. Checked at chibi and
+realistic on Satoko directly and across the rest of the roster on the
+chibi strip: reads as one even line around the aperture rather than a
+thick brow-like arc over a thinner rim. `./refresh-ref-out.sh` and
+`./refresh-bases.sh` both ran again; ruff and `pytest -q` green.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

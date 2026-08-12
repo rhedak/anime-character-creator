@@ -5050,6 +5050,14 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
 # the owner set deliberately, so it is left alone rather than tuned to a ratio.
 _EYE_ASPECT = 1.28
 
+# The aperture outline's weight, upper half-circle and lower half-circle
+# alike. Used to carry two different multipliers here, 0.85 for the whole
+# aperture and a heavier 1.6 redrawn over just the upper lid, the canon's
+# own heavy-lash-line convention; the owner's call on 2026-08-11 was to
+# drop that asymmetry rather than tune it, so both halves read as one
+# weight of line now.
+_EYE_OUTLINE_W = 0.85
+
 
 def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tuple[str, str]:
     """Eye aperture as a closed almond, plus its upper lid on its own so the
@@ -5108,7 +5116,13 @@ def _eye(
     # Still clipped to the aperture, so a low lid crops the iris rather than
     # letting it hang over the lash line.
     parts = [f'<defs><clipPath id="{clip_id}"><path d="{d}" /></clipPath></defs>']
-    parts.append(f'<path d="{d}" fill="white" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />')
+    # Upper and lower share one width, `_EYE_OUTLINE_W`, rather than the
+    # upper lash line carrying extra weight the way the canon's does: the
+    # owner's call on 2026-08-11, dropping the asymmetry rather than
+    # tuning it.
+    parts.append(
+        f'<path d="{d}" fill="white" stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" />'
+    )
     parts.append(f'<g clip-path="url(#{clip_id})">')
     # Canon iris: a rim of the eye color's own darker tone around the color,
     # with a distinct near-dark pupil inside that. Three flat tones, which is
@@ -5131,11 +5145,12 @@ def _eye(
         f'fill="white" opacity="0.85" />'
     )
     parts.append("</g>")
-    # The upper lash line carries more weight than the rest of the outline,
-    # noticeably so: it is the heaviest line on the figure, which is the one
-    # thing every anime eye construction agrees on and what the canon leans on.
+    # Redrawn rather than left to the aperture's own stroke so the corners
+    # get a round cap instead of the closed path's miter join, at the same
+    # `_EYE_OUTLINE_W` weight as the rest of the aperture now that the
+    # upper lash line no longer carries extra weight (see above).
     parts.append(
-        f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * 1.6:.1f}" stroke-linecap="round" />'
+        f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" stroke-linecap="round" />'
     )
     return "".join(parts)
 
@@ -5177,20 +5192,60 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     cy = sk.head_cy
     f = p.face
     if sk.build > 0:
-        # Measured directly off ref/satoko-real.jpg and ref/satoshi-real.jpg
-        # (aperture width/height read by eye off a pixel grid, since the
-        # automated `eyes` probe finds the iris highlight dot on this art
-        # rather than the aperture, a known failure of that tool on these
-        # two references): the realistic aperture runs about 2.2 times wider
-        # than tall, against the chibi's roughly 1.4, which is a flatter,
-        # more closed eye rather than a uniformly smaller one. The previous
-        # 0.20/0.10 reduction undershot that: it closed the aperture by
-        # about 15% at full build where closing it by about 30% lands on
-        # the measured ratio.
+        # Height measured directly off ref/satoko-real.jpg and
+        # ref/satoshi-real.jpg (aperture width/height read by eye off a
+        # pixel grid, since the automated `eyes` probe finds the iris
+        # highlight dot on this art rather than the aperture, a known
+        # failure of that tool on these two references) and confirmed
+        # against the chibi's own height, unaffected by any of this since
+        # `sk.build` gates it to 0 there: this reduction's own numbers hold
+        # up. What did not hold up on a re-measurement (`docs/gap-analysis.md`
+        # gap 10) was the aspect ratio quoted to justify them: "about 2.2
+        # times wider than tall" is not reproducible on either reference by
+        # measuring width and height each as their own fraction of figure
+        # height, which comes to 1.6 on Satoko and 1.4 on Satoshi. Height
+        # was never the problem.
         f = replace(
             f,
             eye_openness=f.eye_openness * (1.0 - 0.40 * sk.build),
             eye_lower_lid=f.eye_lower_lid * (1.0 - 0.20 * sk.build),
+            # The width was: unlike the height, nothing had ever narrowed
+            # it for the realistic build, so it carries the chibi's own
+            # wide-aperture value (`_EYE_ASPECT`, deliberately widened for
+            # the chibi's own reference in gap 6) straight into the adult
+            # face, 60% to 90% too wide against either reference measured
+            # the same way. `ref/satoko-real.jpg` is the owner's pick
+            # between the two references, which also happens to be this
+            # file's own tie-break rule when they disagree.
+            #
+            # Two wrong numbers were tried before this one, both from
+            # measuring ink on a render instead of the path it comes from.
+            # Matching our own ink width to the reference's ink width
+            # arithmetically points at a reduction near 0.99: a stroke
+            # bulges past a sharp corner by roughly its own width no
+            # matter how narrow the path underneath is, so past some point
+            # the number being matched is the stroke, not the aperture,
+            # and 0.99 renders as a black sliver with no almond left. A
+            # render sweep chosen by eye against that same ink-corrupted
+            # signal landed on 0.50, which looked like a narrower almond in
+            # a small crop but is actually the aperture's *width* passing
+            # *below* its already-correct height (`docs/gap-analysis.md`
+            # confirmed height was already close): the path comes out
+            # 10.1 x 10.1, round again rather than flattened, and reads
+            # exactly as round and crowded as the gap this was fixing,
+            # caught on a full-face overlay a tight crop did not show.
+            # `_eye_shape`'s aperture is closed-form, so there is no need to
+            # measure our own ink at all: solve `2w / (top+bot) = 1.6`,
+            # Satoko's own measured aspect, for the reduction, since
+            # `top+bot` (the height) is already right. That is 0.21, not
+            # 0.50, confirmed both by reading the emitted path's own bounds
+            # (16.1 x 10.1, aspect 1.59) and by the same full-face overlay.
+            # Satoshi's own reference wants narrower still (his measured
+            # aspect is 1.4 against Satoko's 1.6), left as a residual
+            # against his own photo rather than a second knob, the same
+            # way gap 8 leaves per-character residuals against the shared
+            # Satoko-anchored silhouette elsewhere.
+            eye_width=f.eye_width * (1.0 - 0.21 * sk.build),
         )
     # Canon face geometry, shared by every character; what differs per
     # character stays in FaceStyle. Eyes sit below the head's centre line and
