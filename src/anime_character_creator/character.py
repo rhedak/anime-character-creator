@@ -2469,12 +2469,21 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         # leaves the neck descending and arrives at the sleeve's tip nearly
         # horizontal. Putting it far out and barely down, which is what was here,
         # gives the opposite: a flat run and then a corner.
+        #
+        # From the tip down to the step in toward the arm, one quarter-round Q
+        # rather than a bulge-then-fillet chain: the control point sits directly
+        # below the tip, at the step's own height, so the curve leaves the tip
+        # vertical and arrives at `torso_at_cuff` already moving horizontally.
+        # That was tried as three separate curves first (an outward bulge down
+        # the sleeve, then a fillet rounding a flat step), and read as a wobble,
+        # two bends of opposite sense back to back, once both were in the same
+        # short run. One arc reads as a hem; a bulge and a fillet chained
+        # together reads as neither.
         return (
             f"Q {cx + s * sleeve_w * 0.50:.1f} {sy + slope * 0.62:.1f} "
             f"{cx + s * sleeve_w:.1f} {sy + slope:.1f} "
-            f"Q {cx + s * sleeve_w * 1.03:.1f} {sy + slope + (cuff_y - sy - slope) * 0.55:.1f} "
-            f"{cx + s * sleeve_w * 0.99:.1f} {cuff_y:.1f} "
-            f"L {cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
+            f"Q {cx + s * sleeve_w:.1f} {cuff_y:.1f} "
+            f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
         )
 
     # Leaves the armpit vertically and curves in to the waist, rather than being
@@ -2496,8 +2505,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     def shoulder_up(s: int) -> str:
         """The mirror of `shoulder`, cuff back up to the neck."""
         return (
-            f"L {cx + s * sleeve_w * 0.99:.1f} {cuff_y:.1f} "
-            f"Q {cx + s * sleeve_w * 1.03:.1f} {sy + slope + (cuff_y - sy - slope) * 0.55:.1f} "
+            f"Q {cx + s * sleeve_w:.1f} {cuff_y:.1f} "
             f"{cx + s * sleeve_w:.1f} {sy + slope:.1f} "
             f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + s * notch:.1f} {sy:.1f} "
         )

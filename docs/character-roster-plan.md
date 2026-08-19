@@ -1049,3 +1049,49 @@ out. Kyoko and Tomohiro left the character count entirely, which is what
 are the ones worth doing carefully; a character on top of machinery that
 already works is mostly a palette and a set of numbers, which is the
 shape this generator is supposed to have.
+
+### Phase 6: top polish
+
+Raised 2026-08-19, after the eye pass that fixed the whole cast's iris
+size and shape (see the preset comments on `iris_size` for that
+reasoning). Same session, next thing looked at: the torso garment,
+where every tunic-wearer shares one `_tunic`/`_arms` pair and a flaw or
+an addition there lands on all of them at once, the same leverage
+argument that ordered Phase 2's uniform before its five wearers.
+
+- [ ] **29. The shoulder/sleeve-to-arm seam.** `_tunic`'s cuff line
+      steps in from the sleeve's width to `torso_at_cuff` with a flat
+      `L` at `cuff_y`, and `_arms`' top edge sits on that same line at
+      the arm's own, narrower width. The step is deliberate (see
+      `_arms`' docstring: a garment hanging over a thinner arm needs a
+      visible step to read as cloth rather than as one continuous
+      limb), but a dead-horizontal corner reads as a machined shelf
+      rather than a hem. Reshape the join, an angled or lightly rounded
+      step instead of a flat one, on both functions together so the
+      hem line and the arm's top edge stay one line the way the
+      docstring says they should. Cheapest of this phase and the one
+      every later item here builds on, since a new neckline or a new
+      layer would otherwise just copy the corner.
+- [ ] **30. Neckline and sleeve-length variants on `_tunic`.** A round
+      neckline alongside the current V, and a long-sleeve-to-wrist
+      option alongside the current short sleeve plus undersleeve. New
+      `Outfit`/`FaceStyle`-style fields with neutral defaults, per
+      `CLAUDE.md`'s rule that a difference lives in the params, not
+      hardcoded into the part. Do this after 29, not before, so the new
+      variants inherit the corrected seam instead of a second copy of
+      the bug.
+- [ ] **31. A generalized light outer layer** (cardigan/vest): open
+      front, cropped, casual, a shorter twin of `_coat` at a new
+      length rather than new geometry. Gives the tunic-only characters
+      (the Satoko cluster, Chiyo) a second layer option the way the
+      robe and uniform clusters already have one.
+- [ ] **32. The chibi hem gap (carried over as task 20).** Skirt and
+      underskirt length reads correctly at the realistic build but
+      leaves a band of bare leg at chibi for several wearers (Satoko,
+      Kyoko, Keiko). Already measured, not re-litigated: see "A hem
+      that does not hold its reading across builds" above and #103's
+      resolution. Folded in here because it is the other open garment-geometry
+      item and this phase is already touching torso/limb shape code.
+- [ ] **33. Re-run the gap analysis (carried over as task 27)** once
+      29-32 land, against the sheet as a whole rather than
+      character by character.
