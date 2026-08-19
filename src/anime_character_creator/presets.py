@@ -66,8 +66,11 @@ SATOKO = CharacterParams(
         eye_corner=0.45,
         # Bigger than the 0.62 the canon's measured 0.116-of-head-width iris
         # implies: at that size the open aperture left a band of white above
-        # the iris and the face read startled. Chosen by eye.
-        iris_size=0.72,
+        # the iris and the face read startled. Pushed further still, past the
+        # aperture's own bound so the lids crop it top and bottom rather than
+        # merely filling the white: that crop is what a sympathetic rather
+        # than a startled stare needs (2026-08-19, same call across the cast).
+        iris_size=1.06,
         brow_tilt=0.40,
         brow_weight=0.85,
         mouth_curve=0.0,
@@ -120,7 +123,9 @@ SATOSHI = CharacterParams(
         # A touch narrower and sharper-cornered than Satoko's, which is all
         # that is left of the lidded look now the canon opens the aperture.
         eye_corner=0.50,
-        iris_size=0.72,
+        # Past the aperture's own bound so the lids crop it, same call as
+        # Satoko's (see her comment).
+        iris_size=1.02,
         brow_tilt=0.25,
         brow_weight=0.80,
         mouth_curve=0.0,
@@ -348,11 +353,12 @@ CHIYO = CharacterParams(
     # the rooms and the people in line. Brows down, mouth set flat, then aged.
     face=aged(
         FaceStyle(
-            eye_size=0.86,
-            eye_width=1.04,
+            eye_size=1.00,
+            eye_width=1.06,
+            eye_openness=0.86,
             eye_tilt=0.10,
-            eye_corner=0.55,
-            iris_size=0.66,
+            eye_corner=0.50,
+            iris_size=1.04,
             brow_tilt=0.50,
             brow_weight=0.90,
             mouth_curve=-0.10,
@@ -399,7 +405,7 @@ DAIZEN = CharacterParams(
             eye_width=1.10,
             eye_tilt=0.14,
             eye_corner=0.62,
-            iris_size=0.64,
+            iris_size=1.09,
             brow_tilt=0.65,
             brow_weight=1.00,
             mouth_curve=-0.20,
@@ -446,10 +452,11 @@ ELARA = CharacterParams(
     frame=-0.1,
     face=FaceStyle(
         eye_size=0.90,
-        eye_width=1.02,
+        eye_width=1.06,
+        eye_openness=0.86,
         eye_tilt=0.18,
-        eye_corner=0.55,
-        iris_size=0.70,
+        eye_corner=0.50,
+        iris_size=1.04,
         brow_tilt=0.55,
         brow_weight=0.95,
         mouth_curve=-0.15,
@@ -498,7 +505,7 @@ HARUTO = CharacterParams(
         eye_width=1.10,
         eye_tilt=0.20,
         eye_corner=0.60,
-        iris_size=0.68,
+        iris_size=1.12,
         brow_tilt=0.30,
         # The practised charming smile, which is the one thing about him that has
         # to survive being shrunk.
@@ -538,7 +545,7 @@ KEIKO = CharacterParams(
         eye_openness=0.82,
         eye_tilt=0.10,
         eye_corner=0.45,
-        iris_size=0.70,
+        iris_size=1.02,
         brow_tilt=0.10,
         brow_weight=0.70,
         mouth_curve=0.20,
@@ -586,11 +593,11 @@ KRISTA = CharacterParams(
     frame=-0.2,
     face=FaceStyle(
         eye_size=1.02,
-        eye_width=1.02,
-        eye_openness=1.05,
+        eye_width=1.06,
+        eye_openness=0.86,
         eye_tilt=0.05,
-        eye_corner=0.35,
-        iris_size=0.76,
+        eye_corner=0.50,
+        iris_size=1.04,
         brow_tilt=-0.10,
         brow_weight=0.70,
         # The one bright face in a cast that otherwise skews heavy and
@@ -635,7 +642,7 @@ REIKA = CharacterParams(
         eye_openness=0.86,
         eye_tilt=0.16,
         eye_corner=0.50,
-        iris_size=0.70,
+        iris_size=1.04,
         brow_tilt=0.05,
         brow_weight=0.65,
         # Gentle and serene rather than cold, which the document says is a
@@ -687,7 +694,7 @@ REINHARD = CharacterParams(
         eye_openness=0.88,
         eye_tilt=0.08,
         eye_corner=0.55,
-        iris_size=0.66,
+        iris_size=1.05,
         brow_tilt=0.20,
         brow_weight=0.85,
         # The faint knowing expression: present, and small enough not to read as
@@ -729,7 +736,7 @@ TENNO = CharacterParams(
             eye_width=1.06,
             eye_tilt=0.02,
             eye_corner=0.60,
-            iris_size=0.68,
+            iris_size=1.09,
             # Inner ends raised: the permanently apologetic expression the
             # document describes, which is the sorrow direction rather than the
             # stern one, and the one thing that separates him from Daizen at
@@ -780,7 +787,7 @@ VIKTOR = CharacterParams(
         eye_openness=0.84,
         eye_tilt=0.14,
         eye_corner=0.58,
-        iris_size=0.68,
+        iris_size=1.03,
         brow_tilt=0.15,
         brow_weight=0.75,
         # The relaxed half-smile: he coasts, and it should show.
