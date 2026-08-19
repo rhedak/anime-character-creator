@@ -1640,6 +1640,38 @@ asked); any preset actually switching to the anime style; the
 reference's eyelash-tuft and eyelid-crease details, which `_eye_anime`
 does not attempt.
 
+## Gap analysis re-run, 2026-08-19
+
+Docs Phase 6 (`docs/character-roster-plan.md` tasks 29-32: the tunic
+shoulder/sleeve seam, a round neckline and long-sleeve option, the
+cardigan/vest reuse of `_coat`, and the chibi hem gap) landed the same
+day, all chibi-scoped or build-neutral, so this only re-checked the
+realistic build for fallout: `docs/gap-analysis.md`'s new **gap 12**.
+
+An eye pass earlier the same session (not itself part of Phase 6, a
+direct request to make Chiyo's eyes read less startled) raised
+`iris_size` on every named preset, chibi-judged, without being
+build-gated. Gap 10/11 (2026-08-11/12) had `iris_size` landing almost
+exactly on `ref/satoko-real.jpg` at the realistic build; that match is
+now broken, measured at iris/aperture-bound 1.59-1.60 against the
+0.72 both gaps closed on. Reported in gap 12 with a proposed
+build-gated reduction (`K = 0.321`) that would restore the realistic
+match without undoing the chibi read; `iris_size` is one of two values
+gap 10 explicitly said needs the owner's sign-off before moving, so this
+went to the owner rather than being folded into the re-check that found
+it. **Closed the same day: kept, not reverted.** The owner looked at
+the realistic build directly and prefers the larger iris there too, so
+the ratio gap is accepted on purpose rather than fixed; the build-gated
+reduction was not applied. See gap 12 in `docs/gap-analysis.md`.
+
+Nothing else moved: the shoulder/sleeve seam, neckline and sleeve-length
+fields, and the coat-as-cardigan reuse are chibi-only or already
+build-neutral by construction (`_tunic`'s cuff arc reads the same
+skeleton anchors at every build; `neckline_round`/`sleeve_long` are
+new opt-in fields nothing existing sets). The chibi hem fix
+(`_skirt_hem_y`'s pull-back removed) does not touch the realistic
+build at all, confirmed unchanged in `ref-out/real/`.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

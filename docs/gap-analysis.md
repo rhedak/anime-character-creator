@@ -966,6 +966,80 @@ every build-gated fix in this file already lives with.
 `./refresh-ref-out.sh` and `./refresh-bases.sh` both ran; ruff and
 `pytest -q` (346 passed) green.
 
+### 12. `iris_size`'s chibi bump rode unchanged into the realistic build, breaking gap 10/11's exact match
+
+**2026-08-19, measured, realistic build, both characters. Needs a
+decision.** Raised outside this file's own process: a same-day session
+request ("Chiyo's eyes look too small / too startled") led to bumping
+`iris_size` past the aperture's own bound, past its short-lived 1.0
+ceiling, on every named preset, so the lids crop the iris instead of
+white showing all the way around it. Judged and shipped at chibi by eye,
+the same way most chibi work is judged post-lock-in. Nobody re-read gap
+10 or 11 first, and both explicitly warn about exactly this: gap 10 says
+outright "this is not a case for touching `iris_size` on its own... and
+should not be undone at either build without the owner's say," because
+gap 11 had by then measured it landing almost exactly on
+`ref/satoko-real.jpg` (iris/aperture-height 0.72 against 0.72, Satoshi
+4% under). `iris_size` is not build-gated, so raising it for the chibi
+read raised it identically at realistic, on top of an already-precise
+match nobody was trying to move.
+
+Recomputed from the shipped code (`_eye_placement`'s build-gated
+`eye_width`/`eye_openness`/`eye_lower_lid` reductions folded in, not the
+raw `FaceStyle` numbers, since gap 10 already found those are what the
+aperture bound actually tracks):
+
+| | chibi (`sk.build`=0.10) | realistic (`sk.build`=1.00) |
+| --- | --- | --- |
+| Satoko `iris_size` | 1.06 | 1.06 (unchanged) |
+| Satoko iris / aperture bound | 1.15 | 1.59 |
+| Satoshi `iris_size` | 1.02 | 1.02 (unchanged) |
+| Satoshi iris / aperture bound | 1.15 | 1.60 |
+
+The chibi ratios (1.15) are the intentional, looked-at result of this
+session's work: iris fills the aperture and the lids crop it slightly,
+which is what read as sympathetic rather than startled, checked across
+all fourteen presets. The realistic ratios (1.59-1.60) are not
+intentional: nobody looked at the realistic build while making this
+change, and the number confirms what a crop of `ref-out/real/satoko.png`
+next to `ref/satoko-real.jpg` already shows by eye, a rounder, more
+filled-in eye than her photo, undoing gap 11's close match rather than
+improving on it. (`.claude/skills/gap-analysis/probe.sh eyes` still
+cannot read either image, PITFALLS.md's blob-detector entry; both
+readings above are computed from the code's own formula, which needed no
+image analysis, and the crop was read by eye per that pitfall's fix.)
+
+**Why this wants a decision rather than a mechanical revert.** Undoing
+the bump outright would put the chibi "startled" look back, which is
+what the session's work was for. The shape of every other build-crossing
+fix in this file (gap 10's `eye_width`, gap 11's `eye_dx` and
+`eye_corner`) is a build-gated reduction: keep the chibi-tuned value at
+`sk.build` near 0, ease toward a realistic-tuned value as `sk.build`
+climbs to 1. Solving that shape for `iris_size` specifically, a
+reduction `iris_size * (1.0 - K * sk.build)` with `K = 0.321` lands
+Satoko's realistic ratio back on her exact pre-session match (1.06 ->
+0.72) and Satoshi's within the same 4%-under gap 11 already measured and
+left alone (1.02 -> 0.69). That agreement across two independent
+characters, from one shared constant, is a real signal and not a
+coincidence tuned to produce it, but it is still a change to a value
+this file has twice now said needs the owner's sign-off before moving,
+so it is reported here rather than applied. If taken, the fourteen
+non-reference presets would need the same by-eye check gap 10/11 did
+("no collision with Keiko's glasses, Daizen's or Reinhard's beards, or
+either scar mark") before landing.
+
+**Closed, the owner's call on 2026-08-19: keep the new value, gap
+accepted.** Looked at `ref-out/real/satoko.png` and `ref-out/real/satoshi.png`
+against the two references directly rather than going by the ratio
+alone, the same rule this file states throughout, and the larger iris
+reads better by eye at the realistic build too, not just at chibi. So
+the build-gated reduction above is not going in: `iris_size` stays
+unbuilt-gated and at its post-session value at every build, and the
+1.59-1.60 ratio measured above is not a defect, it is what the owner
+prefers to the 0.72 gap 10/11 tuned. Recorded here so a future pass does
+not read the ratio alone and re-open this a third time without knowing
+it was looked at and kept on purpose.
+
 ## Suggested order
 
 1. ~~Gap 4 (reshape the shadow wedges, or ask about dropping the garment
@@ -1016,3 +1090,7 @@ order, which makes them good filler work between the larger passes.
     "the reference's eyes look warm and sharp, ours look dead and
     boring," which these three were judged against by eye as well as by
     number.
+11. ~~Gap 12 (the `iris_size` regression)~~. **Closed, 2026-08-19: kept,
+    not reverted.** The owner looked at the realistic build directly and
+    prefers the larger iris there too; the proposed build-gated fix was
+    not applied. See the gap's own writeup.
