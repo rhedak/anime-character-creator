@@ -54,6 +54,12 @@ SATOKO = CharacterParams(
         # whichever one they happen to hang over.
         pouch_color="#564737",
         skirt_length=0.70,
+        # Keeps the pre-task-32 chibi silhouette the owner had gotten used to:
+        # this reproduces the exact hem the old floor-at-half pull-back used
+        # to land on at chibi, so the realistic build (measured against
+        # `ref/satoko.png`, and unaffected by any of this since it never hit
+        # the pull-back) is the only one whose length actually changed.
+        skirt_length_chibi=0.499,
     ),
     # Slightly the narrower-shouldered of the two. Only bites at taller builds.
     frame=-0.3,
@@ -346,6 +352,9 @@ CHIYO = CharacterParams(
         underskirt_color="#4f5347",
         pouch_color="#4f4133",
         skirt_length=0.78,
+        # See Satoko's `skirt_length_chibi` comment: same reasoning, her own
+        # pre-task-32 chibi hem reproduced exactly.
+        skirt_length_chibi=0.534,
         headscarf_color="#8d8064",
     ),
     frame=-0.2,
@@ -498,6 +507,9 @@ HARUTO = CharacterParams(
         # reference does.
         hakama_color="#2b2b26",
         hakama_length=0.60,
+        # See Satoko's `skirt_length_chibi` comment: same reasoning, applied
+        # to the hakama's own chibi-end field.
+        hakama_length_chibi=0.454,
     ),
     frame=0.7,
     face=FaceStyle(
@@ -535,6 +547,8 @@ KEIKO = CharacterParams(
         belt_color="#33332f",
         skirt_color="#3a3a35",
         skirt_length=0.82,
+        # See Satoko's `skirt_length_chibi` comment: same reasoning.
+        skirt_length_chibi=0.552,
         coat_color="#eceded",
         coat_length=0.80,
     ),
@@ -631,6 +645,11 @@ REIKA = CharacterParams(
         # duplicated on both.
         hakama_color="#4d9ca8",
         hakama_length=0.95,
+        # See Satoko's `skirt_length_chibi` comment: same reasoning, applied
+        # to the hakama's own chibi-end field. This is the one #103 was
+        # originally about, so the chibi hem stays exactly where that pass
+        # tuned it while the pull-back mechanism itself is gone.
+        hakama_length_chibi=0.610,
         robe_color="#c6cac9",
         sleeve_drop=0.70,
         belt_scale=2.2,

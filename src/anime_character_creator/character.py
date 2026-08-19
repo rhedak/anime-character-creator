@@ -174,6 +174,16 @@ class Outfit:
     # skeleton's own hem anchor, which is where a hem sits when nobody asks for
     # anything in particular.
     skirt_length: float | None = None
+    # An independent hem for the chibi end of the build range, blended toward
+    # `skirt_length` as the build climbs to realistic. None (the default) uses
+    # `skirt_length` unchanged at every build, which is `_skirt_hem_y`'s plain
+    # reading of "length is measured hip to ankle". This field exists because
+    # a character's realistic-build length can be measured and correct (the
+    # cast's own gap analysis only ever checked that build) while its chibi
+    # rendering is a separate design choice: see `_skirt_hem_y`'s own
+    # docstring and docs/character-roster-plan.md's Phase 6 task 32 note for
+    # why the two stopped being tied together.
+    skirt_length_chibi: float | None = None
     # Tunic tucked in at the belt rather than hanging over it: the tunic's hem
     # stops inside the belt band and whatever is worn below rises to meet it, so
     # the belt is the boundary between the two garments. Both Satoshi
@@ -248,6 +258,10 @@ class Outfit:
     # which is shorter, so a hakama that wants the reference's length has to
     # ask for it explicitly the way `skirt_length` already does.
     hakama_length: float | None = None
+    # The hakama's own `skirt_length_chibi`: an independent chibi-end hem,
+    # blended toward `hakama_length` as the build climbs. See that field's
+    # comment for why the two builds can want different lengths.
+    hakama_length_chibi: float | None = None
     # A cloth tied over the head, covering the crown and leaving the face and a
     # little hair showing. Worn rather than grown, so it is here and not on
     # `CharacterParams` beside the hair.
@@ -258,11 +272,16 @@ class Outfit:
     # darker, so a goggle color always ships with a glass that reads against it.
     goggle_color: str | None = None
     # An outer layer hanging open over whatever is worn under it: a cropped
-    # jacket, a lab coat, a long coat. One garment rather than three, because
-    # the three differ only in where the hem lands.
+    # jacket, a lab coat, a long coat, or (at the short end of `coat_length`)
+    # an open vest or cardigan over a tunic. One garment rather than four,
+    # because they differ only in where the hem lands: task 31 of
+    # `docs/character-roster-plan.md` went looking for a new "light outer
+    # layer" part and found this already drew one at a short enough length,
+    # so nothing new was built for it.
     coat_color: str | None = None
-    # Where the coat's hem falls, shoulder (0) to ankle (1). Roughly: 0.30 a
-    # jacket cropped at the waist, 0.62 below the knee, 0.75 mid-calf.
+    # Where the coat's hem falls, shoulder (0) to ankle (1). Roughly: 0.20 an
+    # open vest or cardigan over a tunic, 0.30 a jacket cropped at the waist,
+    # 0.62 below the knee, 0.75 mid-calf.
     coat_length: float = 0.55
     # Four mana crystals clipped to the belt, two a side, the carrying rig
     # Elara and Krista wear instead of a pouch: a crystal is dangerous to grip
@@ -3559,34 +3578,46 @@ def _skirt_half_w(sk: Skeleton, y: float) -> float:
     return sk.hip_half_w + (sk.hem_half_w - sk.hip_half_w) * (y - sk.hip_y) / span
 
 
-def _skirt_hem_y(sk: Skeleton, length: float | None) -> float:
+def _skirt_hem_y(sk: Skeleton, length: float | None, length_chibi: float | None = None) -> float:
     """Where a skirt ends. `length` is measured hip (0) to ankle (1); None takes
     the skeleton's own hem anchor, which is where a hem sits when nobody asks
     for anything in particular.
 
-    A requested length only fully applies at an adult build. The shorter the
-    build, the further the hem is pulled back toward the skeleton's own hem: a
-    chibi's legs are so short that a full-length skirt swallows them and the
-    figure reads as a bell with no limbs, which is why chibi versions of a long
-    garment are drawn shorter. Same reason the widths interpolate in the first
-    place.
+    A requested length used to be pulled back toward the skeleton's own,
+    shorter hem at low builds, floored at half strength rather than running
+    all the way down to `sk.build` (0.1 at chibi): task #103's report was that
+    at full `sk.build` strength, two lengths as far apart as 0.60 and 0.95 land
+    within four pixels of each other. The floor-at-half compromise, the
+    owner's pick on 2026-08-10, fixed Reika's hakama without going as far as
+    removing the pull-back outright, on the read that doing so would swallow a
+    chibi's short legs and read as a bell with no limbs underneath.
 
-    The pull-back is floored at half rather than running all the way down to
-    `sk.build`, which is 0.1 at the chibi build: at that strength two lengths as
-    far apart as 0.60 and 0.95 land within four pixels of each other, task
-    #103's report, and it is why Reika's near-floor-length reference hakama
-    used to read mid-thigh at the published build. `harness/hem/pullback.py`
-    swept five strengths against four references at both ends of the range in
-    use, Satoko's skirt through Reika's hakama; half was the owner's pick on
-    2026-08-10, enough to fix Reika without changing Satoko's already-settled
-    look past what the reference asks for. A short hem stays available to
-    anyone who wants one: this is how much of a *requested* length lands, not a
-    floor under how short `length` itself may be.
+    That read turned out not to hold once it was rendered rather than assumed.
+    Docs Phase 6 task 32 found a real bare-leg gap the floor-at-half left
+    behind, between the hem and the boot tops, on Satoko and Keiko at their
+    shipped lengths (0.70, 0.82); removing the pull-back entirely closed it
+    with no bell, no swallowed legs, checked across the whole range in
+    `harness/hem/pullback.py`'s own four references (0.60 to 0.95) and at the
+    literal extreme, `skirt_length=1.0`. So there is no hidden pull-back: a
+    requested `length` lands exactly, at every build, the plain reading of
+    "length is measured hip to ankle" the docstring already promised.
+
+    `length_chibi`, added the same day, is the opt-in way to still want two
+    different lengths at the two ends of the build range: `None` (every
+    character but the four the owner asked to keep their pre-task-32 chibi
+    silhouette) leaves `length` alone at every build. Set, it is what
+    `length` blends *from* at the chibi end, linearly against `sk.build`,
+    the same shape of idea `Hairstyle.volume` already uses for a chibi
+    wearing more hair than an adult on the same head. Unlike the old
+    pull-back, this is a stated choice per character rather than a hidden
+    rule applied to everyone: `skirt_length` still means what it says unless
+    a character's preset opts into a second number.
     """
     if length is None:
         return sk.hem_y
-    asked = sk.hip_y + length * (sk.ankle_y - sk.hip_y)
-    return sk.hem_y + (asked - sk.hem_y) * max(sk.build, 0.5)
+    if length_chibi is not None:
+        length = length_chibi + (length - length_chibi) * sk.build
+    return sk.hip_y + length * (sk.ankle_y - sk.hip_y)
 
 
 def _skirt_corner_y(sk: Skeleton, hem_y: float) -> float:
@@ -3677,7 +3708,7 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.underskirt_color
     if color is None:
         return ""
-    skirt_hem = _skirt_hem_y(sk, p.outfit.skirt_length)
+    skirt_hem = _skirt_hem_y(sk, p.outfit.skirt_length, p.outfit.skirt_length_chibi)
     hem_y = skirt_hem + (sk.ankle_y - sk.hip_y) * _UNDERSKIRT_DROP
     # Hangs straight below the skirt's own hem rather than continuing to flare,
     # and clearly narrower, so it reads as being under the other one. At 0.97 it
@@ -3744,7 +3775,11 @@ def _apron(sk: Skeleton, p: CharacterParams) -> str:
     # across the hips where the canon hangs an apron down the skirt. Stated as a
     # share of the skirt the apron hangs over, one number holds at both builds.
     top_y = sk.waist_y - (sk.hip_y - sk.waist_y) * 0.40
-    bot_y = top_y + (_skirt_hem_y(sk, p.outfit.skirt_length) - top_y) * _APRON_DROP
+    bot_y = (
+        top_y
+        + (_skirt_hem_y(sk, p.outfit.skirt_length, p.outfit.skirt_length_chibi) - top_y)
+        * _APRON_DROP
+    )
     # Narrower than the waist by a quarter rather than a tenth. At 0.90 the panel
     # reached the hips, so the pouches hanging there landed on its top corners and
     # the belt, apron and pouches read as one satchel strapped across the body,
@@ -3797,7 +3832,7 @@ def _hakama(sk: Skeleton, p: CharacterParams) -> str:
         return ""
     sw = _stroke_w(sk)
     top_y = sk.waist_y
-    hem_y = _skirt_hem_y(sk, p.outfit.hakama_length)
+    hem_y = _skirt_hem_y(sk, p.outfit.hakama_length, p.outfit.hakama_length_chibi)
     d = _skirt_path(sk, top_y, hem_y)
     shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
     if not p.shaded:
@@ -3824,7 +3859,7 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.skirt_color
     if color is None:
         return ""
-    hem_y = _skirt_hem_y(sk, p.outfit.skirt_length)
+    hem_y = _skirt_hem_y(sk, p.outfit.skirt_length, p.outfit.skirt_length_chibi)
     # Starts above the hip so the tunic drawn over it has something to overlap
     # and the waistband never opens onto skin.
     top_y = sk.waist_y

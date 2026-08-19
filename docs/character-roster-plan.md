@@ -822,6 +822,18 @@ hakama, and `_underskirt` wherever it is worn, since all four read the same
 function. Kyoko and Tomohiro are untouched, since they wear trousers, which do
 not call `_skirt_hem_y` at all. Confirmed smooth across the whole build range,
 not just the two named ones, by rendering five points between chibi and
+
+**Reopened and reversed, 2026-08-19 (task 32).** The floor-at-half compromise
+turned out to leave the exact gap it was meant to close, a band of bare leg
+between the hem and the boot tops, on Satoko and Keiko at their shipped
+lengths. `harness/hem/pullback.py`'s own candidates were re-rendered, "full"
+included, against the same four references this section already names, plus
+the literal extreme (`skirt_length=1.0`): no bell, no swallowed legs, at any
+of them. So the 2026-08-10 read that "full" over-corrected Satoko past her
+reference did not hold up once actually looked at again, and the pull-back is
+gone rather than floored: `_skirt_hem_y` returns the requested length exactly,
+at every build. See `character.py`'s own docstring on the function for the
+rendered evidence.
 realistic.
 
 ### Still below the line, and deliberately
@@ -1002,13 +1014,7 @@ still comes before every expensive character.
 - [x] **19. Keiko Natsume.** White lab coat over a dark wrap and long
       skirt, long centre-parted hair, glasses. Glasses are a new head
       part, cheap, and carry her almost single-handed at tile size.
-- [ ] **20. The chibi hem.** A skirt length that reads the same at both
-      builds rather than the same fraction of hip-to-ankle, which is what
-      leaves Satoko and Kyoko bare-legged at chibi today (see "A hem that
-      does not hold its reading across builds"). Here rather than earlier
-      because Keiko's skirt is the third one to want it and the sheet is
-      the first thing that shows it off; earlier is fine if Chiyo makes
-      it obvious first.
+- [x] **20. The chibi hem**, done 2026-08-19 as task 32; see there.
 
 Kyoko's coat used to be this task and has moved to task 8, with the rest
 of her. She is Satoko, so she arrived with the first pair.
@@ -1080,18 +1086,43 @@ argument that ordered Phase 2's uniform before its five wearers.
       hardcoded into the part. Do this after 29, not before, so the new
       variants inherit the corrected seam instead of a second copy of
       the bug.
-- [ ] **31. A generalized light outer layer** (cardigan/vest): open
-      front, cropped, casual, a shorter twin of `_coat` at a new
-      length rather than new geometry. Gives the tunic-only characters
-      (the Satoko cluster, Chiyo) a second layer option the way the
-      robe and uniform clusters already have one.
-- [ ] **32. The chibi hem gap (carried over as task 20).** Skirt and
-      underskirt length reads correctly at the realistic build but
-      leaves a band of bare leg at chibi for several wearers (Satoko,
-      Kyoko, Keiko). Already measured, not re-litigated: see "A hem
-      that does not hold its reading across builds" above and #103's
-      resolution. Folded in here because it is the other open garment-geometry
-      item and this phase is already touching torso/limb shape code.
+- [x] **31. A generalized light outer layer** (cardigan/vest), done
+      2026-08-19. Turned out to need no new geometry at all: `_coat`
+      already draws an open two-panel outer layer at any `coat_length`,
+      and rendering it at 0.20-0.30 (shoulder to ankle) reads as an
+      open vest/cardigan over a tunic on both a skirt-wearer and a
+      trouser-wearer, checked by eye on Satoko and Satoshi. The only
+      change was the catalogue's `coat_length` floor, 0.30 to 0.20, and
+      the field comments on `Outfit.coat_color`/`coat_length`
+      documenting the short end as a standing option. Gives the
+      tunic-only characters (the Satoko cluster, Chiyo) a second layer
+      option the way the robe and uniform clusters already have one,
+      with zero new render code to maintain.
+- [x] **32. The chibi hem gap (carried over as task 20)**, done
+      2026-08-19. #103's floor-at-half compromise (2026-08-10) turned
+      out to leave the gap it was meant to close: rendered evidence
+      this time, not re-litigated from memory, is in `_skirt_hem_y`'s
+      own docstring and in "#103, closed" above, which now carries the
+      reversal. `_skirt_hem_y` returns the requested length exactly at
+      every build; the pull-back is gone rather than floored.
+
+      **Follow-up the same day: the owner had gotten used to the old
+      chibi silhouette.** The realistic build is the one ever measured
+      against a reference, so it was never in question; the chibi one
+      was a look in its own right by this point, independent of what
+      motivated the original bug. Rather than re-coupling the two
+      builds, `Outfit` gained `skirt_length_chibi` and
+      `hakama_length_chibi`, an opt-in second number each blends
+      *from* at the chibi end (`sk.build == 0`) toward the main length
+      at realistic, the same shape of idea `Hairstyle.volume` already
+      uses. `None` (every character but the four below) leaves the one
+      number in charge at every build, which is what task 32 itself
+      shipped. Satoko, Chiyo, Keiko and Reika's chibi fields are set to
+      reproduce their pre-task-32 chibi hem exactly, solved from the
+      old floor-at-half formula rather than eyeballed; Haruto's too,
+      for consistency, though trousers under his hakama meant it was
+      never visibly bare-legged either way. Realistic renders are
+      untouched, confirmed unchanged in `ref-out/real/`.
 - [ ] **33. Re-run the gap analysis (carried over as task 27)** once
       29-32 land, against the sheet as a whole rather than
       character by character.

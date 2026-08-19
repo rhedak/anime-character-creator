@@ -219,13 +219,15 @@ SKIRT = GarmentSlot(
     # to be a knob that visibly did nothing at the chibi build: `_skirt_hem_y`
     # pulled a requested length back toward the skeleton's own hem so hard
     # that 0.60 and 0.95 landed within four pixels of each other, the finding
-    # `harness/hem/pullback.py` recorded. That was fixed in `d9fb68d`, the
-    # commit before this document's own baseline, flooring the pull-back at
-    # half strength: the same two lengths are 16px apart on the published
-    # chibi now (measured directly against `_skirt_hem_y` while building this
-    # catalogue), which is what makes the full 0..1 range worth exposing
-    # rather than the trap the plan warned about.
-    ranges=(_range("skirt_length", "Skirt length", 0.0, 1.0),),
+    # `harness/hem/pullback.py` recorded. Task 32 (2026-08-19) removed that
+    # pull-back entirely, so `skirt_length` now lands exactly at every build.
+    # `skirt_length_chibi`, added the same day, is the opt-in second number
+    # for a character who wants a shorter hem at chibi specifically than at
+    # realistic; unset, the main length applies everywhere.
+    ranges=(
+        _range("skirt_length", "Skirt length", 0.0, 1.0),
+        _range("skirt_length_chibi", "Skirt length at chibi (overrides above)", 0.0, 1.0),
+    ),
 )
 UNDERSKIRT = GarmentSlot(
     "underskirt",
@@ -256,19 +258,24 @@ HAKAMA = GarmentSlot(
     "hakama",
     "Hakama (wide pleated trousers/skirt)",
     _color("hakama_color", "Hakama (wide pleated trousers/skirt)"),
-    # Same hip-to-ankle measure as `skirt_length`, and the same fix applies.
-    ranges=(_range("hakama_length", "Hakama length", 0.0, 1.0),),
+    # Same hip-to-ankle measure as `skirt_length`, and the same two-field
+    # split: `hakama_length_chibi` is the opt-in chibi-only override.
+    ranges=(
+        _range("hakama_length", "Hakama length", 0.0, 1.0),
+        _range("hakama_length_chibi", "Hakama length at chibi (overrides above)", 0.0, 1.0),
+    ),
 )
 HEADSCARF = GarmentSlot("headscarf", "Headscarf", _color("headscarf_color", "Headscarf"))
 GOGGLES = GarmentSlot("goggles", "Goggles", _color("goggle_color", "Goggles"))
 COAT = GarmentSlot(
     "coat",
-    "Coat",
-    _color("coat_color", "Coat"),
-    # The docstring's own three named lengths run 0.30 to 0.75; the cast's
+    "Coat (open outer layer; short for a vest or cardigan)",
+    _color("coat_color", "Coat (open outer layer; short for a vest or cardigan)"),
+    # The docstring's own four named lengths run 0.20 to 0.75; the cast's
     # widest span is Tomohiro's 0.44 to Keiko's 0.80, so the range is bounded a
-    # little past both rather than left at the type's full domain.
-    ranges=(_range("coat_length", "Coat length", 0.30, 0.85),),
+    # little past both rather than left at the type's full domain. 0.20 opens
+    # the floor down to the vest/cardigan length task 31 found already worked.
+    ranges=(_range("coat_length", "Coat length", 0.20, 0.85),),
 )
 
 # Order here is display order: the two always-worn layers first, then

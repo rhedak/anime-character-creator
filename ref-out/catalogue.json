@@ -226,6 +226,12 @@
           "label": "Skirt length",
           "min": 0.0,
           "max": 1.0
+        },
+        {
+          "field": "skirt_length_chibi",
+          "label": "Skirt length at chibi (overrides above)",
+          "min": 0.0,
+          "max": 1.0
         }
       ]
     },
@@ -372,6 +378,12 @@
           "label": "Hakama length",
           "min": 0.0,
           "max": 1.0
+        },
+        {
+          "field": "hakama_length_chibi",
+          "label": "Hakama length at chibi (overrides above)",
+          "min": 0.0,
+          "max": 1.0
         }
       ]
     },
@@ -394,17 +406,17 @@
     },
     {
       "id": "coat",
-      "label": "Coat",
+      "label": "Coat (open outer layer; short for a vest or cardigan)",
       "color": {
         "field": "coat_color",
-        "label": "Coat",
+        "label": "Coat (open outer layer; short for a vest or cardigan)",
         "optional": true
       },
       "ranges": [
         {
           "field": "coat_length",
           "label": "Coat length",
-          "min": 0.3,
+          "min": 0.2,
           "max": 0.85
         }
       ]
