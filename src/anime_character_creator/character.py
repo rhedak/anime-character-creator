@@ -182,6 +182,16 @@ class Outfit:
     # which is the point: they have to agree on the line they meet at, and the
     # belt is only wide enough to hide a disagreement of a few pixels.
     tunic_tucked: bool = False
+    # A crew neckline in place of the tunic's default open V. Off by default
+    # since the V is what every shipped preset wears; a garment with a
+    # standing collar (`collar_color`) already shrinks the V to a hidden seam
+    # and ignores this, so the two never fight over the same neckline.
+    neckline_round: bool = False
+    # The tunic's sleeve reads its own sleeve colour all the way to the
+    # wrist cuff instead of stopping at the short hem and handing off to
+    # `undersleeve_color`/bare skin. Off by default, the short sleeve every
+    # shipped preset wears.
+    sleeve_long: bool = False
     # --- Uniform trim. Five fields rather than one `uniform=True`, because the
     # cast does not wear the uniform as a unit: Tenno has the cut without the
     # strap, Elara and Krista hang crystals off the belt that nobody else
@@ -2510,6 +2520,17 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + s * notch:.1f} {sy:.1f} "
         )
 
+    # The V is two straight edges meeting at a point. A round neckline is the
+    # same two endpoints, `(cx+notch, sy)` and `(cx-notch, sy)`, joined by one
+    # curve instead: a control point twice as deep as the V's own point so the
+    # curve's midpoint (which a quadratic always pulls back toward the
+    # endpoints' height) lands at the same depth the V cuts to, rather than
+    # reading shallower for no stated reason.
+    closing = (
+        f"Q {cx:.1f} {sy + notch * 2.0:.1f} {cx - notch:.1f} {sy:.1f} Z"
+        if p.outfit.neckline_round
+        else f"L {cx:.1f} {sy + notch:.1f} Z"
+    )
     d = (
         f"M {cx - notch:.1f} {sy:.1f} "
         + shoulder(-1)
@@ -2517,8 +2538,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         + f"L {cx + hw:.1f} {hy:.1f} "
         + up(1)
         + shoulder_up(1)
-        + f"L {cx:.1f} {sy + notch:.1f} "
-        f"Z"
+        + closing
     )
     fill = p.outfit.tunic_color
     shape = f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
@@ -2528,11 +2548,20 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         # notch so the tunic's own outline still bounds it. Not under a collar,
         # where there is no V left to trim.
         notch_t = notch * 0.78
-        shape += (
-            f'<path d="M {cx - notch_t:.1f} {sy + notch * 0.10:.1f} L {cx:.1f} {sy + notch_t:.1f} '
+        trim = (
+            # Same curve the neckline itself uses, pulled in to the trim's own
+            # narrower width rather than traced as a fresh shape, so a round
+            # collar's trim agrees with the collar it sits inside of.
+            f'<path d="M {cx - notch_t:.1f} {sy + notch * 0.10:.1f} '
+            f"Q {cx:.1f} {sy + notch_t * 2.0:.1f} {cx + notch_t:.1f} {sy + notch * 0.10:.1f}"
+            f'" fill="none" stroke="{p.outfit.undersleeve_color}" '
+            f'stroke-width="{_stroke_w(sk) * 0.9:.1f}" />'
+            if p.outfit.neckline_round
+            else f'<path d="M {cx - notch_t:.1f} {sy + notch * 0.10:.1f} L {cx:.1f} {sy + notch_t:.1f} '
             f'L {cx + notch_t:.1f} {sy + notch * 0.10:.1f}" fill="none" '
             f'stroke="{p.outfit.undersleeve_color}" stroke-width="{_stroke_w(sk) * 0.9:.1f}" />'
         )
+        shape += trim
     return shape
 
 
@@ -3835,9 +3864,16 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
     Whatever the undersleeve is, it carries the arm's whole length. Against a
     green tunic a tan sleeve is what separates the arm from the torso; left bare,
     the arm is skin and does the same job.
+
+    `Outfit.sleeve_long` swaps that whole tube to `tunic_color`, cuff included:
+    the same geometry the short sleeve's undersleeve already uses, just read in
+    the tunic's own colour instead of the undersleeve's, since a long sleeve is
+    the tunic's own cloth continuing rather than a second garment showing
+    through it.
     """
     cx = sk.head_cx
-    sleeve = p.outfit.undersleeve_color or p.skin_tone
+    long_sleeve = p.outfit.sleeve_long
+    sleeve = p.outfit.tunic_color if long_sleeve else (p.outfit.undersleeve_color or p.skin_tone)
     top_y = _sleeve_hem_y(sk)
     wrist_y = sk.hip_y + sk.arm_half_w * 0.8
     elbow_y = sk.waist_y
@@ -3899,7 +3935,7 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         parts.append(
             f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
         )
-        if p.outfit.undersleeve_color is not None:
+        if p.outfit.undersleeve_color is not None or long_sleeve:
             parts.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
         parts.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
     return "".join(parts)

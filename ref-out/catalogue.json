@@ -166,6 +166,14 @@
         {
           "field": "tunic_tucked",
           "label": "Tucked in"
+        },
+        {
+          "field": "neckline_round",
+          "label": "Round neckline"
+        },
+        {
+          "field": "sleeve_long",
+          "label": "Long sleeves"
         }
       ]
     },

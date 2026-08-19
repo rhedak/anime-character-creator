@@ -152,7 +152,11 @@ TUNIC = GarmentSlot(
     "tunic",
     "Tunic",
     _color("tunic_color", "Tunic", optional=False),
-    bools=(_bool("tunic_tucked", "Tucked in"),),
+    bools=(
+        _bool("tunic_tucked", "Tucked in"),
+        _bool("neckline_round", "Round neckline"),
+        _bool("sleeve_long", "Long sleeves"),
+    ),
 )
 # Always worn, likewise. `boot_shaft` is 0 (ankle) to 1 (knee) across the
 # whole cast, Tenno's 0.55 through the uniform's 1.0, so the full declared
