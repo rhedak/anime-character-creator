@@ -36,9 +36,9 @@ head accessory.
 | --- | --- | --- | --- |
 | <img src="ref-out/on-white/keiko.png" width="140" alt="Keiko"> | <img src="ref-out/on-white/krista.png" width="140" alt="Krista"> | <img src="ref-out/on-white/reika.png" width="140" alt="Reika"> | <img src="ref-out/on-white/reinhard.png" width="140" alt="Reinhard"> |
 
-| Tenno | Viktor |  |  |
+| Tenno | Viktor | Katherina |  |
 | --- | --- | --- | --- |
-| <img src="ref-out/on-white/tenno.png" width="140" alt="Tenno"> | <img src="ref-out/on-white/viktor.png" width="140" alt="Viktor"> |  |  |
+| <img src="ref-out/on-white/tenno.png" width="140" alt="Tenno"> | <img src="ref-out/on-white/viktor.png" width="140" alt="Viktor"> | <img src="ref-out/on-white/katherina.png" width="140" alt="Katherina"> |  |
 
 All fourteen live in `ref-out/` as both `.png` and `.svg`. **They are
 transparent**, so a render drops onto a scene as it is.

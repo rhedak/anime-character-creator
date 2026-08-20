@@ -844,7 +844,7 @@ KATHERINA = CharacterParams(
         boot_color="#1a1a1a",
         belt_color="#3a3226",
         collar_color="#c9a13b",
-        coat_color="#1b1f33",
+        coat_color="#12152a",
         coat_length=0.62,
         sleeve_long=True,
     ),
@@ -946,6 +946,9 @@ ROSTERS["satoshi"] = (
     "satoshi",
     *sorted(n for n in ROSTERS["cast"] if n not in ("satoshi", "satoko", "kyoko")),
 )
+# Katherina belongs to a separate book (../time_slider_katharina) and has no
+# overlap with the Valley of Mist cast, so she gets her own roster.
+ROSTERS["katherina"] = ("katherina",)
 
 # Which characters get a realistic-build render checked into `ref-out/real/`.
 #
