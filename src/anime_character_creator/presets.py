@@ -816,7 +816,57 @@ VIKTOR = CharacterParams(
     ),
 )
 
+# Katherina Beaumont, protagonist of ../time_slider_katharina (working title
+# "The Shifted Hours"), a separate book from Valley of Mist's own cast above.
+# Dark purple hair and amber eyes are canon from the book's own Ch1 prose
+# (`../time_slider_katharina/docs/continuity_reference.md`); the amber-flecks
+# detail described there (a mark near the left pupil, not a uniform iris
+# tone) has no field to carry it here, so the base iris colour alone stands
+# in for it. Hair worn tied back (`hair_tail`) per the same chapter's "hair
+# coming loose from whatever I'd tied it back with hours ago"; `hair_knot`
+# was the other candidate for that line but reads closer to a topknot than a
+# ponytail, and a working academic's practical tie is closer to the intent.
+# Outfit reaches for "prestigious magic academy," not folk-witch: a dark,
+# tailored coat over a plain tunic and skirt, gold trim standing in for
+# academic rank rather than embroidery or a pointed hat (no hat shape exists
+# in this tool yet; deliberately left off rather than faked with a headscarf,
+# see that repo's own design notes on the cover work this preset is for).
+KATHERINA = CharacterParams(
+    skin_tone="#f2c9a8",
+    hair_color="#4b2c5e",
+    hairstyle="long_traced",
+    hair_length=0.55,
+    hair_tail=0.7,
+    eye_color="#c98a3e",
+    outfit=Outfit(
+        tunic_color="#2b2438",
+        skirt_color="#241f30",
+        boot_color="#1a1a1a",
+        belt_color="#3a3226",
+        collar_color="#c9a13b",
+        coat_color="#1b1f33",
+        coat_length=0.62,
+        sleeve_long=True,
+    ),
+    frame=-0.1,
+    face=FaceStyle(
+        eye_size=1.05,
+        eye_width=1.02,
+        eye_openness=0.90,
+        iris_size=1.10,
+        # A level, appraising brow rather than a friendly one: the character
+        # reads people as problems to be assessed, not company to be warmed
+        # to (`../time_slider_katharina/docs/characters.md`).
+        brow_tilt=-0.05,
+        brow_weight=0.68,
+        mouth_curve=0.10,
+        mouth_width=0.68,
+        blush=0.1,
+    ),
+)
+
 PRESETS: dict[str, CharacterParams] = {
+    "katherina": KATHERINA,
     "satoko": SATOKO,
     "satoshi": SATOSHI,
     "kyoko": KYOKO,
@@ -841,6 +891,7 @@ PRESETS: dict[str, CharacterParams] = {
 # presentation metadata in the same category as `REALISTIC_REFS` and not part of
 # who a character is. It also keeps a name out of every preset constructor.
 DISPLAY_NAMES: dict[str, str] = {
+    "katherina": "Katherina Beaumont",
     "satoko": "Satoko",
     "satoshi": "Satoshi",
     "kyoko": "Kyoko",
