@@ -12,7 +12,8 @@ for free, since every character is built from the same shape code. No
 animation. Backgrounds/text overlays may be added later as more SVG
 layers.
 
-Fourteen named characters (`presets.py`), each a first draft, all
+Fourteen named characters for *Valley of Mist* plus a few guests from
+other projects (`presets.py`), each a first draft, all
 rendering at the chibi (big head, short body) front-facing build by
 default; `--build realistic` (or `--heads` for anything in between)
 renders the same character taller. Multiple hairstyles and a full

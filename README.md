@@ -13,16 +13,17 @@ possible later addition (they'd slot in as extra SVG layers).
 
 ## Status
 
-Fourteen named characters, all rendering at the chibi build. Build is a
-named mode, `--build chibi` (default) or `--build realistic`, with
-`--heads` open for anything in between.
+Fourteen named characters for *Valley of Mist*, plus guests from two other
+projects (Katherina from `../time_slider_katharina`; Gero and Linnea from
+`../short_stories`), all rendering at the chibi build. Build is a named
+mode, `--build chibi` (default) or `--build realistic`, with `--heads`
+open for anything in between.
 
-All fourteen are **first drafts**: each carries the colouring, frame and
-garments its design calls for, judged at the size a character is actually
-seen on a sheet rather than at full height. What is deliberately left off
-is listed per cluster in `docs/character-roster-plan.md`, and the two
-least finished are Krista and Chiyo, whose references lean hardest on a
-head accessory.
+All are **first drafts**: each carries the colouring, frame and garments
+its design calls for, judged at the size a character is actually seen on a
+sheet rather than at full height. What is deliberately left off is listed
+per cluster in `docs/character-roster-plan.md`, and the two least finished
+are Krista and Chiyo, whose references lean hardest on a head accessory.
 
 | Satoko | Satoshi | Kyoko | Tomohiro |
 | --- | --- | --- | --- |
@@ -36,11 +37,15 @@ head accessory.
 | --- | --- | --- | --- |
 | <img src="ref-out/on-white/keiko.png" width="140" alt="Keiko"> | <img src="ref-out/on-white/krista.png" width="140" alt="Krista"> | <img src="ref-out/on-white/reika.png" width="140" alt="Reika"> | <img src="ref-out/on-white/reinhard.png" width="140" alt="Reinhard"> |
 
-| Tenno | Viktor | Katherina |  |
+| Tenno | Viktor | Katherina | Gero |
 | --- | --- | --- | --- |
-| <img src="ref-out/on-white/tenno.png" width="140" alt="Tenno"> | <img src="ref-out/on-white/viktor.png" width="140" alt="Viktor"> | <img src="ref-out/on-white/katherina.png" width="140" alt="Katherina"> |  |
+| <img src="ref-out/on-white/tenno.png" width="140" alt="Tenno"> | <img src="ref-out/on-white/viktor.png" width="140" alt="Viktor"> | <img src="ref-out/on-white/katherina.png" width="140" alt="Katherina"> | <img src="ref-out/on-white/gero.png" width="140" alt="Gero"> |
 
-All fourteen live in `ref-out/` as both `.png` and `.svg`. **They are
+| Linnea |  |  |  |
+| --- | --- | --- | --- |
+| <img src="ref-out/on-white/linnea.png" width="140" alt="Linnea"> |  |  |  |
+
+All of them live in `ref-out/` as both `.png` and `.svg`. **They are
 transparent**, so a render drops onto a scene as it is.
 
 They are also only two people. Kyoko is Satoko before the dye and the
@@ -51,14 +56,14 @@ copied face keeps it only until somebody tunes an eye. See
 `docs/character-roster-plan.md`.
 
 The table is the chibi, which is the build this project publishes. The
-realistic build still works on anything (`--build realistic`), and all
-fourteen are checked in under `ref-out/real/` too, but they are not
+realistic build still works on anything (`--build realistic`), and every
+character is checked in under `ref-out/real/` too, but they are not
 displayed here: the owner's call on 2026-08-08 was that the tall figures
 do not work well enough yet and the chibi is where the project is. Only
 Satoko and Satoshi's realistic renders have ever been measured against a
-reference (`ref/satoko-real.jpg`, `ref/satoshi-real.jpg`); the other
-twelve are unjudged previews, checked in on the owner's 2026-08-11 call
-so every character has one, not a claim that they hold up.
+reference (`ref/satoko-real.jpg`, `ref/satoshi-real.jpg`); the rest are
+unjudged previews, checked in on the owner's 2026-08-11 call so every
+character has one, not a claim that they hold up.
 
 `ref-out/cover.svg` is there too: a book cover composed around one of
 them by `cover.py`, which is the same drawing code with a backdrop, mist
@@ -85,7 +90,7 @@ references and cover from here (`render.sh`, `cover.sh`). This repo stays
 the generic drawing tool; that repo owns the chapter-scanning and
 publication-specific detail.
 
-The tables above link `ref-out/on-white/`, which is the same fourteen
+The tables above link `ref-out/on-white/`, which is the same characters
 drawn on a white background. That exists for this page and nothing else:
 the outline is `#0d0d0d` and a dark theme here is about `#0d1117`, so a
 transparent figure on it loses its whole outer contour, which is the
@@ -102,9 +107,9 @@ the code no longer produces:
 ```
 
 It renders every character in `PRESETS` at the chibi build, every name
-in `REALISTIC_REFS` (currently the same fourteen) at the realistic
-build too, and both pages, so adding a character means adding it to
-`presets.py` and nothing else.
+in `REALISTIC_REFS` (currently every preset) at the realistic build too,
+and both pages, so adding a character means adding it to `presets.py` and
+nothing else.
 Everything else generated goes to `out/`, which is not checked in.
 
 Current shape set: head (a circle at chibi scale, narrowing to a jaw as

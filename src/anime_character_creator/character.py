@@ -2472,6 +2472,15 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # out below the collar's lower edge and reads as a second neckline.
     notch = sk.neck_half_w * (0.28 if p.outfit.collar_color else 0.8)
     sleeve_w = _sleeve_half_w(sk)
+    # A coat worn over the tunic hides its short sleeve at the shoulder. The
+    # coat's own shoulder reaches `_sleeve_half_w(sk) * 0.92` (see `_coat`) and
+    # its top edge starts below the tunic sleeve's tip, so at full width the
+    # tunic sleeve pokes a wedge out past the coat and above the arm drawn last.
+    # It is invisible when the tunic and coat tones are close (every coat preset
+    # to date) and obvious when they contrast. Pull the sleeve in under the
+    # coat's shoulder so the coat, and the arm below it, cover it completely.
+    if p.outfit.coat_color is not None:
+        sleeve_w = _sleeve_half_w(sk) * 0.90
     cuff_y = _sleeve_hem_y(sk)
     # Shoulders slope. A horizontal shoulder line is what made the sleeve look
     # bolted on even once it was the right shape. 0.14 was not enough of it: the

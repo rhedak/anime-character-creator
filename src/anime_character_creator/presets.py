@@ -865,8 +865,124 @@ KATHERINA = CharacterParams(
     ),
 )
 
+# Gero and Linnea are the cast of "The Hunt for the Everglow Crystals"
+# (../short_stories/stories/everglow_crystals), a story with no reference
+# art of its own, designed directly per the CLAUDE.md path for a cast
+# outside this tool's own novels.
+
+# Gero: late 40s, thirty years a wandering treasure hunter before the
+# story opens, lean rather than broad from the road rather than from
+# training. Weathered warm skin, ash-brown hair already going grey (one
+# flat tone reads that without a texture this project's vocabulary
+# cannot draw, same reasoning as `aged()` below), kept short and
+# practical, and a beard for the same reason: a man who lives outdoors,
+# not a groomed one. Pale tallow-yellow eyes, a common enough trait in
+# this world and stated flat in ch1 ("His eyes were pale, a tallow
+# yellow"); the story keeps them unconnected to his night sight, so this
+# is colour, not a tell. A hard-weather coat, worn open over a plain
+# tunic and trousers, is the character's single defining garment on the
+# page (the story's own recurring image is him giving it to Linnea
+# against the cold), so `coat_color`/`coat_length` carries most of his
+# silhouette. The tunic under it takes a village dye-colour (warm rust):
+# these people dress bright to catch scarce light (ch1), and Gero is of
+# that world even if he keeps the drab coat over it.
+GERO = CharacterParams(
+    skin_tone=SKIN_WORN,
+    hair_color="#6b6459",
+    hairstyle="short_layered",
+    hair_length=0.20,
+    eye_color="#caa23e",
+    beard_color="#6b6459",
+    beard_length=0.13,
+    outfit=Outfit(
+        tunic_color="#a8492b",
+        boot_color="#4e3d2c",
+        undersleeve_color="#b98f63",
+        belt_color="#4a3c2c",
+        trouser_color="#3a362e",
+        skirt_color=None,
+        tunic_tucked=True,
+        # Darker than the tunic so the two open panels read as a layer worn
+        # over it rather than blending into one garment (they were nearly
+        # the same tone on the first pass and the coat vanished).
+        coat_color="#3a3a2e",
+        coat_length=0.65,
+    ),
+    # Leaner than the cast's broad-shouldered men (Satoshi, Daizen sit at
+    # 1.0): thirty years of walking rather than a soldier's or a
+    # merchant's build.
+    frame=0.4,
+    # Middle-aged rather than the cast's oldest (Daizen and Tenno take
+    # `years=1.0`): the aperture narrows partway, not all the way.
+    face=aged(
+        FaceStyle(
+            eye_size=0.88,
+            eye_width=1.05,
+            eye_tilt=0.05,
+            eye_corner=0.55,
+            iris_size=1.05,
+            # Level and watchful rather than stern: he reads people, he
+            # does not confront them.
+            brow_tilt=0.30,
+            brow_weight=0.85,
+            mouth_curve=-0.05,
+            mouth_width=0.68,
+            blush=0.0,
+        ),
+        years=0.55,
+    ),
+)
+
+# Linnea: fifteen, the innkeeper's daughter, fourth of six. Blunt,
+# unsentimental, practical rather than decorative, which is why she
+# wears trousers and a plain tunic rather than the skirt-and-apron
+# working outfit this roster's other innkeeper's daughter (Satoko)
+# wears: the two share a role, not a wardrobe. A direct, level gaze is
+# the one expression note the story gives her by name ("looking at him
+# straight on, the way she looked at everything"), so the face leans on
+# an open eye and a level brow rather than anything softer.
+# Bright pink hair ("that ran in her mother's family", ch1): a normal
+# trait in this world, not a genre flag played for comment. The tunic is
+# the loud marigold "half the village wore" (ch1/ch2) — these people
+# dress bright to catch the little light they have; on the road she has
+# to hood it and later loses the coat binding Gero's wound.
+LINNEA = CharacterParams(
+    skin_tone="#f3d6bd",
+    hair_color="#e56a9c",
+    hairstyle="long_traced",
+    hair_length=0.40,
+    eye_color="#3f8ec9",
+    outfit=Outfit(
+        tunic_color="#e7a41f",
+        boot_color="#5b4632",
+        undersleeve_color="#f0e3c6",
+        belt_color="#4a3c2c",
+        trouser_color="#4b453a",
+        skirt_color=None,
+        tunic_tucked=True,
+    ),
+    # Narrower than the frame default, same direction as Satoko's -0.3:
+    # a fifteen-year-old rather than an adult woman.
+    frame=-0.4,
+    face=FaceStyle(
+        eye_size=0.98,
+        eye_width=1.05,
+        eye_openness=1.0,
+        eye_tilt=0.05,
+        eye_corner=0.40,
+        iris_size=1.05,
+        brow_tilt=0.35,
+        brow_weight=0.85,
+        mouth_curve=0.05,
+        mouth_width=0.72,
+        blush=0.05,
+    ),
+)
+
 PRESETS: dict[str, CharacterParams] = {
     "katherina": KATHERINA,
+    "gero": GERO,
+    "linnea": LINNEA,
     "satoko": SATOKO,
     "satoshi": SATOSHI,
     "kyoko": KYOKO,
@@ -892,6 +1008,8 @@ PRESETS: dict[str, CharacterParams] = {
 # who a character is. It also keeps a name out of every preset constructor.
 DISPLAY_NAMES: dict[str, str] = {
     "katherina": "Katherina Beaumont",
+    "gero": "Gero",
+    "linnea": "Linnea",
     "satoko": "Satoko",
     "satoshi": "Satoshi",
     "kyoko": "Kyoko",
@@ -949,6 +1067,10 @@ ROSTERS["satoshi"] = (
 # Katherina belongs to a separate book (../time_slider_katharina) and has no
 # overlap with the Valley of Mist cast, so she gets her own roster.
 ROSTERS["katherina"] = ("katherina",)
+# Gero and Linnea are the cast of a short story (../short_stories,
+# "The Hunt for the Everglow Crystals"), same as Katherina: a separate work,
+# no overlap with the Valley of Mist cast, its own roster.
+ROSTERS["everglow"] = ("gero", "linnea")
 
 # Which characters get a realistic-build render checked into `ref-out/real/`.
 #
