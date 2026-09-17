@@ -37,6 +37,7 @@ from .character import (
     COLLAR_CUTS,
     EYESTYLES,
     HAIRSTYLES,
+    SKIRT_CUTS,
     CharacterParams,
     FaceStyle,
     Outfit,
@@ -222,6 +223,8 @@ CRYSTAL_4 = GarmentSlot(
     bools=(_bool("crystal_tongs", "Handling tongs (a small clipped tool)"),),
     requires="belt",
 )
+SKIRT_CUT_LABELS: dict[str, str] = {"a_line": "A-line (traced)"}
+assert set(SKIRT_CUT_LABELS) == set(SKIRT_CUTS)
 SKIRT = GarmentSlot(
     "skirt",
     "Skirt",
@@ -238,6 +241,9 @@ SKIRT = GarmentSlot(
     ranges=(
         _range("skirt_length", "Skirt length", 0.0, 1.0),
         _range("skirt_length_chibi", "Skirt length at chibi (overrides above)", 0.0, 1.0),
+    ),
+    selects=(
+        SelectField("skirt_cut", "Cut", ((None, "Gathered"), *sorted(SKIRT_CUT_LABELS.items()))),
     ),
 )
 UNDERSKIRT = GarmentSlot(

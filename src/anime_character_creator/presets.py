@@ -851,6 +851,14 @@ VIKTOR = CharacterParams(
 # reference's 3.30 head radii and 0.83 the hair's ends at its 2.60. The arm angle
 # was refitted on the same body, as the closest a straight arm swung from the
 # sleeve hem gets to the reference's grip.
+# Her dress (`tunic_color` and `skirt_color`, the tunic tucked so the two read
+# as one garment, `skirt_cut="a_line"` traced) is the reference's purple,
+# `#251d35`, lifted four points a channel to `#29213b`: the reference tells the
+# navy jacket from the dress by hue at almost the same brightness, and
+# `test_an_outer_layer_is_visible_against_what_it_covers` asks a coat for a
+# luminance gap of 12 from what it covers, which the reference's own pair does
+# not have (about 5). The lift keeps the hue and clears that bar against the
+# jacket's sampled navy too, which C3 of `katherina-clothes-plan.md` moves to.
 KATHERINA = CharacterParams(
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
@@ -859,8 +867,10 @@ KATHERINA = CharacterParams(
     hair_tail=0.7,
     eye_color="#c98a3e",
     outfit=Outfit(
-        tunic_color="#2b2438",
-        skirt_color="#241f30",
+        tunic_color="#29213b",
+        tunic_tucked=True,
+        skirt_color="#29213b",
+        skirt_cut="a_line",
         boot_color="#1a1a1a",
         belt_color="#3a3226",
         collar_color="#c4903c",

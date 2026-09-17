@@ -255,6 +255,22 @@
           "min": 0.0,
           "max": 1.0
         }
+      ],
+      "selects": [
+        {
+          "field": "skirt_cut",
+          "label": "Cut",
+          "options": [
+            {
+              "value": null,
+              "label": "Gathered"
+            },
+            {
+              "value": "a_line",
+              "label": "A-line (traced)"
+            }
+          ]
+        }
       ]
     },
     {

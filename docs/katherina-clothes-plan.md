@@ -154,7 +154,24 @@ jaw's edge. The collar reads as a collar without a neck until then.
 
 ### C2. The dress
 
-**Status: not started.**
+**Status: done, 2026-09-17.** A narrower cut than planned, because the dress's
+visible bodice is only the strip the jacket's fronts leave, which is C3's to
+shape: `SKIRT_CUTS["a_line"]` (component 204, carried under the belt and the
+jacket's lower panels, `harness/clothes/trace_skirt.py`), worn over a tucked
+tunic of the same colour so the lighter band below the belt is gone and the two
+read as one dress. Colour: the reference's `#251d35` lifted to `#29213b` to keep
+the coat-visibility guard's luminance gap (see the preset's comment). Harness,
+re-scored after a harness fix (the long sleeves share the tunic's key colour and
+were counted as skirt; the skirt now scores its own colour, the bodice only
+within |x| <= 0.45):
+
+| region | before | after |
+| --- | --- | --- |
+| dress_bodice | 0.856 / 0.019 | 0.856 / 0.019 |
+| skirt | 0.770 / 0.109 | 0.894 / 0.035 |
+
+Looked at on `tall_chibi` and on the shared chibi through the mapping
+(`out/clothes/c2_bodies.png`): a short A-line there, collar intact.
 
 - [ ] **C2a.** Trace the bodice strip (182) and the skirt (204) as one dress
       cut: A-line from the belt, curved hem. It replaces tunic-plus-skirt on

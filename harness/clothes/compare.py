@@ -63,17 +63,18 @@ REGIONS: dict[str, tuple[tuple[int, ...], tuple[str, ...]]] = {
     "dress_bodice": ((182,), ("tunic", "skirt")),
     "belt": ((192, 193, 194, 195, 196, 198), ("belt",)),
     "jacket_lower": ((202, 203), ("coat",)),
-    "skirt": ((204,), ("skirt", "tunic")),
+    "skirt": ((204,), ("skirt",)),
     "legs": ((212, 213), ("skin",)),
     "boots": ((216, 218), ("boots",)),
 }
 # Where each region can be, so a colour shared by two regions (skin: neck,
-# hands, legs) is only counted in its own band. Head radii, y.
+# hands, legs; the tunic's colour: bodice and long sleeves) is only counted in
+# its own band. Head radii: y, and optionally the largest |x|.
 BANDS = {
     "collar": (0.8, 1.6),
     "neck": (0.8, 1.3),
     "jacket_upper": (1.0, 2.6),
-    "dress_bodice": (1.2, 2.45),
+    "dress_bodice": (1.2, 2.45, 0.45),
     "belt": (2.1, 2.8),
     "jacket_lower": (2.3, 3.6),
     "skirt": (2.4, 4.6),
@@ -156,8 +157,11 @@ def main() -> None:
     print(f"{'region':14s} {'iou':>6s} {'dist':>7s}")
     for region in wanted:
         ids, keys = REGIONS[region]
-        lo, hi = BANDS[region]
+        lo, hi, *reach = BANDS[region]
+        gx, _ = grid_coords()
         band = (gy >= lo) & (gy <= hi)
+        if reach:
+            band &= np.abs(gx) <= reach[0]
         r = ref_mask(ids) & band & ~hidden
         o = np.zeros_like(r)
         for key in keys:

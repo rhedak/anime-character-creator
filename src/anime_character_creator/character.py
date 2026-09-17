@@ -162,6 +162,8 @@ class Outfit:
     # Front panel hanging from the belt, over the skirt.
     apron_color: str | None = None
     skirt_color: str | None = "#4f7a52"
+    # A traced cut from `SKIRT_CUTS`; `None` is the shared parametric skirt.
+    skirt_cut: str | None = None
     # A second, longer skirt under the first, so its hem shows below the other's.
     underskirt_color: str | None = None
     # Trousers instead of a skirt. Fills the legs, which are otherwise bare skin.
@@ -3275,6 +3277,46 @@ COLLAR_CUTS: dict[str, GarmentCut] = {
 }
 
 
+# Traced skirt cuts, drawn by `_skirt` when `Outfit.skirt_cut` names one.
+# `a_line` is the dress skirt of `katherina_grok.jpg` (`katherina-clothes-plan.md`,
+# C2): component 204 where it shows, carried straight under the belt and the
+# jacket's lower panels from the belt's own width at the waist to the first fully
+# visible row below the jacket (`harness/clothes/trace_skirt.py`), with the
+# reference's wavy hem. No fold lines: the reference's skirt has none. Worn over
+# a tucked tunic of the same colour, it reads as one dress.
+SKIRT_CUTS: dict[str, GarmentCut] = {
+    "a_line": GarmentCut(
+        fills=(
+            (
+                (1.174, 4.041),
+                [
+                    ((1.140, 4.073), (1.105, 4.093)),
+                    ((1.028, 4.132), (0.950, 4.162)),
+                    ((0.818, 4.192), (0.685, 4.197)),
+                    ((0.593, 4.217), (0.501, 4.249)),
+                    ((0.397, 4.265), (0.294, 4.277)),
+                    ((0.207, 4.277), (0.121, 4.272)),
+                    ((0.006, 4.251), (-0.109, 4.226)),
+                    ((-0.164, 4.230), (-0.219, 4.220)),
+                    ((-0.314, 4.226), (-0.409, 4.237)),
+                    ((-0.527, 4.239), (-0.645, 4.231)),
+                    ((-0.708, 4.216), (-0.771, 4.197)),
+                    ((-0.823, 4.170), (-0.875, 4.134)),
+                    ((-0.987, 4.116), (-1.100, 4.070)),
+                    ((-1.114, 4.056), (-1.128, 4.041)),
+                    ((-1.128, 4.027), (-1.128, 4.013)),
+                    ((-1.067, 3.791), (-1.007, 3.569)),
+                    ((-0.812, 2.965), (-0.599, 2.360)),
+                    ((0.000, 2.360), (0.599, 2.360)),
+                    ((0.764, 2.798), (0.938, 3.235)),
+                    ((1.065, 3.638), (1.174, 4.041)),
+                ],
+            ),
+        ),
+    ),
+}
+
+
 def hat_hair_margin(p: CharacterParams) -> float:
     """Headroom, in head radii above the skull, that `p`'s hat needs; 0 for none.
 
@@ -4474,6 +4516,8 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.skirt_color
     if color is None:
         return ""
+    if p.outfit.skirt_cut is not None and _wears_cuts(sk):
+        return _draw_cut(sk, SKIRT_CUTS[p.outfit.skirt_cut], color)
     hem_y = _skirt_hem_y(sk, p.outfit.skirt_length, p.outfit.skirt_length_chibi)
     # Starts above the hip so the tunic drawn over it has something to overlap
     # and the waistband never opens onto skin.
