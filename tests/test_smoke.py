@@ -171,6 +171,27 @@ def test_arm_out_swings_the_hand_away_from_the_body(build: str) -> None:
     )
 
 
+def test_a_body_profile_applies_only_at_the_chibi_build() -> None:
+    """A measured body replaces the chibi's lerped landmarks and nothing else.
+
+    At the chibi build the figure takes the profile's height and landmarks
+    while `build` stays the chibi's own, so the face is unchanged; at any other
+    build the skeleton is exactly what `build_skeleton` gives, since a profile
+    is measured off one design at one scale.
+    """
+    p = PRESETS["katherina"]
+    profile = character.BODY_TYPES[p.body]
+    sk = character.skeleton_for(p, BUILDS["chibi"])
+    plain = build_skeleton(heads=BUILDS["chibi"], frame=p.frame)
+    assert sk.build == plain.build
+    assert abs((sk.waist_y - sk.head_cy) / sk.head_r - profile.waist_y) < 1e-9
+    assert abs((sk.foot_y - sk.head_cy) / sk.head_r - (2 * profile.heads - 1)) < 1e-6
+    real = character.skeleton_for(p, BUILDS["realistic"])
+    assert real == build_skeleton(
+        heads=BUILDS["realistic"], frame=p.frame, min_hair_margin=character.hat_hair_margin(p)
+    )
+
+
 @pytest.mark.parametrize("build", sorted(BUILDS))
 def test_staff_stays_in_hand_and_on_the_canvas(build: str) -> None:
     """The staff is placed off the hand and nudged inward off the canvas edge.
@@ -182,9 +203,7 @@ def test_staff_stays_in_hand_and_on_the_canvas(build: str) -> None:
     Checks the placed wood's control polygon, which bounds the drawn curve.
     """
     p = PRESETS["katherina"]
-    sk = build_skeleton(
-        heads=BUILDS[build], frame=p.frame, min_hair_margin=character.hat_hair_margin(p)
-    )
+    sk = character.skeleton_for(p, BUILDS[build])
     xf = character._staff_placement(sk, p)
     start, segs = character._STAFF_WOOD
     pts = [xf(q) for q in (start, *(q for seg in segs for q in seg))]
@@ -247,10 +266,7 @@ def test_ref_out_matches_the_code(preset: str, build: str, rel: str) -> None:
     """
     p = PRESETS[preset]
     committed = REF_OUT / f"{rel}.svg"
-    sk = build_skeleton(
-        heads=BUILDS[build], frame=p.frame, min_hair_margin=character.hat_hair_margin(p)
-    )
-    expected = render_character(p, sk)
+    expected = render_character(p, character.skeleton_for(p, BUILDS[build]))
     assert committed.read_text() == expected, f"{rel}.svg is stale: ./refresh-ref-out.sh"
 
 

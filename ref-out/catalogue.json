@@ -97,6 +97,16 @@
       }
     ]
   },
+  "bodies": [
+    {
+      "id": null,
+      "label": "Chibi"
+    },
+    {
+      "id": "tall_chibi",
+      "label": "Tall chibi"
+    }
+  ],
   "colors": [
     {
       "field": "skin_tone",

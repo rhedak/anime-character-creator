@@ -12,7 +12,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
 
 from .colorutil import shade
-from .skeleton import DEFAULT_HEADS, Skeleton, build_skeleton
+from .skeleton import BUILDS, DEFAULT_HEADS, BodyProfile, Skeleton, build_skeleton
 
 # Every line on the figure. Near black rather than the dark grey this was: the
 # canon's outline samples at #080808 and its dark pixels pile up in the 0-9 value
@@ -377,6 +377,10 @@ class CharacterParams:
     face: FaceStyle = field(default_factory=FaceStyle)
     # Head-heights tall. Ignored when render_character is handed a skeleton.
     heads: float = DEFAULT_HEADS
+    # A named body type from `BODY_TYPES`, laid over the chibi build; `None` is
+    # the shared chibi. A name rather than the numbers, like
+    # `hairstyle`, so a character stays a flat, linkable set of fields.
+    body: str | None = None
     # Shoulder against hip: -1 narrow-shouldered and wide-hipped, 0 neutral, +1
     # the other way. Only bites at taller builds. Ignored when handed a skeleton.
     frame: float = 0.0
@@ -3021,6 +3025,59 @@ _HAT_CREASES: list[Chain] = [
     ((0.679, -2.124), [((0.725, -2.044), (0.763, -1.971)), ((0.795, -1.919), (0.800, -1.871))]),
     ((0.812, -1.635), [((0.837, -1.603), (0.855, -1.577)), ((0.867, -1.559), (0.869, -1.537))]),
 ]
+
+
+# Named body types, laid over the chibi build by `skeleton_for`. The shared
+# chibi (2.4 heads) is the unnamed default, `body=None`.
+#
+# `tall_chibi` was measured off `../time_slider_katherina/style-anchors/
+# katherina_grok/katherina_grok.jpg` (Katherina's design reference) on the
+# witch hat's calibration, 173.7 px per head radius, head centre (650, 481);
+# the scripts are `harness/body/`. It keeps only what describes a figure, not
+# that one design: the height, the landmarks the garments hang from, and the
+# widths of the waist, hip, hem and legs. Soles at 5.94 head radii make it 3.47
+# heads. The reference's belt band runs 2.30 to 2.54, and `_belt` puts its top
+# at `waist_y` minus 0.35 of a band 0.42 of waist-to-hip tall, which solves to
+# the waist and hip below. Boot shafts top out at 4.86 and the foot widens from
+# 5.55, the ankle; `_boot`'s shaft reaches 0.32 of ankle-to-knee, putting the knee
+# at 3.39, under a skirt. The skirt hem is 4.26, 1.13 half-width at its widest,
+# and 0.89 at 3.22, which a straight flare from the hip makes 0.83 there. The
+# belt's 0.58 half-width is `_belt`'s 1.03 of the waist. Legs are 0.23.
+# Garment lengths are the character's own choice and stay on the preset
+# (Katherina's `coat_length` and `hair_length` are fitted on this body).
+BODY_TYPES: dict[str, BodyProfile] = {
+    "tall_chibi": BodyProfile(
+        heads=3.47,
+        shoulder_y=1.13,
+        waist_y=2.384,
+        hip_y=2.955,
+        hem_y=4.26,
+        knee_y=3.39,
+        ankle_y=5.55,
+        waist_half_w=0.563,
+        hip_half_w=0.83,
+        hem_half_w=1.13,
+        leg_half_w=0.23,
+    ),
+}
+
+
+def skeleton_for(p: CharacterParams, heads: float | None = None) -> Skeleton:
+    """The skeleton `p` is drawn on at `heads` (its own `p.heads` by default).
+
+    What every caller that builds a skeleton *for a character* should use, so
+    the things only the character knows reach it: the headroom its hat needs,
+    and at the chibi build its measured `body`. Other builds keep the shared
+    lerp, since a profile is measured off one design at one scale.
+    """
+    heads = p.heads if heads is None else heads
+    margin = hat_hair_margin(p)
+    if p.body is not None and heads == BUILDS["chibi"]:
+        profile = BODY_TYPES[p.body]
+        sk = build_skeleton(heads=profile.heads, frame=p.frame, min_hair_margin=margin)
+        chibi = build_skeleton(heads=heads, frame=p.frame).build
+        return profile.applied(sk, chibi)
+    return build_skeleton(heads=heads, frame=p.frame, min_hair_margin=margin)
 
 
 def hat_hair_margin(p: CharacterParams) -> float:
@@ -6653,7 +6710,7 @@ def render_character(
     unrelated change: the web tool is what turns it on.
     """
     p = p or CharacterParams()
-    sk = sk or build_skeleton(heads=p.heads, frame=p.frame, min_hair_margin=hat_hair_margin(p))
+    sk = sk or skeleton_for(p)
 
     # Back to front. The legs go under the skirts so a hem covers the thigh, and
     # the arms go over every garment so nothing can clip a hand: the apron is

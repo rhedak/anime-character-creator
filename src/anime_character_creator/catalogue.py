@@ -32,7 +32,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, fields
 
-from .character import EYESTYLES, HAIRSTYLES, CharacterParams, FaceStyle, Outfit
+from .character import BODY_TYPES, EYESTYLES, HAIRSTYLES, CharacterParams, FaceStyle, Outfit
 from .presets import DISPLAY_NAMES, NEUTRAL_BASES, PRESETS
 from .skeleton import BUILDS
 
@@ -413,6 +413,18 @@ assert set(HAIRSTYLE_LABELS) == set(HAIRSTYLES), (
     "removed on one side without the other"
 )
 
+# `BODY_TYPES` is the registry; these label it, the same arrangement as the
+# hairstyles above. `None` is the shared chibi and is offered first. A body type
+# only reshapes the chibi build, so the web tool shows it beside the build slider.
+BODY_LABELS: dict[str, str] = {
+    "tall_chibi": "Tall chibi",
+}
+assert set(BODY_LABELS) == set(BODY_TYPES), (
+    "BODY_LABELS and BODY_TYPES have drifted apart; a body type was added or "
+    "removed on one side without the other"
+)
+assert "body" in _CHARACTER_FIELDS
+
 # `FaceStyle` carries fourteen floats, and `docs/web-gui-plan.md` calls the
 # whole set "a mixing desk, not a limited set of choices" and keeps it out of
 # the catalogue entirely. What follows is a deliberately smaller, curated
@@ -547,6 +559,8 @@ def build_catalogue() -> dict[str, object]:
             "bases": [{"id": s.id, "label": s.label} for s in _base_points()],
         },
         "build": _build_json(BUILD),
+        "bodies": [{"id": None, "label": "Chibi"}]
+        + [{"id": name, "label": BODY_LABELS[name]} for name in sorted(BODY_TYPES)],
         "colors": [_color_json(c) for c in COLORS],
         "hairstyles": [
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)

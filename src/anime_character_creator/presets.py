@@ -837,7 +837,7 @@ VIKTOR = CharacterParams(
 # unit), the band and bow `#3c2456`, one step darker than the hair here. The
 # brim's underside, `#12121c` in the reference, is not a field: `_hat` darkens
 # the hat colour for it, the way a hem's turn is darkened, and lands on it.
-# `right_arm_out=44` swings her own right arm (viewer's left) out to the
+# `right_arm_out` swings her own right arm (viewer's left) out to the
 # side: the reference holds a staff in that hand, out and slightly raised
 # rather than hanging, and the angle is chosen to land the hand near where
 # a held staff would need it (milestone 3 of the same plan doc). The staff is
@@ -845,11 +845,17 @@ VIKTOR = CharacterParams(
 # that reference's own medians, `#4e3a2c` for the wood above the hand and
 # `#f79e43` for the crystal's mid face, whose dark and light faces `_staff`
 # derives with `shade()`, landing within a few units of the reference's.
+# `body="tall_chibi"` is the body type measured off her own reference (3.47
+# heads, high belt, tall boots; see `BODY_TYPES` in character.py), so
+# `coat_length` and `hair_length` are fitted on it: 0.49 lands the coat hem at the
+# reference's 3.30 head radii and 0.83 the hair's ends at its 2.60. The arm angle
+# was refitted on the same body, as the closest a straight arm swung from the
+# sleeve hem gets to the reference's grip.
 KATHERINA = CharacterParams(
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
     hairstyle="long_traced",
-    hair_length=0.55,
+    hair_length=0.83,
     hair_tail=0.7,
     eye_color="#c98a3e",
     outfit=Outfit(
@@ -859,7 +865,7 @@ KATHERINA = CharacterParams(
         belt_color="#3a3226",
         collar_color="#c9a13b",
         coat_color="#12152a",
-        coat_length=0.62,
+        coat_length=0.49,
         sleeve_long=True,
         hat_color="#201e29",
         hat_band_color="#3c2456",
@@ -867,7 +873,8 @@ KATHERINA = CharacterParams(
         staff_crystal_color="#f79e43",
     ),
     frame=-0.1,
-    right_arm_out=44.0,
+    right_arm_out=42.0,
+    body="tall_chibi",
     face=FaceStyle(
         eye_size=1.05,
         eye_width=1.02,

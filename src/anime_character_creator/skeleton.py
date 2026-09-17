@@ -13,7 +13,7 @@ in a way an adult figure is not.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 # Named builds. Most characters want one of these rather than a number, but
 # `heads` stays open for anything in between (4.0 is a common middle ground).
@@ -64,6 +64,63 @@ class Skeleton:
     knee_y: float
     ankle_y: float
     foot_y: float
+
+
+@dataclass(frozen=True)
+class BodyProfile:
+    """One character's measured proportions, laid over a built skeleton.
+
+    Every build is a lerp between the chibi and adult anchors, which is right
+    for a cast designed at those two ends and wrong for a character whose own
+    design sits somewhere else: Katherina's reference stands 3.47 heads tall
+    with a high belt, a short coat and tall boots, and the lerp at 3.47 heads
+    puts her waist most of a head radius too low. A profile names the figure's
+    height and whichever landmarks were measured, each in head radii from the
+    head centre (y down, widths as half-widths), and leaves every other field
+    where `build_skeleton` put it. `None` is "not measured, keep the lerp".
+
+    `build` stays at the named build's own value rather than the one `heads`
+    implies: it drives the face and the limb tapers, which are a style choice
+    (a big-eyed chibi face), not a proportion, and moving it would redraw the
+    face along with the body.
+    """
+
+    heads: float
+    shoulder_y: float | None = None
+    waist_y: float | None = None
+    hip_y: float | None = None
+    hem_y: float | None = None
+    knee_y: float | None = None
+    ankle_y: float | None = None
+    shoulder_half_w: float | None = None
+    waist_half_w: float | None = None
+    hip_half_w: float | None = None
+    hem_half_w: float | None = None
+    arm_half_w: float | None = None
+    arm_x: float | None = None
+    leg_half_w: float | None = None
+
+    def applied(self, sk: Skeleton, build: float) -> Skeleton:
+        ys = ("shoulder_y", "waist_y", "hip_y", "hem_y", "knee_y", "ankle_y")
+        ws = (
+            "shoulder_half_w",
+            "waist_half_w",
+            "hip_half_w",
+            "hem_half_w",
+            "arm_half_w",
+            "arm_x",
+            "leg_half_w",
+        )
+        changes: dict[str, float] = {"build": build}
+        for name in ys:
+            v = getattr(self, name)
+            if v is not None:
+                changes[name] = sk.head_cy + v * sk.head_r
+        for name in ws:
+            v = getattr(self, name)
+            if v is not None:
+                changes[name] = v * sk.head_r
+        return replace(sk, **changes)
 
 
 def build_skeleton(

@@ -21,11 +21,14 @@ constraints.
 Two things this rules out, stated plainly because they're easy to reach
 for by accident:
 
-- **The `katherina_grok/layer-*.png` files cannot be imported, traced,
-  or composited in.** Those look like an AI tool's attempt at slicing
-  the reference into layers, and using them would be exactly the
-  "scraping or importing external art assets" `CLAUDE.md` forbids. They
-  are useful to look at. They are not source material.
+- **No pixel from the reference, or from the `katherina_grok/layer-*.png`
+  files, is imported or composited in.** *Retracted in part, 2026-09-17:*
+  this bullet first said they could not be *traced* either; the owner
+  corrected that, and tracing (measuring shapes with code and fitting
+  flat curves to them) is this repo's established method, see
+  `.claude/skills/trace-reference/SKILL.md`. The layer exports are
+  regenerated variants rather than crops of the composite, so shapes are
+  traced off `katherina_grok.jpg` itself.
 - **Texture does not survive.** The reference's wood grain on the staff,
   the gem facets, the cel-shaded hair sheen: all style, discarded the
   same way the roster plan discarded the fourteen references'
@@ -118,8 +121,8 @@ Task:
 
 ## Milestone 2: the witch hat
 
-**Status: retraced, 2026-09-17 (third pass). Not yet wired into the
-book's cover/style anchors; awaiting the author's look.** The first two
+**Status: done, 2026-09-17 (third pass): approved, committed
+(`1592dc7`), and in the book's cover and style anchors.** The first two
 passes (committed as `1f82b8c`, "witch hat") placed hand-measured
 landmarks, and the author's read was that the hat did not look traced
 and did not fit her head. Both complaints had one cause, recorded here
@@ -194,10 +197,41 @@ questions" section below rather than guessed at here:
       off" is no longer true once this lands), re-render the book's
       cover and style anchors.
 
+## Interlude: her body (between milestones 3 and 4)
+
+**Status: done, 2026-09-17, as a reusable body type; not yet in the
+book's cover/style anchors (author's call to hold the cover).** The shared
+chibi is 2.4 heads; her reference is 3.47, with a high belt and tall boots.
+A per-preset `heads` would not have worked: every tool renders by build
+name (`--build chibi`, `BUILDS[p.build]`) and would put her back at 2.4.
+Instead:
+
+- `BodyProfile` (skeleton.py): a figure height plus whichever landmarks
+  were measured, in head radii, laid over a built skeleton; `build` stays
+  the named build's, so the face and limb tapers are the chibi's.
+- `BODY_TYPES["tall_chibi"]` (character.py) and `CharacterParams.body`, a
+  name like `hairstyle` so URL state stays flat, applied by
+  `character.skeleton_for(p, heads)` at the chibi build only. It replaced
+  the hat-margin call sites (`render_character`, `cover.py`, the snapshot
+  test); `sheet.py` still builds its own, deliberately. Exposed as
+  `--body`, as `bodies` in the catalogue (`BODY_LABELS`), and as a Body
+  select beside the build slider in the web tool.
+- Landmarks were solved from the reference's fill components through the
+  parts' own formulas (belt band -> waist and hip, boot shaft -> ankle and
+  knee, skirt flare -> hip and hem widths). The body type keeps only what
+  describes a figure. What belongs to Katherina's design stays on her
+  preset, fitted by measuring our render against the reference:
+  `coat_length` 0.49 (hem 3.27 vs 3.30), `hair_length` 0.83 (ends 2.61 vs
+  2.60), `right_arm_out` 42 (grip 0.21 head radii off the reference's; a
+  straight arm cannot bend at the elbow). A fitted `arm_x` was tried and
+  dropped as design-specific. Scripts: `harness/body/`.
+- Not proportion, so not done here: the reference's lapelled coat and shirt
+  collar are garment design, left as the shared coat and collar.
+
 ## Milestone 3: the staff
 
-**Status: traced and wired into `KATHERINA`, 2026-09-17; awaiting the
-author's look, not yet in the book's cover/style anchors.** Decisions,
+**Status: done, 2026-09-17: approved, committed (`195094a`), and in the
+book's cover and style anchors.** Decisions,
 recorded where the checklist below asked for them:
 
 - **3a, anchor: not a general `Prop`.** A staff shape plus two `Outfit`

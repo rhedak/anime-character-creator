@@ -263,6 +263,30 @@ function buildBuildControls() {
     snaps.appendChild(btn);
   }
   buildControls.appendChild(snaps);
+
+  // `catalogue.bodies`: the named body types, laid over the chibi build only
+  // (see catalogue.py: BODY_LABELS). `null` is the shared chibi; a <select>
+  // holds strings, so it travels as "" and is turned back into null here.
+  const row = document.createElement("div");
+  row.className = "control-row";
+  const lbl = document.createElement("label");
+  lbl.htmlFor = "field-body";
+  lbl.textContent = "Body";
+  const select = document.createElement("select");
+  select.id = "field-body";
+  for (const body of catalogue.bodies) {
+    const opt = document.createElement("option");
+    opt.value = body.id ?? "";
+    opt.textContent = body.label;
+    if ((body.id ?? null) === (state.body ?? null)) opt.selected = true;
+    select.appendChild(opt);
+  }
+  select.addEventListener("input", () => {
+    setField("body", select.value === "" ? null : select.value);
+    scheduleRender();
+  });
+  row.append(lbl, select);
+  buildControls.appendChild(row);
 }
 
 function buildColorControls() {
