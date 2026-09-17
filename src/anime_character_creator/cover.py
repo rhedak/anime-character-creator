@@ -42,7 +42,7 @@ import re
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from .character import OUTLINE, CharacterParams, render_character
+from .character import OUTLINE, CharacterParams, hat_hair_margin, render_character
 from .presets import EXPRESSIONS, PRESETS
 from .skeleton import BUILDS, Skeleton, build_skeleton
 
@@ -188,7 +188,9 @@ def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float,
     character = p.character or PRESETS[p.preset]
     if p.expression:
         character = EXPRESSIONS[p.expression].applied_to(character)
-    sk = build_skeleton(heads=BUILDS[p.build], frame=character.frame)
+    sk = build_skeleton(
+        heads=BUILDS[p.build], frame=character.frame, min_hair_margin=hat_hair_margin(character)
+    )
     k = (p.height * p.figure_height) / sk.canvas_h
     x = p.width / 2 - sk.canvas_w * k / 2
     y = p.height * p.figure_feet_y - sk.foot_y * k

@@ -118,6 +118,43 @@ Task:
 
 ## Milestone 2: the witch hat
 
+**Status: retraced, 2026-09-17 (third pass). Not yet wired into the
+book's cover/style anchors; awaiting the author's look.** The first two
+passes (committed as `1f82b8c`, "witch hat") placed hand-measured
+landmarks, and the author's read was that the hat did not look traced
+and did not fit her head. Both complaints had one cause, recorded here
+rather than deleted: the calibration was wrong (142.9 px per head radius
+with the centre 45 px left of the face, off an eye-to-chin run that
+assumed proportions the chibi does not have), and the result was then
+squashed by a different factor per axis to fit a canvas ceiling set for
+hair. The third pass:
+
+- Calibrated off the face itself: the reference's widest face row and
+  chin against our own rendered chibi face give 173.7 px per head radius
+  on *both* axes independently, which is the check that the scale is
+  right.
+- Traced every region's actual contour (crown, band, the three pieces of
+  the bow, brim top, underside), isolated as connected components of the
+  reference's non-outline fill, with `trace_lib.boundary`/`fit_closed`,
+  plus the three crease strokes by the curl. No hand-placed points and no
+  rescale.
+- Made the canvas give way instead of the hat: `build_skeleton` takes a
+  `min_hair_margin` floor, and `character.hat_hair_margin(p)` supplies it
+  wherever a character's skeleton is built (`render_character`'s default,
+  `cover.py`). `sheet.py` is deliberately left alone: a cast sheet holds
+  every member at one body scale, and no sheet has a hat-wearer.
+- Split the brim across the figure: `_hat_underside` (the far side, drawn
+  first, behind the hair) and `_hat` (the near side with crown, band and
+  bow, drawn last). Our hair is narrower under the brim than the
+  reference's, and with one layer the page showed through the gap.
+- Colors are the reference's own region medians: `#201e29` for the hat,
+  `#3c2456` for the band, the underside a `shade()` of the hat landing on
+  the reference's `#12121c`.
+
+The checklist below is the original plan, kept for the record; 2b's
+"sized against `_hair_edge_x`" did not survive contact: the brim is wider
+than every haircut's crown, so the hat's own traced shape is the answer.
+
 Reference geometry, read off the crop in this session: a wide brim that
 curls asymmetrically (down on the wearer's left, up into a small
 pointed lift on the right), a tall crown that bends forward partway up

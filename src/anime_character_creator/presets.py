@@ -830,13 +830,13 @@ VIKTOR = CharacterParams(
 # tailored coat over a plain tunic and skirt, gold trim standing in for
 # academic rank. `hat_color`/`hat_band_color` add the pointed witch's hat the
 # comment here used to say this tool couldn't draw; `_hat` in character.py
-# was built and traced against this preset's own reference for exactly that
-# (docs/katherina-accessories-plan.md milestone 2, session of 2026-09-17).
-# Colors sampled off the same reference: near-black for the crown/brim
-# (`#171420`, between the reference's own `#201e29` crown and `#12121c`
-# brim reads, close enough for this generator's one-flat-color-per-surface
-# convention) and the hair's own purple for the band (`#3c2456`), which also
-# carries the buckle per `_hat`'s own docstring.
+# was traced off this preset's own reference, `katherina_grok.jpg` in
+# `../time_slider_katherina/style-anchors/` (docs/katherina-accessories-plan.md,
+# milestone 2). Colors are that reference's own fills, each the median of its
+# region: `#201e29` for the crown and the brim's top (the two agree within a
+# unit), the band and bow `#3c2456`, one step darker than the hair here. The
+# brim's underside, `#12121c` in the reference, is not a field: `_hat` darkens
+# the hat colour for it, the way a hem's turn is darkened, and lands on it.
 KATHERINA = CharacterParams(
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
@@ -853,7 +853,7 @@ KATHERINA = CharacterParams(
         coat_color="#12152a",
         coat_length=0.62,
         sleeve_long=True,
-        hat_color="#171420",
+        hat_color="#201e29",
         hat_band_color="#3c2456",
     ),
     frame=-0.1,

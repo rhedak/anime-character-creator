@@ -91,7 +91,48 @@ preference:
    a placement decision instead of reading one off a photo; say so in the
    part function's docstring so a future reader knows which kind it is.
 
+**Check a calibration by making two independent measurements agree.**
+The witch hat's first two passes calibrated off an eye-to-chin run alone,
+assumed an eye position this skeleton does not have, and came out 18% off
+in scale and 45 px off-centre; nothing flagged it because a single
+vertical run cannot disagree with itself. What caught it: render our own
+character (without the part), measure its face in head radii (widest row,
+half-widths, chin), measure the same features on the reference, and solve
+the scale separately from the width and from the height. If the two
+scales agree within a few percent, the calibration is right; if they do
+not, the proportions differ and a single scale is a compromise to decide
+on by looking.
+
+**Never rescale the traced result to fit the canvas.** If a part stands
+above the canvas's headroom, give the skeleton more room
+(`build_skeleton(min_hair_margin=...)`, as `hat_hair_margin` does) so the
+figure stands smaller instead. Shrinking the part to fit throws away the
+trace; per-axis shrinking is how the hat's second pass came out squat.
+
 ### Step 3: measure the silhouette
+
+**For a reference with black outlines, label the fills, not the ink.**
+A composite on a black page (the grok references) has outline and
+background in the same colour, so no threshold isolates one object's
+silhouette, and a radial scan picks up whatever sits outermost. Label
+connected components of the non-outline fill instead (`scipy.ndimage.label`
+on `rgb.sum(2) > 60`): each fill region between outlines becomes its own
+component, pick the ones belonging to the part by seed pixel, union them,
+close the outline-width gaps between them, and grow the result by half
+the reference's outline width so the boundary lands on the stroke's
+centre line. Then walk it with `boundary()` and fit with `fit_closed()`,
+one chain per region (a hat's crown, band and brim are separate shapes
+drawn in order, each with its own outline). Ink left inside a region's
+filled hull (creases, folds) can be taken as open strokes: label it, order
+its pixels along their main axis, fit a two-segment chain.
+
+**Parts that wrap around the head need two layers.** A brim, a collar, a
+scarf: its far side is behind the hair and its near side in front. Trace
+them as separate regions and draw the far side first in the layer list.
+Otherwise, wherever our hair is narrower than the reference's, the page
+shows through between them.
+
+
 
 Two scan shapes, pick whichever matches how the part is actually
 arranged:

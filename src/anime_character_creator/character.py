@@ -278,9 +278,9 @@ class Outfit:
     # near-black hat over purple hair and a navy coat, three tones, not one.
     # `None` draws nothing, same convention as every optional garment above.
     hat_color: str | None = None
-    # The band around the crown's base, and the small buckle drawn on it in
-    # the same color (see `_hat`'s docstring for why the buckle gets no color
-    # of its own). Independent of `hat_color` because the reference's band
+    # The band around the crown's base, and the bow tied on it, in the same
+    # color: the reference's bow is the band's own cloth, not hardware.
+    # Independent of `hat_color` because the reference's band
     # reads closer to the hair's own purple than to the crown's near-black,
     # the same "trim differs from the body" relationship `collar_color` has
     # to `tunic_color`. `None` with `hat_color` set would draw a hat with no
@@ -2758,338 +2758,319 @@ def _headscarf(sk: Skeleton, p: CharacterParams) -> str:
 
 # A pointed witch's hat, traced per `.claude/skills/trace-reference/SKILL.md`
 # from `../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg`
-# (docs/katherina-accessories-plan.md, milestone 2, session of 2026-09-17).
-# Points are hand-measured off the reference in its own pixel space, converted
-# to head-radii units with that session's eye/chin calibration, then scaled
-# down by a further factor, and not the same factor on both axes. That second
-# scale is not part of the calibration: the reference's own crown reaches
-# roughly 3.4 head radii above its head center, which is a taller hat than
-# this generator's proportions can draw without going off-canvas. The
-# realistic build only has 1.36 head radii of headroom above the head center
-# before the canvas edge (`build_skeleton`'s `hair_margin`, the tightest of
-# the two builds); the chibi build has 1.71. The crown apex below is placed
-# at -1.280, leaving a small margin under the tighter, realistic-build bound.
-# A uniform scale that respects that ceiling (about 0.38) also shrank the
-# brim to a sliver once rendered, so x carries a looser factor (about 0.50)
-# than y: see the brim points' own comment below for that call. This is
-# exactly the "reference proportions do not transfer to a different
-# skeleton" case the tracing skill warns about: the shape was iterated by
-# rendering both builds and looking, not by trusting the scaled-down numbers.
+# (`docs/katherina-accessories-plan.md`, milestone 2).
 #
-# Crown: an asymmetric cone that leans right partway up, with a small curled
-# hook near the top (the reference's silhouette actually "bends" out into a
-# jag, dips back in, then curls into a hooked tip, rather than tapering to a
-# plain point). Left edge is a near-straight run from the apex down to the
-# band, matching the reference.
-_HAT_CROWN_LEFT_BASE: Point = (-0.373, -0.721)
-_HAT_CROWN_APEX: Point = (0.100, -1.280)
-_HAT_CROWN_RIGHT_SHOULDER: Point = (0.432, -1.120)
-_HAT_CROWN_JAG: Point = (0.922, -1.014)
-_HAT_CROWN_DIP: Point = (0.782, -0.934)
-_HAT_CROWN_CURL_TIP: Point = (1.045, -0.907)
-_HAT_CROWN_CURL_BACK: Point = (0.852, -0.841)
-_HAT_CROWN_RIGHT_BASE: Point = (0.677, -0.735)
+# Every chain below is the reference's own contour, not a hand-placed landmark.
+# The reference's fills are separated by black outline on a black page, so each
+# region (crown, band, the three pieces of the bow, the brim's top surface, the
+# two patches of underside showing at the brim's tips) is its own connected
+# component of non-outline pixels. Each was grown back by half the reference's
+# outline width, so its boundary lands on the stroke's centre line where this
+# code draws its own, walked with `trace_lib.boundary`, then simplified and
+# least-squares fitted with `trace_lib.fit_closed`. The three crease strokes
+# near the curl are the outline-coloured ink left inside the crown.
+#
+# Calibration is off the face, which is what the hat has to fit: the
+# reference's widest face row and its chin against this generator's own chibi
+# face (rendered, measured in head radii) give 173.7 px per head radius on both
+# axes, and the two axes agreeing is what says it is right, with the head
+# centre at (650, 481) in the reference's pixels. An earlier pass calibrated off
+# an eye-centre x that was really between the left eye and the nose, and an
+# eye-to-chin run that assumed proportions the chibi does not have (142.9 px,
+# centre 45 px too far left), then shrank the result by a different factor per
+# axis to fit the canvas: that is why it came out small, squat and off to one
+# side.
+#
+# Nothing is rescaled here. The reference's crown stands 2.6 head radii above
+# the head centre, far above any haircut's headroom, and the canvas makes room
+# for the hat rather than the hat for the canvas: `hat_hair_margin` below is
+# what `build_skeleton` is handed where a character's skeleton is built, so a
+# hat-wearer's figure stands a little smaller on the same canvas. The brim's
+# front rim crosses the head's centre line at -1.0, the top of the skull, which
+# puts it over the crown of every haircut here: the hair goes under the hat and
+# comes out below the brim, as in the reference.
+Chain = tuple[Point, list[Segment]]
 
-# Band, a ribbon around the crown's base: top edge shared with the crown's
-# own base points, bottom edge sitting a little lower and further out on the
-# right, which is what reads as the crown tilting away from the viewer in the
-# reference's three-quarter angle rather than a hat drawn flat-on.
-#
-# The left corner's `y` is raised from its raw scaled read (-0.695): at that
-# value the band's own top edge (the crown's base line) and bottom edge were
-# only 0.026 head radii apart on the left, thin enough that the stroke width
-# on both edges ate the entire fill and the band disappeared into the
-# outline. Caught by sampling rendered pixel colors along the band's
-# expected line and finding almost none of them were `hat_band_color`.
-# `x` widened from -0.233 to -0.32 this session: at the build-gated larger
-# size, `_hair_edge_x` showed the brim's own top-left corner (below) sitting
-# inside the hair mass's silhouette at the height the two share, by 0.14-0.41
-# head radii depending on build (see `_hat`'s own docstring for the full
-# clearance check). Widening this corner and `_HAT_BRIM_TOP_LEFT` together
-# closed most of it; a residual gap right at that single shared height is
-# noted in the docstring rather than chased further, since closing it fully
-# would mean widening the crown's own base past what a scale/position fix
-# should touch.
-_HAT_BAND_BOTTOM_RIGHT: Point = (0.747, -0.535)
-_HAT_BAND_BOTTOM_LEFT: Point = (-0.32, -0.60)
+# The brim's underside, drawn behind the hair (`_hat_underside`): the whole
+# silhouette, carried on across behind the head along the hull of the two
+# patches of underside the reference shows at the tips. Our hair is not the
+# reference's and is narrower under the brim, and where it does not reach
+# this is what shows, as it would under a real brim, rather than the page.
+_HAT_UNDERSIDE: Chain = (
+    (-2.061, -0.766),
+    [
+        ((-2.064, -0.800), (-2.055, -0.835)),
+        ((-2.029, -0.861), (-2.003, -0.887)),
+        ((-2.005, -0.898), (-2.021, -0.910)),
+        ((-1.986, -0.947), (-1.952, -0.973)),
+        ((-1.868, -1.014), (-1.785, -1.048)),
+        ((-1.566, -1.113), (-1.347, -1.151)),
+        ((-1.117, -1.183), (-0.887, -1.197)),
+        ((-0.671, -1.517), (-0.472, -1.842)),
+        ((-0.340, -2.029), (-0.178, -2.216)),
+        ((0.020, -2.429), (0.219, -2.562)),
+        ((0.288, -2.600), (0.357, -2.625)),
+        ((0.420, -2.638), (0.484, -2.637)),
+        ((0.564, -2.622), (0.645, -2.579)),
+        ((0.760, -2.502), (0.875, -2.418)),
+        ((1.060, -2.262), (1.220, -2.073)),
+        ((1.336, -2.067), (1.451, -2.003)),
+        ((1.535, -1.906), (1.577, -1.808)),
+        ((1.591, -1.780), (1.560, -1.767)),
+        ((1.480, -1.837), (1.399, -1.877)),
+        ((1.261, -1.843), (1.123, -1.836)),
+        ((1.019, -1.884), (0.915, -1.952)),
+        ((0.887, -1.923), (0.858, -1.894)),
+        ((0.862, -1.857), (0.835, -1.819)),
+        ((0.885, -1.721), (0.921, -1.623)),
+        ((0.939, -1.557), (0.910, -1.491)),
+        ((0.949, -1.431), (0.984, -1.370)),
+        ((1.018, -1.298), (1.025, -1.226)),
+        ((1.062, -1.189), (1.100, -1.151)),
+        ((1.114, -1.028), (1.123, -0.904)),
+        ((1.387, -0.746), (1.652, -0.616)),
+        ((1.851, -0.497), (2.050, -0.363)),
+        ((2.171, -0.278), (2.280, -0.155)),
+        ((2.271, -0.141), (2.263, -0.127)),
+        ((2.307, -0.089), (2.297, -0.052)),
+        ((2.225, 0.027), (2.153, 0.052)),
+        ((2.050, 0.079), (1.946, 0.104)),
+        ((1.661, 0.136), (1.376, 0.127)),
+        ((0.072, -0.076), (-1.232, -0.265)),
+        ((-1.385, -0.300), (-1.537, -0.368)),
+        ((-1.678, -0.437), (-1.819, -0.518)),
+        ((-1.906, -0.573), (-1.992, -0.662)),
+        ((-2.022, -0.714), (-2.061, -0.766)),
+    ],
+)
 
-# Brim: wide and asymmetric, curling up into a point on the right and dipping
-# into a small downward hook on the left before the hairline, per the
-# reference. Not a mirrored oval; the two sides are genuinely different
-# shapes. The proximal corners (where the brim meets the band) reuse the
-# band's own bottom corners, so the two pieces share an edge exactly rather
-# than by coincidence.
-#
-# The x and y axes carry different scale factors from the reference's own
-# pixel measurements (about 0.50 for x, 0.38 for y), not one uniform factor.
-# A uniform scale tight enough to keep the crown under the realistic build's
-# canvas ceiling (see the module comment above `_hat`) shrank the brim to a
-# sliver that barely read as a brim at all once rendered; widening x alone,
-# checked by rendering both builds, is what got the reference's "wide,
-# asymmetric brim" silhouette back without pushing the crown back off-canvas.
-#
-# The topside (this block) and underside (below) chains also carry a small
-# manual thickening on top of the scaled reference reads: the raw scaled
-# points put the "proximal to tip" chord almost on top of the underside
-# curve for most of the brim's width, which rendered as a near-zero-width
-# sliver everywhere except right at the tips. A witch hat's brim reads as a
-# brim because it has visible depth across its whole span, not just a
-# pointed silhouette, so the topside points are nudged up (more negative y)
-# and the underside points down from their raw scaled reads; caught and
-# fixed by rendering the brim in isolation and looking at the filled shape,
-# not by inspecting the coordinates.
-# `x` widened from -0.513 to -0.62 this session, alongside
-# `_HAT_BAND_BOTTOM_LEFT`; see that constant's own comment for why.
-_HAT_BRIM_TOP_LEFT: Point = (-0.62, -0.60)
-_HAT_BRIM_TIP_LEFT: Point = (-1.108, -0.47)
-_HAT_BRIM_HOOK_LEFT: Point = (-1.038, -0.19)
-_HAT_BRIM_UNDERSIDE_LEFT: Point = (-0.653, -0.19)
-# Not a hand-measured landmark: the reference crop this session used did not
-# carry a clean read on the brim's underside directly below the head, so this
-# is interpolated between the two measured underside points, low enough to
-# clear the chin at both builds. Flagged here rather than silently blended
-# into the two real measurements on either side of it.
-_HAT_BRIM_UNDERSIDE_MID: Point = (0.0, -0.10)
-_HAT_BRIM_UNDERSIDE_RIGHT: Point = (1.202, -0.34)
-_HAT_BRIM_TIP_RIGHT: Point = (1.657, -0.30)
-# Also not a hand-measured landmark, for the same reason `_HAT_BRIM_TOP_LEFT`
-# has a real one and this doesn't: the session's landmarks read the right
-# brim's underside and tip but nothing distinct for its topside, since that
-# area sits close under the crown's own jag in the reference. Placed to give
-# the right lobe the same kind of topside-to-underside thickness the left
-# lobe has, tapering to a point only right at the tip, rather than the whole
-# lobe as a knife-edge, which is what going tip-to-proximal directly drew
-# before this point existed.
-_HAT_BRIM_TOP_RIGHT: Point = (1.40, -0.56)
+# Everything in front of the hair: the brim's top surface with the crown,
+# band and bow on it. Its lower edge is the brim's front rim, over the hair.
+_HAT_BRIM: Chain = (
+    (-2.021, -0.910),
+    [
+        ((-1.960, -0.973), (-1.900, -1.002)),
+        ((-1.776, -1.050), (-1.652, -1.088)),
+        ((-1.482, -1.125), (-1.313, -1.157)),
+        ((-1.100, -1.183), (-0.887, -1.197)),
+        ((-0.671, -1.517), (-0.472, -1.842)),
+        ((-0.340, -2.029), (-0.178, -2.216)),
+        ((-0.066, -2.331), (0.046, -2.435)),
+        ((0.147, -2.514), (0.248, -2.579)),
+        ((0.314, -2.611), (0.380, -2.631)),
+        ((0.449, -2.641), (0.518, -2.631)),
+        ((0.581, -2.611), (0.645, -2.579)),
+        ((0.760, -2.502), (0.875, -2.418)),
+        ((1.060, -2.262), (1.220, -2.073)),
+        ((1.336, -2.067), (1.451, -2.003)),
+        ((1.535, -1.906), (1.577, -1.808)),
+        ((1.591, -1.780), (1.560, -1.767)),
+        ((1.480, -1.837), (1.399, -1.877)),
+        ((1.261, -1.843), (1.123, -1.836)),
+        ((1.019, -1.884), (0.915, -1.952)),
+        ((0.887, -1.923), (0.858, -1.894)),
+        ((0.862, -1.857), (0.835, -1.819)),
+        ((0.885, -1.721), (0.921, -1.623)),
+        ((0.939, -1.557), (0.910, -1.491)),
+        ((0.949, -1.431), (0.984, -1.370)),
+        ((1.018, -1.298), (1.025, -1.226)),
+        ((1.062, -1.189), (1.100, -1.151)),
+        ((1.114, -1.028), (1.123, -0.904)),
+        ((1.488, -0.702), (1.854, -0.495)),
+        ((1.998, -0.398), (2.142, -0.294)),
+        ((2.223, -0.227), (2.280, -0.150)),
+        ((2.271, -0.141), (2.263, -0.132)),
+        ((2.096, -0.246), (1.929, -0.299)),
+        ((1.301, -0.493), (0.674, -0.697)),
+        ((0.144, -0.862), (-0.386, -0.967)),
+        ((-0.679, -1.013), (-0.973, -1.042)),
+        ((-1.183, -1.051), (-1.393, -1.048)),
+        ((-1.543, -1.031), (-1.693, -1.007)),
+        ((-1.788, -0.983), (-1.883, -0.956)),
+        ((-1.940, -0.931), (-1.998, -0.892)),
+        ((-2.009, -0.894), (-2.021, -0.910)),
+    ],
+)
 
-# Build-gated size and lift, added after the author's own read on the first
-# pass: "it sits at an odd spot and is too small for her... make it larger
-# and fit a spot so it actually sits on top of her hair, not colliding with
-# it." The traced points above are left exactly as measured; what changed is
-# a second transform applied to every one of them in `_hat()`, the same
-# `if sk.build > 0:`-style idiom `_eye_placement` uses to give the chibi and
-# realistic builds different numbers from one shared shape.
-#
-# `_HAT_BRIM_UNDERSIDE_MID` at -0.10 is the bug the author was reacting to:
-# 0.10 head radii above head centre is barely above eyebrow height (eyes sit
-# at +0.16), so the brim's underside was resting on the face, not the hair.
-# The headscarf's own edge (`_SCARF_EDGE_Y`, -0.26) clears the temple; a
-# hat's brim sits higher still, above the hairline rather than hugging it.
-#
-# `_HAT_PIVOT_Y` is that same -0.10 landmark, kept as the point the lift is
-# measured from: `y' = _HAT_PIVOT_Y + (y - _HAT_PIVOT_Y) * scale_y + lift_y`,
-# so a scale of 1.0 leaves the brim underside exactly at `_HAT_PIVOT_Y +
-# lift_y` and any value above 1.0 stretches the crown taller and the band
-# lower from that same anchor. `x' = x * scale_x` uses the centre line
-# (x=0) as its own implicit pivot, which the traced points are already
-# roughly built around.
-#
-# Numbers below were reached by rendering both builds repeatedly and looking
-# (`docs/katherina-accessories-plan.md`'s own instruction for this kind of
-# fit), against the two builds' actual headroom above head centre
-# (`build_skeleton`'s `head_cy / head_r`, measured directly this session):
-# chibi 1.71, realistic 1.36. Chibi is the published build and gets most of
-# its headroom; realistic keeps a wider safety margin since its ceiling is
-# tighter and it is the deferred build.
-_HAT_PIVOT_Y = -0.10
-_HAT_SCALE_X_CHIBI = 1.25
-_HAT_SCALE_X_REALISTIC = 1.05
-_HAT_SCALE_Y_CHIBI = 1.03
-_HAT_SCALE_Y_REALISTIC = 0.79
-_HAT_LIFT_CHIBI = -0.32
-_HAT_LIFT_REALISTIC = -0.22
+# Leans right, kinks, and curls into a hooked tip. Its lower edge is the
+# band's upper one.
+_HAT_CROWN: Chain = (
+    (-0.685, -1.480),
+    [
+        ((-0.598, -1.661), (-0.472, -1.842)),
+        ((-0.340, -2.029), (-0.178, -2.216)),
+        ((-0.014, -2.390), (0.150, -2.516)),
+        ((0.222, -2.563), (0.294, -2.602)),
+        ((0.357, -2.625), (0.420, -2.637)),
+        ((0.481, -2.638), (0.541, -2.625)),
+        ((0.593, -2.604), (0.645, -2.579)),
+        ((0.815, -2.469), (0.984, -2.326)),
+        ((1.109, -2.202), (1.209, -2.078)),
+        ((1.318, -2.061), (1.428, -2.021)),
+        ((1.466, -1.991), (1.497, -1.952)),
+        ((1.548, -1.871), (1.583, -1.790)),
+        ((1.579, -1.772), (1.560, -1.767)),
+        ((1.480, -1.837), (1.399, -1.877)),
+        ((1.275, -1.855), (1.151, -1.831)),
+        ((1.033, -1.869), (0.915, -1.952)),
+        ((0.888, -1.914), (0.852, -1.911)),
+        ((0.860, -1.883), (0.858, -1.854)),
+        ((0.836, -1.839), (0.829, -1.831)),
+        ((0.883, -1.727), (0.921, -1.623)),
+        ((0.939, -1.557), (0.910, -1.491)),
+        ((0.964, -1.410), (1.002, -1.330)),
+        ((1.013, -1.284), (1.031, -1.238)),
+        ((1.022, -1.229), (1.013, -1.220)),
+        ((0.973, -1.232), (0.933, -1.238)),
+        ((0.812, -1.323), (0.691, -1.393)),
+        ((0.651, -1.402), (0.610, -1.370)),
+        ((0.394, -1.462), (0.178, -1.497)),
+        ((-0.052, -1.528), (-0.282, -1.526)),
+        ((-0.475, -1.519), (-0.668, -1.462)),
+        ((-0.676, -1.471), (-0.685, -1.480)),
+    ],
+)
+
+_HAT_BAND: Chain = (
+    (-0.858, -1.215),
+    [
+        ((-0.814, -1.307), (-0.766, -1.399)),
+        ((-0.745, -1.430), (-0.714, -1.451)),
+        ((-0.547, -1.506), (-0.380, -1.520)),
+        ((-0.233, -1.527), (-0.086, -1.526)),
+        ((0.029, -1.513), (0.144, -1.503)),
+        ((0.317, -1.472), (0.489, -1.422)),
+        ((0.558, -1.398), (0.628, -1.353)),
+        ((0.626, -1.223), (0.622, -1.094)),
+        ((0.613, -1.085), (0.604, -1.077)),
+        ((0.423, -1.127), (0.242, -1.169)),
+        ((0.072, -1.193), (-0.098, -1.215)),
+        ((-0.279, -1.227), (-0.461, -1.226)),
+        ((-0.648, -1.217), (-0.835, -1.197)),
+        ((-0.846, -1.199), (-0.858, -1.215)),
+    ],
+)
+
+# The bow on the band's right: a wide loop, a narrow wrap, and the tail, each
+# its own piece of the band's cloth.
+_HAT_BUCKLE: list[Chain] = [
+    (
+        (0.656, -1.399),
+        [
+            ((0.688, -1.395), (0.720, -1.382)),
+            ((0.781, -1.345), (0.829, -1.284)),
+            ((0.844, -1.195), (0.835, -1.105)),
+            ((0.825, -1.071), (0.823, -1.036)),
+            ((0.816, -1.022), (0.800, -1.007)),
+            ((0.734, -1.018), (0.668, -1.031)),
+            ((0.642, -1.042), (0.616, -1.071)),
+            ((0.622, -1.215), (0.622, -1.359)),
+            ((0.633, -1.379), (0.656, -1.399)),
+        ],
+    ),
+    (
+        (0.835, -1.301),
+        [
+            ((0.861, -1.290), (0.887, -1.278)),
+            ((0.928, -1.241), (0.938, -1.203)),
+            ((0.949, -1.137), (0.938, -1.071)),
+            ((0.927, -1.028), (0.892, -0.984)),
+            ((0.852, -0.981), (0.812, -1.019)),
+            ((0.819, -1.088), (0.829, -1.157)),
+            ((0.833, -1.220), (0.818, -1.284)),
+            ((0.826, -1.292), (0.835, -1.301)),
+        ],
+    ),
+    (
+        (0.944, -1.244),
+        [
+            ((0.990, -1.226), (1.036, -1.209)),
+            ((1.068, -1.186), (1.100, -1.151)),
+            ((1.117, -1.082), (1.105, -1.013)),
+            ((1.117, -0.976), (1.128, -0.938)),
+            ((1.137, -0.915), (1.111, -0.892)),
+            ((1.007, -0.925), (0.904, -0.990)),
+            ((0.928, -1.056), (0.938, -1.123)),
+            ((0.939, -1.172), (0.921, -1.220)),
+            ((0.933, -1.232), (0.944, -1.244)),
+        ],
+    ),
+]
+
+# Crease strokes where the crown folds under its curl. Open lines, not shapes.
+_HAT_CREASES: list[Chain] = [
+    ((0.841, -1.934), [((0.851, -1.998), (0.815, -2.115)), ((0.787, -2.205), (0.760, -2.274))]),
+    ((0.679, -2.124), [((0.725, -2.044), (0.763, -1.971)), ((0.795, -1.919), (0.800, -1.871))]),
+    ((0.812, -1.635), [((0.837, -1.603), (0.855, -1.577)), ((0.867, -1.559), (0.869, -1.537))]),
+]
 
 
-def _hat_xf(pt: Point, sx: float, sy: float, lift: float) -> Point:
-    """Scale a traced hat point about `_HAT_PIVOT_Y`/the centre line, then lift it.
+def hat_hair_margin(p: CharacterParams) -> float:
+    """Headroom, in head radii above the skull, that `p`'s hat needs; 0 for none.
 
-    Shared by every point `_hat()` draws with, including the small hand-offset
-    control points for the brim's hook and the crown's curl, so the whole hat
-    resizes as one rigid shape rather than the hook/curl details staying at
-    their old, now-mismatched scale while the rest grows around them.
+    For `build_skeleton`'s `min_hair_margin`: the canvas grows room for the hat
+    instead of the hat being squashed under a ceiling set for hair. The fitted
+    chain's controls are included, which bounds the curve (a quadratic never
+    leaves its control triangle), plus the stroke's outer half and a hair of
+    air.
     """
-    x, y = pt
-    return (x * sx, _HAT_PIVOT_Y + (y - _HAT_PIVOT_Y) * sy + lift)
+    if p.outfit.hat_color is None:
+        return 0.0
+    start, segs = _HAT_BRIM
+    top = min(start[1], *(y for c, e in segs for y in (c[1], e[1])))
+    return -top - 1.0 + 0.06
+
+
+def _hat_underside(sk: Skeleton, p: CharacterParams) -> str:
+    """The underside of a hat's brim, behind the hair and everything else.
+
+    A brim is a disc around the head, and the head and hair come in front of
+    its far side. Drawn first, so the hair, face and body cover it, and what is
+    left showing is the underside where the brim droops at its tips and
+    wherever the hair falls short of the brim. `_hat` draws the near side over
+    the hair at the end.
+    """
+    if p.outfit.hat_color is None:
+        return ""
+    d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *_HAT_UNDERSIDE)
+    fill = shade(p.outfit.hat_color, value_factor=0.62)
+    return f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
 
 
 def _hat(sk: Skeleton, p: CharacterParams) -> str:
-    """A pointed witch's hat: crown, brim and a band with a buckle.
+    """A pointed witch's hat's near side: brim, crown, band and bow, over everything.
 
     Over the hair mass and the fringe both, the way the headscarf sits over
-    them: a hat is put on, not grown, and it covers what it is put over.
-    Unlike the headscarf, this does not read `_hair_edge_x` to size itself.
+    them: a hat is put on, not grown, and it covers what it is put over. It
+    does not size itself off `_hair_edge_x` the way the headscarf does: its
+    shape is the reference's (see the comment above `_HAT_UNDERSIDE`), and the
+    brim is wide enough that every haircut's crown is under it. The far side
+    of the brim is `_hat_underside`, at the back of the figure.
 
-    The first pass's docstring claimed the fixed, traced coordinates were
-    "already well outside `long_traced`'s own edge at every height the hat
-    crosses", and the author's own read of the render said otherwise: "too
-    small... sits at an odd spot... colliding with [the hair]." Re-checked
-    properly this time, by actually walking `_hair_edge_x` against the
-    brim's own transformed boundary at each height it crosses (not just
-    trusted): the wide outer part of the brim (from the band down through
-    both tips) clears the hair with real margin at both builds. There is
-    one exception, right at the single height where the brim's own topmost
-    corner (`_HAT_BRIM_TOP_LEFT`) meets the crown's base
-    (`_HAT_BAND_BOTTOM_LEFT`): the hat's silhouette there is narrower than
-    the hair by 0.14 head radii at chibi (y=-0.913, hat reaches 0.76, hair
-    reaches 0.90) and 0.41 at realistic (y=-0.715, hat reaches 0.65, hair
-    reaches 1.06). Both constants were widened this session (see their own
-    comments) to close most of an initially worse gap; a hairline residual
-    stays exactly at that one corner, where the crown's left flank pinches
-    in before flaring out into the brim. In the actual renders this shows,
-    at most, as a thin sliver of hair near the hat's left edge right where
-    the crown sits, not a visible collision, but it is the one honest "not
-    quite fixed" left from this pass rather than something to claim clean.
-    Below the band, hair is *meant* to show outside the brim on both sides:
-    that is the "long fall" showing past the hat the design plan calls for,
-    not a defect, and `_hair_edge_x` correctly reports the brim as narrower
-    than the hair down there because the brim has already ended and the
-    hair is simply continuing past it toward the shoulders.
-
-    Three pieces, drawn back to front: the brim (a single asymmetric shape,
-    since the reference's brim is not a mirrored oval), the crown on top of
-    it, then the band, which covers the seam where the crown's tapered base
-    meets the brim's proximal edge, same trick `_belt` uses to hide the join
-    between a tucked tunic and whatever is worn under it. The buckle is last,
-    a small outlined shape in the band's own color rather than a new color:
-    the reference's buckle reads as a bow stitched from the band's own cloth,
-    not a metal fastener, so unlike `_belt`'s buckle this gets no `#8a8578`
-    hardware tone, just the band color again plus one `shade()`-derived line
-    for the stitching down its middle.
+    Back to front: the brim's top surface with the whole hat above it in the
+    hat colour, the crown over that, the band and its bow in the band colour,
+    and the creases last, as line work.
     """
     if p.outfit.hat_color is None:
         return ""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     color = p.outfit.hat_color
     sw = _stroke_w(sk)
-    parts = []
 
-    # Build-gated scale/lift, `_HAT_*_CHIBI`/`_HAT_*_REALISTIC` interpolated
-    # on `sk.build` the way `_eye_placement` interpolates its own adjustments:
-    # 0 at the chibi end, 1 at realistic. See the constants' own comment
-    # above for what these numbers are answering to.
-    t = sk.build
-    sx = _HAT_SCALE_X_CHIBI + (_HAT_SCALE_X_REALISTIC - _HAT_SCALE_X_CHIBI) * t
-    sy = _HAT_SCALE_Y_CHIBI + (_HAT_SCALE_Y_REALISTIC - _HAT_SCALE_Y_CHIBI) * t
-    lift = _HAT_LIFT_CHIBI + (_HAT_LIFT_REALISTIC - _HAT_LIFT_CHIBI) * t
+    def shape(chain: Chain, fill: str) -> str:
+        d = _curve(cx, cy, r, *chain)
+        return f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
 
-    def xf(pt: Point) -> Point:
-        return _hat_xf(pt, sx, sy, lift)
-
-    brim_top_left = xf(_HAT_BRIM_TOP_LEFT)
-    brim_tip_left = xf(_HAT_BRIM_TIP_LEFT)
-    brim_hook_left = xf(_HAT_BRIM_HOOK_LEFT)
-    brim_underside_left = xf(_HAT_BRIM_UNDERSIDE_LEFT)
-    brim_underside_mid = xf(_HAT_BRIM_UNDERSIDE_MID)
-    brim_underside_right = xf(_HAT_BRIM_UNDERSIDE_RIGHT)
-    brim_tip_right = xf(_HAT_BRIM_TIP_RIGHT)
-    brim_top_right = xf(_HAT_BRIM_TOP_RIGHT)
-    band_bottom_left = xf(_HAT_BAND_BOTTOM_LEFT)
-    band_bottom_right = xf(_HAT_BAND_BOTTOM_RIGHT)
-    crown_left_base = xf(_HAT_CROWN_LEFT_BASE)
-    crown_apex = xf(_HAT_CROWN_APEX)
-    crown_right_shoulder = xf(_HAT_CROWN_RIGHT_SHOULDER)
-    crown_jag = xf(_HAT_CROWN_JAG)
-    crown_dip = xf(_HAT_CROWN_DIP)
-    crown_curl_tip = xf(_HAT_CROWN_CURL_TIP)
-    crown_curl_back = xf(_HAT_CROWN_CURL_BACK)
-    crown_right_base = xf(_HAT_CROWN_RIGHT_BASE)
-
-    # --- Brim, first so the crown and band draw over its proximal edge.
-    brim_d = _curve(
-        cx,
-        cy,
-        r,
-        band_bottom_left,
-        [
-            (brim_top_left, brim_top_left),
-            (brim_tip_left, brim_tip_left),
-            # The left hook: a small pointed flap, so the control leans past
-            # the endpoint rather than sitting between it and the previous
-            # point, which is what makes a chain read as a jag rather than a
-            # smooth bend. The raw offset (-0.04, +0.09) scales with the
-            # transform too, so the hook stays in proportion to the rest of
-            # the brim instead of shrinking relative to it as the hat grows.
-            (
-                (brim_tip_left[0] - 0.04 * sx, brim_tip_left[1] + 0.09 * sy),
-                brim_hook_left,
-            ),
-            (brim_underside_left, brim_underside_left),
-            (brim_underside_mid, brim_underside_mid),
-            (brim_underside_right, brim_underside_right),
-            (brim_tip_right, brim_tip_right),
-            # Topside on the way back in, so the right lobe has real
-            # thickness instead of tapering to a knife-edge for its whole
-            # length. See `_HAT_BRIM_TOP_RIGHT`'s own comment.
-            (brim_top_right, brim_top_right),
-            (band_bottom_right, band_bottom_right),
-        ],
-    )
-    parts.append(f'<path d="{brim_d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
-
-    # --- Crown, over the brim's proximal edge.
-    crown_d = _curve(
-        cx,
-        cy,
-        r,
-        crown_left_base,
-        [
-            (crown_left_base, crown_apex),
-            (crown_apex, crown_right_shoulder),
-            (crown_right_shoulder, crown_jag),
-            (crown_jag, crown_dip),
-            (crown_dip, crown_curl_tip),
-            # The curl: control past the tip so the chain loops back on
-            # itself instead of just bending, same jag-vs-bend distinction
-            # as the brim's left hook above. Offset scaled the same way.
-            (
-                (crown_curl_tip[0] + 0.03 * sx, crown_curl_tip[1] + 0.05 * sy),
-                crown_curl_back,
-            ),
-            (crown_curl_back, crown_right_base),
-            # Straight back across under the crown; the band drawn next
-            # covers this edge, the same way a belt covers a tucked hem.
-            (crown_right_base, crown_left_base),
-        ],
-    )
-    parts.append(
-        f'<path d="{crown_d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
-    )
-
-    # --- Band, covering the crown/brim seam.
+    parts = [shape(_HAT_BRIM, color), shape(_HAT_CROWN, color)]
     band_color = p.outfit.hat_band_color
     if band_color is not None:
-        band_d = _curve(
-            cx,
-            cy,
-            r,
-            crown_left_base,
-            [
-                (crown_right_base, crown_right_base),
-                (band_bottom_right, band_bottom_right),
-                (band_bottom_left, band_bottom_left),
-            ],
-        )
+        parts.append(shape(_HAT_BAND, band_color))
+        parts.extend(shape(piece, band_color) for piece in _HAT_BUCKLE)
+    for crease in _HAT_CREASES:
+        d = _curve(cx, cy, r, *crease, close=False)
         parts.append(
-            f'<path d="{band_d}" fill="{band_color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
-        )
-        # The buckle: a small outlined rounded rectangle in the band's own
-        # color, so it reads as stitched cloth rather than metal hardware,
-        # plus a stitched-looking centre line in a `shade()`-derived tone,
-        # the one small second tone the house style allows. Its anchor is
-        # the same transform as every other hat point, so it rides the
-        # band rather than staying at its old, pre-transform spot.
-        buckle_x, buckle_y = xf((0.625, -0.641))
-        bx = cx + buckle_x * r
-        by = cy + buckle_y * r
-        bw, bh = 0.13 * r * sx, 0.10 * r * sy
-        parts.append(
-            f'<rect x="{bx - bw / 2:.1f}" y="{by - bh / 2:.1f}" width="{bw:.1f}" height="{bh:.1f}" '
-            f'rx="{bh * 0.22:.1f}" fill="{band_color}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
-        )
-        stitch = shade(band_color, value_factor=1.3, saturation_boost=0.8)
-        parts.append(
-            f'<line x1="{bx:.1f}" y1="{by - bh * 0.38:.1f}" x2="{bx:.1f}" y2="{by + bh * 0.38:.1f}" '
-            f'stroke="{stitch}" stroke-width="{sw * 0.5:.1f}" stroke-linecap="round" />'
+            f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.8:.1f}" '
+            'stroke-linecap="round" />'
         )
     return "".join(parts)
 
@@ -6118,7 +6099,7 @@ def render_character(
     unrelated change: the web tool is what turns it on.
     """
     p = p or CharacterParams()
-    sk = sk or build_skeleton(heads=p.heads, frame=p.frame)
+    sk = sk or build_skeleton(heads=p.heads, frame=p.frame, min_hair_margin=hat_hair_margin(p))
 
     # Back to front. The legs go under the skirts so a hem covers the thigh, and
     # the arms go over every garment so nothing can clip a hand: the apron is
@@ -6126,6 +6107,8 @@ def render_character(
     # one place a collision would show.
     layers = [
         _hair_defs(sk, p),
+        # The far side of a hat's brim, behind the hair, the head and everything.
+        _hat_underside(sk, p),
         # Behind the mass, so both emerge from the silhouette instead of sitting
         # on the face. That is the whole point of them being parts rather than
         # hairstyles: a cut owns the outline around the skull, and these two are

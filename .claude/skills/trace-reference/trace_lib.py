@@ -224,6 +224,97 @@ def fit_chain(
     return start, segs
 
 
+def boundary(mask: np.ndarray) -> list[tuple[int, int]]:
+    """The ordered outer boundary of `mask`'s largest blob, as (x, y) pixels.
+
+    Moore-neighbour tracing, clockwise on screen, starting from the blob's
+    topmost-leftmost pixel. A radial or column scan can only describe a shape
+    that is a single-valued function of angle or of x; a brim seen from below,
+    a crown whose tip curls back over itself, or a crescent-shaped patch is
+    not, and needs its contour walked instead. Isolate the object first (a
+    connected-component label of the non-outline fill, grown back by half an
+    outline width so the boundary lands on the stroke's centre line): tracing
+    a threshold of a composite image walks whatever touches the object too.
+    """
+    m = np.pad(mask.astype(bool), 1)
+    labels, n = _label(m)
+    if n > 1:
+        sizes = np.bincount(labels.ravel())
+        sizes[0] = 0
+        m = labels == int(np.argmax(sizes))
+    ys, xs = np.nonzero(m)
+    i = int(np.lexsort((xs, ys))[0])
+    start = (int(xs[i]), int(ys[i]))
+    # neighbours clockwise on screen (y down), starting west
+    nbrs = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1)]
+    out = [start]
+    cur, back = start, 0  # we entered `start` scanning from the west
+    for _ in range(4 * m.size):
+        for k in range(8):
+            d = (back + k) % 8
+            nx, ny = cur[0] + nbrs[d][0], cur[1] + nbrs[d][1]
+            if m[ny, nx]:
+                # next search starts from the neighbour just before this one
+                back = (d + 5) % 8
+                cur = (nx, ny)
+                break
+        else:
+            break  # isolated pixel
+        if cur == start:
+            break
+        out.append(cur)
+    return [(x - 1, y - 1) for x, y in out]
+
+
+def _label(m: np.ndarray) -> tuple[np.ndarray, int]:
+    from scipy import ndimage
+
+    return ndimage.label(m)
+
+
+def fit_closed(
+    points: list[tuple[float, float]], tol: float
+) -> tuple[tuple[float, float], list[tuple[tuple[float, float], tuple[float, float]]]]:
+    """`simplify` + `fit_chain` for a closed contour (the output of `boundary`).
+
+    Douglas-Peucker needs two distinct endpoints, and a closed loop's first
+    and last point are the same one, so the loop is opened at its most
+    distant pair: starting at the point farthest from the centroid (a tip,
+    which should be a mark anyway) and splitting again at the point farthest
+    from that. Each half is simplified on its own and the marks rejoined.
+    """
+    xy = np.asarray(points, dtype=float)
+    c = xy.mean(0)
+    s = int(np.argmax(((xy - c) ** 2).sum(1)))
+    loop = [*points[s:], *points[:s], points[s]]
+    far = int(np.argmax(((np.asarray(loop) - loop[0]) ** 2).sum(1)))
+    first = simplify(loop[: far + 1], tol)
+    second = [far + i for i in simplify(loop[far:], tol)]
+    marks = sorted(set(first) | set(second))
+    return fit_chain(loop, marks)
+
+
+def sample_chain(
+    start: tuple[float, float],
+    segs: list[tuple[tuple[float, float], tuple[float, float]]],
+    per_segment: int = 12,
+) -> list[tuple[float, float]]:
+    """Points along a fitted chain, for drawing it back over the reference."""
+    out = [start]
+    p0 = start
+    for c, p2 in segs:
+        for k in range(1, per_segment + 1):
+            t = k / per_segment
+            out.append(
+                (
+                    (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * c[0] + t**2 * p2[0],
+                    (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * c[1] + t**2 * p2[1],
+                )
+            )
+        p0 = p2
+    return out
+
+
 def emit_chain(
     start: tuple[float, float],
     segs: list[tuple[tuple[float, float], tuple[float, float]]],

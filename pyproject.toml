@@ -50,6 +50,10 @@ dev = [
     "numpy>=1.26",
     "pytest>=8",
     "ruff>=0.14",
+    # Reference tracing: connected-component labelling and morphological
+    # closing, to isolate one object's ink in a composite reference whose
+    # outlines are the same black as its background (the witch hat's pass).
+    "scipy>=1.11",
 ]
 
 [build-system]

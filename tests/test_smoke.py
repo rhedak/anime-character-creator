@@ -164,7 +164,10 @@ def test_ref_out_matches_the_code(preset: str, build: str, rel: str) -> None:
     """
     p = PRESETS[preset]
     committed = REF_OUT / f"{rel}.svg"
-    expected = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
+    sk = build_skeleton(
+        heads=BUILDS[build], frame=p.frame, min_hair_margin=character.hat_hair_margin(p)
+    )
+    expected = render_character(p, sk)
     assert committed.read_text() == expected, f"{rel}.svg is stale: ./refresh-ref-out.sh"
 
 

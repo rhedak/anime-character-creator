@@ -73,6 +73,7 @@ def build_skeleton(
     frame: float = 0.0,
     hair_margin: float | None = None,
     bottom_margin: float = 0.03,
+    min_hair_margin: float = 0.0,
 ) -> Skeleton:
     # Headroom above the skull, in head radii, so the hair has somewhere to go.
     # It is head-relative rather than a fraction of the canvas because that is
@@ -103,6 +104,12 @@ def build_skeleton(
     if hair_margin is None:
         t0 = min(1.0, max(0.0, (heads - 2.0) / 4.0))
         hair_margin = _lerp(0.75, 0.36, t0)
+    # A floor rather than an override, for something worn above the hair: a
+    # witch's hat stands far taller than any crown, and the figure is what gives
+    # way for it, standing smaller on the same canvas. `character.hat_hair_margin`
+    # says how much a character's hat needs; passing it where a character's
+    # skeleton is built is what keeps its tip on the page.
+    hair_margin = max(hair_margin, min_hair_margin)
     fig_h = canvas_h * (1.0 - bottom_margin) / (1.0 + hair_margin / (2.0 * heads))
     head_h = fig_h / heads
     head_r = head_h / 2
