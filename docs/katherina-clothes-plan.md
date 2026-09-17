@@ -252,6 +252,45 @@ edge), so it no longer moves with the sleeve work; the zooms are what judged it
 - [ ] **C4c.** Refit `right_arm_out` if the sleeve's pivot moves, and check
       the staff's grip again.
 
+### C4b. Shoulder-to-arm transition
+
+**Status: done, 2026-09-17, for the owner's look.** Rendered without hair
+(`harness/clothes/bare.py`), the first pass read as a vest beside two tubes: the
+jacket's outer edge was a convex hull carried across the hair, and the sleeve
+stopped flat at the arm's pivot. Retraced (`harness/clothes/trace_shoulders.py`,
+written into character.py by `emit_shoulders.py`) from what the reference shows
+around the hair: the jacket's shoulder line from the collar's corner, the seam
+inside each panel (x about ±0.60) where the sleeve joins the body, and the
+sleeve's two edges, each a line fitted where the hair's strands do not notch it.
+Under the hair the sleeve's top is inferred: a disc exactly as wide as the sleeve
+at the joint, on its centre line, touching the shoulder line (joint (0.695,
+1.428), radius 0.164). The sleeve's edges run tangent into that cap, and a disc
+looks the same at any angle, so the arm now swings about the joint
+(`_arm_pivot`), not about the old sleeve-hem pivot, and needs no joint cap. The
+jacket runs along the shoulder line to the cap, round it, and down the seam. Each
+side keeps its own traced front edge and lower panel, with the shoulder geometry
+mirrored. Under a traced jacket, the traced sleeve takes the jacket's colour: one
+garment from the shoulder to the cuff (the reference's shading toward purple is
+not drawn). `right_arm_out` refitted to 36 about the new pivot (grip 0.19 head
+radii off the reference's).
+
+Harness, after two corrections to the harness itself, both re-scored on the
+previous commit for comparison: our arms are left out of every region whose
+reference components exclude the sleeves (a jacket-coloured sleeve crosses the
+lower panels' band), and `jacket_upper` now scores the jacket colour only (it
+used to count the dress strip too):
+
+| region | previous commit | now |
+| --- | --- | --- |
+| jacket_upper | n/a (old definition) | 0.569 / 0.080 |
+| dress_bodice | 0.871 / 0.016 | 0.868 / 0.017 |
+| jacket_lower | 0.930 / 0.010 | 0.929 / 0.010 |
+| skirt | 0.950 / 0.016 | 0.951 / 0.016 |
+
+Seen: `out/clothes/bare_both.png` (Katherina and Satoko without hair),
+`bare_shoulder_zoom.png` (16x), `c4b_torso.png` (with hair, beside the reference).
+At 16x a small step remains where the shoulder line meets the cap.
+
 ### C5. Belt
 
 **Status: done, 2026-09-17.** `BELT_CUTS["buckled"]`, a `BeltCut`: the strap
@@ -290,6 +329,13 @@ at realistic; Satoko wearing every cut on both chibi bodies).
 - C7c: every cut is a Cut select on its catalogue slot (collar, tunic's sleeve,
   skirt, belt, coat), and the body type sits beside the build slider.
 - C7d (the book's cover, style anchors and reader) waits for the owner.
+
+**Owner's calls, 2026-09-17.** Cuts on the shared chibi do need their own
+adjustments, but that is **deferred as a known gap**: the cuts are for
+`tall_chibi` until someone wants them on the shared chibi. C7d: **not yet**.
+And one more pass before it: **C4b, the shoulder-to-arm transition** on
+`tall_chibi`, which reads as two displaced parts where the reference has one
+garment flowing from the shoulder into the sleeve.
 
 - [ ] **C7a.** Both builds rendered and looked at; realistic falls back to the
       shared garments per the decision above.

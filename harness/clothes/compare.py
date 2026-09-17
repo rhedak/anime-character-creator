@@ -59,7 +59,7 @@ KEY = {
 REGIONS: dict[str, tuple[tuple[int, ...], tuple[str, ...]]] = {
     "collar": ((175, 176), ("collar",)),
     "neck": ((177,), ("skin",)),
-    "jacket_upper": ((179, 180), ("coat", "tunic")),
+    "jacket_upper": ((179, 180), ("coat",)),
     "dress_bodice": ((182,), ("tunic", "skirt")),
     "belt": ((192, 193, 194, 195, 196, 198), ("belt",)),
     "jacket_lower": ((202, 203), ("coat",)),
@@ -67,6 +67,9 @@ REGIONS: dict[str, tuple[tuple[int, ...], tuple[str, ...]]] = {
     "legs": ((212, 213), ("skin",)),
     "boots": ((216, 218), ("boots",)),
 }
+# Regions whose reference components include the sleeves (179/180 are panel and
+# sleeve in one fill); every other region leaves our arms out.
+WITH_SLEEVES = {"jacket_upper"}
 # Where each region can be, so a colour shared by two regions (skin: neck,
 # hands, legs; the tunic's colour: bodice and long sleeves) is only counted in
 # its own band. Head radii: y, and optionally the largest |x|.
@@ -139,6 +142,18 @@ def main() -> None:
     ours = np.asarray(Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), scale=k))).convert("RGBA")).astype(int)
     ocx, ocy, osc = sk.head_cx * k, sk.head_cy * k, sk.head_r * k
 
+    # The arms' own pixels: a render without them differs exactly there. A
+    # traced jacket's sleeves are in its colour, and a hanging sleeve crosses the
+    # lower panels' band, so regions that do not include sleeves drop these.
+    arms_fn = c._arms
+    c._arms = lambda sk, p: ""
+    try:
+        armless_svg = c.render_character(keyed(p), sk)
+    finally:
+        c._arms = arms_fn
+    armless = np.asarray(Image.open(io.BytesIO(cairosvg.svg2png(bytestring=armless_svg.encode(), scale=k))).convert("RGBA")).astype(int)
+    arms = sample(np.abs(ours - armless).sum(2) > 30, ocx, ocy, osc)
+
     def ours_mask(key: str) -> np.ndarray:
         col = np.array([int(KEY[key][i : i + 2], 16) for i in (1, 3, 5)])
         m = (np.abs(ours[..., :3] - col).sum(2) <= 30) & (ours[..., 3] > 200)
@@ -167,6 +182,8 @@ def main() -> None:
         for key in keys:
             o |= ours_mask(key)
         o &= band & ~hidden
+        if region not in WITH_SLEEVES:
+            o &= ~arms
         union = (r | o).sum()
         iou = (r & o).sum() / union if union else float("nan")
         print(f"{region:14s} {iou:6.3f} {boundary_distance(r, o):7.3f}")

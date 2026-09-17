@@ -887,7 +887,7 @@ KATHERINA = CharacterParams(
         staff_crystal_color="#f79e43",
     ),
     frame=-0.1,
-    right_arm_out=42.0,
+    right_arm_out=36.0,
     body="tall_chibi",
     face=FaceStyle(
         eye_size=1.05,

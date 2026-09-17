@@ -3350,14 +3350,16 @@ SKIRT_CUTS: dict[str, GarmentCut] = {
 }
 
 
-# Traced coat cuts, drawn by `_coat` when `Outfit.coat_cut` names one. The
-# cut is the whole garment, so `coat_length` does not apply to it.
-# `open_jacket` is the jacket of `katherina_grok.jpg` (`katherina-clothes-plan.md`,
-# C3), its body only: each side is the navy upper panel (split by hue from the
-# purple sleeve it shares a fill with), carried across the hair as the convex
-# hull of its visible navy and under the belt edge to edge, into the lower panel
-# that flares from it; the lines are the seams where the sleeve's back meets the
-# body (`harness/clothes/trace_jacket.py`). The sleeves are C4's.
+# Traced coat cuts, drawn over the arms by `_traced_coat_and_belt` when
+# `Outfit.coat_cut` names one. The cut is the whole garment, so `coat_length` does
+# not apply to it. `open_jacket` is the jacket of `katherina_grok.jpg`
+# (`katherina-clothes-plan.md`, C3 and C4b; `harness/clothes/trace_shoulders.py`),
+# its body only. Each side: the shoulder line from the collar's corner, round the
+# top of the sleeve's cap, down the seam where the sleeve joins the body (both
+# visible in the reference), out to the side at the belt, under the belt, and the
+# traced lower panel flaring from it. The sleeve (`SLEEVE_CUTS["wide"]`) fills
+# the rest of the shoulder, so the two read as one jacket. Built from the right
+# side and mirrored, so the shoulders match.
 COAT_CUTS: dict[str, GarmentCut] = {
     "open_jacket": GarmentCut(
         fills=(
@@ -3366,8 +3368,11 @@ COAT_CUTS: dict[str, GarmentCut] = {
                 [
                     ((-0.257, 1.258), (-0.150, 1.393)),
                     ((-0.141, 1.413), (-0.144, 1.434)),
-                    ((-0.215, 1.983), (-0.276, 2.533)),
-                    ((-0.375, 2.913), (-0.443, 3.293)),
+                    ((-0.200, 1.848), (-0.242, 2.263)),
+                    ((-0.262, 2.381), (-0.282, 2.499)),
+                    ((-0.284, 2.516), (-0.276, 2.533)),
+                    ((-0.334, 2.761), (-0.386, 2.988)),
+                    ((-0.416, 3.140), (-0.443, 3.293)),
                     ((-0.455, 3.305), (-0.466, 3.316)),
                     ((-0.478, 3.316), (-0.489, 3.316)),
                     ((-0.633, 3.289), (-0.777, 3.247)),
@@ -3375,23 +3380,28 @@ COAT_CUTS: dict[str, GarmentCut] = {
                     ((-0.902, 3.184), (-0.910, 3.166)),
                     ((-0.861, 3.022), (-0.806, 2.879)),
                     ((-0.741, 2.737), (-0.662, 2.596)),
-                    ((-0.622, 2.435), (-0.570, 2.274)),
-                    ((-0.652, 2.113), (-0.748, 1.952)),
-                    ((-0.777, 1.854), (-0.800, 1.756)),
-                    ((-0.816, 1.667), (-0.818, 1.577)),
-                    ((-0.761, 1.436), (-0.674, 1.295)),
-                    ((-0.622, 1.240), (-0.570, 1.197)),
-                    ((-0.472, 1.150), (-0.374, 1.123)),
+                    ((-0.623, 2.429), (-0.576, 2.263)),
+                    ((-0.604, 2.050), (-0.633, 1.836)),
+                    ((-0.619, 1.569), (-0.616, 1.301)),
+                    ((-0.653, 1.280), (-0.691, 1.278)),
+                    ((-0.711, 1.264), (-0.708, 1.249)),
+                    ((-0.697, 1.238), (-0.685, 1.226)),
+                    ((-0.581, 1.178), (-0.478, 1.123)),
+                    ((-0.426, 1.123), (-0.374, 1.123)),
                 ],
             ),
             (
                 (0.420, 1.111),
                 [
-                    ((0.544, 1.141), (0.668, 1.197)),
-                    ((0.731, 1.237), (0.794, 1.307)),
-                    ((0.755, 1.569), (0.708, 1.831)),
-                    ((0.649, 2.055), (0.581, 2.280)),
-                    ((0.636, 2.435), (0.679, 2.591)),
+                    ((0.438, 1.111), (0.455, 1.111)),
+                    ((0.570, 1.172), (0.685, 1.226)),
+                    ((0.697, 1.238), (0.708, 1.249)),
+                    ((0.711, 1.264), (0.691, 1.278)),
+                    ((0.653, 1.280), (0.616, 1.301)),
+                    ((0.619, 1.569), (0.633, 1.836)),
+                    ((0.624, 1.931), (0.604, 2.026)),
+                    ((0.598, 2.147), (0.587, 2.268)),
+                    ((0.638, 2.429), (0.679, 2.591)),
                     ((0.751, 2.720), (0.812, 2.850)),
                     ((0.877, 3.011), (0.933, 3.172)),
                     ((0.935, 3.187), (0.915, 3.201)),
@@ -3400,25 +3410,11 @@ COAT_CUTS: dict[str, GarmentCut] = {
                     ((0.426, 3.316), (0.397, 3.316)),
                     ((0.386, 3.305), (0.374, 3.293)),
                     ((0.313, 2.919), (0.242, 2.545)),
-                    ((0.194, 1.989), (0.144, 1.434)),
+                    ((0.241, 2.530), (0.248, 2.516)),
+                    ((0.230, 2.389), (0.213, 2.263)),
+                    ((0.185, 1.848), (0.144, 1.434)),
                     ((0.144, 1.413), (0.144, 1.393)),
                     ((0.278, 1.252), (0.420, 1.111)),
-                ],
-            ),
-        ),
-        lines=(
-            (
-                (-0.576, 1.445),
-                [
-                    ((-0.601, 1.642), (-0.591, 1.869)),
-                    ((-0.576, 2.075), (-0.564, 2.165)),
-                ],
-            ),
-            (
-                (0.604, 1.514),
-                [
-                    ((0.617, 1.679), (0.619, 1.802)),
-                    ((0.616, 1.898), (0.593, 2.026)),
                 ],
             ),
         ),
@@ -4775,11 +4771,13 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
 class SleeveCut:
     """A traced sleeve and its cuff, placed along an arm rather than on the body.
 
-    `pivot` and `wrist` are the traced arm's own ends in the reference's head
-    radii (the viewer's right arm); `half_w` is `_GARMENT_REF_BODY`'s arm
-    half-width. `_sleeve_placement` maps the shapes from that arm onto any arm:
-    along it by the fraction of pivot-to-wrist, across it by the ratio of arm
-    widths, mirrored for the viewer's left.
+    `pivot` is the shoulder joint and `wrist` the cuff's bottom centre, in the
+    reference's head radii (the viewer's right arm); `half_w` is
+    `_GARMENT_REF_BODY`'s arm half-width. The sleeve's top is a disc about the
+    joint, so an arm swung about it still meets the shoulder the same way.
+    `_sleeve_placement` puts the joint where the body mapping puts it (on the
+    jacket's shoulder) and the wrist on the arm's own wrist, scales across by the
+    ratio of arm widths, and mirrors for the viewer's left.
     """
 
     pivot: Point
@@ -4791,41 +4789,43 @@ class SleeveCut:
 
 # Traced sleeve cuts, drawn by `_arms` when `Outfit.sleeve_cut` names one, in the
 # sleeve's colour, on both arms. `wide` is the hanging sleeve of
-# `katherina_grok.jpg` (`katherina-clothes-plan.md`, C4; `harness/clothes/trace_sleeve.py`):
-# the purple part of component 179, its top carried up under the hair parallel to
-# its centre line, and the cuff, 208. The reference's other arm bends at the
+# `katherina_grok.jpg` (`katherina-clothes-plan.md`, C4 and C4b;
+# `harness/clothes/trace_shoulders.py`): the purple part of component 179, its
+# edges carried up under the hair to a cap about the shoulder joint, and the cuff
+# (208, `harness/clothes/trace_sleeve.py`). The reference's other arm bends at the
 # elbow, which a straight swung arm cannot, so it wears this one mirrored.
 SLEEVE_CUTS: dict[str, SleeveCut] = {
     "wide": SleeveCut(
-        pivot=(0.754, 1.657),
+        pivot=(0.695, 1.428),
         wrist=(1.054, 3.212),
         half_w=0.20982,
         sleeve=(
-            (0.524, 1.560),
+            (0.651, 1.255),
             [
-                ((0.737, 1.560), (0.950, 1.560)),
-                ((0.959, 1.569), (0.967, 1.577)),
-                ((1.045, 1.865), (1.128, 2.153)),
-                ((1.265, 2.539), (1.399, 2.925)),
-                ((1.401, 2.953), (1.387, 2.982)),
-                ((1.370, 2.999), (1.353, 3.017)),
+                ((0.685, 1.248), (0.720, 1.249)),
+                ((0.740, 1.259), (0.760, 1.261)),
+                ((0.815, 1.295), (0.858, 1.353)),
+                ((0.874, 1.405), (0.881, 1.457)),
+                ((1.135, 2.179), (1.393, 2.902)),
+                ((1.394, 2.925), (1.405, 2.948)),
+                ((1.389, 2.982), (1.353, 3.017)),
                 ((1.362, 3.025), (1.370, 3.034)),
                 ((1.347, 3.055), (1.324, 3.074)),
-                ((1.249, 3.101), (1.174, 3.126)),
-                ((1.111, 3.133), (1.048, 3.149)),
+                ((1.281, 3.086), (1.238, 3.109)),
+                ((1.143, 3.129), (1.048, 3.149)),
                 ((0.996, 3.149), (0.944, 3.149)),
                 ((0.930, 3.142), (0.915, 3.126)),
                 ((0.924, 3.117), (0.933, 3.109)),
                 ((0.918, 3.094), (0.904, 3.080)),
-                ((0.837, 2.896), (0.754, 2.712)),
-                ((0.744, 2.628), (0.737, 2.545)),
-                ((0.716, 2.470), (0.697, 2.395)),
-                ((0.686, 2.303), (0.674, 2.211)),
-                ((0.653, 2.156), (0.639, 2.101)),
-                ((0.639, 2.064), (0.639, 2.026)),
-                ((0.630, 2.018), (0.622, 2.009)),
-                ((0.572, 1.802), (0.507, 1.595)),
-                ((0.501, 1.577), (0.524, 1.560)),
+                ((0.885, 3.028), (0.869, 2.976)),
+                ((0.841, 2.967), (0.812, 2.948)),
+                ((0.796, 2.864), (0.783, 2.781)),
+                ((0.765, 2.746), (0.754, 2.712)),
+                ((0.744, 2.642), (0.743, 2.573)),
+                ((0.634, 2.018), (0.518, 1.462)),
+                ((0.513, 1.410), (0.530, 1.359)),
+                ((0.554, 1.321), (0.593, 1.284)),
+                ((0.622, 1.267), (0.651, 1.255)),
             ],
         ),
         cuff=(
@@ -4853,10 +4853,10 @@ def _sleeve_placement(sk: Skeleton, cut: SleeveCut, s: int) -> Callable[[Point],
     """Map a sleeve cut from its traced arm onto `sk`'s hanging arm on side `s`.
 
     Head radii in, head radii out, before any swing: `_arms` turns the result
-    with the rest of the limb.
+    with the rest of the limb, about the placed joint (`_arm_pivot`).
     """
-    centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
-    px, py = centre_top / sk.head_r, (top_y - sk.head_cy) / sk.head_r
+    _, _, centre_wrist, wrist_y = _arm_line(sk)
+    px, py = _garment_placement(sk)(cut.pivot)
     wx, wy = centre_wrist / sk.head_r, (wrist_y - sk.head_cy) / sk.head_r
     rax, ray = cut.wrist[0] - cut.pivot[0], cut.wrist[1] - cut.pivot[1]
     ref_len = math.hypot(rax, ray)
@@ -4902,14 +4902,32 @@ def _hand_length(sk: Skeleton) -> float:
     return sk.arm_half_w * (1.35 + 1.10 * sk.build)
 
 
+def _worn_sleeve(sk: Skeleton, p: CharacterParams) -> SleeveCut | None:
+    return SLEEVE_CUTS.get(p.outfit.sleeve_cut or "") if _wears_cuts(sk) else None
+
+
+def _arm_pivot(sk: Skeleton, p: CharacterParams, s: int) -> tuple[float, float]:
+    """Where an arm on side `s` turns when swung, in canvas px.
+
+    The sleeve hem's centre for a plain arm; the placed shoulder joint when a
+    traced sleeve is worn, whose cap is a disc about it.
+    """
+    cut = _worn_sleeve(sk, p)
+    if cut is None:
+        centre_top, top_y, _, _ = _arm_line(sk)
+        return sk.head_cx + s * centre_top, top_y
+    jx, jy = _sleeve_placement(sk, cut, s)(cut.pivot)
+    return sk.head_cx + jx * sk.head_r, sk.head_cy + jy * sk.head_r
+
+
 def _hand_centre(sk: Skeleton, p: CharacterParams, s: int) -> Point:
     """The middle of a hand, in head radii, with its arm's swing applied.
 
     `s` is the side as `_arms` loops it: -1 the viewer's left. What a held
     thing is placed by: the palm sits about halfway down the mitten.
     """
-    centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
-    px, py = sk.head_cx + s * centre_top, top_y
+    _, _, centre_wrist, wrist_y = _arm_line(sk)
+    px, py = _arm_pivot(sk, p, s)
     hx, hy = sk.head_cx + s * centre_wrist, wrist_y + _hand_length(sk) * 0.5
     swing = p.right_arm_out if s == -1 else p.left_arm_out
     a = math.radians(-s * swing)
@@ -5452,7 +5470,10 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         # narrower one was tried, but a stripe running the length of something as
         # long and thin as a sleeve reads as a two-tone plank at any width. The
         # canon's are flat tan, separated from the torso by the outline alone.
-        cut = SLEEVE_CUTS.get(p.outfit.sleeve_cut or "") if _wears_cuts(sk) else None
+        cut = _worn_sleeve(sk, p)
+        # A traced sleeve under a traced jacket is the jacket's own sleeve: one
+        # garment from the shoulder to the cuff, in the jacket's colour.
+        sleeve_fill = p.outfit.coat_color if cut is not None and _traced_coat(sk, p) else sleeve
         if cut is not None:
             place = _sleeve_placement(sk, cut, s)
 
@@ -5467,7 +5488,7 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
                 )
 
             limb = [
-                f'<path d="{traced(part)}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+                f'<path d="{traced(part)}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
                 for part in (cut.sleeve, cut.cuff)
             ]
         else:
@@ -5486,12 +5507,14 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         # same swing needs the opposite rotation to point the same way out.
         swing = p.right_arm_out if s == -1 else p.left_arm_out
         if swing:
-            pivot_x, pivot_y = x(centre_top), top_y
+            pivot_x, pivot_y = _arm_pivot(sk, p, s)
             angle = -s * swing
             # Drawn under the (rotated) limb, at the fixed, unrotated pivot:
             # see `_arm_joint_cap` for why this closes the gap the rotation
-            # opens at the shoulder.
-            parts.append(_arm_joint_cap(sk, sleeve, pivot_x, pivot_y, w_top))
+            # opens at the shoulder. A traced sleeve's cap is a disc about its
+            # pivot and needs none.
+            if cut is None:
+                parts.append(_arm_joint_cap(sk, sleeve, pivot_x, pivot_y, w_top))
             parts.append(
                 f'<g transform="rotate({angle:.2f} {pivot_x:.1f} {pivot_y:.1f})">'
                 + "".join(limb)
