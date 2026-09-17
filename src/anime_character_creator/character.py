@@ -286,6 +286,14 @@ class Outfit:
     # to `tunic_color`. `None` with `hat_color` set would draw a hat with no
     # band, which nothing currently asks for but costs nothing to allow.
     hat_band_color: str | None = None
+    # A wizard's staff, held in the character's own right hand (the viewer's
+    # left): the wood, and the crystal set in its prongs. Only a shape and two
+    # colours, not a general prop: it is placed by `_hand_centre`, so it wants
+    # `CharacterParams.right_arm_out` to hold it clear of the body, the way
+    # KATHERINA's is. `None` draws nothing; a staff without a crystal is bare
+    # wood.
+    staff_color: str | None = None
+    staff_crystal_color: str | None = None
     # An outer layer hanging open over whatever is worn under it: a cropped
     # jacket, a lab coat, a long coat, or (at the short end of `coat_length`)
     # an open vest or cardigan over a tunic. One garment rather than four,
@@ -372,6 +380,16 @@ class CharacterParams:
     # Shoulder against hip: -1 narrow-shouldered and wide-hipped, 0 neutral, +1
     # the other way. Only bites at taller builds. Ignored when handed a skeleton.
     frame: float = 0.0
+    # Outward swing of an arm below the sleeve hem, in degrees. 0 is the
+    # default hang, straight down; positive pivots the tube, cuff and hand as
+    # one rigid piece about the sleeve hem so the hand moves away from the
+    # body and up, the way an arm lifts to hold something out at the side.
+    # Named **from the viewer's side**, the same frame `FaceStyle.scar_side`
+    # documents and for the same reason: `right_arm_out` is the character's
+    # own right arm, which is the viewer's left, and `left_arm_out` is the
+    # character's own left arm, the viewer's right.
+    right_arm_out: float = 0.0
+    left_arm_out: float = 0.0
     shaded: bool = True
 
 
@@ -4226,6 +4244,507 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     return shape + "".join(folds)
 
 
+def _arm_line(sk: Skeleton) -> tuple[float, float, float, float]:
+    """`(centre_top, top_y, centre_wrist, wrist_y)` of a hanging arm.
+
+    The x values are offsets from `sk.head_cx`, outward, for either side; y is
+    absolute. The top is the sleeve hem's centre, which is also the pivot a
+    swung arm turns about.
+    """
+    out_top = _sleeve_half_w(sk) * 0.86
+    centre_top = out_top - sk.arm_half_w
+    # Arms drift outward on the way down, so daylight opens between forearm and
+    # waist. The drift lives in the forearm: the upper arm hangs near vertical
+    # and the bend happens at the elbow, which is what the canon's arms do and
+    # what a straight slant from shoulder to wrist failed to read as. The
+    # chibi keeps a modest drift of its own now: the canon's chibi hands hang
+    # beside the skirt, not against it.
+    centre_wrist = centre_top + sk.arm_half_w * (0.50 + 0.70 * sk.build)
+    wrist_y = sk.hip_y + sk.arm_half_w * 0.8
+    return centre_top, _sleeve_hem_y(sk), centre_wrist, wrist_y
+
+
+def _hand_length(sk: Skeleton) -> float:
+    # Sized to land the canon's hand, about 0.10 of head width at chibi. The
+    # factor absorbs the arm it hangs off: when the chibi arm slimmed from
+    # 0.22 to 0.14 head radii this went up to keep the hand itself the same.
+    return sk.arm_half_w * (1.35 + 1.10 * sk.build)
+
+
+def _hand_centre(sk: Skeleton, p: CharacterParams, s: int) -> Point:
+    """The middle of a hand, in head radii, with its arm's swing applied.
+
+    `s` is the side as `_arms` loops it: -1 the viewer's left. What a held
+    thing is placed by: the palm sits about halfway down the mitten.
+    """
+    centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
+    px, py = sk.head_cx + s * centre_top, top_y
+    hx, hy = sk.head_cx + s * centre_wrist, wrist_y + _hand_length(sk) * 0.5
+    swing = p.right_arm_out if s == -1 else p.left_arm_out
+    a = math.radians(-s * swing)
+    rx = px + (hx - px) * math.cos(a) - (hy - py) * math.sin(a)
+    ry = py + (hx - px) * math.sin(a) + (hy - py) * math.cos(a)
+    return ((rx - sk.head_cx) / sk.head_r, (ry - sk.head_cy) / sk.head_r)
+
+
+# A wizard's staff, traced per `.claude/skills/trace-reference/SKILL.md`
+# from `../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg`
+# (`docs/katherina-accessories-plan.md`, milestone 3), on the witch hat's own
+# calibration (173.7 px per head radius, head centre at (650, 481); see the
+# comment above `_HAT_UNDERSIDE`). Every chain is in the reference's head radii,
+# as the reference draws it; `_staff_placement` maps them onto this figure.
+#
+# The regions are the reference's own. The wood is every brown fill component
+# the reference's outlines separate, unioned and closed, with the shaft carried
+# straight across the rows the reference's fist hides (its edges measured just
+# above and just below the fist and interpolated). The strands are the braid's
+# and prongs' separate pieces: the same fills split at a darker threshold, which
+# the structural lines between strands reach and the wood grain inside them does
+# not; slivers under 800 px were dropped. The crystal is cut from its glow by
+# colour, and its faces are three smoothed brightness bands, dark and light
+# traced, the mid tone the crystal's own fill. Grain and the glow are texture and
+# do not transfer.
+_STAFF_GRIP: Point = (-1.768, 2.635)
+_STAFF_TIP: Point = (-1.197, 5.872)
+_STAFF_TOP_Y = -0.904
+
+# The whole wooden silhouette, prong tips to the foot of the shaft.
+_STAFF_WOOD: Chain = (
+    (-1.192, 5.889),
+    [
+        ((-1.212, 5.888), (-1.232, 5.861)),
+        ((-1.252, 5.823), (-1.267, 5.786)),
+        ((-1.297, 5.587), (-1.359, 5.389)),
+        ((-1.367, 5.262), (-1.376, 5.135)),
+        ((-1.412, 4.977), (-1.474, 4.819)),
+        ((-1.486, 4.632), (-1.508, 4.444)),
+        ((-1.555, 4.269), (-1.606, 4.093)),
+        ((-1.614, 3.903), (-1.641, 3.713)),
+        ((-1.677, 3.561), (-1.744, 3.408)),
+        ((-1.744, 3.293), (-1.744, 3.178)),
+        ((-1.761, 3.074), (-1.779, 2.971)),
+        ((-1.870, 2.631), (-1.957, 2.291)),
+        ((-1.978, 2.257), (-1.998, 2.222)),
+        ((-1.985, 2.168), (-1.969, 2.113)),
+        ((-1.975, 2.029), (-1.992, 1.946)),
+        ((-2.014, 1.874), (-2.078, 1.802)),
+        ((-2.075, 1.718), (-2.090, 1.635)),
+        ((-2.148, 1.552), (-2.228, 1.468)),
+        ((-2.202, 1.393), (-2.188, 1.318)),
+        ((-2.210, 1.278), (-2.234, 1.238)),
+        ((-2.287, 1.198), (-2.326, 1.151)),
+        ((-2.306, 1.088), (-2.297, 1.025)),
+        ((-2.326, 0.994), (-2.355, 0.973)),
+        ((-2.429, 0.949), (-2.504, 0.904)),
+        ((-2.511, 0.838), (-2.550, 0.771)),
+        ((-2.647, 0.669), (-2.758, 0.599)),
+        ((-2.784, 0.530), (-2.809, 0.461)),
+        ((-2.785, 0.423), (-2.746, 0.420)),
+        ((-2.732, 0.337), (-2.717, 0.253)),
+        ((-2.709, 0.144), (-2.712, 0.035)),
+        ((-2.739, -0.040), (-2.740, -0.115)),
+        ((-2.664, -0.225), (-2.619, -0.334)),
+        ((-2.586, -0.449), (-2.568, -0.564)),
+        ((-2.448, -0.743), (-2.326, -0.921)),
+        ((-2.299, -0.901), (-2.303, -0.881)),
+        ((-2.328, -0.771), (-2.332, -0.662)),
+        ((-2.387, -0.602), (-2.412, -0.541)),
+        ((-2.423, -0.484), (-2.435, -0.426)),
+        ((-2.430, -0.366), (-2.429, -0.305)),
+        ((-2.456, -0.271), (-2.481, -0.236)),
+        ((-2.504, -0.181), (-2.522, -0.127)),
+        ((-2.523, -0.023), (-2.504, 0.081)),
+        ((-2.545, 0.199), (-2.545, 0.317)),
+        ((-2.523, 0.429), (-2.470, 0.541)),
+        ((-2.453, 0.565), (-2.435, 0.564)),
+        ((-2.437, 0.527), (-2.401, 0.489)),
+        ((-2.381, 0.507), (-2.372, 0.524)),
+        ((-2.359, 0.599), (-2.337, 0.674)),
+        ((-2.302, 0.717), (-2.268, 0.760)),
+        ((-2.248, 0.780), (-2.228, 0.800)),
+        ((-2.199, 0.795), (-2.170, 0.783)),
+        ((-2.140, 0.819), (-2.107, 0.829)),
+        ((-2.079, 0.769), (-2.026, 0.708)),
+        ((-1.999, 0.721), (-1.992, 0.748)),
+        ((-1.980, 0.752), (-1.969, 0.737)),
+        ((-1.947, 0.676), (-1.906, 0.616)),
+        ((-1.894, 0.564), (-1.888, 0.512)),
+        ((-1.877, 0.501), (-1.865, 0.489)),
+        ((-1.848, 0.499), (-1.831, 0.512)),
+        ((-1.822, 0.513), (-1.813, 0.501)),
+        ((-1.803, 0.420), (-1.831, 0.340)),
+        ((-1.792, 0.313), (-1.785, 0.282)),
+        ((-1.781, 0.176), (-1.796, 0.069)),
+        ((-1.865, -0.072), (-1.923, -0.213)),
+        ((-1.957, -0.250), (-1.980, -0.288)),
+        ((-1.990, -0.380), (-2.015, -0.472)),
+        ((-2.010, -0.486), (-1.992, -0.501)),
+        ((-1.833, -0.245), (-1.635, 0.012)),
+        ((-1.642, 0.104), (-1.641, 0.196)),
+        ((-1.613, 0.314), (-1.577, 0.432)),
+        ((-1.617, 0.504), (-1.652, 0.576)),
+        ((-1.658, 0.630), (-1.670, 0.685)),
+        ((-1.756, 0.760), (-1.831, 0.841)),
+        ((-1.860, 0.904), (-1.877, 0.967)),
+        ((-1.877, 1.002), (-1.877, 1.036)),
+        ((-1.865, 1.046), (-1.854, 1.042)),
+        ((-1.783, 0.965), (-1.727, 0.875)),
+        ((-1.707, 0.863), (-1.687, 0.892)),
+        ((-1.704, 0.984), (-1.716, 1.077)),
+        ((-1.752, 1.120), (-1.790, 1.163)),
+        ((-1.812, 1.226), (-1.848, 1.290)),
+        ((-1.839, 1.344), (-1.796, 1.399)),
+        ((-1.829, 1.485), (-1.836, 1.572)),
+        ((-1.798, 1.638), (-1.756, 1.704)),
+        ((-1.780, 1.788), (-1.790, 1.871)),
+        ((-1.771, 1.934), (-1.733, 1.998)),
+        ((-1.760, 2.119), (-1.750, 2.239)),
+        ((-1.716, 2.432), (-1.652, 2.625)),
+        ((-1.628, 2.789), (-1.606, 2.953)),
+        ((-1.581, 3.022), (-1.554, 3.092)),
+        ((-1.566, 3.221), (-1.560, 3.351)),
+        ((-1.542, 3.434), (-1.526, 3.518)),
+        ((-1.494, 3.598), (-1.462, 3.679)),
+        ((-1.466, 3.843), (-1.451, 4.007)),
+        ((-1.433, 4.096), (-1.416, 4.185)),
+        ((-1.375, 4.292), (-1.336, 4.398)),
+        ((-1.339, 4.565), (-1.324, 4.732)),
+        ((-1.291, 4.905), (-1.232, 5.078)),
+        ((-1.229, 5.176), (-1.226, 5.273)),
+        ((-1.195, 5.403), (-1.157, 5.533)),
+        ((-1.156, 5.685), (-1.157, 5.838)),
+        ((-1.161, 5.864), (-1.192, 5.889)),
+    ],
+)
+
+# The prongs' and braid's strands, over the silhouette, each with its own line.
+_STAFF_STRANDS: list[Chain] = [
+    (
+        (-2.332, -0.910),
+        [
+            ((-2.308, -0.892), (-2.309, -0.875)),
+            ((-2.337, -0.766), (-2.337, -0.656)),
+            ((-2.391, -0.607), (-2.412, -0.558)),
+            ((-2.427, -0.498), (-2.441, -0.438)),
+            ((-2.442, -0.374), (-2.429, -0.311)),
+            ((-2.507, -0.222), (-2.527, -0.132)),
+            ((-2.538, -0.037), (-2.504, 0.058)),
+            ((-2.551, 0.187), (-2.550, 0.317)),
+            ((-2.530, 0.420), (-2.487, 0.524)),
+            ((-2.468, 0.553), (-2.441, 0.581)),
+            ((-2.426, 0.541), (-2.401, 0.501)),
+            ((-2.389, 0.512), (-2.378, 0.524)),
+            ((-2.368, 0.604), (-2.337, 0.685)),
+            ((-2.275, 0.754), (-2.222, 0.823)),
+            ((-2.165, 0.858), (-2.107, 0.915)),
+            ((-2.068, 0.869), (-2.021, 0.823)),
+            ((-2.009, 0.835), (-1.998, 0.846)),
+            ((-2.033, 0.933), (-2.050, 1.019)),
+            ((-2.032, 1.048), (-2.032, 1.077)),
+            ((-2.049, 1.117), (-2.084, 1.157)),
+            ((-2.156, 1.116), (-2.228, 1.082)),
+            ((-2.294, 1.016), (-2.360, 0.961)),
+            ((-2.418, 0.933), (-2.476, 0.927)),
+            ((-2.511, 0.841), (-2.556, 0.754)),
+            ((-2.654, 0.660), (-2.752, 0.599)),
+            ((-2.773, 0.533), (-2.804, 0.466)),
+            ((-2.804, 0.449), (-2.781, 0.432)),
+            ((-2.761, 0.450), (-2.740, 0.426)),
+            ((-2.726, 0.343), (-2.712, 0.259)),
+            ((-2.703, 0.141), (-2.706, 0.023)),
+            ((-2.726, -0.040), (-2.740, -0.104)),
+            ((-2.658, -0.225), (-2.608, -0.345)),
+            ((-2.580, -0.455), (-2.562, -0.564)),
+            ((-2.441, -0.737), (-2.332, -0.910)),
+        ],
+    ),
+    (
+        (-2.021, 1.036),
+        [
+            ((-2.032, 1.025), (-2.044, 1.013)),
+            ((-2.044, 0.976), (-2.044, 0.938)),
+            ((-2.018, 0.878), (-2.009, 0.818)),
+            ((-1.887, 0.691), (-1.825, 0.564)),
+            ((-1.802, 0.495), (-1.802, 0.426)),
+            ((-1.810, 0.386), (-1.831, 0.345)),
+            ((-1.788, 0.322), (-1.779, 0.288)),
+            ((-1.772, 0.167), (-1.796, 0.046)),
+            ((-1.871, -0.089), (-1.923, -0.225)),
+            ((-1.946, -0.248), (-1.969, -0.271)),
+            ((-1.981, -0.366), (-2.009, -0.461)),
+            ((-2.005, -0.475), (-1.986, -0.489)),
+            ((-1.882, -0.334), (-1.790, -0.178)),
+            ((-1.729, -0.086), (-1.641, 0.006)),
+            ((-1.649, 0.107), (-1.647, 0.207)),
+            ((-1.616, 0.320), (-1.583, 0.432)),
+            ((-1.622, 0.501), (-1.658, 0.570)),
+            ((-1.667, 0.622), (-1.670, 0.674)),
+            ((-1.865, 0.850), (-2.021, 1.036)),
+        ],
+    ),
+    (
+        (-1.716, 0.869),
+        [
+            ((-1.688, 0.889), (-1.693, 0.910)),
+            ((-1.716, 0.993), (-1.721, 1.077)),
+            ((-1.761, 1.114), (-1.790, 1.151)),
+            ((-1.822, 1.249), (-1.900, 1.347)),
+            ((-1.936, 1.434), (-1.952, 1.520)),
+            ((-1.966, 1.538), (-1.980, 1.543)),
+            ((-2.029, 1.506), (-2.078, 1.474)),
+            ((-2.125, 1.439), (-2.124, 1.405)),
+            ((-1.928, 1.133), (-1.716, 0.869)),
+        ],
+    ),
+    (
+        (-2.078, 1.330),
+        [
+            ((-2.121, 1.263), (-2.188, 1.209)),
+            ((-2.237, 1.203), (-2.286, 1.186)),
+            ((-2.306, 1.166), (-2.326, 1.146)),
+            ((-2.314, 1.097), (-2.268, 1.048)),
+            ((-2.173, 1.115), (-2.078, 1.157)),
+            ((-2.041, 1.195), (-2.003, 1.232)),
+            ((-2.038, 1.281), (-2.078, 1.330)),
+        ],
+    ),
+    (
+        (-2.165, 1.341),
+        [
+            ((-2.122, 1.390), (-2.113, 1.439)),
+            ((-2.024, 1.506), (-1.934, 1.572)),
+            ((-1.896, 1.567), (-1.865, 1.508)),
+            ((-1.832, 1.552), (-1.836, 1.595)),
+            ((-1.795, 1.647), (-1.762, 1.698)),
+            ((-1.783, 1.785), (-1.802, 1.871)),
+            ((-1.776, 1.934), (-1.739, 1.998)),
+            ((-1.762, 2.098), (-1.762, 2.199)),
+            ((-1.749, 2.271), (-1.733, 2.343)),
+            ((-1.760, 2.386), (-1.790, 2.429)),
+            ((-1.839, 2.404), (-1.888, 2.406)),
+            ((-1.932, 2.317), (-1.992, 2.228)),
+            ((-1.978, 2.162), (-1.957, 2.096)),
+            ((-1.972, 2.024), (-1.986, 1.952)),
+            ((-1.952, 1.940), (-1.917, 1.929)),
+            ((-1.945, 1.839), (-1.986, 1.750)),
+            ((-2.097, 1.605), (-2.222, 1.474)),
+            ((-2.221, 1.408), (-2.165, 1.341)),
+        ],
+    ),
+]
+
+# The gem's outline.
+_STAFF_CRYSTAL: Chain = (
+    (-2.216, -0.363),
+    [
+        ((-2.193, -0.340), (-2.170, -0.317)),
+        ((-2.136, -0.262), (-2.096, -0.207)),
+        ((-2.012, -0.072), (-1.934, 0.063)),
+        ((-1.931, 0.225), (-1.923, 0.386)),
+        ((-1.986, 0.495), (-2.050, 0.604)),
+        ((-2.061, 0.645), (-2.078, 0.685)),
+        ((-2.093, 0.699), (-2.107, 0.714)),
+        ((-2.151, 0.674), (-2.176, 0.633)),
+        ((-2.214, 0.615), (-2.251, 0.576)),
+        ((-2.300, 0.518), (-2.349, 0.461)),
+        ((-2.384, 0.299), (-2.418, 0.138)),
+        ((-2.423, 0.121), (-2.401, 0.104)),
+        ((-2.418, 0.089), (-2.412, 0.075)),
+        ((-2.358, -0.060), (-2.309, -0.196)),
+        ((-2.277, -0.262), (-2.251, -0.328)),
+        ((-2.234, -0.345), (-2.216, -0.363)),
+    ],
+)
+
+# Its two shadowed side faces.
+_STAFF_FACETS_DARK: list[Chain] = [
+    (
+        (-2.188, -0.311),
+        [
+            ((-2.121, -0.219), (-2.061, -0.127)),
+            ((-2.019, -0.052), (-1.975, 0.023)),
+            ((-1.980, 0.029), (-1.986, 0.035)),
+            ((-2.001, 0.036), (-2.015, 0.023)),
+            ((-2.024, 0.022), (-2.032, 0.035)),
+            ((-2.025, 0.069), (-2.009, 0.104)),
+            ((-1.998, 0.113), (-1.986, 0.109)),
+            ((-1.975, 0.098), (-1.963, 0.092)),
+            ((-1.957, 0.098), (-1.952, 0.104)),
+            ((-1.953, 0.141), (-1.946, 0.178)),
+            ((-1.957, 0.190), (-1.969, 0.196)),
+            ((-1.969, 0.204), (-1.969, 0.213)),
+            ((-1.957, 0.219), (-1.946, 0.230)),
+            ((-1.946, 0.308), (-1.940, 0.386)),
+            ((-1.990, 0.469), (-2.038, 0.553)),
+            ((-2.047, 0.544), (-2.055, 0.535)),
+            ((-2.049, 0.371), (-2.044, 0.207)),
+            ((-2.059, 0.193), (-2.067, 0.178)),
+            ((-2.088, 0.095), (-2.119, 0.012)),
+            ((-2.119, -0.006), (-2.119, -0.023)),
+            ((-2.130, -0.043), (-2.142, -0.063)),
+            ((-2.156, -0.132), (-2.182, -0.201)),
+            ((-2.186, -0.242), (-2.199, -0.282)),
+            ((-2.199, -0.291), (-2.199, -0.299)),
+            ((-2.193, -0.305), (-2.188, -0.311)),
+        ],
+    ),
+    (
+        (-2.216, 0.587),
+        [
+            ((-2.276, 0.531), (-2.332, 0.461)),
+            ((-2.367, 0.299), (-2.401, 0.138)),
+            ((-2.401, 0.130), (-2.401, 0.121)),
+            ((-2.381, 0.110), (-2.360, 0.092)),
+            ((-2.360, 0.078), (-2.360, 0.063)),
+            ((-2.346, 0.049), (-2.332, 0.035)),
+            ((-2.349, 0.009), (-2.360, -0.017)),
+            ((-2.346, -0.046), (-2.337, -0.075)),
+            ((-2.332, -0.081), (-2.326, -0.086)),
+            ((-2.323, -0.083), (-2.320, -0.081)),
+            ((-2.314, -0.092), (-2.303, -0.104)),
+            ((-2.300, -0.118), (-2.297, -0.132)),
+            ((-2.309, -0.141), (-2.309, -0.150)),
+            ((-2.295, -0.190), (-2.268, -0.230)),
+            ((-2.260, -0.231), (-2.251, -0.219)),
+            ((-2.251, -0.196), (-2.251, -0.173)),
+            ((-2.274, -0.012), (-2.303, 0.150)),
+            ((-2.286, 0.178), (-2.274, 0.207)),
+            ((-2.273, 0.222), (-2.280, 0.236)),
+            ((-2.274, 0.262), (-2.268, 0.288)),
+            ((-2.268, 0.343), (-2.268, 0.397)),
+            ((-2.254, 0.415), (-2.245, 0.432)),
+            ((-2.230, 0.495), (-2.205, 0.558)),
+            ((-2.205, 0.567), (-2.205, 0.576)),
+            ((-2.211, 0.581), (-2.216, 0.587)),
+        ],
+    ),
+]
+
+# Its lit faces: the long one under the tip, and the wedge near the base.
+_STAFF_FACETS_LIGHT: list[Chain] = [
+    (
+        (-2.286, 0.138),
+        [
+            ((-2.288, 0.135), (-2.291, 0.132)),
+            ((-2.275, 0.072), (-2.274, 0.012)),
+            ((-2.255, -0.107), (-2.234, -0.225)),
+            ((-2.241, -0.250), (-2.239, -0.276)),
+            ((-2.234, -0.294), (-2.228, -0.311)),
+            ((-2.216, -0.299), (-2.205, -0.288)),
+            ((-2.179, -0.170), (-2.147, -0.052)),
+            ((-2.212, 0.032), (-2.257, 0.115)),
+            ((-2.271, 0.134), (-2.286, 0.138)),
+        ],
+    ),
+    (
+        (-2.067, 0.570),
+        [
+            ((-2.075, 0.564), (-2.084, 0.558)),
+            ((-2.106, 0.498), (-2.142, 0.438)),
+            ((-2.142, 0.429), (-2.130, 0.420)),
+            ((-2.101, 0.425), (-2.073, 0.415)),
+            ((-2.067, 0.420), (-2.061, 0.426)),
+            ((-2.057, 0.498), (-2.067, 0.570)),
+        ],
+    ),
+]
+
+
+def _staff_placement(sk: Skeleton, p: CharacterParams) -> Callable[[Point], Point]:
+    """Map the staff's reference head radii onto this figure's, as a point function.
+
+    The grip goes to the centre of the hand holding it, and the staff divides
+    there. Above the grip it keeps the reference's shape at one scale, the one
+    that puts the top of the ornament at the reference's own height against the
+    head (`_STAFF_TOP_Y`): at chibi that scale is close to 1, since the chibi's
+    held-out hand sits almost where the reference's does. Below the grip the
+    shaft keeps its lean and its width and is shortened (or lengthened) along its
+    own axis only, so the foot lands on the ground: the reference's figure is
+    about three and a half heads tall and this one's chibi is 2.4, so a staff
+    carried at the reference's scale would stand a head and a half into the
+    floor. Widths across the shaft take the upper scale everywhere, so the
+    shaft does not change thickness at the hand. The shaft below the fist was
+    smoothed before tracing, since that shortening bunches small knots into
+    spikes.
+    """
+    hx, hy = _hand_centre(sk, p, -1)
+    gx, gy = _STAFF_GRIP
+    tx, ty = _STAFF_TIP
+    length = math.hypot(tx - gx, ty - gy)
+    ax, ay = (tx - gx) / length, (ty - gy) / length
+    k_up = (hy - _STAFF_TOP_Y) / (gy - _STAFF_TOP_Y)
+    ground = (sk.foot_y - sk.head_cy) / sk.head_r
+    k_low = (ground - hy) / (ty - gy)
+
+    def placed(pt: Point) -> Point:
+        dx, dy = pt[0] - gx, pt[1] - gy
+        along = dx * ax + dy * ay
+        across = -dx * ay + dy * ax
+        k = k_up if along <= 0 else k_low
+        along *= k
+        across *= k_up
+        return (hx + along * ax - across * ay, hy + along * ay + across * ax)
+
+    # The ornament reaches out past the hand, and a hat's headroom narrows the
+    # canvas in head radii, so at chibi its outer prong lands on the canvas edge.
+    # Slide the whole staff inward by exactly what keeps its outline on the page
+    # (the chain's controls bound the curve), and by nothing when it already fits.
+    start, segs = _STAFF_WOOD
+    reach = min(placed(q)[0] for q in (start, *(q for seg in segs for q in seg)))
+    edge = (-sk.canvas_w / 2 + _stroke_w(sk)) / sk.head_r
+    shift = max(0.0, edge - reach)
+
+    def xf(pt: Point) -> Point:
+        x, y = placed(pt)
+        return (x + shift, y)
+
+    return xf
+
+
+def _staff(sk: Skeleton, p: CharacterParams) -> str:
+    """A wizard's staff held in the character's own right hand (the viewer's left).
+
+    Drawn before the arms, so the hand closes over the shaft and the sleeve
+    passes in front of it, and after the hair and every garment, so the staff is
+    in front of the body it is held beside. Back to front: the wooden silhouette,
+    its strands, then the crystal: mid tone, dark and light faces, and its
+    outline last so the faces stay inside it.
+    """
+    wood = p.outfit.staff_color
+    if wood is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    sw = _stroke_w(sk)
+    xf = _staff_placement(sk, p)
+
+    def d(chain: Chain) -> str:
+        start, segs = chain
+        return _curve(cx, cy, r, xf(start), [(xf(c), xf(e)) for c, e in segs])
+
+    parts = [
+        f'<path d="{d(_STAFF_WOOD)}" fill="{wood}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    ]
+    parts.extend(
+        f'<path d="{d(strand)}" fill="{wood}" stroke="{OUTLINE}" stroke-width="{sw * 0.6:.1f}" '
+        'stroke-linejoin="round" />'
+        for strand in _STAFF_STRANDS
+    )
+    crystal = p.outfit.staff_crystal_color
+    if crystal is not None:
+        parts.append(f'<path d="{d(_STAFF_CRYSTAL)}" fill="{crystal}" />')
+        dark = shade(crystal, value_factor=0.88, saturation_boost=1.10)
+        light = shade(crystal, value_factor=1.03, saturation_boost=0.54)
+        parts.extend(f'<path d="{d(face)}" fill="{dark}" />' for face in _STAFF_FACETS_DARK)
+        parts.extend(f'<path d="{d(face)}" fill="{light}" />' for face in _STAFF_FACETS_LIGHT)
+        parts.append(
+            f'<path d="{d(_STAFF_CRYSTAL)}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        )
+    return "".join(parts)
+
+
+# (end of the traced staff)
+
+
 def _arms(sk: Skeleton, p: CharacterParams) -> str:
     """The arm from the sleeve hem down to the hand.
 
@@ -4252,8 +4771,7 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
     cx = sk.head_cx
     long_sleeve = p.outfit.sleeve_long
     sleeve = p.outfit.tunic_color if long_sleeve else (p.outfit.undersleeve_color or p.skin_tone)
-    top_y = _sleeve_hem_y(sk)
-    wrist_y = sk.hip_y + sk.arm_half_w * 0.8
+    centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
     elbow_y = sk.waist_y
 
     # Tapers on the build, the way the leg does. A constant-width tube is right at
@@ -4272,15 +4790,8 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
     # The arm's top edge still sits exactly on `_sleeve_hem_y`, so the hem line
     # and the top of the limb remain one line and the narrower arm simply leaves
     # the outer stretch of that line showing either side of it.
-    out_top = _sleeve_half_w(sk) * 0.86
-    centre_top = out_top - w_top
-    # Arms drift outward on the way down, so daylight opens between forearm and
-    # waist. The drift lives in the forearm: the upper arm hangs near vertical
-    # and the bend happens at the elbow, which is what the canon's arms do and
-    # what a straight slant from shoulder to wrist failed to read as. The
-    # chibi keeps a modest drift of its own now: the canon's chibi hands hang
-    # beside the skirt, not against it.
-    centre_wrist = centre_top + sk.arm_half_w * (0.50 + 0.70 * sk.build)
+    #
+    # Where the arm starts and ends is `_arm_line`, shared with `_hand_centre`.
     centre_elbow = centre_top + (centre_wrist - centre_top) * 0.35
 
     parts = []
@@ -4310,13 +4821,59 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         # narrower one was tried, but a stripe running the length of something as
         # long and thin as a sleeve reads as a two-tone plank at any width. The
         # canon's are flat tan, separated from the torso by the outline alone.
-        parts.append(
+        limb = [
             f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
-        )
+        ]
         if p.outfit.undersleeve_color is not None or long_sleeve:
-            parts.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
-        parts.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
+            limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
+        limb.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
+
+        # `s == -1` is the character's own right arm (viewer's left), `s == 1`
+        # the left (viewer's right); see `CharacterParams.right_arm_out`. The
+        # sign flips between the two sides so a positive angle always reads as
+        # "outward" on whichever arm it is applied to, not as one screen
+        # direction: the two sides are mirror images of each other, so the
+        # same swing needs the opposite rotation to point the same way out.
+        swing = p.right_arm_out if s == -1 else p.left_arm_out
+        if swing:
+            pivot_x, pivot_y = x(centre_top), top_y
+            angle = -s * swing
+            # Drawn under the (rotated) limb, at the fixed, unrotated pivot:
+            # see `_arm_joint_cap` for why this closes the gap the rotation
+            # opens at the shoulder.
+            parts.append(_arm_joint_cap(sk, sleeve, pivot_x, pivot_y, w_top))
+            parts.append(
+                f'<g transform="rotate({angle:.2f} {pivot_x:.1f} {pivot_y:.1f})">'
+                + "".join(limb)
+                + "</g>"
+            )
+        else:
+            # No group, no cap: at the default 0 this is byte-identical to
+            # drawing the limb straight into `parts`, which is deliberate so
+            # every preset that never touches this knob renders unchanged.
+            parts.extend(limb)
     return "".join(parts)
+
+
+def _arm_joint_cap(sk: Skeleton, color: str, cx: float, cy: float, w_top: float) -> str:
+    """Fills the wedge a swung arm opens at the shoulder.
+
+    `_arms` draws the tube's flat top edge exactly on the sleeve hem, so
+    hanging straight the two read as one line, per that function's own
+    docstring. Rotating the tube about that edge's own centre point (the
+    pivot `right_arm_out`/`left_arm_out` swing around) carries its corners
+    away from the hem's fixed corners on an arc, opening a notch between
+    them. Both corners sit exactly `w_top` from the pivot regardless of
+    rotation, so a half-disc of that radius centred on the pivot always
+    reaches both and covers the wedge between them. Only the curved half is
+    drawn; the flat side lies on the hem line itself, on top of the hem's own
+    stroke, so it reads as that edge rather than as a seam of its own.
+    """
+    r = w_top + _stroke_w(sk) * 0.5
+    return (
+        f'<path d="M {cx - r:.1f} {cy:.1f} A {r:.1f} {r:.1f} 0 0 0 {cx + r:.1f} {cy:.1f} Z" '
+        f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    )
 
 
 def _wrist_cuff(sk: Skeleton, color: str, cx: float, wrist_y: float, w: float) -> str:
@@ -4356,10 +4913,7 @@ def _hand(
     hand.
     """
     hw = w_wrist * 1.02
-    # Sized to land the canon's hand, about 0.10 of head width at chibi. The
-    # factor absorbs the arm it hangs off: when the chibi arm slimmed from
-    # 0.22 to 0.14 head radii this went up to keep the hand itself the same.
-    length = sk.arm_half_w * (1.35 + 1.10 * sk.build)
+    length = _hand_length(sk)
     tip = hw * (1.0 - 0.32 * sk.build)
 
     def x(offset: float) -> float:
@@ -6143,6 +6697,9 @@ def render_character(
         _belt(sk, p),
         _pouches(sk, p),
         _crystal_harness(sk, p),
+        # Held in the hand, so under the arm that holds it and over everything else
+        # below the neck.
+        _staff(sk, p),
         _arms(sk, p),
         # After the arms and before the ear: a standing collar wraps the throat,
         # so it belongs over the neck and the tunic's V, and it is the one

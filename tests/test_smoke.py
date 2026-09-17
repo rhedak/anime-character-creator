@@ -117,6 +117,89 @@ def test_render_is_deterministic() -> None:
     assert render_character(p) == render_character(p)
 
 
+def test_arm_out_default_leaves_the_render_unchanged() -> None:
+    """`right_arm_out`/`left_arm_out` default to 0, both hanging as before.
+
+    `render_character(CharacterParams())` and one that sets both fields to
+    0.0 explicitly hold the same dataclass value, so byte-identical output is
+    the trivial half of this; the check worth having is that a character
+    which never touches the knob never emits the new markup at all.
+    `_arms` only opens a `<g transform="rotate(...)">` and draws the joint
+    cap when a swing is non-zero, so their absence here is what "the default
+    leaves every existing render byte-identical" actually rests on, checked
+    on a preset with long sleeves and a coat (satoko has neither), where the
+    cap and the tube it would need to hide are both in play if the
+    zero-guard were missing.
+    """
+    assert render_character(CharacterParams()) == render_character(
+        replace(CharacterParams(), right_arm_out=0.0, left_arm_out=0.0)
+    )
+    base = replace(PRESETS["katherina"], right_arm_out=0.0, left_arm_out=0.0)
+    sk = build_skeleton(heads=BUILDS["chibi"], frame=base.frame)
+    assert 'transform="rotate(' not in render_character(base, sk)
+    assert 'transform="rotate(' in render_character(replace(base, right_arm_out=30.0), sk)
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_arm_out_swings_the_hand_away_from_the_body(build: str) -> None:
+    """A non-zero swing has to actually move the hand, not just add a cap.
+
+    Coarse but robust: `right_arm_out` swings the character's own right arm,
+    the viewer's *left*, further from the centreline (further left, i.e. a
+    smaller/more negative x) and up (a smaller y) at the same time, per
+    `CharacterParams.right_arm_out`'s own docstring. Reads every numeric x/y
+    pair out of every path's `d` attribute rather than parsing the curves
+    properly, since the exact shape is a look-and-judge call
+    (`docs/gap-analysis.md`'s territory), not something a coordinate
+    assertion should be pinning down.
+    """
+    sk = build_skeleton(heads=BUILDS[build])
+    straight = render_character(CharacterParams(), sk)
+    swung = render_character(CharacterParams(right_arm_out=40.0), sk)
+
+    def min_x_max_y(svg: str) -> tuple[float, float]:
+        nums = re.findall(r"(-?\d+\.\d+) (-?\d+\.\d+)", svg)
+        xs = [float(x) for x, _ in nums]
+        ys = [float(y) for _, y in nums]
+        return min(xs), max(ys)
+
+    straight_min_x, _ = min_x_max_y(straight)
+    swung_min_x, _ = min_x_max_y(swung)
+    assert swung_min_x < straight_min_x, (
+        "a 40 degree right_arm_out should push some point further left than "
+        "the arm ever reaches hanging straight"
+    )
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_staff_stays_in_hand_and_on_the_canvas(build: str) -> None:
+    """The staff is placed off the hand and nudged inward off the canvas edge.
+
+    Two things can silently go wrong. Its ornament reaches out past the hand,
+    and a hat's headroom narrows the canvas in head radii, which at chibi put
+    the outer prong on the edge the first time. And the grip has to land on the
+    hand holding it at every build, or the staff floats beside the figure.
+    Checks the placed wood's control polygon, which bounds the drawn curve.
+    """
+    p = PRESETS["katherina"]
+    sk = build_skeleton(
+        heads=BUILDS[build], frame=p.frame, min_hair_margin=character.hat_hair_margin(p)
+    )
+    xf = character._staff_placement(sk, p)
+    start, segs = character._STAFF_WOOD
+    pts = [xf(q) for q in (start, *(q for seg in segs for q in seg))]
+    half = sk.canvas_w / 2 / sk.head_r
+    assert min(x for x, _ in pts) >= -half, "the staff runs off the canvas's left edge"
+    hx, hy = character._hand_centre(sk, p, -1)
+    gx, gy = xf(character._STAFF_GRIP)
+    assert abs(gx - hx) < 0.15 and abs(gy - hy) < 1e-9, "the grip is not in the hand"
+    foot = (sk.foot_y - sk.head_cy) / sk.head_r
+    assert abs(max(y for _, y in pts) - foot) < 0.05, "the staff's foot is off the ground"
+    assert "staff" not in render_character(
+        replace(p, outfit=replace(p.outfit, staff_color=None)), sk
+    )
+
+
 @pytest.mark.parametrize("preset", sorted(PRESETS))
 def test_the_figure_is_drawn_on_transparency(preset: str) -> None:
     """No background rectangle unless one is asked for.

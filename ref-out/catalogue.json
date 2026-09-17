@@ -469,6 +469,25 @@
         "optional": true
       },
       "requires": "hat"
+    },
+    {
+      "id": "staff",
+      "label": "Staff (held, right hand)",
+      "color": {
+        "field": "staff_color",
+        "label": "Staff",
+        "optional": true
+      }
+    },
+    {
+      "id": "staff_crystal",
+      "label": "Staff crystal",
+      "color": {
+        "field": "staff_crystal_color",
+        "label": "Staff crystal",
+        "optional": true
+      },
+      "requires": "staff"
     }
   ],
   "face": {

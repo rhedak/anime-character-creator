@@ -837,6 +837,14 @@ VIKTOR = CharacterParams(
 # unit), the band and bow `#3c2456`, one step darker than the hair here. The
 # brim's underside, `#12121c` in the reference, is not a field: `_hat` darkens
 # the hat colour for it, the way a hem's turn is darkened, and lands on it.
+# `right_arm_out=44` swings her own right arm (viewer's left) out to the
+# side: the reference holds a staff in that hand, out and slightly raised
+# rather than hanging, and the angle is chosen to land the hand near where
+# a held staff would need it (milestone 3 of the same plan doc). The staff is
+# traced off the same reference (`_staff` in character.py); its colours are
+# that reference's own medians, `#4e3a2c` for the wood above the hand and
+# `#f79e43` for the crystal's mid face, whose dark and light faces `_staff`
+# derives with `shade()`, landing within a few units of the reference's.
 KATHERINA = CharacterParams(
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
@@ -855,8 +863,11 @@ KATHERINA = CharacterParams(
         sleeve_long=True,
         hat_color="#201e29",
         hat_band_color="#3c2456",
+        staff_color="#4e3a2c",
+        staff_crystal_color="#f79e43",
     ),
     frame=-0.1,
+    right_arm_out=44.0,
     face=FaceStyle(
         eye_size=1.05,
         eye_width=1.02,

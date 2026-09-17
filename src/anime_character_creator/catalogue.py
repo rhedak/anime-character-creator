@@ -279,6 +279,14 @@ HAT_BAND = GarmentSlot(
     _color("hat_band_color", "Hat band and buckle"),
     requires="hat",
 )
+STAFF = GarmentSlot("staff", "Staff (held, right hand)", _color("staff_color", "Staff"))
+# Same shape as `HAT_BAND`: a second colour belonging to one thing.
+STAFF_CRYSTAL = GarmentSlot(
+    "staff_crystal",
+    "Staff crystal",
+    _color("staff_crystal_color", "Staff crystal"),
+    requires="staff",
+)
 COAT = GarmentSlot(
     "coat",
     "Coat (open outer layer; short for a vest or cardigan)",
@@ -319,6 +327,8 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     GOGGLES,
     HAT,
     HAT_BAND,
+    STAFF,
+    STAFF_CRYSTAL,
 )
 
 

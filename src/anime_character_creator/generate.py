@@ -87,6 +87,16 @@ def main() -> None:
     ap.add_argument("--hair-length", type=float, help="hair end, chin 0 to hip 1")
     ap.add_argument("--heads", type=float, help="head-heights tall, overrides --build")
     ap.add_argument("--frame", type=float, help="shoulder against hip, -1 to 1, taller builds only")
+    ap.add_argument(
+        "--right-arm-out",
+        type=float,
+        help="outward swing, in degrees, of the character's own right arm (viewer's left)",
+    )
+    ap.add_argument(
+        "--left-arm-out",
+        type=float,
+        help="outward swing, in degrees, of the character's own left arm (viewer's right)",
+    )
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
     ap.add_argument(
         "--expression",
@@ -112,7 +122,7 @@ def main() -> None:
     face = {name: getattr(args, name) for name in FACE_ARGS if getattr(args, name) is not None}
     if args.build is not None:
         colors["heads"] = BUILDS[args.build]
-    for extra in ("heads", "hair_length", "hairstyle", "frame"):
+    for extra in ("heads", "hair_length", "hairstyle", "frame", "right_arm_out", "left_arm_out"):
         if getattr(args, extra) is not None:
             colors[extra] = getattr(args, extra)
     params = replace(base, shaded=not args.flat, **colors)

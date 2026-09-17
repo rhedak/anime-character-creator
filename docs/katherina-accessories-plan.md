@@ -196,6 +196,38 @@ questions" section below rather than guessed at here:
 
 ## Milestone 3: the staff
 
+**Status: traced and wired into `KATHERINA`, 2026-09-17; awaiting the
+author's look, not yet in the book's cover/style anchors.** Decisions,
+recorded where the checklist below asked for them:
+
+- **3a, anchor: not a general `Prop`.** A staff shape plus two `Outfit`
+  colours (`staff_color`, `staff_crystal_color`, catalogued as
+  `STAFF`/`STAFF_CRYSTAL`), placed off `_hand_centre(sk, p, -1)`, the
+  character's own right hand. Generalizing to Tenno's cane stays with
+  roster-plan task 28; `_hand_centre` and the arm swing are the reusable
+  parts.
+- **3b, pose: an arm swing was needed after all.** The hanging chibi hand
+  sits inside the hair's width (x = -0.84 head radii against the
+  reference's -1.85), so a staff through it put the ornament over the
+  hair. The author chose holding the arm out: `CharacterParams.right_arm_out`
+  / `left_arm_out` (degrees, 0 byte-identical), rotating tube, cuff and
+  hand about the sleeve hem, with a joint cap. `KATHERINA` uses 44, which
+  puts the hand at (-1.69, 2.41).
+- **3c, geometry: traced, not drawn.** Same calibration as the hat. Wood =
+  the reference's brown fill components, the shaft bridged across the rows
+  its fist hides; strands = the same fills split at a darker threshold
+  (structural lines separate them, grain does not); crystal cut from its
+  glow by colour, with dark and light faces from smoothed brightness bands.
+  Placement (`_staff_placement`): the grip goes to the hand; above it one
+  scale puts the ornament's top at the reference's height against the
+  head; below it the shaft is shortened along its own axis to reach the
+  ground (0.42 at chibi, since the reference's figure is ~3.5 heads and
+  ours 2.4), after smoothing that stretch so its knots don't bunch into
+  spikes; a minimal inward shift keeps the ornament on the hat-narrowed
+  canvas. Scripts: `harness/trace_staff/`.
+
+The checklist below is the original plan, kept for the record.
+
 Reference: a dark, gnarled wooden shaft with forking, branch-like prongs
 near the top, cradling a faceted amber/orange crystal. Per the
 texture rule above, the wood grain and facet lines don't survive; what
