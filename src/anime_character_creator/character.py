@@ -159,6 +159,8 @@ class Outfit:
     # Long sleeve worn under the tunic's short one. None leaves the arm bare.
     undersleeve_color: str | None = None
     belt_color: str | None = None
+    # A traced cut from `BELT_CUTS`; `None` is the shared band.
+    belt_cut: str | None = None
     # Front panel hanging from the belt, over the skirt.
     apron_color: str | None = None
     skirt_color: str | None = "#4f7a52"
@@ -3220,9 +3222,11 @@ def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams) -> str:
     return jacket + _belt_drawn(sk, p)
 
 
-def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str) -> str:
+def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> str:
+    """`weight` scales the outline, for small hardware whose own parts are
+    thinner than the figure's line (a buckle's frame)."""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    sw = _stroke_w(sk)
+    sw = _stroke_w(sk) * weight
     xf = _garment_placement(sk)
 
     def d(chain: Chain, close: bool = True) -> str:
@@ -3416,6 +3420,124 @@ COAT_CUTS: dict[str, GarmentCut] = {
                     ((0.617, 1.679), (0.619, 1.802)),
                     ((0.616, 1.898), (0.593, 2.026)),
                 ],
+            ),
+        ),
+    ),
+}
+
+
+@dataclass(frozen=True)
+class BeltCut:
+    """A traced belt: the strap and its keeper in the belt's colour, then the
+    buckle's frame in the hardware tone and the strap seen through it."""
+
+    strap: GarmentCut
+    frame: GarmentCut
+    through: GarmentCut
+
+
+# Traced belt cuts, drawn by `_belt_drawn` when `Outfit.belt_cut` names one; the
+# cut sets the belt's height, so `belt_scale` does not apply. `buckled` is the belt
+# of `katherina_grok.jpg` (`katherina-clothes-plan.md`, C5; `harness/clothes/trace_cut.py`):
+# the whole belt as one strap (components 192-198, closed 8 px across the lines
+# that divide them), the keeper
+# loop (195), the buckle's frame (194, filled) and the strap through it (198).
+BELT_CUTS: dict[str, BeltCut] = {
+    "buckled": BeltCut(
+        strap=GarmentCut(
+            fills=(
+                (
+                    (0.610, 2.447),
+                    [
+                        ((0.596, 2.461), (0.581, 2.476)),
+                        ((0.512, 2.490), (0.443, 2.499)),
+                        ((0.429, 2.513), (0.415, 2.527)),
+                        ((0.374, 2.525), (0.334, 2.533)),
+                        ((0.322, 2.522), (0.311, 2.510)),
+                        ((0.236, 2.523), (0.161, 2.522)),
+                        ((0.150, 2.510), (0.138, 2.499)),
+                        ((0.109, 2.531), (0.081, 2.550)),
+                        ((0.012, 2.557), (-0.058, 2.556)),
+                        ((-0.101, 2.546), (-0.144, 2.550)),
+                        ((-0.161, 2.533), (-0.178, 2.516)),
+                        ((-0.256, 2.523), (-0.334, 2.516)),
+                        ((-0.449, 2.501), (-0.564, 2.476)),
+                        ((-0.576, 2.464), (-0.587, 2.453)),
+                        ((-0.587, 2.412), (-0.587, 2.372)),
+                        ((-0.579, 2.334), (-0.576, 2.297)),
+                        ((-0.567, 2.288), (-0.558, 2.280)),
+                        ((-0.498, 2.295), (-0.438, 2.303)),
+                        ((-0.308, 2.307), (-0.178, 2.320)),
+                        ((-0.158, 2.310), (-0.138, 2.286)),
+                        ((-0.032, 2.286), (0.075, 2.286)),
+                        ((0.104, 2.305), (0.132, 2.337)),
+                        ((0.147, 2.333), (0.161, 2.314)),
+                        ((0.227, 2.314), (0.294, 2.314)),
+                        ((0.308, 2.307), (0.322, 2.291)),
+                        ((0.363, 2.296), (0.403, 2.286)),
+                        ((0.417, 2.300), (0.432, 2.314)),
+                        ((0.449, 2.301), (0.466, 2.297)),
+                        ((0.521, 2.295), (0.576, 2.280)),
+                        ((0.591, 2.294), (0.599, 2.309)),
+                        ((0.603, 2.378), (0.610, 2.447)),
+                    ],
+                ),
+                (
+                    (0.334, 2.533),
+                    [
+                        ((0.325, 2.524), (0.317, 2.516)),
+                        ((0.312, 2.484), (0.322, 2.453)),
+                        ((0.318, 2.381), (0.305, 2.309)),
+                        ((0.314, 2.300), (0.322, 2.291)),
+                        ((0.363, 2.296), (0.403, 2.286)),
+                        ((0.415, 2.297), (0.426, 2.309)),
+                        ((0.429, 2.323), (0.438, 2.337)),
+                        ((0.444, 2.421), (0.438, 2.504)),
+                        ((0.426, 2.516), (0.415, 2.527)),
+                        ((0.374, 2.525), (0.334, 2.533)),
+                    ],
+                ),
+            ),
+        ),
+        frame=GarmentCut(
+            fills=(
+                (
+                    (-0.178, 2.516),
+                    [
+                        ((-0.191, 2.421), (-0.178, 2.326)),
+                        ((-0.158, 2.306), (-0.138, 2.286)),
+                        ((-0.032, 2.286), (0.075, 2.286)),
+                        ((0.095, 2.297), (0.115, 2.320)),
+                        ((0.124, 2.401), (0.121, 2.481)),
+                        ((0.111, 2.499), (0.115, 2.516)),
+                        ((0.108, 2.530), (0.092, 2.545)),
+                        ((0.063, 2.550), (0.035, 2.556)),
+                        ((-0.055, 2.554), (-0.144, 2.550)),
+                        ((-0.161, 2.533), (-0.178, 2.516)),
+                    ],
+                ),
+            ),
+        ),
+        through=GarmentCut(
+            fills=(
+                (
+                    (0.069, 2.487),
+                    [
+                        ((0.058, 2.499), (0.046, 2.510)),
+                        ((-0.032, 2.514), (-0.109, 2.504)),
+                        ((-0.118, 2.496), (-0.127, 2.487)),
+                        ((-0.127, 2.467), (-0.132, 2.447)),
+                        ((-0.124, 2.438), (-0.115, 2.429)),
+                        ((-0.101, 2.434), (-0.086, 2.424)),
+                        ((-0.098, 2.414), (-0.109, 2.418)),
+                        ((-0.118, 2.409), (-0.127, 2.401)),
+                        ((-0.137, 2.375), (-0.127, 2.349)),
+                        ((-0.118, 2.340), (-0.109, 2.332)),
+                        ((-0.032, 2.332), (0.046, 2.332)),
+                        ((0.058, 2.343), (0.069, 2.355)),
+                        ((0.069, 2.421), (0.069, 2.487)),
+                    ],
+                ),
             ),
         ),
     ),
@@ -5943,6 +6065,13 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.belt_color
     if color is None:
         return ""
+    if p.outfit.belt_cut is not None and _wears_cuts(sk):
+        cut = BELT_CUTS[p.outfit.belt_cut]
+        return (
+            _draw_cut(sk, cut.strap, color)
+            + _draw_cut(sk, cut.frame, "#8a8578", weight=0.55)
+            + _draw_cut(sk, cut.through, color, weight=0.55)
+        )
     cx = sk.head_cx
     # Wraps over the tunic, so it is a shade wider than the body at the waist.
     half_w = sk.waist_half_w * 1.03

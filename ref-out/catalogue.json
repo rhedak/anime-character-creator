@@ -314,6 +314,22 @@
           "min": 1.0,
           "max": 3.0
         }
+      ],
+      "selects": [
+        {
+          "field": "belt_cut",
+          "label": "Cut",
+          "options": [
+            {
+              "value": null,
+              "label": "Band"
+            },
+            {
+              "value": "buckled",
+              "label": "Buckled, with keeper (traced)"
+            }
+          ]
+        }
       ]
     },
     {

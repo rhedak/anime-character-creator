@@ -36,8 +36,12 @@ def main() -> None:
     name, tol = sys.argv[1], float(sys.argv[2])
     pieces = []
     for arg in sys.argv[3:]:
-        piece, ids = arg.split("=")
-        pieces.append((piece, [int(i) for i in ids.split("+")]))
+        # piece=id+id[@close]: `close` is how far (px) to bridge the outlines
+        # between the listed components, 3 by default; wider for pieces the
+        # reference draws with dividing lines across them (a belt's keeper).
+        piece, spec = arg.split("=")
+        ids, _, close = spec.partition("@")
+        pieces.append((piece, [int(i) for i in ids.split("+")], int(close or 3)))
 
     rgb = np.asarray(Image.open(REF).convert("RGB")).astype(int)
     lab, _ = ndi.label(rgb.sum(2) > 60)
@@ -48,10 +52,10 @@ def main() -> None:
     colours = ["#00ff66", "#ff3355", "#33aaff", "#ffee00", "#ff00ff", "#00ffff"]
     result = {}
     box = None
-    for (piece, ids), col in zip(pieces, colours * 4, strict=False):
+    for (piece, ids, close), col in zip(pieces, colours * 4, strict=False):
         m = np.isin(lab, ids)
-        m = ndi.binary_dilation(m, structure=disk, iterations=3)
-        m = ndi.binary_fill_holes(ndi.binary_erosion(m, structure=disk, iterations=3))
+        m = ndi.binary_dilation(m, structure=disk, iterations=close)
+        m = ndi.binary_fill_holes(ndi.binary_erosion(m, structure=disk, iterations=close))
         m = ndi.binary_dilation(m, structure=disk, iterations=HALF_STROKE)
         pts = [((x - OX) / SC, (y - OY) / SC) for x, y in tl.boundary(m)]
         start, segs = tl.fit_closed(pts, tol)

@@ -33,6 +33,7 @@ import json
 from dataclasses import dataclass, fields
 
 from .character import (
+    BELT_CUTS,
     BODY_TYPES,
     COAT_CUTS,
     COLLAR_CUTS,
@@ -197,6 +198,8 @@ UNDERSLEEVE = GarmentSlot(
     "Undersleeves (long sleeves underneath)",
     _color("undersleeve_color", "Undersleeves (long sleeves underneath)"),
 )
+BELT_CUT_LABELS: dict[str, str] = {"buckled": "Buckled, with keeper (traced)"}
+assert set(BELT_CUT_LABELS) == set(BELT_CUTS)
 BELT = GarmentSlot(
     "belt",
     "Belt",
@@ -205,6 +208,7 @@ BELT = GarmentSlot(
     # Capped a little above that rather than left open, since nothing wider has
     # been rendered and judged.
     ranges=(_range("belt_scale", "Belt height", 1.0, 3.0),),
+    selects=(SelectField("belt_cut", "Cut", ((None, "Band"), *sorted(BELT_CUT_LABELS.items()))),),
 )
 APRON = GarmentSlot("apron", "Apron", _color("apron_color", "Apron"), requires="belt")
 CRYSTAL_1 = GarmentSlot(

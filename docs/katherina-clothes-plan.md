@@ -238,9 +238,9 @@ grip stand (C4c).
 
 Harness: `jacket_upper` 0.555 / 0.057 before, 0.541 / 0.067 after; `jacket_lower`
 0.800 / 0.028 before, 0.893 / 0.015 after. `jacket_upper` counts the sleeves but
-also every pixel where our hair and the reference's differ in the shoulders, and
-the hidden-pixel mask only removes hair both images agree is hair, so it no longer
-moves with the sleeve work; the zooms are what judged it
+also the shoulders' outer edges, which the hair covers differently in each image
+(the mask drops any pixel either figure's hair covers, which is most of that
+edge), so it no longer moves with the sleeve work; the zooms are what judged it
 (`out/clothes/c4_shoulders.png`, `c4_full.png`).
 
 - [ ] **C4a.** Trace the hanging sleeve (the viewer's right, part of 179) and
@@ -254,7 +254,15 @@ moves with the sleeve work; the zooms are what judged it
 
 ### C5. Belt
 
-**Status: not started.**
+**Status: done, 2026-09-17.** `BELT_CUTS["buckled"]`, a `BeltCut`: the strap
+(components 192-198 closed 8 px across the lines dividing them) and keeper (195)
+in the belt's colour, the buckle's frame (194) in the shared hardware tone and the
+strap seen through it (198), both with a lighter outline (`_draw_cut`'s `weight`),
+since the figure's line is thicker than the frame. Colour moved to the reference's
+`#31281e`. The belt was already drawn over the jacket (C4). Harness: 0.400 / 0.048
+before, 0.746 / 0.011 after. At 4x the buckle's corners are a little angular and
+the strap through it keeps a notch where the reference's prong sits; neither shows
+at tile size.
 
 - [ ] **C5a.** Draw the belt over the jacket (the C0d order), trace its
       band, the keeper loop and the buckle (192-198); colour `#31281e`.
