@@ -473,6 +473,22 @@
           "min": 0.2,
           "max": 0.85
         }
+      ],
+      "selects": [
+        {
+          "field": "coat_cut",
+          "label": "Cut",
+          "options": [
+            {
+              "value": null,
+              "label": "Two panels"
+            },
+            {
+              "value": "open_jacket",
+              "label": "Open jacket (traced)"
+            }
+          ]
+        }
       ]
     },
     {

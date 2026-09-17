@@ -185,7 +185,27 @@ Looked at on `tall_chibi` and on the shared chibi through the mapping
 
 ### C3. Jacket body
 
-**Status: not started.** The largest milestone.
+**Status: done, 2026-09-17.** `COAT_CUTS["open_jacket"]` (`harness/clothes/trace_jacket.py`):
+each side one piece, the navy upper panel split by hue from the purple sleeve it
+shares a fill component with, carried across the hair as the convex hull of its
+visible navy and under the belt edge to edge into its flaring lower panel; plus
+the two vertical seams where the sleeve's back meets the body. `coat_length`
+does not apply to a traced cut (C3c); Katherina's fitted 0.49 is gone with it.
+The jacket keeps the preset's `#12152a` rather than the reference's `#191d30`:
+the sampled navy against the dress would fail the coat-visibility guard (a gap of
+7 against its 12), and the preset's is the same hue, darker. Harness:
+
+| region | before C3 | after |
+| --- | --- | --- |
+| jacket_upper | 0.489 / 0.067 | 0.555 / 0.057 |
+| dress_bodice | 0.856 / 0.019 | 0.871 / 0.016 |
+| jacket_lower | 0.598 / 0.075 | 0.800 / 0.028 |
+| skirt | 0.894 / 0.035 | 0.949 / 0.016 |
+
+`jacket_upper` still counts the sleeves (they share its components), so it moves
+with C4. Seen at 4x on white (`out/clothes/c3_shoulders.png`): the tunic's own
+sleeve caps and the swung arm's joint cap show beside the jacket's shoulders where
+our hair is narrower than the reference's; both are C4's.
 
 - [ ] **C3a.** Trace the upper panels (179/180 minus the sleeves), the
       sloping shoulders and the front edges down to the belt. The hair hides

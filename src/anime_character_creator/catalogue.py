@@ -34,6 +34,7 @@ from dataclasses import dataclass, fields
 
 from .character import (
     BODY_TYPES,
+    COAT_CUTS,
     COLLAR_CUTS,
     EYESTYLES,
     HAIRSTYLES,
@@ -318,6 +319,8 @@ STAFF_CRYSTAL = GarmentSlot(
     _color("staff_crystal_color", "Staff crystal"),
     requires="staff",
 )
+COAT_CUT_LABELS: dict[str, str] = {"open_jacket": "Open jacket (traced)"}
+assert set(COAT_CUT_LABELS) == set(COAT_CUTS)
 COAT = GarmentSlot(
     "coat",
     "Coat (open outer layer; short for a vest or cardigan)",
@@ -327,6 +330,9 @@ COAT = GarmentSlot(
     # little past both rather than left at the type's full domain. 0.20 opens
     # the floor down to the vest/cardigan length task 31 found already worked.
     ranges=(_range("coat_length", "Coat length", 0.20, 0.85),),
+    selects=(
+        SelectField("coat_cut", "Cut", ((None, "Two panels"), *sorted(COAT_CUT_LABELS.items()))),
+    ),
 )
 
 # Order here is display order: the two always-worn layers first, then

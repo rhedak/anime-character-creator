@@ -847,8 +847,9 @@ VIKTOR = CharacterParams(
 # derives with `shade()`, landing within a few units of the reference's.
 # `body="tall_chibi"` is the body type measured off her own reference (3.47
 # heads, high belt, tall boots; see `BODY_TYPES` in character.py), so
-# `coat_length` and `hair_length` are fitted on it: 0.49 lands the coat hem at the
-# reference's 3.30 head radii and 0.83 the hair's ends at its 2.60. The arm angle
+# `hair_length` is fitted on it: 0.83 lands the hair's ends at the reference's
+# 2.60 head radii. Her jacket is the traced `open_jacket` cut, whose hem is traced
+# (the shared coat's fitted `coat_length` of 0.49 went with it). The arm angle
 # was refitted on the same body, as the closest a straight arm swung from the
 # sleeve hem gets to the reference's grip.
 # Her dress (`tunic_color` and `skirt_color`, the tunic tucked so the two read
@@ -876,7 +877,7 @@ KATHERINA = CharacterParams(
         collar_color="#c4903c",
         collar_cut="pointed",
         coat_color="#12152a",
-        coat_length=0.49,
+        coat_cut="open_jacket",
         sleeve_long=True,
         hat_color="#201e29",
         hat_band_color="#3c2456",

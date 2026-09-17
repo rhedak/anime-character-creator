@@ -307,6 +307,8 @@ class Outfit:
     # layer" part and found this already drew one at a short enough length,
     # so nothing new was built for it.
     coat_color: str | None = None
+    # A traced cut from `COAT_CUTS`; `None` is the shared two-panel coat.
+    coat_cut: str | None = None
     # Where the coat's hem falls, shoulder (0) to ankle (1). Roughly: 0.20 an
     # open vest or cardigan over a tunic, 0.30 a jacket cropped at the waist,
     # 0.62 below the knee, 0.75 mid-calf.
@@ -3317,6 +3319,82 @@ SKIRT_CUTS: dict[str, GarmentCut] = {
 }
 
 
+# Traced coat cuts, drawn by `_coat` when `Outfit.coat_cut` names one. The
+# cut is the whole garment, so `coat_length` does not apply to it.
+# `open_jacket` is the jacket of `katherina_grok.jpg` (`katherina-clothes-plan.md`,
+# C3), its body only: each side is the navy upper panel (split by hue from the
+# purple sleeve it shares a fill with), carried across the hair as the convex
+# hull of its visible navy and under the belt edge to edge, into the lower panel
+# that flares from it; the lines are the seams where the sleeve's back meets the
+# body (`harness/clothes/trace_jacket.py`). The sleeves are C4's.
+COAT_CUTS: dict[str, GarmentCut] = {
+    "open_jacket": GarmentCut(
+        fills=(
+            (
+                (-0.374, 1.123),
+                [
+                    ((-0.257, 1.258), (-0.150, 1.393)),
+                    ((-0.141, 1.413), (-0.144, 1.434)),
+                    ((-0.215, 1.983), (-0.276, 2.533)),
+                    ((-0.375, 2.913), (-0.443, 3.293)),
+                    ((-0.455, 3.305), (-0.466, 3.316)),
+                    ((-0.478, 3.316), (-0.489, 3.316)),
+                    ((-0.633, 3.289), (-0.777, 3.247)),
+                    ((-0.829, 3.223), (-0.881, 3.201)),
+                    ((-0.902, 3.184), (-0.910, 3.166)),
+                    ((-0.861, 3.022), (-0.806, 2.879)),
+                    ((-0.741, 2.737), (-0.662, 2.596)),
+                    ((-0.622, 2.435), (-0.570, 2.274)),
+                    ((-0.652, 2.113), (-0.748, 1.952)),
+                    ((-0.777, 1.854), (-0.800, 1.756)),
+                    ((-0.816, 1.667), (-0.818, 1.577)),
+                    ((-0.761, 1.436), (-0.674, 1.295)),
+                    ((-0.622, 1.240), (-0.570, 1.197)),
+                    ((-0.472, 1.150), (-0.374, 1.123)),
+                ],
+            ),
+            (
+                (0.420, 1.111),
+                [
+                    ((0.544, 1.141), (0.668, 1.197)),
+                    ((0.731, 1.237), (0.794, 1.307)),
+                    ((0.755, 1.569), (0.708, 1.831)),
+                    ((0.649, 2.055), (0.581, 2.280)),
+                    ((0.636, 2.435), (0.679, 2.591)),
+                    ((0.751, 2.720), (0.812, 2.850)),
+                    ((0.877, 3.011), (0.933, 3.172)),
+                    ((0.935, 3.187), (0.915, 3.201)),
+                    ((0.835, 3.238), (0.754, 3.264)),
+                    ((0.604, 3.297), (0.455, 3.316)),
+                    ((0.426, 3.316), (0.397, 3.316)),
+                    ((0.386, 3.305), (0.374, 3.293)),
+                    ((0.313, 2.919), (0.242, 2.545)),
+                    ((0.194, 1.989), (0.144, 1.434)),
+                    ((0.144, 1.413), (0.144, 1.393)),
+                    ((0.278, 1.252), (0.420, 1.111)),
+                ],
+            ),
+        ),
+        lines=(
+            (
+                (-0.576, 1.445),
+                [
+                    ((-0.601, 1.642), (-0.591, 1.869)),
+                    ((-0.576, 2.075), (-0.564, 2.165)),
+                ],
+            ),
+            (
+                (0.604, 1.514),
+                [
+                    ((0.617, 1.679), (0.619, 1.802)),
+                    ((0.616, 1.898), (0.593, 2.026)),
+                ],
+            ),
+        ),
+    ),
+}
+
+
 def hat_hair_margin(p: CharacterParams) -> float:
     """Headroom, in head radii above the skull, that `p`'s hat needs; 0 for none.
 
@@ -3565,6 +3643,8 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     """
     if p.outfit.coat_color is None:
         return ""
+    if p.outfit.coat_cut is not None and _wears_cuts(sk):
+        return _draw_cut(sk, COAT_CUTS[p.outfit.coat_cut], p.outfit.coat_color)
     cx = sk.head_cx
     color = p.outfit.coat_color
     sw = _stroke_w(sk)
