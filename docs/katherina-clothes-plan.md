@@ -152,6 +152,14 @@ jaw's edge. The collar reads as a collar without a neck until then.
 - [ ] **C1c.** Accept on the C0 harness numbers plus a 4x zoom on white and
       black: no gap between collar, neck, chin and hair.
 
+**Neck lines smoothed, 2026-09-17 (owner: "edgy"; the chin stays as it is).**
+Two sources of the jags at the neck opening: the collar wings' traced edges kept
+the reference's pixel wobble, now smoothed before fitting (`trace_cut.py`'s
+`~sigma`, 4 px for the wings, 2 for the back band so its V survives;
+`harness/clothes/emit_collar.py` writes it); and the tunic's own V neckline showed
+its edges in the opening above the back band, now opened to 0.19 head radii under
+a traced collar so the wings cover it.
+
 ### C2. The dress
 
 **Status: done, 2026-09-17.** A narrower cut than planned, because the dress's

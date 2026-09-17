@@ -39,9 +39,12 @@ def main() -> None:
         # piece=id+id[@close]: `close` is how far (px) to bridge the outlines
         # between the listed components, 3 by default; wider for pieces the
         # reference draws with dividing lines across them (a belt's keeper).
+        # `~sigma` smooths the mask (Gaussian, px) before its edge is walked, for
+        # pieces whose hand-drawn outline wobbles into jags at this line weight.
         piece, spec = arg.split("=")
+        spec, _, sigma = spec.partition("~")
         ids, _, close = spec.partition("@")
-        pieces.append((piece, [int(i) for i in ids.split("+")], int(close or 3)))
+        pieces.append((piece, [int(i) for i in ids.split("+")], int(close or 3), float(sigma or 0)))
 
     rgb = np.asarray(Image.open(REF).convert("RGB")).astype(int)
     lab, _ = ndi.label(rgb.sum(2) > 60)
@@ -52,11 +55,13 @@ def main() -> None:
     colours = ["#00ff66", "#ff3355", "#33aaff", "#ffee00", "#ff00ff", "#00ffff"]
     result = {}
     box = None
-    for (piece, ids, close), col in zip(pieces, colours * 4, strict=False):
+    for (piece, ids, close, sigma), col in zip(pieces, colours * 4, strict=False):
         m = np.isin(lab, ids)
         m = ndi.binary_dilation(m, structure=disk, iterations=close)
         m = ndi.binary_fill_holes(ndi.binary_erosion(m, structure=disk, iterations=close))
         m = ndi.binary_dilation(m, structure=disk, iterations=HALF_STROKE)
+        if sigma:
+            m = ndi.gaussian_filter(m.astype(float), sigma) > 0.5
         pts = [((x - OX) / SC, (y - OY) / SC) for x, y in tl.boundary(m)]
         start, segs = tl.fit_closed(pts, tol)
         result[piece] = {"start": start, "segs": segs, "ids": ids}
