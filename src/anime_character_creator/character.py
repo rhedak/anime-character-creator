@@ -217,6 +217,9 @@ class Outfit:
     # A standing collar closing at the throat, in place of the open V. Its own
     # colour, so a uniform's collar can differ from the tunic it sits on.
     collar_color: str | None = None
+    # A traced cut from `COLLAR_CUTS` in place of the standing band; `None` is
+    # the band.
+    collar_cut: str | None = None
     # A row of buttons down the centre front, from collar to belt.
     placket_color: str | None = None
     # A flapped pocket on each breast.
@@ -3080,6 +3083,198 @@ def skeleton_for(p: CharacterParams, heads: float | None = None) -> Skeleton:
     return build_skeleton(heads=heads, frame=p.frame, min_hair_margin=margin)
 
 
+# Traced garments ("cuts", `katherina-clothes-plan.md`) are drawn in the head
+# radii of the body they were traced off and mapped onto the wearer's. That
+# body is `tall_chibi`, which was measured off the same reference, so on it
+# the mapping is the identity and a cut lands exactly where it was traced.
+_GARMENT_REF_BODY = "tall_chibi"
+
+
+def _body_knots(sk: Skeleton) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    """A skeleton's landmark heights and half-widths, in head radii.
+
+    What a traced garment hangs from: the chin (the neck's width), shoulder,
+    waist, hip and hem, then the ankle and sole below. The knee is left out
+    on purpose: it sits below the hem on a tall body and above it on the
+    shared chibi, and knots have to keep one order on every body.
+    """
+    ys = (
+        1.0,
+        (sk.shoulder_y - sk.head_cy) / sk.head_r,
+        (sk.waist_y - sk.head_cy) / sk.head_r,
+        (sk.hip_y - sk.head_cy) / sk.head_r,
+        (sk.hem_y - sk.head_cy) / sk.head_r,
+        (sk.ankle_y - sk.head_cy) / sk.head_r,
+        (sk.foot_y - sk.head_cy) / sk.head_r,
+    )
+    ws = (
+        sk.neck_half_w / sk.head_r,
+        sk.shoulder_half_w / sk.head_r,
+        sk.waist_half_w / sk.head_r,
+        sk.hip_half_w / sk.head_r,
+        sk.hem_half_w / sk.head_r,
+        sk.hem_half_w / sk.head_r,
+        sk.hem_half_w / sk.head_r,
+    )
+    return ys, ws
+
+
+def _interp(v: float, xs: tuple[float, ...], ys: tuple[float, ...]) -> float:
+    """Piecewise-linear `ys` over ascending `xs`; past either end, offset one-for-one."""
+    if v <= xs[0]:
+        return ys[0] + (v - xs[0])
+    if v >= xs[-1]:
+        return ys[-1] + (v - xs[-1])
+    for i in range(len(xs) - 1):
+        if v <= xs[i + 1]:
+            t = (v - xs[i]) / (xs[i + 1] - xs[i])
+            return ys[i] + t * (ys[i + 1] - ys[i])
+    return ys[-1]
+
+
+def _interp_flat(v: float, xs: tuple[float, ...], ys: tuple[float, ...]) -> float:
+    if v <= xs[0]:
+        return ys[0]
+    if v >= xs[-1]:
+        return ys[-1]
+    return _interp(v, xs, ys)
+
+
+def _garment_placement(sk: Skeleton) -> Callable[[Point], Point]:
+    """Map a traced garment's head radii onto `sk`'s body, as a point function.
+
+    Heights move piecewise between the two bodies' landmarks (`_body_knots`),
+    so a hem traced at the reference's hem lands on this body's hem whatever
+    lies between. Across, each point scales by this body's half-width over
+    the reference's at the same landmark-relative height, so a collar keeps
+    to the neck and a skirt to the hips. Above the chin nothing is scaled: that
+    is the head, which every body shares at one size. The identity on
+    `_GARMENT_REF_BODY` is the test that this is right, not an approximation.
+    """
+    ref_ys, ref_ws = _body_knots(skeleton_for(CharacterParams(body=_GARMENT_REF_BODY)))
+    ys, ws = _body_knots(sk)
+
+    def xf(pt: Point) -> Point:
+        x, y = pt
+        if y <= 1.0:
+            return (x * ws[0] / ref_ws[0], y)
+        scale = _interp_flat(y, ref_ys, ws) / _interp_flat(y, ref_ys, ref_ws)
+        return (x * scale, _interp(y, ref_ys, ys))
+
+    return xf
+
+
+@dataclass(frozen=True)
+class GarmentCut:
+    """A traced garment: closed shapes to fill and open lines to stroke.
+
+    Coordinates are head radii on `_GARMENT_REF_BODY`, as traced; the part
+    drawing the cut maps them with `_garment_placement` and picks the colour.
+    `fills` are drawn in order, each with the full outline; `lines` are
+    the fold and seam work drawn over them, lighter.
+    """
+
+    fills: tuple[Chain, ...]
+    lines: tuple[Chain, ...] = ()
+
+
+def _wears_cuts(sk: Skeleton) -> bool:
+    """Whether traced cuts draw at this build, or the shared garments do.
+
+    Cuts are traced off a chibi-range figure and mapped across chibi-range
+    bodies; the realistic build keeps the shared parametric garments (the
+    owner's call in `katherina-clothes-plan.md`). The same halfway point the
+    face's adult features switch on at.
+    """
+    return sk.build < 0.5
+
+
+def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str) -> str:
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    sw = _stroke_w(sk)
+    xf = _garment_placement(sk)
+
+    def d(chain: Chain, close: bool = True) -> str:
+        start, segs = chain
+        return _curve(cx, cy, r, xf(start), [(xf(c), xf(e)) for c, e in segs], close=close)
+
+    parts = [
+        f'<path d="{d(shape)}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        for shape in cut.fills
+    ]
+    parts.extend(
+        f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        for line in cut.lines
+    )
+    return "".join(parts)
+
+
+# Traced collar cuts, drawn by `_collar` when `Outfit.collar_cut` names one.
+# `pointed` is the shirt collar of `katherina_grok.jpg` (`katherina-clothes-plan.md`,
+# C1): its back band, then the left and right wings, each the reference's own fill
+# component (181, 176, 175) grown to the outline's centre line and fitted, in
+# `tall_chibi`'s head radii (`harness/clothes/trace_cut.py`). The wings' inner
+# edges stop short of each other, so the neck shows in the V between them.
+COLLAR_CUTS: dict[str, GarmentCut] = {
+    "pointed": GarmentCut(
+        fills=(
+            (
+                (0.144, 1.313),
+                [
+                    ((0.135, 1.321), (0.127, 1.330)),
+                    ((0.107, 1.326), (0.086, 1.336)),
+                    ((0.009, 1.336), (-0.069, 1.336)),
+                    ((-0.089, 1.326), (-0.109, 1.330)),
+                    ((-0.125, 1.318), (-0.127, 1.307)),
+                    ((-0.091, 1.244), (-0.035, 1.180)),
+                    ((-0.023, 1.192), (-0.012, 1.203)),
+                    ((-0.004, 1.223), (0.006, 1.244)),
+                    ((0.021, 1.220), (0.029, 1.197)),
+                    ((0.040, 1.182), (0.052, 1.180)),
+                    ((0.104, 1.246), (0.144, 1.313)),
+                ],
+            ),
+            (
+                (-0.225, 1.422),
+                [
+                    ((-0.256, 1.390), (-0.276, 1.359)),
+                    ((-0.293, 1.318), (-0.317, 1.278)),
+                    ((-0.333, 1.220), (-0.351, 1.163)),
+                    ((-0.351, 1.140), (-0.351, 1.117)),
+                    ((-0.284, 1.051), (-0.225, 0.984)),
+                    ((-0.213, 0.984), (-0.201, 0.984)),
+                    ((-0.187, 0.992), (-0.173, 1.007)),
+                    ((-0.176, 1.016), (-0.167, 1.025)),
+                    ((-0.179, 1.033), (-0.178, 1.042)),
+                    ((-0.163, 1.062), (-0.150, 1.082)),
+                    ((-0.098, 1.129), (-0.046, 1.163)),
+                    ((-0.031, 1.174), (-0.029, 1.186)),
+                    ((-0.114, 1.287), (-0.184, 1.387)),
+                    ((-0.204, 1.412), (-0.225, 1.422)),
+                ],
+            ),
+            (
+                (0.230, 1.428),
+                [
+                    ((0.201, 1.399), (0.178, 1.370)),
+                    ((0.116, 1.275), (0.046, 1.180)),
+                    ((0.124, 1.119), (0.201, 1.048)),
+                    ((0.215, 1.025), (0.213, 1.002)),
+                    ((0.225, 0.990), (0.236, 0.979)),
+                    ((0.256, 0.979), (0.276, 0.973)),
+                    ((0.335, 1.039), (0.403, 1.105)),
+                    ((0.403, 1.114), (0.403, 1.123)),
+                    ((0.386, 1.160), (0.380, 1.197)),
+                    ((0.349, 1.255), (0.322, 1.313)),
+                    ((0.285, 1.370), (0.230, 1.428)),
+                ],
+            ),
+        ),
+    ),
+}
+
+
 def hat_hair_margin(p: CharacterParams) -> float:
     """Headroom, in head radii above the skull, that `p`'s hat needs; 0 for none.
 
@@ -3859,6 +4054,8 @@ def _collar(sk: Skeleton, p: CharacterParams) -> str:
     """
     if p.outfit.collar_color is None:
         return None or ""
+    if p.outfit.collar_cut is not None and _wears_cuts(sk):
+        return _draw_cut(sk, COLLAR_CUTS[p.outfit.collar_cut], p.outfit.collar_color)
     cx, sy = sk.head_cx, sk.shoulder_y
     color = p.outfit.collar_color
     sw = _stroke_w(sk)

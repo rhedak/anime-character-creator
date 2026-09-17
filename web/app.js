@@ -461,6 +461,13 @@ function garmentBlock(g) {
       scheduleRender();
     });
   }
+  // A traced cut, when the slot has any (see catalogue.py: GarmentSlot.selects).
+  for (const s of g.selects || []) {
+    selectRow(details, s.field, s.label, s.options, fieldValue(s.field) ?? null, (v) => {
+      setField(s.field, v);
+      scheduleRender();
+    });
+  }
   block.appendChild(details);
   return block;
 }

@@ -357,7 +357,23 @@
         "field": "collar_color",
         "label": "Collar",
         "optional": true
-      }
+      },
+      "selects": [
+        {
+          "field": "collar_cut",
+          "label": "Cut",
+          "options": [
+            {
+              "value": null,
+              "label": "Band"
+            },
+            {
+              "value": "pointed",
+              "label": "Pointed"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "placket",

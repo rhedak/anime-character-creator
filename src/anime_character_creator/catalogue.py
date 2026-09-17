@@ -32,7 +32,15 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, fields
 
-from .character import BODY_TYPES, EYESTYLES, HAIRSTYLES, CharacterParams, FaceStyle, Outfit
+from .character import (
+    BODY_TYPES,
+    COLLAR_CUTS,
+    EYESTYLES,
+    HAIRSTYLES,
+    CharacterParams,
+    FaceStyle,
+    Outfit,
+)
 from .presets import DISPLAY_NAMES, NEUTRAL_BASES, PRESETS
 from .skeleton import BUILDS
 
@@ -101,6 +109,9 @@ class GarmentSlot:
     color: ColorField
     ranges: tuple[RangeField, ...] = ()
     bools: tuple[BoolField, ...] = ()
+    # Named choices on `Outfit`, a traced cut being the first: `None` is the
+    # shared parametric garment, offered first.
+    selects: tuple[SelectField, ...] = ()
     # A slot that only reads once another is already on: the pouches hang from
     # a belt, so offering them with no belt draws nothing and looks broken.
     requires: str | None = None
@@ -237,7 +248,21 @@ UNDERSKIRT = GarmentSlot(
 )
 TROUSER = GarmentSlot("trouser", "Trousers (Pants)", _color("trouser_color", "Trousers (Pants)"))
 POUCH = GarmentSlot("pouch", "Pouch", _color("pouch_color", "Pouch"), requires="belt")
-COLLAR = GarmentSlot("collar", "Collar", _color("collar_color", "Collar"))
+# Cut labels for `COLLAR_CUTS`, asserted in sync the way the hairstyles' are.
+COLLAR_CUT_LABELS: dict[str, str] = {"pointed": "Pointed"}
+assert set(COLLAR_CUT_LABELS) == set(COLLAR_CUTS)
+COLLAR = GarmentSlot(
+    "collar",
+    "Collar",
+    _color("collar_color", "Collar"),
+    selects=(
+        SelectField(
+            "collar_cut",
+            "Cut",
+            ((None, "Band"), *((k, v) for k, v in sorted(COLLAR_CUT_LABELS.items()))),
+        ),
+    ),
+)
 PLACKET = GarmentSlot("placket", "Buttons", _color("placket_color", "Buttons"))
 CHEST_POCKET = GarmentSlot(
     "chest_pocket", "Chest pocket", _color("chest_pocket_color", "Chest pocket")
@@ -341,6 +366,7 @@ def _outfit_fields_named() -> frozenset[str]:
         out.add(g.color.field)
         out.update(r.field for r in g.ranges)
         out.update(b.field for b in g.bools)
+        out.update(s.field for s in g.selects)
     return frozenset(out)
 
 
@@ -540,6 +566,8 @@ def _garment_json(g: GarmentSlot) -> dict[str, object]:
         out["ranges"] = [_range_json(r) for r in g.ranges]
     if g.bools:
         out["bools"] = [_bool_json(b) for b in g.bools]
+    if g.selects:
+        out["selects"] = [_select_json(s) for s in g.selects]
     if g.requires is not None:
         out["requires"] = g.requires
     return out

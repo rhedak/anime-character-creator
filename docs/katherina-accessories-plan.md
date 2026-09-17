@@ -227,6 +227,9 @@ Instead:
   dropped as design-specific. Scripts: `harness/body/`.
 - Not proportion, so not done here: the reference's lapelled coat and shirt
   collar are garment design, left as the shared coat and collar.
+- **Not usable yet.** The shared garments look mangled on this body from the
+  neck to the hem; porting the clothes and neck is its own campaign,
+  `katherina-clothes-plan.md`, between this interlude and milestone 4.
 
 ## Milestone 3: the staff
 

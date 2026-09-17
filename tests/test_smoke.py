@@ -171,6 +171,43 @@ def test_arm_out_swings_the_hand_away_from_the_body(build: str) -> None:
     )
 
 
+def test_garment_placement_is_the_identity_on_the_traced_body() -> None:
+    """A traced cut lands where it was traced on the body it was traced off.
+
+    And on the shared chibi it keeps landmark to landmark: the reference's
+    waist goes to the chibi's waist, its hem to the chibi's hem, and widths
+    scale with the body's own half-width there.
+    """
+    ref = character.skeleton_for(CharacterParams(body=character._GARMENT_REF_BODY))
+    xf = character._garment_placement(ref)
+    ys, ws = character._body_knots(ref)
+    for y, w in zip(ys, ws, strict=True):
+        for pt in ((0.0, y), (w, y), (-0.5 * w, y + 0.01), (0.3, 0.4)):
+            mx, my = xf(pt)
+            assert abs(mx - pt[0]) < 1e-9 and abs(my - pt[1]) < 1e-9
+    chibi = build_skeleton(heads=BUILDS["chibi"])
+    to_chibi = character._garment_placement(chibi)
+    cys, cws = character._body_knots(chibi)
+    for y, w, cy, cw in zip(ys, ws, cys, cws, strict=True):
+        mx, my = to_chibi((w, y))
+        assert abs(my - cy) < 1e-9 and abs(mx - cw) < 1e-9
+
+
+def test_a_traced_cut_draws_at_chibi_builds_and_not_realistic() -> None:
+    """Cuts replace the shared garment only where they were traced to fit.
+
+    The realistic build keeps the shared parametric garments (the owner's call
+    in `katherina-clothes-plan.md`), so naming a cut changes a chibi render and
+    leaves a realistic one exactly as it was.
+    """
+    p = PRESETS["katherina"]
+    banded = replace(p, outfit=replace(p.outfit, collar_cut=None))
+    for build, changes in (("chibi", True), ("realistic", False)):
+        sk = character.skeleton_for(p, BUILDS[build])
+        differs = render_character(p, sk) != render_character(banded, sk)
+        assert differs is changes, build
+
+
 def test_a_body_profile_applies_only_at_the_chibi_build() -> None:
     """A measured body replaces the chibi's lerped landmarks and nothing else.
 
