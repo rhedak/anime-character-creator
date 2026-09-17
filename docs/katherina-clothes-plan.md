@@ -275,7 +275,21 @@ the campaign's scope is explicit, not so it grows.
 
 ### C7. Integration
 
-**Status: not started.**
+**Status: C7a-c checked 2026-09-17; stopped for the owner's review before C7d.**
+Sheet: `out/clothes/c7_review.png` (Katherina on `tall_chibi`, on the shared chibi,
+at realistic; Satoko wearing every cut on both chibi bodies).
+
+- C7a: realistic draws the shared garments, colours aside, as decided.
+- C7b: the cuts are cuts. Satoko in all five on `tall_chibi` reads as a clean
+  second character. On the shared chibi they map and hold together, but the
+  jacket comes out cape-like: that body has almost no waist (0.89 head radii
+  against `tall_chibi`'s 0.56), so the mapping widens the belt and the jacket's
+  panels with it, correctly for the body and not flatteringly. An owner's call
+  whether cuts on the shared chibi need their own widths or are simply meant for
+  `tall_chibi`.
+- C7c: every cut is a Cut select on its catalogue slot (collar, tunic's sleeve,
+  skirt, belt, coat), and the body type sits beside the build slider.
+- C7d (the book's cover, style anchors and reader) waits for the owner.
 
 - [ ] **C7a.** Both builds rendered and looked at; realistic falls back to the
       shared garments per the decision above.
