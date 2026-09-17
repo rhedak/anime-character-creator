@@ -828,9 +828,15 @@ VIKTOR = CharacterParams(
 # ponytail, and a working academic's practical tie is closer to the intent.
 # Outfit reaches for "prestigious magic academy," not folk-witch: a dark,
 # tailored coat over a plain tunic and skirt, gold trim standing in for
-# academic rank rather than embroidery or a pointed hat (no hat shape exists
-# in this tool yet; deliberately left off rather than faked with a headscarf,
-# see that repo's own design notes on the cover work this preset is for).
+# academic rank. `hat_color`/`hat_band_color` add the pointed witch's hat the
+# comment here used to say this tool couldn't draw; `_hat` in character.py
+# was built and traced against this preset's own reference for exactly that
+# (docs/katherina-accessories-plan.md milestone 2, session of 2026-09-17).
+# Colors sampled off the same reference: near-black for the crown/brim
+# (`#171420`, between the reference's own `#201e29` crown and `#12121c`
+# brim reads, close enough for this generator's one-flat-color-per-surface
+# convention) and the hair's own purple for the band (`#3c2456`), which also
+# carries the buckle per `_hat`'s own docstring.
 KATHERINA = CharacterParams(
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
@@ -847,6 +853,8 @@ KATHERINA = CharacterParams(
         coat_color="#12152a",
         coat_length=0.62,
         sleeve_long=True,
+        hat_color="#171420",
+        hat_band_color="#3c2456",
     ),
     frame=-0.1,
     face=FaceStyle(

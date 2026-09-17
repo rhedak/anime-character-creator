@@ -41,6 +41,13 @@ dev = [
     # that imports it should say so rather than rely on someone else's
     # dependency staying where it is.
     "pillow>=10",
+    # `harness/trace/`'s reference-tracing pipeline (contour measurement,
+    # least-squares curve fitting) and the `trace-reference` skill's
+    # `trace_lib.py` both use it for pixel-array thresholding and the
+    # per-segment least-squares solve. Several of the older `harness/trace/`
+    # scripts already imported this without it being declared anywhere,
+    # which is a real gap this closes rather than a new want.
+    "numpy>=1.26",
     "pytest>=8",
     "ruff>=0.14",
 ]

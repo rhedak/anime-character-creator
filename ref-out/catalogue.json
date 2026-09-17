@@ -450,6 +450,25 @@
         "label": "Goggles",
         "optional": true
       }
+    },
+    {
+      "id": "hat",
+      "label": "Witch hat",
+      "color": {
+        "field": "hat_color",
+        "label": "Witch hat",
+        "optional": true
+      }
+    },
+    {
+      "id": "hat_band",
+      "label": "Hat band and buckle",
+      "color": {
+        "field": "hat_band_color",
+        "label": "Hat band and buckle",
+        "optional": true
+      },
+      "requires": "hat"
     }
   ],
   "face": {

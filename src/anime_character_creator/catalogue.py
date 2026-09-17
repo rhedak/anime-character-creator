@@ -267,6 +267,18 @@ HAKAMA = GarmentSlot(
 )
 HEADSCARF = GarmentSlot("headscarf", "Headscarf", _color("headscarf_color", "Headscarf"))
 GOGGLES = GarmentSlot("goggles", "Goggles", _color("goggle_color", "Goggles"))
+HAT = GarmentSlot("hat", "Witch hat", _color("hat_color", "Witch hat"))
+# A separate slot rather than a `ranges`/`bools` companion on `HAT`, because
+# the band carries its own color, not a toggle or a number: the crystal rig's
+# four independently-colored slots are the existing precedent for "more than
+# one color belongs to one worn thing", and `requires="hat"` is the same
+# dependency `UNDERSKIRT` has on `SKIRT`.
+HAT_BAND = GarmentSlot(
+    "hat_band",
+    "Hat band and buckle",
+    _color("hat_band_color", "Hat band and buckle"),
+    requires="hat",
+)
 COAT = GarmentSlot(
     "coat",
     "Coat (open outer layer; short for a vest or cardigan)",
@@ -305,6 +317,8 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     COAT,
     HEADSCARF,
     GOGGLES,
+    HAT,
+    HAT_BAND,
 )
 
 
