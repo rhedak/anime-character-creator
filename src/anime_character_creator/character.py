@@ -204,6 +204,9 @@ class Outfit:
     # `undersleeve_color`/bare skin. Off by default, the short sleeve every
     # shipped preset wears.
     sleeve_long: bool = False
+    # A traced sleeve and cuff from `SLEEVE_CUTS`, in the sleeve's colour, in place of
+    # the plain tube; `None` is the tube.
+    sleeve_cut: str | None = None
     # --- Uniform trim. Five fields rather than one `uniform=True`, because the
     # cast does not wear the uniform as a unit: Tenno has the cut without the
     # strap, Elara and Krista hang crystals off the belt that nobody else
@@ -2539,6 +2542,11 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # standing clear of it. Both refs show the torso's side and the arm as two
     # separate edges with daylight between them below the armpit.
     torso_at_cuff = ww + (sw - ww) * 0.12
+    if _traced_coat(sk, p):
+        # Under a traced jacket the tunic's own sleeve cap has nowhere to show but
+        # past the jacket's shoulder, where the hair is narrower than the
+        # reference's; the traced sleeve starts inside the armhole instead.
+        sleeve_w = torso_at_cuff
 
     # Control points sit at the shoulder's own width and the hip's own width, so
     # the curve leaves each landmark vertically and the taper reads as a body
@@ -3193,6 +3201,25 @@ def _wears_cuts(sk: Skeleton) -> bool:
     return sk.build < 0.5
 
 
+def _traced_coat(sk: Skeleton, p: CharacterParams) -> bool:
+    return p.outfit.coat_color is not None and p.outfit.coat_cut is not None and _wears_cuts(sk)
+
+
+def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams) -> str:
+    """A traced jacket and the belt over it, drawn after the arms.
+
+    The shared coat goes under the arms, the order every other character is
+    drawn in. A traced jacket goes over them, because its armholes are what
+    covers the top of a sleeve: the reference hides that top under the hair,
+    and a body whose hair is narrower would show it standing out of the
+    shoulder. The belt is worn over the jacket, so it moves with it.
+    """
+    if not _traced_coat(sk, p):
+        return ""
+    jacket = _draw_cut(sk, COAT_CUTS[p.outfit.coat_cut], p.outfit.coat_color)
+    return jacket + _belt_drawn(sk, p)
+
+
 def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str) -> str:
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk)
@@ -3643,8 +3670,8 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     """
     if p.outfit.coat_color is None:
         return ""
-    if p.outfit.coat_cut is not None and _wears_cuts(sk):
-        return _draw_cut(sk, COAT_CUTS[p.outfit.coat_cut], p.outfit.coat_color)
+    if _traced_coat(sk, p):
+        return ""  # drawn over the arms, by `_traced_coat_and_belt`
     cx = sk.head_cx
     color = p.outfit.coat_color
     sw = _stroke_w(sk)
@@ -4622,6 +4649,110 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     return shape + "".join(folds)
 
 
+@dataclass(frozen=True)
+class SleeveCut:
+    """A traced sleeve and its cuff, placed along an arm rather than on the body.
+
+    `pivot` and `wrist` are the traced arm's own ends in the reference's head
+    radii (the viewer's right arm); `half_w` is `_GARMENT_REF_BODY`'s arm
+    half-width. `_sleeve_placement` maps the shapes from that arm onto any arm:
+    along it by the fraction of pivot-to-wrist, across it by the ratio of arm
+    widths, mirrored for the viewer's left.
+    """
+
+    pivot: Point
+    wrist: Point
+    half_w: float
+    sleeve: Chain
+    cuff: Chain
+
+
+# Traced sleeve cuts, drawn by `_arms` when `Outfit.sleeve_cut` names one, in the
+# sleeve's colour, on both arms. `wide` is the hanging sleeve of
+# `katherina_grok.jpg` (`katherina-clothes-plan.md`, C4; `harness/clothes/trace_sleeve.py`):
+# the purple part of component 179, its top carried up under the hair parallel to
+# its centre line, and the cuff, 208. The reference's other arm bends at the
+# elbow, which a straight swung arm cannot, so it wears this one mirrored.
+SLEEVE_CUTS: dict[str, SleeveCut] = {
+    "wide": SleeveCut(
+        pivot=(0.754, 1.657),
+        wrist=(1.054, 3.212),
+        half_w=0.20982,
+        sleeve=(
+            (0.524, 1.560),
+            [
+                ((0.737, 1.560), (0.950, 1.560)),
+                ((0.959, 1.569), (0.967, 1.577)),
+                ((1.045, 1.865), (1.128, 2.153)),
+                ((1.265, 2.539), (1.399, 2.925)),
+                ((1.401, 2.953), (1.387, 2.982)),
+                ((1.370, 2.999), (1.353, 3.017)),
+                ((1.362, 3.025), (1.370, 3.034)),
+                ((1.347, 3.055), (1.324, 3.074)),
+                ((1.249, 3.101), (1.174, 3.126)),
+                ((1.111, 3.133), (1.048, 3.149)),
+                ((0.996, 3.149), (0.944, 3.149)),
+                ((0.930, 3.142), (0.915, 3.126)),
+                ((0.924, 3.117), (0.933, 3.109)),
+                ((0.918, 3.094), (0.904, 3.080)),
+                ((0.837, 2.896), (0.754, 2.712)),
+                ((0.744, 2.628), (0.737, 2.545)),
+                ((0.716, 2.470), (0.697, 2.395)),
+                ((0.686, 2.303), (0.674, 2.211)),
+                ((0.653, 2.156), (0.639, 2.101)),
+                ((0.639, 2.064), (0.639, 2.026)),
+                ((0.630, 2.018), (0.622, 2.009)),
+                ((0.572, 1.802), (0.507, 1.595)),
+                ((0.501, 1.577), (0.524, 1.560)),
+            ],
+        ),
+        cuff=(
+            (1.387, 3.120),
+            [
+                ((1.388, 3.138), (1.364, 3.155)),
+                ((1.321, 3.175), (1.278, 3.195)),
+                ((1.229, 3.208), (1.180, 3.224)),
+                ((1.102, 3.233), (1.025, 3.241)),
+                ((0.996, 3.239), (0.967, 3.235)),
+                ((0.948, 3.218), (0.938, 3.201)),
+                ((0.940, 3.175), (0.927, 3.149)),
+                ((0.920, 3.129), (0.944, 3.109)),
+                ((1.054, 3.107), (1.163, 3.086)),
+                ((1.249, 3.065), (1.336, 3.017)),
+                ((1.350, 3.021), (1.364, 3.040)),
+                ((1.372, 3.080), (1.387, 3.120)),
+            ],
+        ),
+    ),
+}
+
+
+def _sleeve_placement(sk: Skeleton, cut: SleeveCut, s: int) -> Callable[[Point], Point]:
+    """Map a sleeve cut from its traced arm onto `sk`'s hanging arm on side `s`.
+
+    Head radii in, head radii out, before any swing: `_arms` turns the result
+    with the rest of the limb.
+    """
+    centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
+    px, py = centre_top / sk.head_r, (top_y - sk.head_cy) / sk.head_r
+    wx, wy = centre_wrist / sk.head_r, (wrist_y - sk.head_cy) / sk.head_r
+    rax, ray = cut.wrist[0] - cut.pivot[0], cut.wrist[1] - cut.pivot[1]
+    ref_len = math.hypot(rax, ray)
+    tax, tay = wx - px, wy - py
+    tgt_len = math.hypot(tax, tay)
+    across_scale = (sk.arm_half_w / sk.head_r) / cut.half_w
+
+    def xf(pt: Point) -> Point:
+        dx, dy = pt[0] - cut.pivot[0], pt[1] - cut.pivot[1]
+        along = (dx * rax + dy * ray) / ref_len**2
+        across = (-dx * ray + dy * rax) / ref_len * across_scale
+        x = px + along * tax - across * tay / tgt_len
+        y = py + along * tay + across * tax / tgt_len
+        return (s * x, y)
+
+    return xf
+
+
 def _arm_line(sk: Skeleton) -> tuple[float, float, float, float]:
     """`(centre_top, top_y, centre_wrist, wrist_y)` of a hanging arm.
 
@@ -5199,10 +5330,29 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         # narrower one was tried, but a stripe running the length of something as
         # long and thin as a sleeve reads as a two-tone plank at any width. The
         # canon's are flat tan, separated from the torso by the outline alone.
-        limb = [
-            f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
-        ]
-        if p.outfit.undersleeve_color is not None or long_sleeve:
+        cut = SLEEVE_CUTS.get(p.outfit.sleeve_cut or "") if _wears_cuts(sk) else None
+        if cut is not None:
+            place = _sleeve_placement(sk, cut, s)
+
+            def traced(chain: Chain, place: Callable[[Point], Point] = place) -> str:
+                start, segs = chain
+                return _curve(
+                    sk.head_cx,
+                    sk.head_cy,
+                    sk.head_r,
+                    place(start),
+                    [(place(q), place(e)) for q, e in segs],
+                )
+
+            limb = [
+                f'<path d="{traced(part)}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+                for part in (cut.sleeve, cut.cuff)
+            ]
+        else:
+            limb = [
+                f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+            ]
+        if cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
         limb.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
 
@@ -5784,6 +5934,12 @@ def _belt_band(sk: Skeleton, scale: float = 1.0) -> tuple[float, float]:
 def _belt(sk: Skeleton, p: CharacterParams) -> str:
     """A band at the waist. On a front view this is what actually makes a waist
     read, since the arms hang over the silhouette's own taper and hide it."""
+    if _traced_coat(sk, p):
+        return ""  # drawn over the traced jacket, by `_traced_coat_and_belt`
+    return _belt_drawn(sk, p)
+
+
+def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.belt_color
     if color is None:
         return ""
@@ -7079,6 +7235,8 @@ def render_character(
         # below the neck.
         _staff(sk, p),
         _arms(sk, p),
+        # A traced jacket covers the tops of the sleeves; see the function.
+        _traced_coat_and_belt(sk, p),
         # After the arms and before the ear: a standing collar wraps the throat,
         # so it belongs over the neck and the tunic's V, and it is the one
         # garment high enough that the head has to be drawn after it.

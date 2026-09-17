@@ -197,6 +197,22 @@
           "field": "sleeve_long",
           "label": "Long sleeves"
         }
+      ],
+      "selects": [
+        {
+          "field": "sleeve_cut",
+          "label": "Sleeve cut",
+          "options": [
+            {
+              "value": null,
+              "label": "Plain"
+            },
+            {
+              "value": "wide",
+              "label": "Wide, turned cuff (traced)"
+            }
+          ]
+        }
       ]
     },
     {

@@ -879,6 +879,7 @@ KATHERINA = CharacterParams(
         coat_color="#12152a",
         coat_cut="open_jacket",
         sleeve_long=True,
+        sleeve_cut="wide",
         hat_color="#201e29",
         hat_band_color="#3c2456",
         staff_color="#4e3a2c",

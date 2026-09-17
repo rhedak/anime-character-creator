@@ -39,6 +39,7 @@ from .character import (
     EYESTYLES,
     HAIRSTYLES,
     SKIRT_CUTS,
+    SLEEVE_CUTS,
     CharacterParams,
     FaceStyle,
     Outfit,
@@ -161,6 +162,8 @@ def _face_select(field: str, label: str, options: tuple[tuple[object, str], ...]
 # Always worn, so no toggle: a character with `tunic_color=None` is not
 # something the generator can draw. `TUNIC_TUCKED` rides with it because it
 # only changes where the tunic's own hem sits.
+SLEEVE_CUT_LABELS: dict[str, str] = {"wide": "Wide, turned cuff (traced)"}
+assert set(SLEEVE_CUT_LABELS) == set(SLEEVE_CUTS)
 TUNIC = GarmentSlot(
     "tunic",
     "Tunic",
@@ -169,6 +172,11 @@ TUNIC = GarmentSlot(
         _bool("tunic_tucked", "Tucked in"),
         _bool("neckline_round", "Round neckline"),
         _bool("sleeve_long", "Long sleeves"),
+    ),
+    selects=(
+        SelectField(
+            "sleeve_cut", "Sleeve cut", ((None, "Plain"), *sorted(SLEEVE_CUT_LABELS.items()))
+        ),
     ),
 )
 # Always worn, likewise. `boot_shaft` is 0 (ankle) to 1 (knee) across the

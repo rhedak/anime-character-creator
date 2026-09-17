@@ -220,7 +220,28 @@ our hair is narrower than the reference's; both are C4's.
 
 ### C4. Sleeves and cuffs
 
-**Status: not started.**
+**Status: done, 2026-09-17.** `SLEEVE_CUTS["wide"]`, a `SleeveCut` (sleeve and
+cuff plus the traced arm's pivot and wrist), chosen by `Outfit.sleeve_cut` in the
+tunic slot and placed along each arm by `_sleeve_placement`
+(`harness/clothes/trace_sleeve.py`): the hanging sleeve (the purple of 179, its
+top carried up under the hair parallel to its centre line) and cuff (208). The
+reference's held arm bends at the elbow, which ours cannot, so both arms wear the
+hanging sleeve, the held one mirrored and turned by the swing.
+
+The C0d question, decided: a traced jacket is drawn *after* the arms
+(`_traced_coat_and_belt`, with the belt, which is worn over it), so its armholes
+cover the sleeves' tops the way the reference's hair does; the shared coat keeps
+its place under the arms for everyone else. Under a traced jacket the tunic's own
+sleeve cap is pulled in to the torso, since it only ever showed past the
+jacket's shoulder. The arm pivot did not move, so the arm angle and the staff's
+grip stand (C4c).
+
+Harness: `jacket_upper` 0.555 / 0.057 before, 0.541 / 0.067 after; `jacket_lower`
+0.800 / 0.028 before, 0.893 / 0.015 after. `jacket_upper` counts the sleeves but
+also every pixel where our hair and the reference's differ in the shoulders, and
+the hidden-pixel mask only removes hair both images agree is hair, so it no longer
+moves with the sleeve work; the zooms are what judged it
+(`out/clothes/c4_shoulders.png`, `c4_full.png`).
 
 - [ ] **C4a.** Trace the hanging sleeve (the viewer's right, part of 179) and
       its cuff (208) along the arm line, sleeve colour from the reference
