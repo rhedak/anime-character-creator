@@ -901,6 +901,7 @@ KATHERINA = CharacterParams(
     body="tall_chibi",
     familiar_color="#33303a",
     familiar_eye_color="#e09a3c",
+    familiar_smile=True,
     face=FaceStyle(
         eye_size=1.05,
         eye_width=1.02,
@@ -1215,6 +1216,13 @@ EXPRESSIONS: dict[str, Expression] = {
     "hollow": Expression(eye_openness=0.66, brow_tilt=0.30, mouth_curve=-0.20),
     # Inner brow ends **raised**, the opposite direction to stern. Grief stated
     # rather than implied.
+    # `hollow`'s lids and brow with the mouth turned up instead of down: still
+    # the lid doing the work at thumbnail size, but friendly. Added 2026-09-19
+    # for `../time_slider_katherina`'s cover, whose owner wanted a slight smile
+    # on a book whose familiar warms to its witch over the course of it. +0.45
+    # rather than more: at that cover's size the arc is about three pixels deep,
+    # which is the difference between "not frowning" and "grinning".
+    "wry": Expression(eye_openness=0.66, brow_tilt=0.30, mouth_curve=0.45),
     "sorrow": Expression(brow_tilt=-0.40, mouth_curve=-0.30, eye_openness=0.82),
     # Brows down over a wide-open eye. Reads closer to alarm than to resolve,
     # kept because that is worth knowing before anyone tries the combination

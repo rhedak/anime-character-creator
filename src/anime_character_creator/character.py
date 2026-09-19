@@ -400,6 +400,10 @@ class CharacterParams:
     # eyes and Mori pale with silver ones.
     familiar_color: str | None = None
     familiar_eye_color: str | None = None
+    # Turns the familiar's mouth up. His reference draws it turned down, which
+    # is his book register early on (dry, sarcastic, worn); this is for the
+    # later one, and for a cover that wants to look friendly.
+    familiar_smile: bool = False
     # Shoulder against hip: -1 narrow-shouldered and wide-hipped, 0 neutral, +1
     # the other way. Only bites at taller builds. Ignored when handed a skeleton.
     frame: float = 0.0
@@ -7349,6 +7353,18 @@ _KOU_CENTRE_REAL: Point = (2.20, 1.50)
 # The pupil, as a fraction of the eye it sits in.
 _KOU_PUPIL = 0.50
 
+
+def _mirrored_y(chain: Chain) -> Chain:
+    """A chain flipped about its own middle, which turns a frown into a smile."""
+    pts = [chain[0], *(q for seg in chain[1] for q in seg)]
+    mid = sum(q[1] for q in pts) / len(pts)
+
+    def flip(q: Point) -> Point:
+        return (q[0], 2 * mid - q[1])
+
+    return (flip(chain[0]), [(flip(c), flip(e)) for c, e in chain[1]])
+
+
 # Head, ears and feet in one fill, as the reference draws them.
 _KOU_BODY: Chain = (
     (0.144, -0.284),
@@ -7731,6 +7747,16 @@ _KOU_LINES: list[Chain] = [
     ),
 ]
 
+# Which of the traced interior lines is the mouth: the lowest of them. Found
+# rather than hardcoded, so a re-trace that reorders them cannot silently flip
+# an ear ridge instead.
+_KOU_MOUTH = max(
+    range(len(_KOU_LINES)),
+    key=lambda i: sum(
+        q[1] for q in (_KOU_LINES[i][0], *(q for seg in _KOU_LINES[i][1] for q in seg))
+    ),
+)
+
 
 def _familiar(sk: Skeleton, p: CharacterParams) -> str:
     """A small bat familiar in flight, beside the figure's left shoulder.
@@ -7807,11 +7833,13 @@ def _familiar(sk: Skeleton, p: CharacterParams) -> str:
 
         pupil = (shrink(eye[0]), [(shrink(c), shrink(e)) for c, e in eye[1]])
         parts.append(f'<path d="{d(pupil)}" fill="{OUTLINE}" />')
-    parts.extend(
-        f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
-        for line in _KOU_LINES
-    )
+    for i, line in enumerate(_KOU_LINES):
+        if i == _KOU_MOUTH and p.familiar_smile:
+            line = _mirrored_y(line)
+        parts.append(
+            f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
+            f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        )
     return "".join(parts)
 
 
