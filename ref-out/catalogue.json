@@ -127,6 +127,16 @@
       "field": "eye_color",
       "label": "Eyes",
       "optional": false
+    },
+    {
+      "field": "familiar_color",
+      "label": "Familiar (bat)",
+      "optional": true
+    },
+    {
+      "field": "familiar_eye_color",
+      "label": "Familiar's eyes",
+      "optional": true
     }
   ],
   "hairstyles": [

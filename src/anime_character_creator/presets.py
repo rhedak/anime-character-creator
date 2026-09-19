@@ -860,6 +860,16 @@ VIKTOR = CharacterParams(
 # luminance gap of 12 from what it covers, which the reference's own pair does
 # not have (about 5). The lift keeps the hue and clears that bar against the
 # jacket's sampled navy too, which C3 of `katherina-clothes-plan.md` moves to.
+# Kou flies at her left shoulder. His reference's own fur is `#202022` and its
+# eyes are solid black; both are lifted here, for the cover rather than for
+# fidelity (the owner's call, 2026-09-19): against a dusk sky a black bat with
+# black eyes was a silhouette with no face in it. The fur goes a few steps up to
+# `#33303a`, still "small and dark-furred" as the book has him, and the eyes to
+# amber, which is already the cover's accent through the staff's crystal and her
+# own eyes. Amber also gives him and Mori a real inversion, warm against Mori's
+# silver, where the book's own pair were two near-blacks. A lighter outline was
+# tried for the same purpose and rejected: it read as a sticker laid over the
+# drawing rather than part of it.
 KATHERINA = CharacterParams(
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
@@ -889,6 +899,8 @@ KATHERINA = CharacterParams(
     frame=-0.1,
     right_arm_out=36.0,
     body="tall_chibi",
+    familiar_color="#33303a",
+    familiar_eye_color="#e09a3c",
     face=FaceStyle(
         eye_size=1.05,
         eye_width=1.02,

@@ -393,6 +393,13 @@ class CharacterParams:
     # the shared chibi. A name rather than the numbers, like
     # `hairstyle`, so a character stays a flat, linkable set of fields.
     body: str | None = None
+    # A bat familiar in flight beside the figure's left shoulder: his fur (and
+    # membranes, which the reference draws in the same tone) and his eyes.
+    # `None` draws nothing. Two fields rather than one because the book's two
+    # familiars are the same creature colour-inverted, Kou black with black
+    # eyes and Mori pale with silver ones.
+    familiar_color: str | None = None
+    familiar_eye_color: str | None = None
     # Shoulder against hip: -1 narrow-shouldered and wide-hipped, 0 neutral, +1
     # the other way. Only bites at taller builds. Ignored when handed a skeleton.
     frame: float = 0.0
@@ -7303,6 +7310,514 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# Kou, Katherina's bat familiar, traced per `.claude/skills/trace-reference/SKILL.md`
+# from `../time_slider_katherina/style-anchors/kou_grok/kou.png`
+# (`docs/katherina-accessories-plan.md`, milestone 4). That reference was
+# generated to be traced: flat single-tone surfaces, pure-black outlines, a
+# light background and nothing overlapping him, so every shape below is one of
+# its own fill regions, with nothing inferred anywhere
+# (`harness/kou/trace_kou.py`).
+#
+# Coordinates are in wingspan units, 1.0 tip to tip, origin at the centre of his
+# bounding box, so where he goes is two numbers: `_KOU_SPAN` (how wide he is in
+# head radii) and `_KOU_CENTRE`. The book: "a magical bat-like creature, not a
+# mundane bat", small and dark-furred, black-eyed (Mori's are "paler than Kou's,
+# more silver than black"), ears that angle and point since his echolocation is
+# his magic-detection sense, wingspan "over a foot". He flies here rather than
+# perching on her shoulder, the owner's call on 2026-09-19; that also keeps him
+# independent of the shoulder, so nothing about him has to follow the hair.
+#
+# Mori is the same creature colour-inverted (`design.md`'s eyes-constant,
+# surface-traits-vary rule), so the colours are fields and the shape is shared.
+# 2.4 head radii tip to tip, centred just off her left shoulder. The composite
+# reference (`katherina_kou_grok.jpg`) draws him 2.51 wide centred at (1.96,
+# 1.48); ours is a shade smaller and closer in, because this generator's canvas
+# is only 2.68 head radii wide beside a hat-wearer and his far wing would
+# otherwise leave the page. His near wing crossing her hair is the composite's
+# own look, not a collision.
+# ...at the chibi build; the realistic one gets its own pair. A familiar is a
+# real animal beside a figure, not something sized off a head, and the head is a
+# far smaller share of the realistic build, so a fixed head-radius size draws him
+# as a large bat at chibi and a small one at realistic. These are the two builds'
+# values, interpolated on `sk.build` the way `_hat`'s own scale is, with the
+# chibi build's `build` (0.1, from `BUILDS["chibi"]` = 2.4 heads) as the low end.
+_KOU_CHIBI_BUILD = 0.1
+_KOU_SPAN_CHIBI = 2.4
+_KOU_SPAN_REAL = 3.2
+_KOU_CENTRE_CHIBI: Point = (1.58, 1.05)
+_KOU_CENTRE_REAL: Point = (2.20, 1.50)
+# The pupil, as a fraction of the eye it sits in.
+_KOU_PUPIL = 0.50
+
+# Head, ears and feet in one fill, as the reference draws them.
+_KOU_BODY: Chain = (
+    (0.144, -0.284),
+    [
+        ((0.154, -0.274), (0.157, -0.265)),
+        ((0.163, -0.247), (0.167, -0.229)),
+        ((0.174, -0.185), (0.169, -0.141)),
+        ((0.165, -0.118), (0.155, -0.095)),
+        ((0.146, -0.076), (0.127, -0.057)),
+        ((0.136, -0.029), (0.137, -0.002)),
+        ((0.137, 0.015), (0.132, 0.032)),
+        ((0.128, 0.043), (0.120, 0.053)),
+        ((0.105, 0.069), (0.090, 0.080)),
+        ((0.099, 0.095), (0.103, 0.111)),
+        ((0.098, 0.124), (0.101, 0.137)),
+        ((0.096, 0.170), (0.083, 0.204)),
+        ((0.078, 0.215), (0.068, 0.226)),
+        ((0.073, 0.235), (0.076, 0.245)),
+        ((0.078, 0.255), (0.076, 0.265)),
+        ((0.067, 0.274), (0.053, 0.284)),
+        ((0.046, 0.283), (0.045, 0.273)),
+        ((0.038, 0.276), (0.032, 0.281)),
+        ((0.032, 0.257), (0.021, 0.230)),
+        ((-0.000, 0.236), (-0.021, 0.230)),
+        ((-0.033, 0.255), (-0.030, 0.279)),
+        ((-0.037, 0.279), (-0.045, 0.273)),
+        ((-0.045, 0.282), (-0.052, 0.284)),
+        ((-0.057, 0.280), (-0.062, 0.274)),
+        ((-0.066, 0.275), (-0.070, 0.276)),
+        ((-0.073, 0.271), (-0.076, 0.265)),
+        ((-0.078, 0.258), (-0.077, 0.250)),
+        ((-0.074, 0.238), (-0.068, 0.226)),
+        ((-0.079, 0.214), (-0.084, 0.202)),
+        ((-0.090, 0.180), (-0.099, 0.158)),
+        ((-0.100, 0.134), (-0.103, 0.111)),
+        ((-0.099, 0.095), (-0.090, 0.079)),
+        ((-0.108, 0.067), (-0.124, 0.049)),
+        ((-0.132, 0.034), (-0.136, 0.020)),
+        ((-0.137, 0.006), (-0.137, -0.007)),
+        ((-0.134, -0.032), (-0.128, -0.058)),
+        ((-0.143, -0.072), (-0.151, -0.087)),
+        ((-0.161, -0.107), (-0.167, -0.127)),
+        ((-0.172, -0.159), (-0.171, -0.192)),
+        ((-0.168, -0.225), (-0.160, -0.259)),
+        ((-0.156, -0.268), (-0.151, -0.277)),
+        ((-0.145, -0.284), (-0.139, -0.285)),
+        ((-0.125, -0.280), (-0.110, -0.264)),
+        ((-0.087, -0.238), (-0.072, -0.212)),
+        ((-0.054, -0.177), (-0.046, -0.142)),
+        ((-0.035, -0.144), (-0.024, -0.148)),
+        ((-0.015, -0.156), (-0.007, -0.162)),
+        ((-0.002, -0.161), (-0.001, -0.154)),
+        ((0.008, -0.157), (0.016, -0.157)),
+        ((0.017, -0.153), (0.020, -0.149)),
+        ((0.033, -0.146), (0.046, -0.142)),
+        ((0.052, -0.163), (0.058, -0.184)),
+        ((0.069, -0.207), (0.083, -0.230)),
+        ((0.100, -0.255), (0.125, -0.277)),
+        ((0.134, -0.286), (0.144, -0.284)),
+    ],
+)
+
+# Each wing whole, drawn under its own cells.
+_KOU_WINGS: list[Chain] = [
+    (
+        (-0.096, 0.165),
+        [
+            ((-0.116, 0.154), (-0.136, 0.143)),
+            ((-0.151, 0.138), (-0.166, 0.139)),
+            ((-0.182, 0.141), (-0.198, 0.152)),
+            ((-0.211, 0.167), (-0.219, 0.176)),
+            ((-0.232, 0.150), (-0.253, 0.124)),
+            ((-0.271, 0.106), (-0.289, 0.097)),
+            ((-0.308, 0.089), (-0.328, 0.089)),
+            ((-0.348, 0.092), (-0.369, 0.103)),
+            ((-0.378, 0.074), (-0.382, 0.046)),
+            ((-0.389, 0.024), (-0.405, 0.003)),
+            ((-0.423, -0.017), (-0.441, -0.024)),
+            ((-0.464, -0.031), (-0.487, -0.027)),
+            ((-0.489, -0.034), (-0.486, -0.040)),
+            ((-0.464, -0.066), (-0.439, -0.084)),
+            ((-0.414, -0.101), (-0.389, -0.112)),
+            ((-0.355, -0.124), (-0.320, -0.128)),
+            ((-0.289, -0.129), (-0.257, -0.125)),
+            ((-0.254, -0.127), (-0.251, -0.131)),
+            ((-0.253, -0.137), (-0.252, -0.143)),
+            ((-0.245, -0.145), (-0.239, -0.141)),
+            ((-0.230, -0.134), (-0.228, -0.126)),
+            ((-0.231, -0.114), (-0.227, -0.101)),
+            ((-0.216, -0.079), (-0.201, -0.058)),
+            ((-0.185, -0.036), (-0.162, -0.014)),
+            ((-0.149, -0.004), (-0.136, 0.007)),
+            ((-0.135, 0.028), (-0.123, 0.049)),
+            ((-0.107, 0.068), (-0.088, 0.081)),
+            ((-0.098, 0.096), (-0.101, 0.111)),
+            ((-0.098, 0.138), (-0.096, 0.165)),
+        ],
+    ),
+    (
+        (0.096, 0.167),
+        [
+            ((0.098, 0.137), (0.100, 0.107)),
+            ((0.095, 0.093), (0.089, 0.079)),
+            ((0.114, 0.063), (0.130, 0.039)),
+            ((0.133, 0.023), (0.136, 0.007)),
+            ((0.156, -0.007), (0.177, -0.027)),
+            ((0.192, -0.046), (0.205, -0.064)),
+            ((0.219, -0.085), (0.229, -0.106)),
+            ((0.228, -0.118), (0.229, -0.131)),
+            ((0.237, -0.139), (0.244, -0.148)),
+            ((0.248, -0.149), (0.253, -0.144)),
+            ((0.254, -0.138), (0.250, -0.131)),
+            ((0.252, -0.128), (0.256, -0.125)),
+            ((0.293, -0.130), (0.330, -0.127)),
+            ((0.366, -0.122), (0.401, -0.107)),
+            ((0.425, -0.094), (0.449, -0.076)),
+            ((0.472, -0.058), (0.488, -0.037)),
+            ((0.490, -0.032), (0.487, -0.027)),
+            ((0.465, -0.031), (0.443, -0.025)),
+            ((0.425, -0.019), (0.407, 0.000)),
+            ((0.393, 0.019), (0.385, 0.039)),
+            ((0.378, 0.070), (0.368, 0.102)),
+            ((0.348, 0.093), (0.329, 0.089)),
+            ((0.311, 0.089), (0.293, 0.095)),
+            ((0.271, 0.104), (0.250, 0.127)),
+            ((0.232, 0.152), (0.218, 0.175)),
+            ((0.209, 0.166), (0.198, 0.152)),
+            ((0.183, 0.142), (0.168, 0.139)),
+            ((0.149, 0.138), (0.131, 0.144)),
+            ((0.114, 0.155), (0.096, 0.167)),
+        ],
+    ),
+]
+
+# The cells the finger struts divide each wing into. Drawn over the wing,
+# each with its own outline, they are what makes the struts.
+_KOU_WING_CELLS: list[Chain] = [
+    (
+        (-0.259, -0.107),
+        [
+            ((-0.297, -0.064), (-0.323, -0.021)),
+            ((-0.353, 0.036), (-0.369, 0.094)),
+            ((-0.378, 0.066), (-0.387, 0.032)),
+            ((-0.395, 0.014), (-0.410, -0.003)),
+            ((-0.429, -0.021), (-0.448, -0.027)),
+            ((-0.468, -0.029), (-0.488, -0.028)),
+            ((-0.472, -0.051), (-0.446, -0.068)),
+            ((-0.416, -0.087), (-0.387, -0.099)),
+            ((-0.350, -0.111), (-0.313, -0.113)),
+            ((-0.286, -0.116), (-0.259, -0.107)),
+        ],
+    ),
+    (
+        (-0.249, -0.094),
+        [
+            ((-0.247, -0.032), (-0.243, 0.029)),
+            ((-0.232, 0.099), (-0.220, 0.168)),
+            ((-0.235, 0.150), (-0.253, 0.124)),
+            ((-0.271, 0.106), (-0.289, 0.097)),
+            ((-0.308, 0.089), (-0.328, 0.089)),
+            ((-0.350, 0.095), (-0.370, 0.101)),
+            ((-0.364, 0.075), (-0.353, 0.050)),
+            ((-0.339, 0.018), (-0.320, -0.015)),
+            ((-0.304, -0.039), (-0.284, -0.063)),
+            ((-0.267, -0.084), (-0.249, -0.094)),
+        ],
+    ),
+    (
+        (-0.216, 0.176),
+        [
+            ((-0.222, 0.176), (-0.223, 0.169)),
+            ((-0.236, 0.105), (-0.246, 0.040)),
+            ((-0.252, -0.024), (-0.253, -0.089)),
+            ((-0.264, -0.082), (-0.276, -0.070)),
+            ((-0.294, -0.047), (-0.310, -0.025)),
+            ((-0.327, 0.003), (-0.341, 0.031)),
+            ((-0.356, 0.064), (-0.366, 0.098)),
+            ((-0.369, 0.101), (-0.372, 0.099)),
+            ((-0.368, 0.074), (-0.359, 0.050)),
+            ((-0.347, 0.020), (-0.332, -0.010)),
+            ((-0.303, -0.058), (-0.265, -0.107)),
+            ((-0.292, -0.112), (-0.320, -0.110)),
+            ((-0.349, -0.107), (-0.378, -0.099)),
+            ((-0.404, -0.090), (-0.430, -0.076)),
+            ((-0.456, -0.060), (-0.483, -0.034)),
+            ((-0.489, -0.033), (-0.486, -0.040)),
+            ((-0.464, -0.066), (-0.439, -0.084)),
+            ((-0.414, -0.101), (-0.389, -0.112)),
+            ((-0.355, -0.124), (-0.320, -0.128)),
+            ((-0.286, -0.129), (-0.252, -0.125)),
+            ((-0.248, -0.134), (-0.253, -0.143)),
+            ((-0.246, -0.146), (-0.239, -0.141)),
+            ((-0.232, -0.135), (-0.229, -0.129)),
+            ((-0.227, -0.119), (-0.229, -0.108)),
+            ((-0.223, -0.093), (-0.214, -0.077)),
+            ((-0.200, -0.055), (-0.181, -0.033)),
+            ((-0.159, -0.009), (-0.136, 0.007)),
+            ((-0.135, 0.019), (-0.131, 0.031)),
+            ((-0.129, 0.037), (-0.136, 0.036)),
+            ((-0.152, 0.023), (-0.169, 0.009)),
+            ((-0.209, -0.036), (-0.235, -0.070)),
+            ((-0.239, -0.017), (-0.235, 0.036)),
+            ((-0.225, 0.106), (-0.216, 0.176)),
+        ],
+    ),
+    (
+        (-0.237, -0.079),
+        [
+            ((-0.213, -0.047), (-0.181, -0.006)),
+            ((-0.133, 0.039), (-0.089, 0.079)),
+            ((-0.096, 0.095), (-0.101, 0.111)),
+            ((-0.097, 0.138), (-0.097, 0.166)),
+            ((-0.116, 0.153), (-0.136, 0.143)),
+            ((-0.151, 0.138), (-0.166, 0.139)),
+            ((-0.180, 0.141), (-0.193, 0.149)),
+            ((-0.207, 0.159), (-0.215, 0.173)),
+            ((-0.217, 0.173), (-0.219, 0.171)),
+            ((-0.232, 0.101), (-0.239, 0.032)),
+            ((-0.244, -0.024), (-0.237, -0.079)),
+        ],
+    ),
+    (
+        (0.237, -0.079),
+        [
+            ((0.244, -0.029), (0.240, 0.021)),
+            ((0.233, 0.097), (0.219, 0.173)),
+            ((0.208, 0.165), (0.193, 0.149)),
+            ((0.180, 0.142), (0.168, 0.139)),
+            ((0.149, 0.138), (0.131, 0.144)),
+            ((0.114, 0.154), (0.097, 0.168)),
+            ((0.098, 0.137), (0.100, 0.107)),
+            ((0.095, 0.093), (0.089, 0.079)),
+            ((0.131, 0.041), (0.176, 0.000)),
+            ((0.212, -0.044), (0.237, -0.079)),
+        ],
+    ),
+    (
+        (0.216, 0.174),
+        [
+            ((0.226, 0.100), (0.235, 0.026)),
+            ((0.239, -0.023), (0.235, -0.071)),
+            ((0.207, -0.030), (0.159, 0.019)),
+            ((0.147, 0.028), (0.136, 0.037)),
+            ((0.129, 0.038), (0.131, 0.031)),
+            ((0.134, 0.019), (0.136, 0.007)),
+            ((0.156, -0.007), (0.177, -0.027)),
+            ((0.196, -0.049), (0.210, -0.071)),
+            ((0.222, -0.090), (0.229, -0.108)),
+            ((0.227, -0.119), (0.229, -0.131)),
+            ((0.238, -0.139), (0.244, -0.148)),
+            ((0.250, -0.149), (0.253, -0.143)),
+            ((0.249, -0.134), (0.252, -0.125)),
+            ((0.291, -0.130), (0.330, -0.127)),
+            ((0.360, -0.123), (0.389, -0.112)),
+            ((0.412, -0.102), (0.436, -0.087)),
+            ((0.457, -0.071), (0.478, -0.051)),
+            ((0.483, -0.043), (0.489, -0.035)),
+            ((0.488, -0.031), (0.485, -0.032)),
+            ((0.460, -0.057), (0.434, -0.073)),
+            ((0.400, -0.092), (0.367, -0.102)),
+            ((0.344, -0.107), (0.320, -0.110)),
+            ((0.293, -0.111), (0.265, -0.107)),
+            ((0.304, -0.058), (0.333, -0.009)),
+            ((0.349, 0.023), (0.361, 0.055)),
+            ((0.368, 0.076), (0.372, 0.098)),
+            ((0.367, 0.102), (0.364, 0.095)),
+            ((0.357, 0.067), (0.345, 0.040)),
+            ((0.331, 0.010), (0.314, -0.020)),
+            ((0.299, -0.041), (0.282, -0.063)),
+            ((0.267, -0.080), (0.253, -0.089)),
+            ((0.252, -0.021), (0.245, 0.048)),
+            ((0.235, 0.107), (0.223, 0.167)),
+            ((0.222, 0.174), (0.216, 0.174)),
+        ],
+    ),
+    (
+        (0.249, -0.094),
+        [
+            ((0.263, -0.087), (0.277, -0.071)),
+            ((0.298, -0.046), (0.315, -0.021)),
+            ((0.332, 0.006), (0.346, 0.034)),
+            ((0.361, 0.067), (0.370, 0.099)),
+            ((0.368, 0.104), (0.363, 0.103)),
+            ((0.346, 0.090), (0.329, 0.089)),
+            ((0.311, 0.089), (0.293, 0.095)),
+            ((0.278, 0.102), (0.264, 0.113)),
+            ((0.237, 0.145), (0.220, 0.168)),
+            ((0.233, 0.098), (0.243, 0.029)),
+            ((0.247, -0.032), (0.249, -0.094)),
+        ],
+    ),
+    (
+        (0.259, -0.107),
+        [
+            ((0.287, -0.116), (0.315, -0.113)),
+            ((0.350, -0.110), (0.384, -0.100)),
+            ((0.415, -0.088), (0.445, -0.069)),
+            ((0.471, -0.052), (0.488, -0.028)),
+            ((0.466, -0.030), (0.443, -0.025)),
+            ((0.425, -0.019), (0.407, 0.000)),
+            ((0.394, 0.017), (0.387, 0.034)),
+            ((0.377, 0.061), (0.375, 0.088)),
+            ((0.373, 0.093), (0.369, 0.093)),
+            ((0.354, 0.038), (0.326, -0.016)),
+            ((0.300, -0.061), (0.259, -0.107)),
+        ],
+    ),
+]
+
+# Two black discs. Their own colour, so Mori's can be silver.
+_KOU_EYES: list[Chain] = [
+    (
+        (-0.076, -0.035),
+        [
+            ((-0.063, -0.036), (-0.050, -0.029)),
+            ((-0.044, -0.024), (-0.039, -0.018)),
+            ((-0.035, -0.011), (-0.033, -0.003)),
+            ((-0.031, 0.011), (-0.039, 0.026)),
+            ((-0.050, 0.039), (-0.063, 0.042)),
+            ((-0.076, 0.044), (-0.090, 0.037)),
+            ((-0.097, 0.032), (-0.102, 0.025)),
+            ((-0.106, 0.017), (-0.108, 0.009)),
+            ((-0.110, -0.005), (-0.102, -0.018)),
+            ((-0.097, -0.024), (-0.091, -0.029)),
+            ((-0.083, -0.033), (-0.076, -0.035)),
+        ],
+    ),
+    (
+        (0.054, 0.040),
+        [
+            ((0.040, 0.032), (0.034, 0.018)),
+            ((0.030, 0.005), (0.034, -0.008)),
+            ((0.038, -0.021), (0.052, -0.030)),
+            ((0.059, -0.034), (0.066, -0.035)),
+            ((0.074, -0.035), (0.082, -0.034)),
+            ((0.088, -0.030), (0.094, -0.027)),
+            ((0.102, -0.019), (0.106, -0.011)),
+            ((0.109, 0.002), (0.107, 0.015)),
+            ((0.103, 0.024), (0.096, 0.032)),
+            ((0.091, 0.036), (0.085, 0.040)),
+            ((0.070, 0.045), (0.054, 0.040)),
+        ],
+    ),
+]
+
+# The ink inside him: both ear ridges, the nose, the mouth.
+_KOU_LINES: list[Chain] = [
+    (
+        (-0.137, -0.266),
+        [
+            ((-0.128, -0.257), (-0.119, -0.247)),
+            ((-0.095, -0.212), (-0.089, -0.181)),
+            ((-0.095, -0.133), (-0.091, -0.125)),
+            ((-0.099, -0.117), (-0.107, -0.110)),
+            ((-0.116, -0.076), (-0.122, -0.062)),
+        ],
+    ),
+    (
+        (0.137, -0.266),
+        [
+            ((0.128, -0.256), (0.119, -0.247)),
+            ((0.095, -0.211), (0.089, -0.180)),
+            ((0.096, -0.132), (0.091, -0.124)),
+            ((0.099, -0.117), (0.107, -0.110)),
+            ((0.115, -0.076), (0.122, -0.062)),
+        ],
+    ),
+    (
+        (-0.013, 0.035),
+        [
+            ((-0.000, 0.036), (0.012, 0.036)),
+        ],
+    ),
+    (
+        (-0.021, 0.064),
+        [
+            ((-0.012, 0.060), (0.003, 0.059)),
+            ((0.015, 0.061), (0.020, 0.065)),
+        ],
+    ),
+]
+
+
+def _familiar(sk: Skeleton, p: CharacterParams) -> str:
+    """A small bat familiar in flight, beside the figure's left shoulder.
+
+    Drawn last of everything: he is beside her rather than worn, so nothing on
+    the figure should cross him. Placed by `_KOU_SPAN`/`_KOU_CENTRE` in head
+    radii, which is all a hovering creature needs: no contact geometry where
+    feet would meet a shoulder, and no dependence on where the hair ends.
+    """
+    fur = p.familiar_color
+    if fur is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    sw = _stroke_w(sk)
+    t = max(0.0, (sk.build - _KOU_CHIBI_BUILD) / (1.0 - _KOU_CHIBI_BUILD))
+    span = _KOU_SPAN_CHIBI + (_KOU_SPAN_REAL - _KOU_SPAN_CHIBI) * t
+    ox = _KOU_CENTRE_CHIBI[0] + (_KOU_CENTRE_REAL[0] - _KOU_CENTRE_CHIBI[0]) * t
+    oy = _KOU_CENTRE_CHIBI[1] + (_KOU_CENTRE_REAL[1] - _KOU_CENTRE_CHIBI[1]) * t
+
+    def placed(pt: Point) -> Point:
+        return (ox + pt[0] * span, oy + pt[1] * span)
+
+    # His far wing tip reaches past where a figure ever does, and a hat's
+    # headroom narrows the canvas in head radii, so slide him inward by exactly
+    # what keeps him on the page and by nothing when he already fits, the same
+    # clamp the staff's ornament gets.
+    reach = max(
+        placed(q)[0]
+        for c in (*_KOU_WINGS, _KOU_BODY)
+        for q in (c[0], *(e for seg in c[1] for e in seg))
+    )
+    edge = (sk.canvas_w / 2 - _stroke_w(sk)) / sk.head_r
+    shift = min(0.0, edge - reach)
+
+    def xf(pt: Point) -> Point:
+        x, y = placed(pt)
+        return (x + shift, y)
+
+    def d(chain: Chain, close: bool = True) -> str:
+        start, segs = chain
+        return _curve(cx, cy, r, xf(start), [(xf(c), xf(e)) for c, e in segs], close=close)
+
+    # The wings and the body carry the full outline; the cells inside a wing are
+    # drawn lighter, since what they are for is the thin strut lines between
+    # them, not a second silhouette.
+    parts = [
+        f'<path d="{d(shape)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        for shape in _KOU_WINGS
+    ]
+    parts.extend(
+        f'<path d="{d(cell)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{sw * 0.5:.1f}" '
+        'stroke-linejoin="round" />'
+        for cell in _KOU_WING_CELLS
+    )
+    parts.append(
+        f'<path d="{d(_KOU_BODY)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    )
+    # Each eye, then its pupil: the same traced shape scaled about its own
+    # centre, so the pupil is the eye's form rather than a circle laid on it.
+    # A coloured eye needs one; solid amber discs read as goggles at tile size.
+    for eye in _KOU_EYES:
+        parts.append(
+            f'<path d="{d(eye)}" fill="{p.familiar_eye_color or OUTLINE}" stroke="{OUTLINE}" '
+            f'stroke-width="{sw * 0.5:.1f}" />'
+        )
+        if p.familiar_eye_color is None:
+            continue
+        pts = [eye[0], *(q for seg in eye[1] for q in seg)]
+        mx = sum(q[0] for q in pts) / len(pts)
+        my = sum(q[1] for q in pts) / len(pts)
+
+        def shrink(q: Point, mx: float = mx, my: float = my) -> Point:
+            return (mx + (q[0] - mx) * _KOU_PUPIL, my + (q[1] - my) * _KOU_PUPIL)
+
+        pupil = (shrink(eye[0]), [(shrink(c), shrink(e)) for c, e in eye[1]])
+        parts.append(f'<path d="{d(pupil)}" fill="{OUTLINE}" />')
+    parts.extend(
+        f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        for line in _KOU_LINES
+    )
+    return "".join(parts)
+
+
+# (end of the traced familiar)
+
+
 def render_character(
     p: CharacterParams | None = None,
     sk: Skeleton | None = None,
@@ -7444,6 +7959,8 @@ def render_character(
         # since the two are mutually exclusive on every preset that has
         # shipped so far and there is no ordering between them to get wrong.
         _hat(sk, p),
+        # Beside her rather than worn, so nothing on the figure crosses him.
+        _familiar(sk, p),
     ]
 
     body = "\n  ".join(layer for layer in layers if layer)

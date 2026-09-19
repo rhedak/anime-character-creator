@@ -300,6 +300,36 @@ task, before its first wearer"):
 
 ## Milestone 4: Kou
 
+**Status: built, 2026-09-19, awaiting the owner's look; not yet in the book's
+cover or style anchors.** A new reference was generated for him alone
+(`style-anchors/kou_grok/kou.png`) from a prompt written against the book, since
+the composite's bat disagreed with it on three points. It was made to be traced:
+flat single-tone surfaces, pure-black outlines, a light background, nothing
+overlapping him, so every shape is one of its own fill regions with nothing
+inferred (`harness/kou/trace_kou.py`, emitted by `emit_kou.py`):
+
+- body (head, ears and feet in one fill), each wing, and the cells the finger
+  struts divide each wing into, drawn over their wing with a lighter outline so
+  the struts read as thin lines rather than a second silhouette;
+- the two eyes, their own colour field so Mori's can be silver;
+- the ink inside him: both ear ridges, the nose, the mouth.
+
+Traced in wingspan units, origin at his bounding box's centre, so placing him is
+two numbers. `CharacterParams.familiar_color`/`familiar_eye_color` (catalogued,
+so the web tool can switch him on) rather than `Outfit`: he is beside her, not
+worn. Drawn last of all, and clamped inward if he would leave the canvas, the
+same clamp the staff's ornament has.
+
+Size and position are build-gated, as the hat's are: 2.4 head radii tip to tip
+centred at (1.58, 1.05) at chibi, 3.2 at (2.20, 1.50) at realistic. A familiar
+is an animal beside a figure rather than something sized off a head, and the
+head is a far smaller share of the realistic build, so one head-radius size drew
+him as a large bat at chibi and a small one at realistic. The composite has him
+2.51 wide at (1.96, 1.48); ours is a shade smaller and closer in because the
+canvas is narrower than the composite's framing. His near wing crossing her hair
+is the composite's own look, not a collision.
+
+
 No part of this generator has ever drawn anything that isn't a human
 figure or something worn or held by one. Kou is a small bat-like
 creature, established in the book's own prose
@@ -312,10 +342,42 @@ anchor point, which sidesteps the "no poses" problem the staff milestone
 also has to navigate, since a perched creature doesn't need a pose so
 much as a place to sit.
 
+**Design pass done, 2026-09-19, against the book rather than the reference.**
+The references (`katherina_kou_grok.jpg`, `layer-black-bat.png`) are a generic
+cute bat, and the book is more specific. What it establishes, with the owner's
+calls on each conflict:
+
+| | Reference | Book | Decision |
+| --- | --- | --- | --- |
+| Eyes | amber, like Katherina's | black was implied: Mori's are "paler than Kou's, more silver than black" (`characters.md`) | first **black**; then **amber with a black pupil**, revised 2026-09-19 once he was on the cover (see below), and the book's docs retrofitted to match |
+| Wing membranes | purple, matching her hair | he is simply black | **dark, off his own fur**, which also keeps Mori's white inversion clean |
+| Pose | hovering, wings spread | folded tight *when perched*, "snapped flat" when alarmed, loose when relaxed; perched on her shoulder in five chapters, a chair back and a windowsill in Ch1; but he flies constantly too ("wings catching mid-beat") | **flying, wings spread**, hovering just up and to the viewer's right of her shoulder (her own left), as the reference has it — revised 2026-09-19, see below |
+| Ears | large, upright | load-bearing: "Kou's ears angled toward him", "wherever Kou's ears pointed"; echolocation is his magic-detection sense | keep, they carry the character |
+| Size | wingspan about 1.4 head-heights | "a wingspan over a foot" (Ch6) | consistent; check against the traced shape |
+| Fangs | visible | not established | free choice |
+
+So: trace the reference's shape vocabulary (ear shape, head-to-body proportion,
+the scalloped membrane edge), take pose and colour from the book. Two more facts
+shape the code rather than the drawing: **Mori is the same shape and species,
+colour-inverted** (`design.md`'s eyes-constant/surface-traits-vary rule), so the
+colours are fields and the shape is shared; and **Ryu is the same size** ("no
+bigger than Kou"), so this milestone's scale is one another companion will reuse.
+
 This milestone needs a real design pass before any shape code, not a
 geometry guess:
 
-- [ ] **4a.** Decide what "drawing a bat" means in this generator's
+- [x] **4a, decided 2026-09-19:** a fixed compound shape, not its own
+      skeleton (the second option below). **Revised the same day, on the
+      owner's call: he flies rather than perches**, hovering just up and to
+      the viewer's right of her shoulder. That makes him simpler, not
+      harder: a hovering creature is placed in head radii like the hat and
+      the staff and needs no contact geometry where feet meet a shoulder,
+      no dependency on where the hair fall happens to end there, and spread
+      wings show the whole membrane instead of hiding it. What it does need
+      is a collision check against the hat's brim and the hair on that
+      side, and canvas room on the right (the staff already takes the
+      left).
+- [ ] **4a (original wording).** Decide what "drawing a bat" means in this generator's
       idiom: does Kou get his own tiny internal skeleton (a body,
       folded wings, ears) built the way `Skeleton` builds a human figure,
       or is he a fixed small compound shape (a handful of flat paths)
@@ -326,16 +388,30 @@ geometry guess:
       small dark body, folded wings, is likely enough to read at tile
       size, and a full second skeleton is the kind of thing that eats a
       milestone budget meant for four.
-- [ ] **4b.** New field(s), most likely on `CharacterParams`
+- [x] **4b, done.**** New field(s), most likely on `CharacterParams`
       (`familiar_color` or similar), neutral-default-off.
-- [ ] **4c.** Geometry: small dark-furred body, wings (folded tight by
-      default, matching his most common on-page state rather than the
-      alarmed flat-back one), perched at the shoulder anchor.
-- [ ] **4d.** Render, iterate at tile size, both builds. Check he
+- [x] **4c, done.**** Geometry: small dark-furred body, ears, spread wings,
+      hovering beside her left shoulder (the viewer's right).
+- [x] **4d, done.**** Render, iterate at tile size, both builds. Check he
       doesn't collide with the hat brim or a long hair fall at the
       shoulder, the same collision-checking discipline every accessory
       milestone above already needs.
-- [ ] **4e.** Wire into `KATHERINA`, re-render the book's cover and
+**Colour, revised 2026-09-19 after seeing him on the cover.** Traced faithfully
+(fur `#202022`, solid black eyes) he was a silhouette with no face in it against
+a dusk sky. Five variants were rendered on the cover itself
+(`out/kou/variants/`): as built, lighter fur, amber eyes, both, and a lighter
+grey outline. The owner picked lighter fur plus amber eyes, with black pupils
+added (`_KOU_PUPIL`, the eye's own traced shape scaled about its centre, since
+solid amber discs read as goggles at tile size). Fur `#33303a`, eyes `#e09a3c`.
+The grey outline was rejected on sight: it read as a sticker laid over the
+drawing rather than part of it, which is the house rule about one outline colour
+earning itself. A highlight dot on the pupil was tried and dropped; it softened
+the dry expression the reference gives him. The book's docs were retrofitted the
+same day (`characters.md`, `continuity_reference.md`): amber for Kou, silver for
+Mori. Ch5's own "more silver than black" line still says otherwise and wants a
+prose revision pass, deliberately deferred.
+
+- [ ] **4e, waiting on the owner.**** Wire into `KATHERINA`, re-render the book's cover and
       style anchors.
 
 ## Open questions

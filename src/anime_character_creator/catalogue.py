@@ -428,6 +428,10 @@ COLORS: tuple[ColorField, ...] = (
     ColorField("hair_color", "Hair", optional=False),
     ColorField("hair_tip_color", "Tip colour", optional=True),
     ColorField("eye_color", "Eyes", optional=False),
+    # The bat familiar flying beside the figure: setting his fur draws him at
+    # all, so this is how the web tool turns him on and off.
+    ColorField("familiar_color", "Familiar (bat)", optional=True),
+    ColorField("familiar_eye_color", "Familiar's eyes", optional=True),
 )
 for _c in COLORS:
     assert _c.field in _CHARACTER_FIELDS, f"CharacterParams has no field {_c.field!r}"
