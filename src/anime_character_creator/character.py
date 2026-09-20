@@ -6138,8 +6138,18 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
     # ankle boot the rest of the cast wears and reads as one at any size. It
     # stops a little short of the knee itself, because a shaft that reaches the
     # joint reads as a legging rather than as a boot pulled on.
-    shaft_reach = 0.32 + (0.92 - 0.32) * max(0.0, min(1.0, p.outfit.boot_shaft))
-    top_y = sk.ankle_y - (sk.ankle_y - sk.knee_y) * shaft_reach
+    #
+    # `sk.knee_y` is where a body profile put it to make the default shaft land
+    # on its reference's boot top, and under Katherina's skirt it can sit above
+    # the hip, which no knee does: on `tall_chibi_long_torso` it is above the belt,
+    # so a shaft sent "to the knee" came up to the waist. The extension aims at the
+    # real knee instead, the lower of that landmark and mid-leg, which is the
+    # landmark itself everywhere it was already below the hip (the shared chibi
+    # and the realistic build), and the default shaft is untouched.
+    base_top = sk.ankle_y - (sk.ankle_y - sk.knee_y) * 0.32
+    knee_y = max(sk.knee_y, sk.hip_y + (sk.ankle_y - sk.hip_y) * 0.5)
+    tall_top = sk.ankle_y - (sk.ankle_y - knee_y) * 0.92
+    top_y = base_top + (tall_top - base_top) * max(0.0, min(1.0, p.outfit.boot_shaft))
     # Off the ankle it wraps, not off the knee above it, so the shaft cannot come
     # out wider than the leg going into it.
     shaft_w = w_ankle * 1.10

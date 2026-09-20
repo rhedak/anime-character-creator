@@ -243,6 +243,37 @@ cleanly); judged against the reference on `tall_chibi` only.
       and hip bands `tall_chibi` moves and were only ever fitted on Katherina.
       Not judged yet: whether the smaller head costs too much of the chibi look.
 
+- [x] **T3g. Tall boots, 2026-09-20.** With the lower belt, `sk.knee_y` on the
+      tall profiles (Katherina's, set so her default shaft lands on her
+      reference's boot top, under a skirt) sits *above the hip*, so
+      `boot_shaft` "toward the knee" came up to the belt on the six
+      tall-boot characters (Elara, Krista, Kyoko, Reinhard, Tenno, Viktor).
+      `_boot` now aims the extension at a real knee, the lower of `knee_y` and
+      mid-leg, and leaves the default shaft alone (Satoshi's and Katherina's
+      boots are unchanged; so are the shared chibi and realistic builds, whose
+      knee was already below mid-leg). The shafts now start about mid-calf.
+
+### Open issues on the tall-chibi default
+
+Found looking at the roster (`out/tall_default_roster_*.png`), taken one by
+one; not yet fixed unless ticked above.
+
+- [ ] **Belts.** They do not match and collide with the clothes around them:
+      the belt is the same width and height on every garment, and now sits at a
+      lower line than the sashes, pouches, straps and coat hems that were fitted
+      to the old one.
+- [ ] **Waist sashes** (Reika's, Daizen's) are blocky and Daizen's reads like a
+      hanging bag.
+- [ ] **Chiyo's apron pouch** is a tall narrow rectangle.
+- [ ] **Skirt hems** stay put while the belt drops, so skirts come out shorter
+      and Reika's leaves bare leg above her boots.
+- [ ] **The cover** (`cover.py`): Satoshi is smaller in the frame on the taller
+      body; the layout was tuned to the shared chibi.
+- [ ] **Head size.** Not judged: whether the smaller head costs too much of the
+      chibi look.
+- [ ] **Realistic builds** need their own pass (Satoshi's and the cast's), left
+      for later by the owner.
+
 **Held:**
 
 - **T4.** Boot/toe silhouette: the reference's toe is more tapered than ours;

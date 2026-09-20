@@ -548,6 +548,23 @@ def test_tall_chibi_long_torso_moves_only_the_waist_and_hip_of_tall_chibi() -> N
     assert PRESETS["katherina"].body == "tall_chibi"
 
 
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+def test_a_tall_boot_stops_below_the_knee_not_at_the_belt(body: str | None) -> None:
+    """`boot_shaft` sends the shaft toward the knee. A body profile's `knee_y` can
+    sit above the hip (Katherina's is under her skirt), so the shaft has to aim at
+    a real knee: on the long-torso body it once came up to the belt."""
+    p = replace(
+        PRESETS["reinhard"], body=body, outfit=replace(PRESETS["reinhard"].outfit, boot_shaft=1.0)
+    )
+    sk = character.skeleton_for(p)
+    boot = character._boot(sk, p, sk.head_cx, sk.leg_half_w, 1)
+    top = min(float(v) for v in re.findall(r"[\d.]+ ([\d.]+)", boot))
+    knee = max(sk.knee_y, sk.hip_y + (sk.ankle_y - sk.hip_y) * 0.5)
+    assert top >= knee - 0.01 * sk.head_r, (
+        f"{body}: the tall shaft tops out at {top:.1f}, above the real knee at {knee:.1f}"
+    )
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""
