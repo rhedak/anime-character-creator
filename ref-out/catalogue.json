@@ -104,7 +104,11 @@
     },
     {
       "id": "tall_chibi",
-      "label": "Tall chibi"
+      "label": "Tall chibi (Katherina's)"
+    },
+    {
+      "id": "tall_chibi_long_torso",
+      "label": "Tall chibi (long torso)"
     }
   ],
   "colors": [

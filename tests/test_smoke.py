@@ -514,7 +514,7 @@ def test_neckline_stand_defers_to_a_collar_and_a_round_neckline() -> None:
         assert render_character(plain) == render_character(stand), change
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi"])
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
 def test_waist_shift_moves_the_belt_line_and_nothing_above_or_below_it(body: str | None) -> None:
     """`waist_shift` slides the waist and hip together, in head radii, and leaves
     the shoulders, knees and soles where the build put them. It is a character
@@ -528,6 +528,24 @@ def test_waist_shift_moves_the_belt_line_and_nothing_above_or_below_it(body: str
         assert getattr(b, unchanged) == getattr(a, unchanged), unchanged
     ET.fromstring(render_character(shifted))
     assert render_character(shifted, a) == render_character(base, a)
+
+
+def test_tall_chibi_long_torso_moves_only_the_waist_and_hip_of_tall_chibi() -> None:
+    """The default body is Katherina's measured `tall_chibi` with the belt half a
+    head radius lower, and she keeps her own: her traced cuts were fitted to that
+    profile's exact landmarks, so it must not move."""
+    from dataclasses import fields
+
+    base = character.BODY_TYPES["tall_chibi"]
+    low = character.BODY_TYPES["tall_chibi_long_torso"]
+    for f in fields(base):
+        a, b = getattr(base, f.name), getattr(low, f.name)
+        if f.name in ("waist_y", "hip_y"):
+            assert b == pytest.approx(a + 0.5), f.name
+        else:
+            assert a == b, f.name
+    assert CharacterParams().body == "tall_chibi_long_torso"
+    assert PRESETS["katherina"].body == "tall_chibi"
 
 
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:

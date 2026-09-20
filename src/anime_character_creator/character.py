@@ -416,7 +416,7 @@ class CharacterParams:
     # A named body type from `BODY_TYPES`, laid over the chibi build; `None` is
     # the shared chibi. A name rather than the numbers, like
     # `hairstyle`, so a character stays a flat, linkable set of fields.
-    body: str | None = "tall_chibi"
+    body: str | None = "tall_chibi_long_torso"
     # A bat familiar in flight beside the figure's left shoulder: his fur (and
     # membranes, which the reference draws in the same tone) and his eyes.
     # `None` draws nothing. Two fields rather than one because the book's two
@@ -3216,6 +3216,19 @@ BODY_TYPES: dict[str, BodyProfile] = {
         leg_half_w=0.23,
     ),
 }
+# `tall_chibi` with the waist and hip half a head radius lower, everything else
+# where Katherina's reference put it. The default body: laid over the cast it
+# reads better than the measured profile's high belt, which is her design's, not
+# a figure's (the owner's call, 2026-09-20, from the belt-line slider on
+# Satoshi). A separate profile rather than a change to `tall_chibi`, because her
+# traced cuts were fitted to that profile's exact landmarks. Only the two
+# landmarks move: the skirt hem, knee and ankle stay, so a skirt or apron comes
+# out shorter than on `tall_chibi` and the legs below the belt shorter with it.
+BODY_TYPES["tall_chibi_long_torso"] = replace(
+    BODY_TYPES["tall_chibi"],
+    waist_y=BODY_TYPES["tall_chibi"].waist_y + 0.5,
+    hip_y=BODY_TYPES["tall_chibi"].hip_y + 0.5,
+)
 
 
 def skeleton_for(p: CharacterParams, heads: float | None = None) -> Skeleton:

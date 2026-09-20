@@ -480,7 +480,8 @@ assert set(HAIRSTYLE_LABELS) == set(HAIRSTYLES), (
 # hairstyles above. `None` is the shared chibi and is offered first. A body type
 # only reshapes the chibi build, so the web tool shows it beside the build slider.
 BODY_LABELS: dict[str, str] = {
-    "tall_chibi": "Tall chibi",
+    "tall_chibi": "Tall chibi (Katherina's)",
+    "tall_chibi_long_torso": "Tall chibi (long torso)",
 }
 assert set(BODY_LABELS) == set(BODY_TYPES), (
     "BODY_LABELS and BODY_TYPES have drifted apart; a body type was added or "
