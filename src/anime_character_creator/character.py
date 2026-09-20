@@ -6426,8 +6426,7 @@ def _pouches(sk: Skeleton, p: CharacterParams) -> str:
         return ""
     cx = sk.head_cx
     sw = _stroke_w(sk)
-    belt_h = (sk.hip_y - sk.waist_y) * 0.42
-    belt_y = sk.waist_y - belt_h * 0.35
+    belt_y, belt_h = _belt_band(sk)
     # Sized off the head, not the band: the chibi's band is a sliver while its
     # canon pouch is nearly half a head radius, so a band-relative pouch
     # vanishes exactly where the canon makes it loudest.
@@ -6470,6 +6469,41 @@ def _pouches(sk: Skeleton, p: CharacterParams) -> str:
 _CRYSTAL_X_FRACS = (-0.60, -0.28, 0.28, 0.60)
 
 
+def _crystal_layout(sk: Skeleton, belt_h: float) -> tuple[float, tuple[float, float, float, float]]:
+    """How big the four crystals are and where they hang: `(scale, offsets)`, the
+    scale on their usual size and the offsets from the centre line, outer to
+    inner.
+
+    `_CRYSTAL_X_FRACS` of the waist, which is what they were fitted to: two
+    either side with the buckle showing between the middle pair. On a body with a
+    narrow waist and a deeper belt that closes up: the belt is 1.16 head radii
+    wide against the chibi's 1.84, but the buckle is sized off the belt's depth,
+    which is larger there, so the middle pair landed on the buckle and hid it.
+    There the middle pair stand clear of it (its half-width, a crystal's, and a
+    gap), the outer pair a crystal and a gap beyond them, and if that does not fit
+    inside the belt, with the outer strap, the crystals shrink until it does. On
+    the shared chibi all of it is slack, so scale and fractions are the old ones,
+    and the realistic build keeps them.
+    """
+    h0 = sk.head_r * (0.30 + 0.12 * sk.build)
+    w0 = h0 * 0.58
+    half = sk.waist_half_w
+    inner, outer = -_CRYSTAL_X_FRACS[1] * half, _CRYSTAL_X_FRACS[3] * half
+    scale = 1.0
+    if sk.build < 0.5:
+        # Half a stroke apart, which is how the chibi's straps sit: touching.
+        gap = _stroke_w(sk) * 0.5
+        belt_half = half * 1.03
+        buckle_half = belt_h * 1.5 / 2
+        # buckle + inner crystal half + gap, then a crystal and a gap, then the
+        # outer strap's half (1.22 of a crystal's width) inside the belt's end.
+        scale = min(1.0, (belt_half - buckle_half - 2 * gap) / (2.11 * w0))
+        w = w0 * scale
+        inner = max(inner, buckle_half + w / 2 + gap)
+        outer = max(outer, inner + w + gap)
+    return scale, (-outer, -inner, inner, outer)
+
+
 def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
     """Up to four mana crystals clipped along the belt band, two a side.
 
@@ -6491,18 +6525,18 @@ def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
         return ""
     cx = sk.head_cx
     sw = _stroke_w(sk)
-    belt_h = (sk.hip_y - sk.waist_y) * 0.42 * max(0.2, p.outfit.belt_scale)
-    belt_y = sk.waist_y - belt_h * 0.35
+    belt_y, belt_h = _belt_band(sk, p.outfit.belt_scale)
     band_cy = belt_y + belt_h * 0.5
     # A little taller than the pouch's own head-relative size: a gem this
     # small still has to read as faceted rather than as a dot.
-    h = sk.head_r * (0.30 + 0.12 * sk.build)
+    scale, offsets = _crystal_layout(sk, belt_h)
+    h = sk.head_r * (0.30 + 0.12 * sk.build) * scale
     w = h * 0.58
     parts = []
-    for frac, color in zip(_CRYSTAL_X_FRACS, colors, strict=True):
+    for offset, color in zip(offsets, colors, strict=True):
         if color is None:
             continue
-        gx = cx + frac * sk.waist_half_w
+        gx = cx + offset
         top = (gx, band_cy - h / 2)
         right = (gx + w / 2, band_cy - h * 0.08)
         bottom = (gx, band_cy + h / 2)
@@ -6547,7 +6581,7 @@ def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
         # solve by hanging low instead of wide. Standard Crystal Conclave
         # kit for a stock nobody grips bare-handed. Fixed neutral metal
         # tone, like the belt buckle: not anyone's palette.
-        tx = cx + _CRYSTAL_X_FRACS[3] * sk.waist_half_w
+        tx = cx + offsets[3]
         ty = band_cy + h * 1.05
         arm = h * 0.75
         parts.append(

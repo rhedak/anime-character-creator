@@ -615,6 +615,27 @@ def test_an_apron_is_no_taller_than_it_is_wide_on_every_chibi_body(
     assert height <= width * 1.02, f"{preset} on {body}: {width:.0f} wide, {height:.0f} tall"
 
 
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+def test_the_crystals_clear_the_buckle_and_stay_on_the_belt(body: str | None) -> None:
+    """Two crystals a side with the buckle showing between the middle pair, all
+    inside the belt. On a body with a narrow waist and a deep belt the old spacing
+    put the middle pair on the buckle and hid it. The shared chibi keeps the
+    fractions it was fitted to."""
+    p = replace(PRESETS["elara"], body=body)
+    sk = character.skeleton_for(p)
+    _, belt_h = character._belt_band(sk)
+    scale, (outer_l, inner_l, inner_r, outer_r) = character._crystal_layout(sk, belt_h)
+    w = 0.58 * sk.head_r * (0.30 + 0.12 * sk.build) * scale
+    assert inner_l == -inner_r and outer_l == -outer_r
+    assert inner_r >= belt_h * 1.5 / 2 + w / 2, f"{body}: the middle crystals sit on the buckle"
+    assert outer_r + w * 1.22 / 2 <= sk.waist_half_w * 1.03 + 0.5, (
+        f"{body}: the outer strap runs past the belt's end"
+    )
+    if body is None:
+        assert scale == 1.0
+        assert (outer_r, inner_r) == pytest.approx((0.60 * sk.waist_half_w, 0.28 * sk.waist_half_w))
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""

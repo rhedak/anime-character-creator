@@ -265,12 +265,19 @@ one; not yet fixed unless ticked above.
       laid across the coat, so the owner's call was **under the coat**: with an
       open coat the belt is drawn before it, and shows only in the opening. Tunic
       wearers and Katherina's traced belt are unchanged.
+- [x] **Crystal harness, 2026-09-20.** Its four gems were spaced off the waist
+      width and sized in head radii, so on the narrow-waisted body they crowded
+      the centre and sat on the buckle (which is sized off the belt's depth, deeper
+      there). The middle pair now stand clear of the buckle, the outer pair a gem
+      beyond them, and the gems shrink (to about 0.9) only as far as it takes to
+      fit inside the belt; the shared chibi keeps its old fractions and the
+      realistic build is untouched (`out/crystals_before_after.png`). The pouches
+      and the crystals also stopped recomputing the belt band with their own copy
+      of the maths and take `_belt_band`, so they follow it.
 - [ ] **Belts, the rest.** Still open: the trousers' top corners stand a hair
       wider than the belt's ends on the tunic wearers (a documented choice, the
       straight leg against the belt's width, that reads as a small notch at this
-      size); the pouches and apron that hang from the belt (Chiyo, Satoko,
-      Linnea) and the crystal harness are fitted to the old line; and the
-      sashes below.
+      size).
 - [x] **Sashes, apron and pouches, 2026-09-20.** All sized off the waist width
       and the waist-to-hip distance, fitted to a shared chibi whose waist is about
       as wide as its hip and whose waist-to-hip is a sliver. On a body with a real
