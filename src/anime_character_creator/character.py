@@ -12,7 +12,14 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
 
 from .colorutil import shade
-from .skeleton import BUILDS, DEFAULT_HEADS, BodyProfile, Skeleton, build_skeleton
+from .skeleton import (
+    BUILDS,
+    DEFAULT_HEADS,
+    BodyProfile,
+    Skeleton,
+    build_skeleton,
+    default_hair_margin,
+)
 
 # Every line on the figure. Near black rather than the dark grey this was: the
 # canon's outline samples at #080808 and its dark pixels pile up in the 0-9 value
@@ -3107,6 +3114,17 @@ def skeleton_for(p: CharacterParams, heads: float | None = None) -> Skeleton:
     margin = hat_hair_margin(p)
     if p.body is not None and heads == BUILDS["chibi"]:
         profile = BODY_TYPES[p.body]
+        # The hair (and everything else on the head) always draws at the
+        # chibi build under a profile, since `BodyProfile.applied` pins
+        # `sk.build` back to it below, so it needs the chibi build's own
+        # headroom rather than whatever `profile.heads`'s taller figure gets
+        # by default. Without this floor a hat-less hairstyle clips flat
+        # against the canvas top on a profile taller than chibi (found on
+        # Satoshi's `short_crop` under `tall_chibi`,
+        # `docs/satoshi-tall-chibi-plan.md` T1); a hat's own floor already
+        # covers it for whoever wears one, so this only widens the floor,
+        # never narrows it.
+        margin = max(margin, default_hair_margin(heads))
         sk = build_skeleton(heads=profile.heads, frame=p.frame, min_hair_margin=margin)
         chibi = build_skeleton(heads=heads, frame=p.frame).build
         return profile.applied(sk, chibi)

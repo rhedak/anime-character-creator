@@ -59,27 +59,31 @@ reference, normalized to the same crop height):
 
 ### T1. Fix the headroom bug
 
-Compute a hairstyle's headroom off the build it actually draws at (chibi,
-under any `BodyProfile`) rather than off `profile.heads`. This is a
-correctness fix: it changes nothing for any character without a
-`BodyProfile` (headroom is already computed at their own `heads`), and for
-Katherina it should be a no-op or a tiny nudge, since her hat's floor already
-exceeds either number.
+**Status: done, 2026-09-20.** `default_hair_margin(heads)` extracted from
+`build_skeleton` (`skeleton.py`) so `skeleton_for` (`character.py:3098`) can
+floor the profile skeleton's margin at the chibi build's own value, not just
+`hat_hair_margin(p)`: `margin = max(margin, default_hair_margin(heads))`
+before building the tall skeleton. Satoshi on `tall_chibi` no longer clips;
+the head reads smaller, closer to the reference, with no other change.
+`refresh-ref-out.sh` reports all 37 renders unchanged, including Katherina
+(both her default and `real/katherina`, confirming the fix is a no-op
+wherever a hat's own floor already covered it). `ruff check`, `ruff format
+--check`, `pytest` (438 passed) all green.
 
-- [ ] **T1a.** In `skeleton_for` (`character.py:3098`), compute
+- [x] **T1a.** In `skeleton_for` (`character.py:3098`), compute
       `min_hair_margin` for the profile skeleton off the chibi build's own
-      margin, not `profile.heads`'s. Likely the cleanest shape: pass the
-      chibi-build margin as an additional floor alongside `hat_hair_margin`,
-      not a wholesale replacement, so a profile taller than chibi with a hat
-      needier than the chibi margin still keeps the hat's floor.
-- [ ] **T1b.** Render Satoshi on `tall_chibi` and confirm no clipping, by eye
+      margin, not `profile.heads`'s. Landed as an additional floor alongside
+      `hat_hair_margin`, not a wholesale replacement, so a profile taller
+      than chibi with a hat needier than the chibi margin still keeps the
+      hat's floor.
+- [x] **T1b.** Render Satoshi on `tall_chibi` and confirm no clipping, by eye
       and by checking the topmost hair pixel stays inside the canvas with
       margin to spare.
-- [ ] **T1c.** Re-render Katherina (both her default and `--build realistic`,
-      which does not take this path) and confirm byte-identical or visually
-      indistinguishable; `ref-out` snapshot test is the check
-      (`refresh-ref-out.sh` should report no unintended changes).
-- [ ] **T1d.** `ruff check`, `ruff format --check`, `pytest` green.
+- [x] **T1c.** Re-render Katherina (both her default and `--build realistic`,
+      which does not take this path) and confirm byte-identical; `ref-out`
+      snapshot test is the check (`refresh-ref-out.sh` reports no unintended
+      changes).
+- [x] **T1d.** `ruff check`, `ruff format --check`, `pytest` green.
 
 ### T2. Experiment with proportions before deciding anything
 

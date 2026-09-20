@@ -123,6 +123,40 @@ class BodyProfile:
         return replace(sk, **changes)
 
 
+def default_hair_margin(heads: float) -> float:
+    """Headroom above the skull a figure at `heads` gets by default, in head
+    radii, so the hair has somewhere to go.
+
+    It is head-relative rather than a fraction of the canvas because that is
+    what it measures. As a canvas fraction it was generous at a tall build and,
+    at a chibi, less than the crown of any hairstyle here needs: the head is a
+    third of the figure, so the same 3.5% of canvas came to under a fifth of a
+    head radius and every chibi came out with the top of its hair sliced flat
+    against the canvas edge.
+
+    This is the allowance a hairstyle's crown has to stay inside: no hair
+    ink, including the outer half of the stroke, may reach above
+    -(1 + hair_margin) head radii from the head centre. With 0.36 here the
+    ceiling is -1.36 and the tallest crown in character.py paints to about
+    -1.30. A new cut that goes higher needs this raised with it, because
+    nothing computes the bound from the shapes: the short cut's cowlick
+    flicks (tried and reverted) bled at exactly this boundary and needed
+    0.44 for the day they existed.
+
+    It rides the build rather than being one number, because the canon does not
+    give a chibi and an adult the same volume of hair. Measured off both Satoshi
+    references, the chibi's hair stands 0.73 head radii clear of its skull
+    against the adult's 0.29, so a chibi's crown needs roughly twice the
+    headroom for the same haircut (`docs/gap-analysis.md`, gap 1). Holding one
+    margin at both ends means either the chibi is capped or the adult is given
+    headroom it never uses, and headroom is not free: it comes straight out of
+    the figure's height on the canvas, 7% at the chibi end between these two
+    values.
+    """
+    t0 = min(1.0, max(0.0, (heads - 2.0) / 4.0))
+    return _lerp(0.75, 0.36, t0)
+
+
 def build_skeleton(
     canvas_w: float = 400,
     canvas_h: float = 500,
@@ -132,35 +166,10 @@ def build_skeleton(
     bottom_margin: float = 0.03,
     min_hair_margin: float = 0.0,
 ) -> Skeleton:
-    # Headroom above the skull, in head radii, so the hair has somewhere to go.
-    # It is head-relative rather than a fraction of the canvas because that is
-    # what it measures. As a canvas fraction it was generous at a tall build and,
-    # at a chibi, less than the crown of any hairstyle here needs: the head is a
-    # third of the figure, so the same 3.5% of canvas came to under a fifth of a
-    # head radius and every chibi came out with the top of its hair sliced flat
-    # against the canvas edge.
-    #
-    # This is the allowance a hairstyle's crown has to stay inside: no hair
-    # ink, including the outer half of the stroke, may reach above
-    # -(1 + hair_margin) head radii from the head centre. With 0.36 here the
-    # ceiling is -1.36 and the tallest crown in character.py paints to about
-    # -1.30. A new cut that goes higher needs this raised with it, because
-    # nothing computes the bound from the shapes: the short cut's cowlick
-    # flicks (tried and reverted) bled at exactly this boundary and needed
-    # 0.44 for the day they existed.
-    #
-    # It rides the build rather than being one number, because the canon does not
-    # give a chibi and an adult the same volume of hair. Measured off both Satoshi
-    # references, the chibi's hair stands 0.73 head radii clear of its skull
-    # against the adult's 0.29, so a chibi's crown needs roughly twice the
-    # headroom for the same haircut (`docs/gap-analysis.md`, gap 1). Holding one
-    # margin at both ends means either the chibi is capped or the adult is given
-    # headroom it never uses, and headroom is not free: it comes straight out of
-    # the figure's height on the canvas, 7% at the chibi end between these two
-    # values. Passing a number explicitly still overrides this entirely.
+    # Passing `hair_margin` explicitly overrides `default_hair_margin` entirely;
+    # see its docstring for what the number means.
     if hair_margin is None:
-        t0 = min(1.0, max(0.0, (heads - 2.0) / 4.0))
-        hair_margin = _lerp(0.75, 0.36, t0)
+        hair_margin = default_hair_margin(heads)
     # A floor rather than an override, for something worn above the hair: a
     # witch's hat stands far taller than any crown, and the figure is what gives
     # way for it, standing smaller on the same canvas. `character.hat_hair_margin`
