@@ -565,6 +565,24 @@ def test_a_tall_boot_stops_below_the_knee_not_at_the_belt(body: str | None) -> N
     )
 
 
+@pytest.mark.parametrize("preset", ["keiko", "kyoko", "gero", "tomohiro"])
+def test_a_belt_worn_with_an_open_coat_is_drawn_under_it(preset: str) -> None:
+    """The coat's panels lie over the belt, which shows only in the opening: drawn
+    over the panels it stopped short of the arms and read as a patch on the
+    middle one. A coatless belt still goes over the tunic, after everything a
+    coat would be worn over."""
+    p = PRESETS[preset]
+    assert p.outfit.coat_color is not None and p.outfit.belt_color is not None
+    sk = character.skeleton_for(p)
+    svg = render_character(p, sk)
+    belt, coat = character._belt(sk, p), character._coat(sk, p)
+    assert belt in svg and coat in svg
+    assert svg.index(belt) < svg.index(coat), f"{preset}: the belt is over the coat"
+    bare = replace(p, outfit=replace(p.outfit, coat_color=None))
+    bare_svg = render_character(bare, sk)
+    assert bare_svg.index(character._belt(sk, bare)) > bare_svg.index(character._tunic(sk, bare))
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""

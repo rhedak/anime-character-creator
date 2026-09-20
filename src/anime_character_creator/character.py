@@ -8091,11 +8091,15 @@ def render_character(
         _chest_pockets(sk, p),
         _strap(sk, p),
         _apron(sk, p),
-        # Over the tunic and the trim on it, under the belt and the arms: a coat
-        # hangs open in front of the body and behind the arms, and a belt worn
-        # with one is worn over it.
+        # A belt worn with an open coat is worn under it: drawn first, so the
+        # coat's panels lie over it and it shows only in the opening. Drawn over
+        # the panels it stopped short of the arms and read as a patch on the middle
+        # one, and widening it to the arms read as a strap laid across the coat.
+        _belt(sk, p) if p.outfit.coat_color is not None else "",
+        # Over the tunic and the trim on it, under the arms: a coat hangs open in
+        # front of the body and behind the arms.
         _coat(sk, p),
-        _belt(sk, p),
+        _belt(sk, p) if p.outfit.coat_color is None else "",
         _pouches(sk, p),
         _crystal_harness(sk, p),
         # Held in the hand, so under the arm that holds it and over everything else

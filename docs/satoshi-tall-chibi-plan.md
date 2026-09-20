@@ -258,10 +258,19 @@ cleanly); judged against the reference on `tall_chibi` only.
 Found looking at the roster (`out/tall_default_roster_*.png`), taken one by
 one; not yet fixed unless ticked above.
 
-- [ ] **Belts.** They do not match and collide with the clothes around them:
-      the belt is the same width and height on every garment, and now sits at a
-      lower line than the sashes, pouches, straps and coat hems that were fitted
-      to the old one.
+- [x] **Belts with a coat, 2026-09-20.** The belt was `waist_half_w * 1.03`
+      wide over everything, but a coat's panels hang out to the arms, so on
+      Tomohiro, Keiko, Kyoko and Gero it stopped short and read as a patch on
+      the middle panel. Widening it to the arms fixed the gap and read as a strap
+      laid across the coat, so the owner's call was **under the coat**: with an
+      open coat the belt is drawn before it, and shows only in the opening. Tunic
+      wearers and Katherina's traced belt are unchanged.
+- [ ] **Belts, the rest.** Still open: the trousers' top corners stand a hair
+      wider than the belt's ends on the tunic wearers (a documented choice, the
+      straight leg against the belt's width, that reads as a small notch at this
+      size); the pouches and apron that hang from the belt (Chiyo, Satoko,
+      Linnea) and the crystal harness are fitted to the old line; and the
+      sashes below.
 - [ ] **Waist sashes** (Reika's, Daizen's) are blocky and Daizen's reads like a
       hanging bag.
 - [ ] **Chiyo's apron pouch** is a tall narrow rectangle.
