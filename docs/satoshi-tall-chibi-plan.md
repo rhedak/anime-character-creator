@@ -198,7 +198,10 @@ cleanly); judged against the reference on `tall_chibi` only.
       realistic build the sleeve now comes out from under the cap closer to
       the canon than the shelf did. `../valley_of_mist` consumes these
       renders, so its references, cover and inserts need regenerating.
-- [ ] **T3c.** Neck and collar: the reference has a narrower neck and a small
+- [x] **T3c-i.** The tan line trimming the tunic's V, which the reference does
+      not draw: `Outfit.neckline_trim` (default `True`, the canon's), off on
+      Satoshi. Only his own renders, the cover and the sheets changed.
+- [ ] **T3c.** Rest of neck and collar: the reference has a narrower neck and a small
       stand collar with a V; ours is a wider neck under a plain V with a tan
       trim. Not touched yet.
 - [ ] **T3d.** The arms' outward flare (the reference's sleeve leans out about

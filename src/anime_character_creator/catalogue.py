@@ -172,6 +172,7 @@ TUNIC = GarmentSlot(
     bools=(
         _bool("tunic_tucked", "Tucked in"),
         _bool("neckline_round", "Round neckline"),
+        _bool("neckline_trim", "Neckline trim"),
         _bool("sleeve_long", "Long sleeves"),
         _bool("sleeve_under_cap", "Sleeve under cap"),
     ),

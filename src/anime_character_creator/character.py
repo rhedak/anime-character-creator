@@ -208,6 +208,10 @@ class Outfit:
     # standing collar (`collar_color`) already shrinks the V to a hidden seam
     # and ignores this, so the two never fight over the same neckline.
     neckline_round: bool = False
+    # The undersleeve's tone trimming the tunic's V, a thin line just inside the
+    # neckline. On by default, since the canon drew it; off for a plain neckline
+    # with nothing showing under it. Only drawn with an undersleeve and no collar.
+    neckline_trim: bool = True
     # The tunic's sleeve reads its own sleeve colour all the way to the
     # wrist cuff instead of stopping at the short hem and handing off to
     # `undersleeve_color`/bare skin. Off by default, the short sleeve every
@@ -2723,7 +2727,11 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     )
     fill = p.outfit.tunic_color
     shape = f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
-    if p.outfit.undersleeve_color is not None and p.outfit.collar_color is None:
+    if (
+        p.outfit.undersleeve_color is not None
+        and p.outfit.collar_color is None
+        and p.outfit.neckline_trim
+    ):
         # The undersleeve shows once more at the neckline: a sliver of its tone
         # trimming the V, which both canon builds wear. Drawn just inside the
         # notch so the tunic's own outline still bounds it. Not under a collar,

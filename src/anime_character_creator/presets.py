@@ -109,6 +109,9 @@ SATOSHI = CharacterParams(
         tunic_color=TUNIC,
         boot_color=BOOTS,
         undersleeve_color=UNDERSLEEVE,
+        # The canon's tan line trimming the V reads as a stray stroke at this
+        # size, and the tall-chibi reference draws a plain V without it.
+        neckline_trim=False,
         belt_color=BELT,
         trouser_color="#55574c",
         skirt_color=None,

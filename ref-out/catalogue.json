@@ -204,6 +204,10 @@
           "label": "Round neckline"
         },
         {
+          "field": "neckline_trim",
+          "label": "Neckline trim"
+        },
+        {
           "field": "sleeve_long",
           "label": "Long sleeves"
         },
