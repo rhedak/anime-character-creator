@@ -35,9 +35,9 @@ import re
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from .character import OUTLINE, render_character
+from .character import OUTLINE, render_character, skeleton_for
 from .presets import DISPLAY_NAMES, PRESETS, ROSTERS
-from .skeleton import BUILDS, build_skeleton
+from .skeleton import BUILDS
 
 CHARACTER_DESCRIPTIONS: dict[str, str] = {
     "satoko": "Innkeeper's girl, local expedition guide",
@@ -203,7 +203,14 @@ def _tile(p: SheetParams, preset: str, x: float, y: float) -> str:
     """
     top = y + p.label_h
     character = PRESETS[preset]
-    sk = build_skeleton(heads=BUILDS[p.build], frame=character.frame)
+    # The character's own body, so a tile shows the figure its individual render
+    # does (the default tall chibi, or Katherina's own): built with
+    # `skeleton_for` and not `build_skeleton`, which knows no body profile and
+    # left every sheet, and every insert built from one, on the old shared chibi.
+    # The hat is taken off for this alone, because its headroom shrinks the figure
+    # on the canvas and every tile has to stand at the same body scale.
+    bare = replace(character, outfit=replace(character.outfit, hat_color=None))
+    sk = skeleton_for(bare, BUILDS[p.build])
     k = (p.tile_h * p.figure_height) / sk.canvas_h
     fx = x + p.tile_w / 2 - sk.canvas_w * k / 2
     fy = top + p.tile_h * p.figure_feet_y - sk.foot_y * k

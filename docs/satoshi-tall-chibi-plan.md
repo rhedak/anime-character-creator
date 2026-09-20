@@ -362,6 +362,17 @@ one; not yet fixed unless ticked above.
       (texture). Known: on the realistic build it hangs over his hip and hand (the
       reference is a chibi; realistic is deferred), and the cover now carries it.
 
+- [x] **Sheets, 2026-09-20.** `sheet.py`'s `_tile` built each member's skeleton
+      with `build_skeleton`, which knows no body profile, so every cast sheet
+      (`sheet`, `sheet_satoshi`) and every chapter insert built from one stayed on
+      the old shared chibi after the default body changed, while the individual
+      renders and the cover moved. It now uses `skeleton_for` with the hat taken
+      off for that call alone (the hat's headroom shrinks the figure and every tile
+      has to stand at one body scale); the realistic build's sheets are unchanged.
+      `../valley_of_mist`'s references, cover and all 37 chapter inserts were
+      regenerated from it (`generate-refs`, `generate-covers`, `generate-inserts`);
+      ch36, the appendix, had no insert before and now has one.
+
 **Held:**
 
 - **T4.** Boot/toe silhouette: the reference's toe is more tapered than ours;

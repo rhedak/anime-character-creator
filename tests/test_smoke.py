@@ -716,6 +716,27 @@ def test_the_katana_hangs_from_the_belt_on_the_left_and_clears_the_arm(body: str
     assert edge <= arm_inner + 0.02, f"{body}: the guard runs under the arm"
 
 
+@pytest.mark.parametrize("preset", ["satoshi", "chiyo", "katherina"])
+def test_a_sheet_tile_draws_the_figure_on_its_own_body(preset: str) -> None:
+    """A sheet is built from the same figures as the individual renders, on the
+    same body: `_tile` used `build_skeleton`, which knows no body profile, so every
+    sheet, and every insert built from one, stayed on the old shared chibi after the
+    default body changed. The figure the tile draws must be the one `skeleton_for`
+    gives (with the hat's headroom left out, so every tile stands at one scale)."""
+    from anime_character_creator import sheet
+
+    p = PRESETS[preset]
+    bare = replace(p, outfit=replace(p.outfit, hat_color=None))
+    sk = character.skeleton_for(bare, BUILDS["chibi"])
+    doc = render_character(p, sk)
+    body = re.sub(r"</svg>\s*\Z", "", re.sub(r"\A<svg[^>]*>\s*", "", doc)).strip()
+    svg = sheet.render_sheet(sheet.SheetParams(members=(preset,), columns=1))
+    assert body in svg, f"{preset}: the sheet does not draw the figure on its own body"
+    old = render_character(p, build_skeleton(heads=BUILDS["chibi"], frame=p.frame))
+    if p.body is not None or character.CharacterParams().body is not None:
+        assert re.sub(r"\A<svg[^>]*>\s*", "", old) not in svg
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""
