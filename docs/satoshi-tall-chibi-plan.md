@@ -281,8 +281,14 @@ one; not yet fixed unless ticked above.
       moves there; the hip's width at the chibi's own ratio where the waist is
       narrower), a sash's depth is capped by its width, and the apron by its own
       width. Chibi-range builds only; the realistic build is untouched.
-- [ ] **Skirt hems** stay put while the belt drops, so skirts come out shorter
-      and Reika's leaves bare leg above her boots.
+- [x] **Skirt hems, 2026-09-20: not a problem, the earlier note was wrong.** The
+      hem is a share of the hip-to-ankle distance and moves with the hip, so it
+      keeps its place on the figure; measured against the boot tops the gap is no
+      bigger than on the shared chibi (Reika 0.05 head radii against 0.25, Satoko
+      0.32 against 0.38, Keiko 0.19 against 0.32). The difference is that the
+      default body's boots reach the hem, so the bare shins the shared chibi shows
+      are mostly covered. Looked at (`out/skirt_hems_now.png`): the hems read
+      cleanly. Nothing changed.
 - [ ] **The cover** (`cover.py`): Satoshi is smaller in the frame on the taller
       body; the layout was tuned to the shared chibi.
 - [ ] **Head size.** Not judged: whether the smaller head costs too much of the
