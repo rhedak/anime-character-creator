@@ -293,8 +293,46 @@ function buildColorControls() {
   colorsControls.innerHTML = "";
   for (const c of catalogue.colors) {
     if (c.field === "hair_tip_color") continue; // shown in the Hair section
+    if (c.field === "familiar_eye_color") continue; // shown under the familiar toggle
+    if (c.field === "familiar_color") {
+      buildFamiliarControl(c);
+      continue;
+    }
     colorRow(colorsControls, c.field, c.label, fieldValue(c.field), (v) => {
       setField(c.field, v);
+      scheduleRender();
+    });
+  }
+}
+
+function buildFamiliarControl(c) {
+  const eyeField = catalogue.colors.find((f) => f.field === "familiar_eye_color");
+
+  const on = boolRow(
+    colorsControls,
+    "familiar_on",
+    c.label,
+    fieldValue(c.field) !== null,
+    (checked) => {
+      if (checked) {
+        setField(c.field, "#33303a");
+        setField(eyeField.field, "#e09a3c");
+      } else {
+        setField(c.field, null);
+        setField(eyeField.field, null);
+      }
+      buildColorControls();
+      scheduleRender();
+    },
+  );
+
+  if (on.checked) {
+    colorRow(colorsControls, c.field, "Fur colour", fieldValue(c.field), (v) => {
+      setField(c.field, v);
+      scheduleRender();
+    });
+    colorRow(colorsControls, eyeField.field, eyeField.label, fieldValue(eyeField.field), (v) => {
+      setField(eyeField.field, v);
       scheduleRender();
     });
   }
