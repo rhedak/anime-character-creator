@@ -115,9 +115,13 @@ class CoverParams:
     # How low each mist bump is against its width. See `_mist_band`: this is the
     # number that separates mist from foam.
     mist_flatness: float = 0.30
-    # Where the figure sits, as fractions of the page.
-    figure_height: float = 0.56
-    figure_feet_y: float = 0.865
+    # Where the figure sits, as fractions of the page. The default body is taller
+    # and slimmer than the shared chibi this was first laid out for, with a head
+    # about 0.7 as wide, so it stands a little larger and lower: 0.60 keeps its
+    # hair 31px clear of the title's last line (0.56 left it small on the page,
+    # and 0.62 puts the hair on the title).
+    figure_height: float = 0.60
+    figure_feet_y: float = 0.885
 
 
 def _jitter(i: int) -> float:
@@ -275,7 +279,12 @@ def render_cover(p: CoverParams | None = None, metadata: bool = False) -> str:
     for i, (top, scale, seed) in enumerate(behind):
         layers.append(_mist_band(p, H * top, H - H * top, pal.mist[i], seed, scale))
     layers.append(_figure(p, sk, character, k, x, y))
-    layers.append(_mist_band(p, sole, H - sole, pal.mist[3], 59, near))
+    # The seed is chosen so one bump does not sit across a boot: with 59, a single
+    # large bump buried 77% of his right boot and left the other 27% (the
+    # viewer's left and right). 128 buries both by 56%, measured on the boots'
+    # own columns, and has to be re-picked if `figure_height` or the build moves
+    # the feet.
+    layers.append(_mist_band(p, sole, H - sole, pal.mist[3], 128, near))
     layers.append(_mist_band(p, sole + foot_h * 0.7, H, pal.mist[4], 83, near * 1.25))
 
     size = H * 0.072

@@ -289,8 +289,20 @@ one; not yet fixed unless ticked above.
       default body's boots reach the hem, so the bare shins the shared chibi shows
       are mostly covered. Looked at (`out/skirt_hems_now.png`): the hems read
       cleanly. Nothing changed.
-- [ ] **The cover** (`cover.py`): Satoshi is smaller in the frame on the taller
-      body; the layout was tuned to the shared chibi.
+- [x] **The cover** (`cover.py`), 2026-09-20: the layout scales the figure's
+      whole canvas to a share of the page, so the default body's smaller head
+      (about 0.7 as wide as the shared chibi's) shrank the face the cover is
+      built around and left the page empty. `figure_height` 0.56 to 0.60 and
+      `figure_feet_y` 0.865 to 0.885: the largest scale that keeps the hair 31px
+      clear of the title (0.62 puts it on the last line). The head is 228px across
+      against 213px before and 296px on the shared chibi, so the cover is a
+      taller, quieter figure than the chibi one; `out/cover_before_after.png`.
+      The owner's call: the cover uses the tall chibi (its docstring's "the design"
+      was the shared chibi). The front mist bank's seed went from 59 to 128 for the
+      same reason: with 59 one large bump buried 77% of his right boot (the viewer's
+      left) and the other boot only 27%; 128 buries both 56%, measured on the boots'
+      own columns. The seed has to be re-picked if the figure's scale or build moves
+      the feet.
 - [ ] **Head size.** Not judged: whether the smaller head costs too much of the
       chibi look.
 - [ ] **Realistic builds** need their own pass (Satoshi's and the cast's), left
