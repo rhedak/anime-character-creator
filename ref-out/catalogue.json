@@ -208,6 +208,10 @@
           "label": "Neckline trim"
         },
         {
+          "field": "neckline_stand",
+          "label": "Stand collar"
+        },
+        {
           "field": "sleeve_long",
           "label": "Long sleeves"
         },

@@ -201,9 +201,18 @@ cleanly); judged against the reference on `tall_chibi` only.
 - [x] **T3c-i.** The tan line trimming the tunic's V, which the reference does
       not draw: `Outfit.neckline_trim` (default `True`, the canon's), off on
       Satoshi. Only his own renders, the cover and the sheets changed.
-- [ ] **T3c.** Rest of neck and collar: the reference has a narrower neck and a small
-      stand collar with a V; ours is a wider neck under a plain V with a tan
-      trim. Not touched yet.
+- [x] **T3c.** Neck and collar, 2026-09-20: `Outfit.neckline_stand`, **on by
+      default for everyone** (owner's call, after a before/after sheet). A small
+      tab rises on each side of the neck and the V's edges start on the neck's
+      own contour, running 0.30 head radii deep, in place of a V that started
+      inside the neck at the shoulder line. The neck itself was already the
+      reference's width (0.28 against 0.26 head radii), so only the collar
+      changed. It replaces the undersleeve trim on the V for everyone; a
+      standing collar (`collar_color`) and a round neckline are unaffected.
+      25 of the 37 `ref-out` renders and both bases changed; looked at across
+      the changed roster at both builds. Remaining gap, left as is: our tabs are
+      boxy steps where the reference's are small angled points, and our V is a
+      little wider and deeper.
 - [ ] **T3d.** The arms' outward flare (the reference's sleeve leans out about
       0.15 head radii over its length; ours about 0.11) and the torso's taper to
       the belt, if the cap alone does not close the look.

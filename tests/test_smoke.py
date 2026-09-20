@@ -482,6 +482,38 @@ def test_sleeve_under_cap_slants_the_cap_and_the_arm_top_with_it(build: str) -> 
     )
 
 
+@pytest.mark.parametrize("build", sorted(BUILDS))
+def test_neckline_stand_raises_a_tab_either_side_of_the_neck(build: str) -> None:
+    """The stand collar's tabs sit on the neck's own contour and rise above the
+    shoulder line, and its V opens at the neck's width: the tunic's outline has to
+    pass through the neck's edge at the shoulder line on both sides, where the
+    plain V starts inside it."""
+    stand = PRESETS["satoshi"]
+    assert stand.outfit.neckline_stand, "the stand collar is the default"
+    sk = build_skeleton(heads=BUILDS[build], frame=stand.frame)
+    base = replace(stand, outfit=replace(stand.outfit, neckline_stand=False))
+    plain_svg, stand_svg = render_character(base, sk), render_character(stand, sk)
+    assert plain_svg != stand_svg
+    ET.fromstring(stand_svg)
+    tunic = character._tunic(sk, stand)
+    for side in (-1, 1):
+        x = sk.head_cx + side * sk.neck_half_w
+        assert f"{x:.1f} {sk.shoulder_y:.1f}" in tunic, (
+            f"{build}: the V does not start on the neck's edge at the shoulder line"
+        )
+        assert f"{x:.1f} {sk.shoulder_y - sk.head_r * 0.06:.1f}" in tunic, (
+            f"{build}: no tab rises above the shoulder line beside the neck"
+        )
+
+
+def test_neckline_stand_defers_to_a_collar_and_a_round_neckline() -> None:
+    base = PRESETS["satoshi"]
+    for change in ({"collar_color": "#c9a13b"}, {"neckline_round": True}):
+        stand = replace(base, outfit=replace(base.outfit, **change))
+        plain = replace(stand, outfit=replace(stand.outfit, neckline_stand=False))
+        assert render_character(plain) == render_character(stand), change
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""

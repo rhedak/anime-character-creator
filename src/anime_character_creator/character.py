@@ -212,6 +212,13 @@ class Outfit:
     # neckline. On by default, since the canon drew it; off for a plain neckline
     # with nothing showing under it. Only drawn with an undersleeve and no collar.
     neckline_trim: bool = True
+    # A small stand collar on the tunic's V: a short tab rises on each side of the
+    # neck and the V's edges start at the neck's own, instead of the neckline
+    # starting at the shoulder line and cutting into it. On by default; `False` is
+    # the plain V the roster was first drawn with. Ignored under a standing collar
+    # (`collar_color`) and with a round neckline, which have their own necks, and
+    # it replaces the undersleeve trim (`neckline_trim`) on the V.
+    neckline_stand: bool = True
     # The tunic's sleeve reads its own sleeve colour all the way to the
     # wrist cuff instead of stopping at the short hem and handing off to
     # `undersleeve_color`/bare skin. Off by default, the short sleeve every
@@ -2692,6 +2699,17 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
         )
 
+    stand = (
+        p.outfit.neckline_stand and p.outfit.collar_color is None and not p.outfit.neckline_round
+    )
+    # The stand collar's measures, from the reference's own: the V opens at the
+    # neck's width and runs 0.30 head radii deep, and each tab is about 0.09 wide
+    # and stands 0.06 above the shoulder line.
+    nw = sk.neck_half_w
+    tab_w, tab_h = sk.head_r * 0.09, sk.head_r * 0.06
+    v_depth = sk.head_r * 0.30
+    neck_end = (nw + tab_w, sy - tab_h) if stand else (notch, sy)
+
     def shoulder_up(s: int) -> str:
         """The mirror of `shoulder`, cuff back up to the neck."""
         rise = (
@@ -2701,8 +2719,8 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             else f"Q {cx + s * sleeve_w:.1f} {cuff_y:.1f} {cx + s * sleeve_w:.1f} {sy + slope:.1f} "
         )
         return (
-            rise
-            + f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + s * notch:.1f} {sy:.1f} "
+            rise + f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} "
+            f"{cx + s * neck_end[0]:.1f} {neck_end[1]:.1f} "
         )
 
     # The V is two straight edges meeting at a point. A round neckline is the
@@ -2716,8 +2734,16 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         if p.outfit.neckline_round
         else f"L {cx:.1f} {sy + notch:.1f} Z"
     )
+    if stand:
+        # Right tab's top, down its inner side (which lies on the neck's own
+        # contour), the V's two edges through its point, and up the left tab.
+        closing = (
+            f"L {cx + nw:.1f} {sy - tab_h:.1f} L {cx + nw:.1f} {sy:.1f} "
+            f"L {cx:.1f} {sy + v_depth:.1f} L {cx - nw:.1f} {sy:.1f} "
+            f"L {cx - nw:.1f} {sy - tab_h:.1f} Z"
+        )
     d = (
-        f"M {cx - notch:.1f} {sy:.1f} "
+        f"M {cx - neck_end[0]:.1f} {neck_end[1]:.1f} "
         + shoulder(-1)
         + down(-1)
         + f"L {cx + hw:.1f} {hy:.1f} "
@@ -2731,6 +2757,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         p.outfit.undersleeve_color is not None
         and p.outfit.collar_color is None
         and p.outfit.neckline_trim
+        and not stand
     ):
         # The undersleeve shows once more at the neckline: a sliver of its tone
         # trimming the V, which both canon builds wear. Drawn just inside the
