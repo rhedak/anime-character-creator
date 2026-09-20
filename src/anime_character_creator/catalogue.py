@@ -450,6 +450,12 @@ assert HAIR_LENGTH.field in _CHARACTER_FIELDS
 # real preset (Krista's tail, Daizen's and Haruto's knots) but never exposed
 # here before now. Shoulder (0) to hip (1), same as `HAIR_LENGTH`'s own scale.
 HAIR_TAIL = RangeField("hair_tail", "Tail (ponytail/braid)", 0.0, 1.0)
+# Where the belt sits, in head radii, up or down from the build's own. Offered
+# to experiment with the upper/lower body split (`docs/satoshi-tall-chibi-plan.md`);
+# the range is what has been rendered and looked at on Satoshi, not a limit
+# anything else enforces.
+WAIST_SHIFT = RangeField("waist_shift", "Belt line (up / down)", -1.0, 1.5)
+assert WAIST_SHIFT.field in _CHARACTER_FIELDS
 assert HAIR_TAIL.field in _CHARACTER_FIELDS
 HAIR_KNOT = BoolField("hair_knot", "Top-knot")
 assert HAIR_KNOT.field in _CHARACTER_FIELDS
@@ -626,6 +632,7 @@ def build_catalogue() -> dict[str, object]:
         ],
         "hair_length": _range_json(HAIR_LENGTH),
         "hair_tail": _range_json(HAIR_TAIL),
+        "waist_shift": _range_json(WAIST_SHIFT),
         "hair_knot": _bool_json(HAIR_KNOT),
         "garments": [_garment_json(g) for g in GARMENTS],
         "face": {

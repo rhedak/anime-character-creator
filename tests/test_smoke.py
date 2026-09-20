@@ -514,6 +514,22 @@ def test_neckline_stand_defers_to_a_collar_and_a_round_neckline() -> None:
         assert render_character(plain) == render_character(stand), change
 
 
+@pytest.mark.parametrize("body", [None, "tall_chibi"])
+def test_waist_shift_moves_the_belt_line_and_nothing_above_or_below_it(body: str | None) -> None:
+    """`waist_shift` slides the waist and hip together, in head radii, and leaves
+    the shoulders, knees and soles where the build put them. It is a character
+    field, so it is ignored when a skeleton is handed in."""
+    base = replace(PRESETS["satoshi"], body=body, waist_shift=0.0)
+    shifted = replace(base, waist_shift=0.3)
+    a, b = character.skeleton_for(base), character.skeleton_for(shifted)
+    assert b.waist_y == pytest.approx(a.waist_y + 0.3 * a.head_r)
+    assert b.hip_y == pytest.approx(a.hip_y + 0.3 * a.head_r)
+    for unchanged in ("shoulder_y", "knee_y", "ankle_y", "foot_y", "head_r", "head_cy"):
+        assert getattr(b, unchanged) == getattr(a, unchanged), unchanged
+    ET.fromstring(render_character(shifted))
+    assert render_character(shifted, a) == render_character(base, a)
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""

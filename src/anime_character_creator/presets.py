@@ -123,6 +123,11 @@ SATOSHI = CharacterParams(
     # Broader across the shoulder and narrow in the hip, which is the whole of
     # what tells him from Satoko below the neck once the clothes match.
     frame=1.0,
+    # The belt sits half a head radius lower than the build puts it: the owner's
+    # call, 2026-09-20, from the belt-line slider on the tall chibi. A longer
+    # torso for the tunic to hang over, at the cost of some leg; the reference's
+    # own belt is higher than this (`docs/satoshi-tall-chibi-plan.md`, T3e).
+    waist_shift=0.5,
     face=FaceStyle(
         eye_size=0.92,
         eye_width=1.08,

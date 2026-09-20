@@ -287,6 +287,14 @@ function buildBuildControls() {
   });
   row.append(lbl, select);
   buildControls.appendChild(row);
+
+  // `catalogue.waist_shift`: where the belt sits, up or down from the build's
+  // own. A plain CharacterParams range like `hair_tail`, so no bridge change.
+  const ws = catalogue.waist_shift;
+  rangeRow(buildControls, ws.field, ws.label, ws.min, ws.max, fieldValue(ws.field), (v) => {
+    setField(ws.field, v);
+    scheduleRender();
+  });
 }
 
 function buildColorControls() {

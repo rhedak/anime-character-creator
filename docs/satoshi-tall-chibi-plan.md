@@ -217,6 +217,18 @@ cleanly); judged against the reference on `tall_chibi` only.
       0.15 head radii over its length; ours about 0.11) and the torso's taper to
       the belt, if the cap alone does not close the look.
 
+- [x] **T3e. Belt line, 2026-09-20.** `CharacterParams.waist_shift` (head radii,
+      default 0; shifts the waist and hip lines together, so the belt and
+      everything hung from it rides up or down while the shoulders, knees and
+      soles stay put), a "Belt line (up / down)" slider in the web tool (-1.0 to
+      1.5) and `--waist-shift` on the CLI, to experiment with the upper/lower
+      body split. Satoshi's preset carries **`waist_shift=0.5`**, the owner's
+      pick: a longer torso for the tunic, on `tall_chibi`. Measured, that puts
+      the belt at 0.565 of crown-to-sole against 0.493 at 0 and the reference's
+      0.456, with 0.418 of the figure below it against the reference's 0.530:
+      a deliberate step away from the reference, not toward it. The hands
+      hang from the hip line, so the arms lengthen with it.
+
 **Held:**
 
 - **T4.** Boot/toe silhouette: the reference's toe is more tapered than ours;

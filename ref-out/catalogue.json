@@ -181,6 +181,12 @@
     "min": 0.0,
     "max": 1.0
   },
+  "waist_shift": {
+    "field": "waist_shift",
+    "label": "Belt line (up / down)",
+    "min": -1.0,
+    "max": 1.5
+  },
   "hair_knot": {
     "field": "hair_knot",
     "label": "Top-knot"

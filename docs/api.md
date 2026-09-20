@@ -85,6 +85,7 @@ angry_satoko = replace(SATOKO, face=replace(SATOKO.face, brow_tilt=0.8))
 | `face` | `FaceStyle()` | The expression, below. |
 | `heads` | `2.4` | Head-heights tall. Ignored when a skeleton is passed. |
 | `frame` | `0.0` | Shoulder against hip, -1 to 1. Ignored when a skeleton is passed. |
+| `waist_shift` | `0.0` | Moves the waist and hip lines together, in head radii: negative up, positive down. Ignored when a skeleton is passed. |
 | `shaded` | `True` | `False` drops every shadow shape, leaving flat silhouettes. |
 
 Anything a character needs to differ on belongs here, on `Outfit` or on

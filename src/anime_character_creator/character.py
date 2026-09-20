@@ -431,6 +431,11 @@ class CharacterParams:
     # Shoulder against hip: -1 narrow-shouldered and wide-hipped, 0 neutral, +1
     # the other way. Only bites at taller builds. Ignored when handed a skeleton.
     frame: float = 0.0
+    # Where the upper body ends and the lower begins, in head radii: shifts the
+    # waist and hip lines together, so the belt (and everything hung from it)
+    # rides up (negative) or down (positive) while the shoulders, knees and
+    # soles stay put. 0 is the build's own. Ignored when handed a skeleton.
+    waist_shift: float = 0.0
     # Outward swing of an arm below the sleeve hem, in degrees. 0 is the
     # default hang, straight down; positive pivots the tube, cuff and hand as
     # one rigid piece about the sleeve hem so the hand moves away from the
@@ -3221,6 +3226,14 @@ def skeleton_for(p: CharacterParams, heads: float | None = None) -> Skeleton:
     and at the chibi build its measured `body`. Other builds keep the shared
     lerp, since a profile is measured off one design at one scale.
     """
+    sk = _skeleton_at(p, heads)
+    if p.waist_shift:
+        shift = p.waist_shift * sk.head_r
+        sk = replace(sk, waist_y=sk.waist_y + shift, hip_y=sk.hip_y + shift)
+    return sk
+
+
+def _skeleton_at(p: CharacterParams, heads: float | None) -> Skeleton:
     heads = p.heads if heads is None else heads
     margin = hat_hair_margin(p)
     if p.body is not None and heads == BUILDS["chibi"]:

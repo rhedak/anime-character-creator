@@ -93,6 +93,11 @@ def main() -> None:
     ap.add_argument("--heads", type=float, help="head-heights tall, overrides --build")
     ap.add_argument("--frame", type=float, help="shoulder against hip, -1 to 1, taller builds only")
     ap.add_argument(
+        "--waist-shift",
+        type=float,
+        help="move the belt line, in head radii: negative up, positive down",
+    )
+    ap.add_argument(
         "--right-arm-out",
         type=float,
         help="outward swing, in degrees, of the character's own right arm (viewer's left)",
@@ -133,6 +138,7 @@ def main() -> None:
         "hairstyle",
         "body",
         "frame",
+        "waist_shift",
         "right_arm_out",
         "left_arm_out",
     ):
