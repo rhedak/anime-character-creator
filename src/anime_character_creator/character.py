@@ -328,6 +328,13 @@ class Outfit:
     # wood.
     staff_color: str | None = None
     staff_crystal_color: str | None = None
+    # A katana worn at the character's left hip (the viewer's right), hung from the
+    # belt, sheathed: the scabbard's colour, `None` for none. The handle's wrap and
+    # the ring bands are tones of it, and the diamonds showing through the wrap are
+    # a fixed cream, like the buckle's metal.
+    katana_color: str | None = None
+    # Its pommel cap, collar, guard and end cap; `None` is brass.
+    katana_fittings_color: str | None = None
     # An outer layer hanging open over whatever is worn under it: a cropped
     # jacket, a lab coat, a long coat, or (at the short end of `coat_length`)
     # an open vest or cardigan over a tunic. One garment rather than four,
@@ -5574,6 +5581,400 @@ def _staff(sk: Skeleton, p: CharacterParams) -> str:
 # (end of the traced staff)
 
 
+# Satoshi's katana, traced per `.claude/skills/trace-reference/SKILL.md`
+# from `ref-local/satoshi-tall-chibi-katana/` (`satoshi-tall-chibi-sword.png` and
+# its `segments/`, which are exact crops of it: `katana.png` matches the composite
+# to 0.6 of an RGB level at offset (673, 584)), on this figure's own calibration:
+# head centre (626, 308), 171.5 px per head radius (the widest row of face skin
+# gives 170.5 and the same figure's earlier composite 172; see
+# `harness/body/satoshi_tall_chibi_landmarks.py`). The regions are the reference's
+# own fills: the scabbard, its two rings and the end cap, the guard, the collar,
+# the handle's wrap, ten cream diamonds and the pommel cap, each grown by half the
+# outline's width so the boundary lands on the stroke's centre line. The shading
+# (the scabbard's highlight stripe, the guard's engraving, the wrap's weave) is
+# texture and is not drawn.
+#
+# Every chain is in the **sword's own frame**, in the reference's head radii:
+# origin at the guard's centre, `u` along the scabbard's axis toward the tip, `v`
+# across it (the convention `_staff_placement` uses), so a rigid prop can be hung
+# at any angle and scale on any figure. `_katana_placement` does that.
+
+# The sword's tilt from vertical in the reference, tip out, and where it hangs on
+# the reference's figure: the guard's centre against its belt (as a share of the
+# belt's half-width across, and in head radii below the belt's centre), and the
+# reference's ground in head radii, so the sword can be scaled with the figure it
+# hangs on. The sword runs from the pommel at u = -1.296 to the tip at u =
+# 2.436, 3.73 head radii, and the guard is 0.52 across.
+_KATANA_TILT = 12.78
+_KATANA_HIP_X = 1.161
+_KATANA_HIP_Y = 0.165
+_KATANA_REF_GROUND = 7.137
+
+# The scabbard: koiguchi ring to kojiri, one silhouette.
+_KATANA_SAYA: Chain = (
+    (2.436, -0.001),
+    [
+        ((2.434, 0.037), (2.425, 0.074)),
+        ((2.409, 0.101), (2.375, 0.110)),
+        ((1.390, 0.116), (0.406, 0.118)),
+        ((0.384, 0.123), (0.364, 0.120)),
+        ((0.339, 0.139), (0.316, 0.146)),
+        ((0.264, 0.141), (0.209, 0.145)),
+        ((0.185, 0.131), (0.160, 0.122)),
+        ((0.121, 0.125), (0.081, 0.128)),
+        ((0.075, 0.118), (0.068, 0.107)),
+        ((0.078, 0.056), (0.080, 0.002)),
+        ((0.079, -0.055), (0.065, -0.115)),
+        ((0.066, -0.124), (0.080, -0.129)),
+        ((0.120, -0.123), (0.162, -0.123)),
+        ((0.177, -0.134), (0.191, -0.146)),
+        ((0.252, -0.137), (0.316, -0.142)),
+        ((0.334, -0.143), (0.346, -0.117)),
+        ((1.348, -0.121), (2.349, -0.117)),
+        ((2.372, -0.112), (2.394, -0.107)),
+        ((2.410, -0.082), (2.425, -0.058)),
+        ((2.430, -0.030), (2.436, -0.001)),
+    ],
+)
+
+# The dark ring under the guard.
+_KATANA_RING_DARK: Chain = (
+    (0.080, -0.129),
+    [
+        ((0.122, -0.119), (0.169, -0.127)),
+        ((0.190, -0.129), (0.206, -0.107)),
+        ((0.223, -0.034), (0.228, 0.036)),
+        ((0.221, 0.067), (0.213, 0.098)),
+        ((0.205, 0.114), (0.183, 0.127)),
+        ((0.134, 0.121), (0.081, 0.128)),
+        ((0.075, 0.118), (0.068, 0.107)),
+        ((0.078, 0.056), (0.080, 0.002)),
+        ((0.079, -0.055), (0.065, -0.115)),
+        ((0.066, -0.124), (0.080, -0.129)),
+    ],
+)
+
+# The wide brown band under it.
+_KATANA_RING_BROWN: Chain = (
+    (0.177, -0.137),
+    [
+        ((0.257, -0.147), (0.333, -0.138)),
+        ((0.346, -0.117), (0.359, -0.096)),
+        ((0.375, -0.020), (0.374, 0.051)),
+        ((0.366, 0.085), (0.358, 0.119)),
+        ((0.348, 0.132), (0.329, 0.142)),
+        ((0.269, 0.143), (0.209, 0.145)),
+        ((0.193, 0.147), (0.183, 0.127)),
+        ((0.190, 0.123), (0.197, 0.118)),
+        ((0.213, 0.062), (0.217, 0.003)),
+        ((0.209, -0.040), (0.207, -0.083)),
+        ((0.196, -0.109), (0.177, -0.137)),
+    ],
+)
+
+# The end cap.
+_KATANA_KOJIRI: Chain = (
+    (2.215, -0.105),
+    [
+        ((2.225, -0.112), (2.236, -0.119)),
+        ((2.316, -0.117), (2.394, -0.107)),
+        ((2.427, -0.060), (2.435, -0.020)),
+        ((2.440, 0.038), (2.416, 0.090)),
+        ((2.394, 0.105), (2.375, 0.110)),
+        ((2.306, 0.112), (2.238, 0.109)),
+        ((2.242, 0.041), (2.239, -0.028)),
+        ((2.234, -0.065), (2.215, -0.105)),
+    ],
+)
+
+# The guard.
+_KATANA_TSUBA: Chain = (
+    (-0.039, 0.262),
+    [
+        ((-0.067, 0.252), (-0.087, 0.210)),
+        ((-0.101, 0.171), (-0.111, 0.132)),
+        ((-0.113, 0.117), (-0.093, 0.106)),
+        ((-0.069, 0.116), (-0.040, 0.107)),
+        ((-0.031, 0.067), (-0.021, 0.027)),
+        ((-0.027, -0.022), (-0.024, -0.069)),
+        ((-0.031, -0.089), (-0.039, -0.108)),
+        ((-0.070, -0.116), (-0.104, -0.111)),
+        ((-0.112, -0.112), (-0.118, -0.126)),
+        ((-0.110, -0.178), (-0.084, -0.226)),
+        ((-0.068, -0.243), (-0.040, -0.258)),
+        ((-0.011, -0.256), (0.018, -0.251)),
+        ((0.037, -0.232), (0.054, -0.201)),
+        ((0.065, -0.160), (0.077, -0.118)),
+        ((0.083, -0.048), (0.087, 0.022)),
+        ((0.085, 0.126), (0.048, 0.222)),
+        ((0.029, 0.242), (-0.002, 0.259)),
+        ((-0.019, 0.255), (-0.039, 0.262)),
+    ],
+)
+
+# The collar the handle comes out of.
+_KATANA_FUCHI: Chain = (
+    (-0.047, -0.122),
+    [
+        ((-0.035, -0.112), (-0.024, -0.093)),
+        ((-0.020, -0.062), (-0.014, -0.031)),
+        ((-0.014, 0.038), (-0.027, 0.104)),
+        ((-0.045, 0.116), (-0.060, 0.120)),
+        ((-0.092, 0.116), (-0.137, 0.117)),
+        ((-0.137, 0.100), (-0.137, 0.082)),
+        ((-0.137, 0.033), (-0.137, -0.020)),
+        ((-0.137, -0.038), (-0.137, -0.057)),
+        ((-0.137, -0.083), (-0.137, -0.108)),
+        ((-0.093, -0.120), (-0.047, -0.122)),
+    ],
+)
+
+# The handle's silhouette, wrap and diamonds together.
+_KATANA_TSUKA: Chain = (
+    (-1.149, -0.115),
+    [
+        ((-1.135, -0.124), (-1.123, -0.127)),
+        ((-0.635, -0.116), (-0.137, -0.114)),
+        ((-0.137, -0.106), (-0.137, -0.092)),
+        ((-0.137, -0.001), (-0.137, 0.093)),
+        ((-0.137, 0.107), (-0.137, 0.111)),
+        ((-0.423, 0.099), (-0.697, 0.107)),
+        ((-0.710, 0.108), (-0.719, 0.096)),
+        ((-0.925, 0.108), (-1.127, 0.105)),
+        ((-1.145, 0.068), (-1.147, 0.035)),
+        ((-1.144, -0.039), (-1.149, -0.115)),
+    ],
+)
+
+# The cream rayskin diamonds showing through the wrap, top to bottom; the first
+# and last are the partial ones at the ends.
+_KATANA_DIAMONDS: list[Chain] = [
+    (
+        (-1.262, 0.092),
+        [
+            ((-1.271, 0.079), (-1.280, 0.065)),
+            ((-1.285, 0.025), (-1.291, -0.016)),
+            ((-1.289, -0.027), (-1.286, -0.039)),
+            ((-1.276, -0.045), (-1.265, -0.052)),
+            ((-1.259, -0.041), (-1.252, -0.031)),
+            ((-1.254, -0.004), (-1.252, 0.023)),
+            ((-1.244, 0.043), (-1.232, 0.064)),
+            ((-1.240, 0.080), (-1.262, 0.092)),
+        ],
+    ),
+    (
+        (-1.051, -0.075),
+        [
+            ((-1.028, -0.042), (-1.005, -0.011)),
+            ((-1.024, 0.021), (-1.061, 0.048)),
+            ((-1.081, 0.020), (-1.102, -0.009)),
+            ((-1.095, -0.013), (-1.088, -0.017)),
+            ((-1.081, -0.037), (-1.079, -0.057)),
+            ((-1.065, -0.066), (-1.051, -0.075)),
+        ],
+    ),
+    (
+        (-0.947, 0.050),
+        [
+            ((-0.980, 0.011), (-0.990, -0.025)),
+            ((-0.974, -0.051), (-0.943, -0.074)),
+            ((-0.916, -0.048), (-0.892, -0.009)),
+            ((-0.913, 0.022), (-0.947, 0.050)),
+        ],
+    ),
+    (
+        (-0.834, 0.052),
+        [
+            ((-0.856, 0.017), (-0.878, -0.018)),
+            ((-0.860, -0.049), (-0.829, -0.078)),
+            ((-0.803, -0.046), (-0.779, -0.007)),
+            ((-0.802, 0.023), (-0.834, 0.052)),
+        ],
+    ),
+    (
+        (-0.721, 0.054),
+        [
+            ((-0.743, 0.019), (-0.765, -0.016)),
+            ((-0.750, -0.046), (-0.711, -0.070)),
+            ((-0.686, -0.046), (-0.665, -0.011)),
+            ((-0.685, 0.023), (-0.721, 0.054)),
+        ],
+    ),
+    (
+        (-0.608, 0.056),
+        [
+            ((-0.630, 0.021), (-0.652, -0.014)),
+            ((-0.634, -0.046), (-0.597, -0.073)),
+            ((-0.574, -0.042), (-0.551, -0.009)),
+            ((-0.571, 0.025), (-0.608, 0.056)),
+        ],
+    ),
+    (
+        (-0.495, 0.057),
+        [
+            ((-0.517, 0.022), (-0.539, -0.012)),
+            ((-0.523, -0.045), (-0.489, -0.073)),
+            ((-0.462, -0.047), (-0.438, -0.008)),
+            ((-0.459, 0.026), (-0.495, 0.057)),
+        ],
+    ),
+    (
+        (-0.380, 0.053),
+        [
+            ((-0.404, 0.028), (-0.425, -0.011)),
+            ((-0.414, -0.044), (-0.376, -0.071)),
+            ((-0.350, -0.042), (-0.325, -0.006)),
+            ((-0.348, 0.025), (-0.380, 0.053)),
+        ],
+    ),
+    (
+        (-0.273, 0.054),
+        [
+            ((-0.292, 0.022), (-0.312, -0.009)),
+            ((-0.301, -0.042), (-0.263, -0.069)),
+            ((-0.237, -0.037), (-0.212, -0.004)),
+            ((-0.233, 0.027), (-0.273, 0.054)),
+        ],
+    ),
+    (
+        (-0.151, -0.062),
+        [
+            ((-0.133, -0.034), (-0.116, -0.006)),
+            ((-0.123, 0.013), (-0.136, 0.031)),
+            ((-0.150, 0.040), (-0.164, 0.049)),
+            ((-0.190, 0.013), (-0.196, -0.019)),
+            ((-0.183, -0.042), (-0.151, -0.062)),
+        ],
+    ),
+]
+
+# The pommel cap.
+_KATANA_KASHIRA: Chain = (
+    (-1.148, 0.118),
+    [
+        ((-1.203, 0.110), (-1.259, 0.105)),
+        ((-1.272, 0.084), (-1.285, 0.063)),
+        ((-1.294, 0.005), (-1.295, -0.052)),
+        ((-1.289, -0.078), (-1.283, -0.104)),
+        ((-1.270, -0.119), (-1.247, -0.131)),
+        ((-1.206, -0.130), (-1.164, -0.130)),
+        ((-1.149, -0.130), (-1.139, -0.107)),
+        ((-1.141, -0.009), (-1.130, 0.092)),
+        ((-1.128, 0.108), (-1.148, 0.118)),
+    ],
+)
+
+# (end of the traced katana)
+
+# Brass, as the reference's fittings sample (its pommel and end cap; the collar and
+# the guard are darker tones of it).
+_KATANA_BRASS = "#76684f"
+# Half the guard's width across the sword, in the reference's head radii: the widest
+# thing on the sword, so what has to clear the arm.
+_KATANA_GUARD_HALF_V = 0.26
+# How much stouter than the reference it is drawn across its axis, against its
+# length. The scale by the figure alone leaves it thin next to a chibi's head and
+# hand; a prop reads better a little chunkier than its length says.
+_KATANA_STOUT = 1.3
+# The reference's belt centre, in its head radii below the head centre.
+_KATANA_REF_BELT = 2.736
+# The rayskin showing through the wrap: cream, not anyone's palette.
+_KATANA_DIAMOND = "#c3b7a6"
+
+
+def _katana_placement(sk: Skeleton) -> Callable[[Point], Point]:
+    """Map the katana's own frame onto this figure, as a point function in head
+    radii.
+
+    It hangs from the belt on the character's left, the viewer's right, at the
+    reference's tilt. The guard sits where the reference's does against its belt,
+    a share of the belt's half-width across and a stretch below its centre, and the
+    sword is scaled by the figure's height (crown to sole, against the reference's)
+    rather than by the head, so it stays a similar share of the figure whichever
+    body it hangs on (0.46 of the reference figure's height, 0.58 of its belt to
+    sole).
+    """
+    r = sk.head_r
+    belt_y, belt_h = _belt_band(sk)
+    ground = (sk.foot_y - sk.head_cy) / r
+    belt_c = (belt_y + belt_h / 2 - sk.head_cy) / r
+    # Between the two ways of keeping it in proportion: by the figure's height
+    # (crown to sole), which puts our shorter legs' tip below the boot top, and by
+    # the belt-to-sole distance, which makes it a short sword; the reference's tip
+    # stops well above its boots.
+    by_height = (ground + 1.0) / (_KATANA_REF_GROUND + 1.0)
+    by_leg = (ground - belt_c) / (_KATANA_REF_GROUND - _KATANA_REF_BELT)
+    k = (by_height + by_leg) / 2
+    belt_half = sk.waist_half_w * 1.03 / r
+    ox = _KATANA_HIP_X * belt_half
+    # The reference's arm hangs clear of its hip, so the sword sits in the gap
+    # between the two. Ours hangs closer in, and the arm is drawn over the sword,
+    # so at the reference's proportion it covers half the guard. Pull the guard in
+    # until its outer edge clears the arm's inner edge (at the elbow's height, which
+    # is where the belt is) by a stroke.
+    centre_top, _, centre_wrist, _ = _arm_line(sk)
+    centre_elbow = centre_top + (centre_wrist - centre_top) * 0.35
+    arm_inner = (centre_elbow - sk.arm_half_w * (1.0 - 0.15 * sk.build)) / r
+    guard_half = _KATANA_GUARD_HALF_V * k * _KATANA_STOUT
+    ox = min(ox, arm_inner - guard_half - _stroke_w(sk) / r)
+    oy = belt_c + _KATANA_HIP_Y * k
+    t = math.radians(_KATANA_TILT)
+    ax, ay = math.sin(t), math.cos(t)
+
+    def placed(pt: Point) -> Point:
+        u, v = pt
+        v *= _KATANA_STOUT
+        return (ox + k * (u * ax - v * ay), oy + k * (u * ay + v * ax))
+
+    return placed
+
+
+def _katana(sk: Skeleton, p: CharacterParams) -> str:
+    """A katana in its scabbard, hung from the belt at the character's left hip.
+
+    Drawn after every garment and before the arms, so it hangs in front of the
+    tunic and the trousers and the hand at that side closes over it, as in the
+    reference. Back to front: the scabbard, its two rings and the end cap, the
+    guard, the handle and its diamonds, the collar the handle comes out of, and
+    the pommel cap.
+    """
+    saya = p.outfit.katana_color
+    if saya is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    sw = _stroke_w(sk)
+    xf = _katana_placement(sk)
+    metal = p.outfit.katana_fittings_color or _KATANA_BRASS
+    wrap = shade(saya, value_factor=0.86, saturation_boost=0.3)
+    band = shade(saya, value_factor=1.35, saturation_boost=1.15)
+
+    def d(chain: Chain) -> str:
+        start, segs = chain
+        return _curve(cx, cy, r, xf(start), [(xf(c), xf(e)) for c, e in segs])
+
+    def shape(chain: Chain, fill: str, weight: float) -> str:
+        return (
+            f'<path d="{d(chain)}" fill="{fill}" stroke="{OUTLINE}" '
+            f'stroke-width="{sw * weight:.1f}" stroke-linejoin="round" />'
+        )
+
+    # Lighter than the figure's own line, in the proportion the reference draws it:
+    # its prop is a fine object, and at the figure's full weight the guard and the
+    # handle's diamonds fill in.
+    parts = [
+        shape(_KATANA_SAYA, saya, 0.65),
+        shape(_KATANA_RING_DARK, saya, 0.4),
+        shape(_KATANA_RING_BROWN, band, 0.4),
+        shape(_KATANA_KOJIRI, metal, 0.45),
+        shape(_KATANA_TSUBA, shade(metal, value_factor=0.72), 0.5),
+        shape(_KATANA_TSUKA, wrap, 0.55),
+    ]
+    parts.extend(f'<path d="{d(dia)}" fill="{_KATANA_DIAMOND}" />' for dia in _KATANA_DIAMONDS)
+    parts.append(shape(_KATANA_FUCHI, shade(metal, value_factor=0.80), 0.45))
+    parts.append(shape(_KATANA_KASHIRA, metal, 0.45))
+    return "".join(parts)
+
+
 def _arms(sk: Skeleton, p: CharacterParams) -> str:
     """The arm from the sleeve hem down to the hand.
 
@@ -8194,6 +8595,9 @@ def render_character(
         _belt(sk, p) if p.outfit.coat_color is None else "",
         _pouches(sk, p),
         _crystal_harness(sk, p),
+        # Worn at the hip, over the tunic and the trousers and under the arm at
+        # that side.
+        _katana(sk, p),
         # Held in the hand, so under the arm that holds it and over everything else
         # below the neck.
         _staff(sk, p),

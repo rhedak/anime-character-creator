@@ -334,6 +334,34 @@ one; not yet fixed unless ticked above.
 - [ ] **Realistic builds** need their own pass (Satoshi's and the cast's), left
       for later by the owner.
 
+- [x] **T3h. The katana, 2026-09-20.** Satoshi wears the sheathed katana from
+      `ref-local/satoshi-tall-chibi-katana/`, traced per the trace-reference skill
+      (`harness/katana/`: `trace_katana.py`, `emit_katana.py`, `compare.py`). The
+      segment exports there are exact crops of the composite (0.6 of an RGB level
+      at offset (673, 584)), unlike the grok layer exports, so their fills are
+      used directly: the scabbard, its two rings and end cap, the guard, the
+      collar, the handle's wrap, ten cream diamonds and the pommel cap, each grown
+      by half the outline. The chains are in the **sword's own frame** (origin at
+      the guard, `u` along its axis), so the prop hangs at its own 12.8 degree tilt
+      on any body: `_katana_placement` puts the guard at the belt on his left at
+      the reference's share across the belt, scaled between the figure's height
+      and its belt-to-sole so the tip stops above the boots, drawn a little
+      stouter (1.3) across its axis, and pulled in until the guard clears the arm
+      (the arm is drawn over it). `Outfit.katana_color` is the scabbard; the wrap
+      and the ring bands are tones of it, the fittings default to the reference's
+      brass (`katana_fittings_color`), the diamonds a fixed cream. Both are in the
+      web tool's garments. On Satoshi's preset only; Tomohiro has his own outfit.
+      Drawn in a lighter line than the figure's own, in the reference's proportion,
+      since at the figure's full weight the guard and diamonds fill in. The join between the handle's wrap and the collar is a straight
+      line square to the sword's axis (the owner's call: the reference's collar
+      peaks in the middle of it, which read as a bent line), cut at the collar's
+      corners by `harness/katana/trace_katana.py`, and both shapes' points on it
+      snapped onto exactly that line (a fit to the pixels of a line at 12.8 degrees
+      to the grid wobbles). Not drawn:
+      the scabbard's highlight stripe, the guard's engraving, the wrap's weave
+      (texture). Known: on the realistic build it hangs over his hip and hand (the
+      reference is a chibi; realistic is deferred), and the cover now carries it.
+
 **Held:**
 
 - **T4.** Boot/toe silhouette: the reference's toe is more tapered than ours;

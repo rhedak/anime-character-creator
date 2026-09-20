@@ -119,6 +119,10 @@ SATOSHI = CharacterParams(
         # the tunic and the trousers rather than a band across the tunic with
         # more tunic hanging below it.
         tunic_tucked=True,
+        # The sheathed katana at his left hip, traced off the tall-chibi sword
+        # reference (`ref-local/satoshi-tall-chibi-katana/`). The scabbard's own
+        # colour; the fittings are the default brass.
+        katana_color="#3c322b",
     ),
     # Broader across the shoulder and narrow in the hip, which is the whole of
     # what tells him from Satoko below the neck once the clothes match.

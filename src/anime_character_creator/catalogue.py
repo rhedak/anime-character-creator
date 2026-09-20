@@ -334,6 +334,15 @@ STAFF_CRYSTAL = GarmentSlot(
     _color("staff_crystal_color", "Staff crystal"),
     requires="staff",
 )
+KATANA = GarmentSlot(
+    "katana", "Katana (sheathed, left hip)", _color("katana_color", "Katana scabbard")
+)
+KATANA_FITTINGS = GarmentSlot(
+    "katana_fittings",
+    "Katana fittings",
+    _color("katana_fittings_color", "Katana fittings"),
+    requires="katana",
+)
 COAT_CUT_LABELS: dict[str, str] = {"open_jacket": "Open jacket (traced)"}
 assert set(COAT_CUT_LABELS) == set(COAT_CUTS)
 COAT = GarmentSlot(
@@ -381,6 +390,8 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     HAT_BAND,
     STAFF,
     STAFF_CRYSTAL,
+    KATANA,
+    KATANA_FITTINGS,
 )
 
 

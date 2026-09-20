@@ -678,6 +678,44 @@ def test_the_belt_covers_the_trouser_tops(preset: str, body: str | None) -> None
         assert half == pytest.approx(sk.waist_half_w * 1.03, abs=0.06)
 
 
+def test_a_katana_is_worn_only_when_asked_for() -> None:
+    """`katana_color` is the whole switch: none, no sword, and a character without
+    one renders exactly as it did before the prop existed."""
+    p = PRESETS["katherina"]
+    assert p.outfit.katana_color is None
+    sk = character.skeleton_for(p)
+    assert character._katana(sk, p) == ""
+    armed = replace(p, outfit=replace(p.outfit, katana_color="#3c322b"))
+    assert character._katana(sk, armed) != ""
+    assert PRESETS["satoshi"].outfit.katana_color == "#3c322b"
+    assert PRESETS["tomohiro"].outfit.katana_color is None
+
+
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+def test_the_katana_hangs_from_the_belt_on_the_left_and_clears_the_arm(body: str | None) -> None:
+    """The guard sits at the belt on the character's left (the viewer's right), the
+    tip stays above the soles, and the guard's outer edge stays inside the arm's
+    inner edge, since the arm is drawn over the sword and would otherwise cover
+    half of it."""
+    p = replace(PRESETS["satoshi"], body=body)
+    sk = character.skeleton_for(p)
+    r = sk.head_r
+    xf = character._katana_placement(sk)
+    guard = xf((0.0, 0.0))
+    belt_y, belt_h = character._belt_band(sk)
+    assert guard[0] > 0, f"{body}: the sword is on the wrong hip"
+    assert abs(guard[1] * r + sk.head_cy - (belt_y + belt_h / 2)) < 0.6 * r, (
+        f"{body}: the guard is not at the belt"
+    )
+    tip = xf((2.4363, 0.0))
+    assert sk.head_cy + tip[1] * r < sk.foot_y, f"{body}: the tip is through the floor"
+    centre_top, _, centre_wrist, _ = character._arm_line(sk)
+    centre_elbow = centre_top + (centre_wrist - centre_top) * 0.35
+    arm_inner = (centre_elbow - sk.arm_half_w * (1.0 - 0.15 * sk.build)) / r
+    edge = guard[0] + xf((0.0, character._KATANA_GUARD_HALF_V))[0] - xf((0.0, 0.0))[0]
+    assert edge <= arm_inner + 0.02, f"{body}: the guard runs under the arm"
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""

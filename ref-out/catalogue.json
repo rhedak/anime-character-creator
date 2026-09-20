@@ -610,6 +610,25 @@
         "optional": true
       },
       "requires": "staff"
+    },
+    {
+      "id": "katana",
+      "label": "Katana (sheathed, left hip)",
+      "color": {
+        "field": "katana_color",
+        "label": "Katana scabbard",
+        "optional": true
+      }
+    },
+    {
+      "id": "katana_fittings",
+      "label": "Katana fittings",
+      "color": {
+        "field": "katana_fittings_color",
+        "label": "Katana fittings",
+        "optional": true
+      },
+      "requires": "katana"
     }
   ],
   "face": {
