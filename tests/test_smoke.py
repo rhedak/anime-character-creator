@@ -636,6 +636,25 @@ def test_the_crystals_clear_the_buckle_and_stay_on_the_belt(body: str | None) ->
         assert (outer_r, inner_r) == pytest.approx((0.60 * sk.waist_half_w, 0.28 * sk.waist_half_w))
 
 
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("preset", ["satoshi", "tenno", "linnea"])
+def test_the_belt_covers_the_trouser_tops(preset: str, body: str | None) -> None:
+    """On a body with a narrow waist the trousers hang wider than the belt, and
+    their square corners stood out under its rounded ends as a small step. The belt
+    has to reach the trousers' outer edge; on the shared chibi it is wider than the
+    legs anyway and keeps the waist's width."""
+    p = replace(PRESETS[preset], body=body)
+    assert p.outfit.trouser_color is not None
+    sk = character.skeleton_for(p)
+    m = re.search(r'<rect x="([\d.]+)" y="[\d.]+" width="([\d.]+)"', character._belt_drawn(sk, p))
+    assert m is not None
+    half = float(m.group(2)) / 2
+    gap, w_top = character._leg_gap_and_top(sk, True)
+    assert half >= gap + w_top - 0.05, f"{preset} on {body}: the trousers stand out past the belt"
+    if body is None:
+        assert half == pytest.approx(sk.waist_half_w * 1.03, abs=0.06)
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""

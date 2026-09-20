@@ -5808,6 +5808,35 @@ def _hand(
     return "".join(parts)
 
 
+def _leg_gap_and_top(sk: Skeleton, trousers: bool) -> tuple[float, float]:
+    """`(gap, w_top)`: how far each leg's centre hangs from the centre line, and
+    its half-width at the top. Shared by the legs and by the belt, which has to
+    cover the trousers' top corners.
+
+    Where the legs hang. At a tall build the outer edge of the thigh lands on
+    the hip, which is what the tunic's own hem is drawn to, so the body's side
+    carries straight on down into the leg instead of the trousers overhanging
+    it. Since the hip rides on `frame`, a narrow-hipped figure's legs come in
+    and a wider-hipped one's go out, which is the frame doing its job.
+
+    A chibi keeps its legs tucked in close instead: its hips are nearly as wide
+    as an adult's in head radii while its legs are notably thinner, so
+    hanging them off the hip would splay them to the corners of the body.
+
+    However the legs are covered, the boots go in the same two places, so the
+    gap floor is shared rather than duplicated per branch. The reference leaves
+    each inner edge about 0.09 head radii off centre, which is where the
+    presets land without the floor biting.
+    """
+    taper = sk.build
+    thigh = (1.10 + 0.16 * taper) if trousers else (1.00 + 0.12 * taper)
+    w_top = sk.leg_half_w * thigh
+    tuck = sk.leg_half_w * 1.45
+    gap = tuck + (sk.hip_half_w - w_top - tuck) * taper
+    gap = max(gap, w_top + sk.leg_half_w * 0.2)
+    return gap, w_top
+
+
 def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     # The taper belongs in the thigh, and nearly nowhere else. Measured off
     # ref/satoshi.png, the trouser leg is 1.42 leg-half-widths at the thigh, 1.03
@@ -5827,29 +5856,12 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     # they carry more thigh: a shin-width tube running up to the hip reads as a
     # stilt once there is no skirt covering the top of it.
     trousers = p.outfit.trouser_color
-    thigh = (1.10 + 0.16 * taper) if trousers else (1.00 + 0.12 * taper)
-    w_top = sk.leg_half_w * thigh
+    gap, w_top = _leg_gap_and_top(sk, bool(trousers))
     w_knee = sk.leg_half_w * (1.00 + 0.03 * taper)
     # Held, not bulged: the reference measures 72, 71, 71 pixels from knee through
     # calf before it takes in at the ankle.
     w_calf = sk.leg_half_w * (1.00 + 0.01 * taper)
     w_ankle = sk.leg_half_w * (0.92 - 0.07 * taper)
-    # Where the legs hang. At a tall build the outer edge of the thigh lands on
-    # the hip, which is what the tunic's own hem is drawn to, so the body's side
-    # carries straight on down into the leg instead of the trousers overhanging
-    # it. Since the hip rides on `frame`, a narrow-hipped figure's legs come in
-    # and a wider-hipped one's go out, which is the frame doing its job.
-    #
-    # A chibi keeps its legs tucked in close instead: its hips are nearly as wide
-    # as an adult's in head radii while its legs are notably thinner, so
-    # hanging them off the hip would splay them to the corners of the body.
-    tuck = sk.leg_half_w * 1.45
-    gap = tuck + (sk.hip_half_w - w_top - tuck) * taper
-    # However the legs are covered, the boots go in the same two places, so the
-    # gap floor is shared rather than duplicated per branch. The reference leaves
-    # each inner edge about 0.09 head radii off centre, which is where the
-    # presets land without the floor biting.
-    gap = max(gap, w_top + sk.leg_half_w * 0.2)
     if trousers:
         parts = [_trousers(sk, p, trousers, gap, w_top, w_knee, w_calf, w_ankle)]
     else:
@@ -6314,6 +6326,13 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     half_w = sk.waist_half_w * 1.03
     if p.outfit.belt_scale > 1.6:
         half_w = _belt_line_half_w(sk) * 1.03
+    if p.outfit.trouser_color is not None and sk.build < 0.5:
+        # Wide enough to cover the trousers' top corners. On the shared chibi the
+        # belt is wider than the legs it sits over and this never binds; on a body
+        # with a narrow waist the trousers hang wider than the belt, and their
+        # square corners stood out under its rounded ends as a small step.
+        gap, w_top = _leg_gap_and_top(sk, True)
+        half_w = max(half_w, gap + w_top + _stroke_w(sk) * 0.5)
     y, h = _belt_band(sk, p.outfit.belt_scale)
     parts = [
         f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '

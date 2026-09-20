@@ -274,10 +274,17 @@ one; not yet fixed unless ticked above.
       realistic build is untouched (`out/crystals_before_after.png`). The pouches
       and the crystals also stopped recomputing the belt band with their own copy
       of the maths and take `_belt_band`, so they follow it.
-- [ ] **Belts, the rest.** Still open: the trousers' top corners stand a hair
-      wider than the belt's ends on the tunic wearers (a documented choice, the
-      straight leg against the belt's width, that reads as a small notch at this
-      size).
+- [x] **The trouser-corner notch, 2026-09-20.** On the narrow-waisted body the
+      trousers hang 0.614 head radii wide at the top against the belt's 0.580, so
+      their square corners stood out under the belt's rounded ends as a small step.
+      The belt now reaches the trousers' outer edge on the chibi-range builds
+      (`_leg_gap_and_top` is the width the legs use, pulled out so the belt can read
+      it); the shared chibi's belt is wider than its legs anyway and is unchanged, as
+      is the realistic build. The trade: the belt now overhangs the tunic above it by
+      about 0.06 head radii a side (a few pixels at normal size), so it reads as a
+      belt with some thickness (`out/trouser_notch_before_after.png`). The other
+      way, narrowing the trousers' tops to the belt, would move the legs and the
+      boots with them.
 - [x] **Sashes, apron and pouches, 2026-09-20.** All sized off the waist width
       and the waist-to-hip distance, fitted to a shared chibi whose waist is about
       as wide as its hip and whose waist-to-hip is a sliver. On a body with a real
