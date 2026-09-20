@@ -271,9 +271,16 @@ one; not yet fixed unless ticked above.
       size); the pouches and apron that hang from the belt (Chiyo, Satoko,
       Linnea) and the crystal harness are fitted to the old line; and the
       sashes below.
-- [ ] **Waist sashes** (Reika's, Daizen's) are blocky and Daizen's reads like a
-      hanging bag.
-- [ ] **Chiyo's apron pouch** is a tall narrow rectangle.
+- [x] **Sashes, apron and pouches, 2026-09-20.** All sized off the waist width
+      and the waist-to-hip distance, fitted to a shared chibi whose waist is about
+      as wide as its hip and whose waist-to-hip is a sliver. On a body with a real
+      waist and a longer drop the sashes (Reika, Daizen, Haruto; aspect 1.7 to 2.2
+      against 4.8 to 6 on the chibi) came out boxes, the aprons (Chiyo, Satoko) a
+      narrow strip to the hem, and the pouches crowded its corners. They now take
+      their width from `_belt_line_half_w` (the waist on the chibi, so nothing
+      moves there; the hip's width at the chibi's own ratio where the waist is
+      narrower), a sash's depth is capped by its width, and the apron by its own
+      width. Chibi-range builds only; the realistic build is untouched.
 - [ ] **Skirt hems** stay put while the belt drops, so skirts come out shorter
       and Reika's leaves bare leg above her boots.
 - [ ] **The cover** (`cover.py`): Satoshi is smaller in the frame on the taller

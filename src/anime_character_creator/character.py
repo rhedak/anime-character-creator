@@ -4836,7 +4836,13 @@ def _apron(sk: Skeleton, p: CharacterParams) -> str:
     # which is what the canon chibi does not do: there the apron is a panel hung
     # in the middle with the pouches flanking it, and the gap between them is what
     # tells the three pieces apart. The pouches move outboard to match.
-    top_w = sk.waist_half_w * 0.74
+    top_w = _belt_line_half_w(sk) * 0.74
+    if sk.build < 0.5:
+        # No longer than it is wide. On the shared chibi the apron is a short wide
+        # panel (about twice as wide as it is tall) and this never binds; on a body
+        # with a long drop to the skirt hem it hung to the hem as a tall strip
+        # that read as a bag, so it stops where it would stop being an apron.
+        bot_y = min(bot_y, top_y + 2 * top_w)
     # Flares only a little. Following the skirt's own flare down to a hem this
     # low turns the panel into a cone that swallows the garment under it, and the
     # reference's apron is a straight-hanging panel.
@@ -6241,6 +6247,23 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
     return "".join(parts)
 
 
+def _belt_line_half_w(sk: Skeleton) -> float:
+    """How wide the body is where the belt-hung pieces (a sash, an apron, the
+    pouches) are sized, as a half-width.
+
+    The waist on the shared chibi, which barely has one: it is about as wide as
+    the hip, and those pieces were fitted to it. A body with a real waist and
+    wider hips (`tall_chibi`, Katherina's measured slim waist) leaves them sized
+    off a width narrower than the figure they hang on, so a sash comes out a box,
+    an apron a tall strip and the pouches crowd its corners. There they take the
+    width from the hip instead, at the same ratio the chibi has between the two.
+    The realistic build keeps the waist: its apron and sash were fitted narrow.
+    """
+    if sk.build > 0.5:
+        return sk.waist_half_w
+    return max(sk.waist_half_w, sk.hip_half_w * 0.9)
+
+
 def _belt_band(sk: Skeleton, scale: float = 1.0) -> tuple[float, float]:
     """Where the belt sits and how deep it is, as (top y, height).
 
@@ -6255,7 +6278,15 @@ def _belt_band(sk: Skeleton, scale: float = 1.0) -> tuple[float, float]:
     band, because their join has to land where a belt of any depth covers it, and
     the unscaled midpoint is inside every scaled band by construction.
     """
-    h = (sk.hip_y - sk.waist_y) * 0.42 * max(0.2, scale)
+    base = (sk.hip_y - sk.waist_y) * 0.42
+    h = base * max(0.2, scale)
+    if scale > 1.6 and sk.build < 0.5:
+        # A sash is a wide flat band: its depth follows the waist-to-hip distance,
+        # which is a sliver on the shared chibi and most of a head radius on a body
+        # with a real waist, so on that one it came out a box. Capped by its own
+        # width, at the width-to-depth the cast's sashes have on the chibi (4.8 to
+        # 6), and never thinner than the plain belt.
+        h = max(base, min(h, 2 * _belt_line_half_w(sk) * 1.03 / 3.4))
     return sk.waist_y - h * 0.35, h
 
 
@@ -6281,6 +6312,8 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     cx = sk.head_cx
     # Wraps over the tunic, so it is a shade wider than the body at the waist.
     half_w = sk.waist_half_w * 1.03
+    if p.outfit.belt_scale > 1.6:
+        half_w = _belt_line_half_w(sk) * 1.03
     y, h = _belt_band(sk, p.outfit.belt_scale)
     parts = [
         f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '
@@ -6411,7 +6444,7 @@ def _pouches(sk: Skeleton, p: CharacterParams) -> str:
     x_frac = 0.68 + 0.08 * sk.build
     parts = []
     for side in (-1, 1):
-        x = cx + side * sk.waist_half_w * x_frac - w / 2
+        x = cx + side * _belt_line_half_w(sk) * x_frac - w / 2
         parts.append(
             f'<rect x="{x:.1f}" y="{top:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{r:.1f}" '
             f'fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'

@@ -583,6 +583,38 @@ def test_a_belt_worn_with_an_open_coat_is_drawn_under_it(preset: str) -> None:
     assert bare_svg.index(character._belt(sk, bare)) > bare_svg.index(character._tunic(sk, bare))
 
 
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("preset", ["daizen", "haruto", "reika"])
+def test_a_sash_stays_a_wide_flat_band_on_every_chibi_body(preset: str, body: str | None) -> None:
+    """A sash's depth followed the waist-to-hip distance, a sliver on the shared
+    chibi and most of a head radius on a body with a real waist, so it came out a
+    box there. On the shared chibi the cast's sashes are 4.8 to 6 times as wide as
+    they are deep; it must stay a band, and never thinner than a plain belt."""
+    p = replace(PRESETS[preset], body=body)
+    sk = character.skeleton_for(p)
+    _, depth = character._belt_band(sk, p.outfit.belt_scale)
+    width = 2 * character._belt_line_half_w(sk) * 1.03
+    assert width / depth >= 3.3, f"{preset} on {body}: the sash is {width / depth:.1f}:1, a box"
+    assert depth >= character._belt_band(sk)[1]
+
+
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("preset", ["chiyo", "satoko"])
+def test_an_apron_is_no_taller_than_it_is_wide_on_every_chibi_body(
+    preset: str, body: str | None
+) -> None:
+    """On the shared chibi the apron is a short wide panel; on a body with a long
+    drop to the hem it hung to the hem as a tall strip that read as a bag."""
+    p = replace(PRESETS[preset], body=body)
+    sk = character.skeleton_for(p)
+    d = re.search(r'd="([^"]+)"', character._apron(sk, p))
+    assert d is not None
+    xs = [float(v) for v in re.findall(r"([\d.]+) [\d.]+", d.group(1))]
+    ys = [float(v) for v in re.findall(r"[\d.]+ ([\d.]+)", d.group(1))]
+    width, height = max(xs) - min(xs), max(ys) - min(ys)
+    assert height <= width * 1.02, f"{preset} on {body}: {width:.0f} wide, {height:.0f} tall"
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""
