@@ -213,6 +213,12 @@ class Outfit:
     # `undersleeve_color`/bare skin. Off by default, the short sleeve every
     # shipped preset wears.
     sleeve_long: bool = False
+    # The tunic's cap sleeve lies over the arm instead of stopping in a flat
+    # shelf above it: the cap's underside slants from its tip in to the armpit,
+    # the tip stands only a little past the arm's outer edge, and the arm's top
+    # follows the same slant so the sleeve reads as coming out from under the
+    # cap. On by default; `False` is the flat shelf the roster was first drawn with.
+    sleeve_under_cap: bool = True
     # A traced sleeve and cuff from `SLEEVE_CUTS`, in the sleeve's colour, in place of
     # the plain tube; `None` is the tube.
     sleeve_cut: str | None = None
@@ -2505,6 +2511,49 @@ def _sleeve_half_w(sk: Skeleton) -> float:
     return max(sk.shoulder_half_w, sk.arm_x + sk.arm_half_w * 1.10)
 
 
+def _sleeve_under_cap(sk: Skeleton, p: CharacterParams) -> bool:
+    """Whether the tunic draws its cap sleeve slanted over the arm.
+
+    Not under a coat, a traced jacket or a traced sleeve, which draw their own
+    shoulders and armholes and cover the tunic's cap.
+    """
+    return (
+        p.outfit.sleeve_under_cap
+        and p.outfit.coat_color is None
+        and not _traced_coat(sk, p)
+        and _worn_sleeve(sk, p) is None
+    )
+
+
+def _cap_tip_x(sk: Skeleton) -> float:
+    """How far out the slanted cap reaches, from the centre line.
+
+    A little past the arm's outer edge at its top: the tip overhangs the sleeve
+    by about 0.07 head radii in the reference, and reaching further, which the
+    flat-shelf cap does, reads as a shoulder pad wider than the arm it covers.
+    """
+    centre_top, _, _, _ = _arm_line(sk)
+    return centre_top + sk.arm_half_w + sk.head_r * 0.07
+
+
+def _cap_underside_y(sk: Skeleton, x_off: float, tip_y: float) -> float:
+    """Height of the cap's slanted underside at `x_off` from the centre line.
+
+    The line from the cap's tip to the armpit, where the torso's side leaves
+    it. Shared by the tunic's outline and the arm's top edge, so the two
+    strokes land on each other and read as one line.
+    """
+    cuff_y = _sleeve_hem_y(sk)
+    torso_at_cuff = sk.waist_half_w + (sk.shoulder_half_w - sk.waist_half_w) * 0.12
+    tip_x = _cap_tip_x(sk)
+    t = (tip_x - x_off) / (tip_x - torso_at_cuff)
+    return tip_y + (cuff_y - tip_y) * max(0.0, min(1.0, t))
+
+
+def _cap_tip_y(sk: Skeleton) -> float:
+    return sk.shoulder_y + (sk.waist_y - sk.shoulder_y) * 0.24
+
+
 def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     """The torso garment, shoulder to hip, with its own short sleeves.
 
@@ -2572,6 +2621,21 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         # past the jacket's shoulder, where the hair is narrower than the
         # reference's; the traced sleeve starts inside the armhole instead.
         sleeve_w = torso_at_cuff
+    slanted = _sleeve_under_cap(sk, p)
+    tip_round = ((0.0, 0.0), (0.0, 0.0))
+    if slanted:
+        sleeve_w = _cap_tip_x(sk)
+        # The tip is a corner with a small round on it, not a point: the shoulder
+        # arrives nearly level and the underside leaves down and in, and left
+        # sharp the join reads as a spike. The round starts `k` back along each
+        # edge, with the tip itself as the control.
+        k = sk.head_r * 0.10
+        under = (torso_at_cuff - sleeve_w, cuff_y - (sy + slope))
+        norm = math.hypot(*under)
+        tip_round = (
+            (sleeve_w - k, sy + slope - k * 0.15),
+            (sleeve_w + under[0] / norm * k, sy + slope + under[1] / norm * k),
+        )
 
     # Control points sit at the shoulder's own width and the hip's own width, so
     # the curve leaves each landmark vertically and the taper reads as a body
@@ -2594,6 +2658,13 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         # two bends of opposite sense back to back, once both were in the same
         # short run. One arc reads as a hem; a bulge and a fillet chained
         # together reads as neither.
+        if slanted:
+            (ax, ay), (bx, by) = tip_round
+            return (
+                f"Q {cx + s * sleeve_w * 0.50:.1f} {sy + slope * 0.62:.1f} {cx + s * ax:.1f} {ay:.1f} "
+                f"Q {cx + s * sleeve_w:.1f} {sy + slope:.1f} {cx + s * bx:.1f} {by:.1f} "
+                f"L {cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
+            )
         return (
             f"Q {cx + s * sleeve_w * 0.50:.1f} {sy + slope * 0.62:.1f} "
             f"{cx + s * sleeve_w:.1f} {sy + slope:.1f} "
@@ -2619,10 +2690,15 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
 
     def shoulder_up(s: int) -> str:
         """The mirror of `shoulder`, cuff back up to the neck."""
+        rise = (
+            f"L {cx + s * tip_round[1][0]:.1f} {tip_round[1][1]:.1f} "
+            f"Q {cx + s * sleeve_w:.1f} {sy + slope:.1f} {cx + s * tip_round[0][0]:.1f} {tip_round[0][1]:.1f} "
+            if slanted
+            else f"Q {cx + s * sleeve_w:.1f} {cuff_y:.1f} {cx + s * sleeve_w:.1f} {sy + slope:.1f} "
+        )
         return (
-            f"Q {cx + s * sleeve_w:.1f} {cuff_y:.1f} "
-            f"{cx + s * sleeve_w:.1f} {sy + slope:.1f} "
-            f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + s * notch:.1f} {sy:.1f} "
+            rise
+            + f"Q {cx + s * sleeve_w * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + s * notch:.1f} {sy:.1f} "
         )
 
     # The V is two straight edges meeting at a point. A round neckline is the
@@ -5483,18 +5559,23 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         def x(offset: float) -> float:
             return cx + s * offset  # noqa: B023
 
+        top_in, top_out = top_y, top_y
+        if _sleeve_under_cap(sk, p):
+            tip_y = _cap_tip_y(sk)
+            top_in = _cap_underside_y(sk, centre_top - w_top, tip_y)
+            top_out = _cap_underside_y(sk, centre_top + w_top, tip_y)
         d = (
-            f"M {x(centre_top - w_top):.1f} {top_y:.1f} "
-            f"L {x(centre_top + w_top):.1f} {top_y:.1f} "
-            f"Q {x(centre_top + w_top * 1.03):.1f} {top_y + (elbow_y - top_y) * 0.55:.1f} "
+            f"M {x(centre_top - w_top):.1f} {top_in:.1f} "
+            f"L {x(centre_top + w_top):.1f} {top_out:.1f} "
+            f"Q {x(centre_top + w_top * 1.03):.1f} {top_out + (elbow_y - top_out) * 0.55:.1f} "
             f"{x(centre_elbow + w_elbow):.1f} {elbow_y:.1f} "
             f"Q {x(centre_wrist + w_wrist * 1.06):.1f} {elbow_y + (wrist_y - elbow_y) * 0.5:.1f} "
             f"{x(centre_wrist + w_wrist):.1f} {wrist_y:.1f} "
             f"L {x(centre_wrist - w_wrist):.1f} {wrist_y:.1f} "
             f"Q {x(centre_wrist - w_wrist * 1.06):.1f} {elbow_y + (wrist_y - elbow_y) * 0.5:.1f} "
             f"{x(centre_elbow - w_elbow):.1f} {elbow_y:.1f} "
-            f"Q {x(centre_top - w_top * 1.03):.1f} {top_y + (elbow_y - top_y) * 0.55:.1f} "
-            f"{x(centre_top - w_top):.1f} {top_y:.1f} "
+            f"Q {x(centre_top - w_top * 1.03):.1f} {top_in + (elbow_y - top_in) * 0.55:.1f} "
+            f"{x(centre_top - w_top):.1f} {top_in:.1f} "
             f"Z"
         )
         # No tone down the sleeve. It was a turn along the inner side, and a

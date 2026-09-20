@@ -173,6 +173,7 @@ TUNIC = GarmentSlot(
         _bool("tunic_tucked", "Tucked in"),
         _bool("neckline_round", "Round neckline"),
         _bool("sleeve_long", "Long sleeves"),
+        _bool("sleeve_under_cap", "Sleeve under cap"),
     ),
     selects=(
         SelectField(

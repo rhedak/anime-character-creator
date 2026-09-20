@@ -455,6 +455,42 @@ def test_the_front_hair_adds_no_silhouette(hairstyle: str, build: str) -> None:
 
 
 @pytest.mark.parametrize("build", sorted(BUILDS))
+def test_sleeve_under_cap_slants_the_cap_and_the_arm_top_with_it(build: str) -> None:
+    """The cap's underside and the arm's top edge are one line, so they have to
+    move together: a slanted cap over an arm still cut flat leaves a wedge of
+    background between them. Checked on the arm's own outer top corner, which
+    must land on the underside line, not on the flat hem it had before."""
+    capped = PRESETS["satoshi"]
+    assert capped.outfit.sleeve_under_cap, "the slanted cap is the default"
+    sk = build_skeleton(heads=BUILDS[build], frame=capped.frame)
+    plain = replace(capped, outfit=replace(capped.outfit, sleeve_under_cap=False))
+    plain_svg = render_character(plain, sk)
+    capped_svg = render_character(capped, sk)
+    assert plain_svg != capped_svg
+    ET.fromstring(capped_svg)
+
+    centre_top, _, _, _ = character._arm_line(sk)
+    outer = centre_top + sk.arm_half_w
+    tip_y = character._cap_tip_y(sk)
+    y = character._cap_underside_y(sk, outer, tip_y)
+    assert tip_y <= y < character._sleeve_hem_y(sk), (
+        f"{build}: the arm's outer corner meets the underside at {y:.1f}, outside"
+        f" the cap's own span {tip_y:.1f}..{character._sleeve_hem_y(sk):.1f}"
+    )
+    assert f"{sk.head_cx + outer:.1f} {y:.1f}" in capped_svg, (
+        f"{build}: the arm's top edge does not end on the cap's underside"
+    )
+
+
+def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
+    """A traced jacket draws its own shoulders and armholes, so the flag must not
+    reshape the tunic beneath it."""
+    base = PRESETS["katherina"]
+    plain = replace(base, outfit=replace(base.outfit, sleeve_under_cap=False))
+    assert render_character(base) == render_character(plain)
+
+
+@pytest.mark.parametrize("build", sorted(BUILDS))
 def test_a_tucked_tunic_and_its_trousers_meet_inside_the_belt(build: str) -> None:
     """Both garments have to end under the belt band, and neither may stop short.
 

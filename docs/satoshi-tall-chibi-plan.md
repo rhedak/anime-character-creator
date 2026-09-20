@@ -93,41 +93,123 @@ serve both a Katherina-shaped figure and a Satoshi-shaped one, or whether the
 name is really "Katherina's proportions" and a second, male-leaning profile is
 needed.
 
-- [ ] **T2a.** A small harness script (`harness/body/`, same pattern as
-      `landmarks.py`/`measure.py`) that measures the *reference*'s own
-      landmarks (chin, shoulder, waist, hip, hem, knee, ankle, sole; leg
-      half-width) in head radii, the way `tall_chibi` was originally solved
-      from Katherina's. This turns the "maybe 4 heads" hypothesis above into
-      real numbers, the same rigor the existing profile has.
-- [ ] **T2b.** Render Satoshi at a few candidate profiles side by side with
-      T1 fixed: `tall_chibi` unchanged (baseline), a profile solved from
-      T2a's measurement, and one or two hand-nudged points between them if
-      the solved one overshoots. Compare against the reference and against
-      plain chibi Satoshi, since the goal is "looks like a taller reading of
-      the same character," not "matches the reference pixel-for-pixel."
-- [ ] **T2c.** Render Katherina against every candidate too — a profile that
-      only looks right on Satoshi is not a fix, it is a new problem.
-      `out/`-only comparison sheet, not a committed change yet.
-- [ ] **T2d.** Owner's call, informed by T2a-c: keep one shared `tall_chibi`
-      tuned to split the difference, or add a second named profile (e.g.
-      `tall_chibi_male`, naming pending) and decide by eye which characters
-      want which. If it splits, the catalogue's body-type list
-      (`catalogue.py:474`) and `docs/katherina-clothes-plan.md`'s
-      `_GARMENT_REF_BODY` assumption (garments traced in `tall_chibi`'s head
-      radii, mapped by the shared landmark set) both need checking against
-      whichever profile(s) survive.
+**Status: done, 2026-09-20; T2d resolved by the owner (no new profile), below.**
+`harness/body/satoshi_tall_chibi_landmarks.py` measured the reference (head
+calibrated off the widest row of face skin, since unlike Katherina's this
+reference has no prior trace-derived calibration — flagged as an estimate,
+not trace-grade):
 
-**Held until T1 and T2 land:**
+| landmark | measured | `tall_chibi` |
+| --- | --- | --- |
+| heads | 3.98 | 3.47 |
+| shoulder_y | 0.965 | 1.13 |
+| waist_y (belt) | 2.628 | 2.384 |
+| hip_y (crotch — the only visible pelvis-adjacent landmark on a trouser leg) | 2.762 | 2.955 |
+| ankle_y | 5.669 | 5.55 |
+| sole_y | 6.959 | 5.94 |
+| waist_half_w | 0.59 | 0.563 |
+| leg_half_w | 0.253 | 0.23 |
 
-- **T3.** Re-measure and resolve whichever profile(s) T2 lands on, the same
-  way `tall_chibi` documents its own derivation (`character.py:3066`'s
-  comment is the template).
-- **T4.** Boot/toe silhouette — the reference's toe is more tapered than
-  ours; minor, and shape work on a skeleton that is about to move is wasted
-  work.
-- **T5.** Anything else the reference suggests, deliberately not itemized yet:
-  looking closely at cosmetic gaps before the proportions are settled invites
-  fixing them on the wrong body.
+`hem_y`/`hem_half_w` were left unmeasured: `tall_chibi`'s hem is a skirt hem,
+which has no equivalent on a straight trouser leg, so the base lerp's own
+values carry through in every candidate below.
+
+`harness/body/satoshi_tall_chibi_variants.py` rendered three profiles (T1's
+headroom fix applied to all of them) on both Satoshi and Katherina, to
+`out/body_variants/` — a look, not a metric:
+
+- **`baseline`**: today's `tall_chibi`, unchanged.
+- **`heads_only`**: `tall_chibi`'s landmarks, only `heads` bumped to the
+  measured 3.98. Tests whether a leaner head-to-body ratio alone, with no
+  other shape change, closes most of the gap.
+- **`measured`**: a profile built from the table above (`hip_y`, `hem_y` etc.
+  left `None` where unmeasured, so those keep the base lerp).
+
+Looked at (`out/body_variants/*_{baseline,heads_only,measured}.png`, and a
+normalized crop beside the reference):
+
+- **On Satoshi**, both `heads_only` and `measured` read far closer to the
+  reference than `baseline` — smaller head, longer legs, no longer reading
+  "toddler in adult's clothes." Between the two, `measured` tracks the
+  reference's proportions more closely: its belt sits at close to the
+  reference's own waist height (≈40% down the figure); `heads_only`'s belt,
+  carrying `tall_chibi`'s own `waist_y` at the new taller `heads`, sits
+  noticeably lower than the reference's.
+- **On Katherina, both `heads_only` and `measured` break the fit**: her skirt
+  hem no longer reaches her boot tops, exposing bare leg between them. This
+  is exactly the risk this doc flagged going in — `tall_chibi`'s landmarks
+  (and `katherina-clothes-plan.md`'s traced cuts, fitted to those exact
+  numbers) are Katherina's own, and stretching `heads` without also moving
+  her hem breaks what was already fitted. **Confirms a shared profile cannot
+  serve both**: retuning `tall_chibi` itself is off the table, and this
+  campaign should land as a second, additive profile that never touches
+  `BODY_TYPES["tall_chibi"]` or anything that reads it.
+
+- [x] **T2a.** Measurement harness, table above.
+- [x] **T2b.** Three candidates rendered and looked at beside the reference
+      and plain chibi Satoshi.
+- [x] **T2c.** Same three candidates rendered on Katherina; both non-baseline
+      candidates break her skirt/boot fit, confirming the split.
+- [x] **T2d. Owner's call, 2026-09-20: no new profile.** Looking at the sheet,
+      the owner found the **baseline `tall_chibi` proportions the most
+      pleasing** and named the real problem: Satoshi's *upper body and
+      arm/shoulder sections* look odd, not his proportions. Neither `measured`
+      nor `heads_only` is adopted; `BODY_TYPES` is untouched. The harness
+      scripts stay as the record of what was tried and why it was declined
+      (and `measured`'s numbers stay in the table above, in case a taller
+      figure is wanted later).
+
+### T3. Shoulders and sleeves
+
+**Status: done, 2026-09-20. The owner made it the default for everyone.**
+Compared at one head scale from the neck to the wrists (reference first), the
+gap is in how the cap sleeve meets the arm, not in any landmark: the vertical
+structure already matches (cap tip 1.43 head radii against the reference's 1.40,
+armpit 1.66 against 1.63, sleeve outer edge 1.07 at the top against 1.03 to
+1.11). What differs:
+
+- The cap's underside is a **flat horizontal shelf** in ours and a **slanted
+  line, tip to armpit**, in the reference.
+- Our tip stands 0.17 head radii past the arm's outer edge; the reference's
+  overhangs by about 0.07, so ours reads as a shoulder pad wider than the arm.
+- Our arm is a **square-topped tube** starting at the shelf, with its own thick
+  top edge; the reference's sleeve **comes out from under the cap**, its outer
+  edge running up beneath the tip.
+
+`Outfit.sleeve_under_cap` (default `True`) draws it the reference's way: the tunic's tip is cut back to
+`_cap_tip_x` (the arm's outer edge plus 0.07 head radii) with a small round on
+it, the underside is a straight line to the armpit, and the arm's top edge
+follows the same line (`_cap_underside_y`), so the two strokes land on each
+other and read as one edge, the same trick the arm's top and the flat hem
+already used. No z-order change, no overlay. Ignored under a traced jacket or a
+traced sleeve, which draw their own shoulders. Catalogued as a "Sleeve under
+cap" toggle on the tunic, so it can be tried in the web tool on `tall_chibi`.
+Looked at on `tall_chibi`, the shared chibi and realistic (all three read
+cleanly); judged against the reference on `tall_chibi` only.
+
+- [x] **T3a.** The slanted cap, rounded tip and matching arm top, opt-in.
+- [x] **T3b. Owner's call, 2026-09-20: on by default.** `sleeve_under_cap`
+      defaults to `True`; `False` is the old flat shelf. 27 of the 37 `ref-out`
+      renders changed (every chibi and realistic render with a plain tunic, and
+      the cover and sheets); Katherina and anyone under a coat are unchanged,
+      since a coat, a traced jacket or a traced sleeve draws its own shoulder
+      and the flag is ignored there. Looked at across the whole roster at both
+      builds against the previous renders: the caps read tidier, and at the
+      realistic build the sleeve now comes out from under the cap closer to
+      the canon than the shelf did. `../valley_of_mist` consumes these
+      renders, so its references, cover and inserts need regenerating.
+- [ ] **T3c.** Neck and collar: the reference has a narrower neck and a small
+      stand collar with a V; ours is a wider neck under a plain V with a tan
+      trim. Not touched yet.
+- [ ] **T3d.** The arms' outward flare (the reference's sleeve leans out about
+      0.15 head radii over its length; ours about 0.11) and the torso's taper to
+      the belt, if the cap alone does not close the look.
+
+**Held:**
+
+- **T4.** Boot/toe silhouette: the reference's toe is more tapered than ours;
+  minor.
+- **T5.** Anything else the reference suggests, deliberately not itemized yet.
 
 ## Acceptance
 
@@ -142,8 +224,7 @@ needed.
   `BODY_TYPES["tall_chibi"]` itself (as opposed to adding a second profile)
   reopens `katherina-clothes-plan.md`'s traced cuts, which were fitted to
   `tall_chibi`'s exact landmarks and treat the identity mapping on it as
-  their correctness check. If T2d splits the profile instead of retuning the
-  shared one, this risk doesn't apply.
+  their correctness check. Moot now that T2d declined any profile change.
 - **The 4-head hypothesis is a rough pixel measurement**, not a calibrated
   trace (no known head-radius calibration exists for this reference the way
   the witch hat gave one for Katherina's). T2a's harness measurement is what

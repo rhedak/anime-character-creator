@@ -206,6 +206,10 @@
         {
           "field": "sleeve_long",
           "label": "Long sleeves"
+        },
+        {
+          "field": "sleeve_under_cap",
+          "label": "Sleeve under cap"
         }
       ],
       "selects": [
