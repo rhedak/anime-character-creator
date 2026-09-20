@@ -3224,11 +3224,17 @@ BODY_TYPES: dict[str, BodyProfile] = {
 # traced cuts were fitted to that profile's exact landmarks. Only the two
 # landmarks move: the skirt hem, knee and ankle stay, so a skirt or apron comes
 # out shorter than on `tall_chibi` and the legs below the belt shorter with it.
+#
+# Then a head 1.1 times as big against the same body (`BodyProfile.head_scaled`),
+# the owner's pick from head-size variants on the cover, 2026-09-20: the measured
+# proportion has a head small enough to lose some of the chibi look, and 1.1 gives
+# the face more presence without crowding the shoulders or touching the title.
+_LONG_TORSO_HEAD_SCALE = 1.1
 BODY_TYPES["tall_chibi_long_torso"] = replace(
     BODY_TYPES["tall_chibi"],
     waist_y=BODY_TYPES["tall_chibi"].waist_y + 0.5,
     hip_y=BODY_TYPES["tall_chibi"].hip_y + 0.5,
-)
+).head_scaled(_LONG_TORSO_HEAD_SCALE)
 
 
 def skeleton_for(p: CharacterParams, heads: float | None = None) -> Skeleton:

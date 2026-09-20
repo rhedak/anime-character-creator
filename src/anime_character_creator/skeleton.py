@@ -100,6 +100,41 @@ class BodyProfile:
     arm_x: float | None = None
     leg_half_w: float | None = None
 
+    def head_scaled(self, s: float) -> BodyProfile:
+        """The same body under a head `s` times as big.
+
+        Every landmark is in head radii, so a bigger head against the same body
+        means each distance measured in the new, larger radius is smaller. With the
+        chin held where it is: a height `y` from the head centre becomes
+        `(y - 1 + s) / s` (the head centre moves up by the growth), a width `w`
+        becomes `w / s`, and the figure stands `(heads - 1 + s) / s` heads tall.
+        `heads` alone would only rescale the whole figure and leave the proportion
+        where it was. `s = 1` is the identity.
+        """
+
+        def y(v: float | None) -> float | None:
+            return None if v is None else (v - 1.0 + s) / s
+
+        def w(v: float | None) -> float | None:
+            return None if v is None else v / s
+
+        return BodyProfile(
+            heads=(self.heads - 1.0 + s) / s,
+            shoulder_y=y(self.shoulder_y),
+            waist_y=y(self.waist_y),
+            hip_y=y(self.hip_y),
+            hem_y=y(self.hem_y),
+            knee_y=y(self.knee_y),
+            ankle_y=y(self.ankle_y),
+            shoulder_half_w=w(self.shoulder_half_w),
+            waist_half_w=w(self.waist_half_w),
+            hip_half_w=w(self.hip_half_w),
+            hem_half_w=w(self.hem_half_w),
+            arm_half_w=w(self.arm_half_w),
+            arm_x=w(self.arm_x),
+            leg_half_w=w(self.leg_half_w),
+        )
+
     def applied(self, sk: Skeleton, build: float) -> Skeleton:
         ys = ("shoulder_y", "waist_y", "hip_y", "hem_y", "knee_y", "ankle_y")
         ws = (

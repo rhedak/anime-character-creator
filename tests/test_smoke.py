@@ -530,22 +530,45 @@ def test_waist_shift_moves_the_belt_line_and_nothing_above_or_below_it(body: str
     assert render_character(shifted, a) == render_character(base, a)
 
 
-def test_tall_chibi_long_torso_moves_only_the_waist_and_hip_of_tall_chibi() -> None:
+def test_tall_chibi_long_torso_is_tall_chibi_with_a_lower_belt_and_a_bigger_head() -> None:
     """The default body is Katherina's measured `tall_chibi` with the belt half a
-    head radius lower, and she keeps her own: her traced cuts were fitted to that
-    profile's exact landmarks, so it must not move."""
+    head radius lower and the head 1.1 times as big against the same body, and she
+    keeps her own: her traced cuts were fitted to that profile's exact landmarks,
+    so it must not move."""
     from dataclasses import fields
 
     base = character.BODY_TYPES["tall_chibi"]
-    low = character.BODY_TYPES["tall_chibi_long_torso"]
+    low = replace(base, waist_y=base.waist_y + 0.5, hip_y=base.hip_y + 0.5).head_scaled(
+        character._LONG_TORSO_HEAD_SCALE
+    )
+    have = character.BODY_TYPES["tall_chibi_long_torso"]
     for f in fields(base):
-        a, b = getattr(base, f.name), getattr(low, f.name)
-        if f.name in ("waist_y", "hip_y"):
-            assert b == pytest.approx(a + 0.5), f.name
-        else:
-            assert a == b, f.name
+        assert getattr(have, f.name) == pytest.approx(getattr(low, f.name)), f.name
+    assert character._LONG_TORSO_HEAD_SCALE == 1.1
     assert CharacterParams().body == "tall_chibi_long_torso"
     assert PRESETS["katherina"].body == "tall_chibi"
+
+
+def test_head_scaled_makes_the_head_bigger_against_the_same_body() -> None:
+    """`heads` alone would only rescale the whole figure. A scaled profile keeps
+    the body's own proportions (its landmarks against each other) and changes only
+    the head against them, by exactly the scale."""
+    base = character.BODY_TYPES["tall_chibi"]
+    assert base.head_scaled(1.0) == base
+    big = base.head_scaled(1.1)
+    sk0 = build_skeleton(heads=base.heads)
+    sk1 = build_skeleton(heads=big.heads)
+    a = base.applied(sk0, sk0.build)
+    b = big.applied(sk1, sk1.build)
+
+    def leg_to_head(sk):
+        return (sk.ankle_y - sk.hip_y) / (2 * sk.head_r)
+
+    assert leg_to_head(b) == pytest.approx(leg_to_head(a) / 1.1)
+    assert (b.ankle_y - b.waist_y) / (b.waist_y - b.shoulder_y) == pytest.approx(
+        (a.ankle_y - a.waist_y) / (a.waist_y - a.shoulder_y)
+    )
+    assert b.waist_half_w / b.head_r == pytest.approx(a.waist_half_w / a.head_r / 1.1)
 
 
 @pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])

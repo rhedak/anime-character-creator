@@ -317,8 +317,20 @@ one; not yet fixed unless ticked above.
       left) and the other boot only 27%; 128 buries both 56%, measured on the boots'
       own columns. The seed has to be re-picked if the figure's scale or build moves
       the feet.
-- [ ] **Head size.** Not judged: whether the smaller head costs too much of the
-      chibi look.
+- [x] **Head size, 2026-09-20: the head is 1.1 times as big.** Judged on Satoshi
+      alone at 0.85, 1.0, 1.1, 1.2 and 1.4 against a fixed body
+      (`harness/body/head_size_variants.py`, `out/head_size_variants.png`), then on
+      the cover at 1.0, 1.1 and 1.2 (`harness/body/head_size_covers.py`): 1.0 read as
+      a small-headed teenager, 1.4 as a bobblehead with no neck, and the owner's pick
+      was 1.1. `BodyProfile.head_scaled(s)` re-expresses a profile under a bigger
+      head with the chin held (landmarks `(y - 1 + s) / s`, widths `w / s`, and
+      `(heads - 1 + s) / s` heads tall); `heads` alone would only rescale the whole
+      figure. It is applied to `tall_chibi_long_torso` only, so Katherina's profile
+      and her traced cuts are untouched. Every default-body render changed (17
+      characters, both bases and the cover); the realistic builds and Katherina did
+      not. The cover: hair still 31px under the title, head 242px across (228px
+      before, 296px on the shared chibi), and the front mist seed re-picked to 111
+      because the feet moved (128 buried one boot 47% and the other 70%).
 - [ ] **Realistic builds** need their own pass (Satoshi's and the cast's), left
       for later by the owner.
 
