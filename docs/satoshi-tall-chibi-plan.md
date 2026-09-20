@@ -229,6 +229,20 @@ cleanly); judged against the reference on `tall_chibi` only.
       a deliberate step away from the reference, not toward it. The hands
       hang from the hip line, so the arms lengthen with it.
 
+- [x] **T3f. Experiment, 2026-09-20: `tall_chibi` as the default body for
+      everyone** (`CharacterParams.body` defaults to `"tall_chibi"`; `None` is
+      still the shared chibi, selectable). Committed on its own so it can be
+      reverted alone. 17 chibi renders, both bases and the cover changed;
+      realistic builds do not (a profile only applies at the chibi build) and
+      Katherina is identical. Looked at across the roster: uniforms, coats,
+      trousers and simple tunics read as taller, slimmer versions of the same
+      character, with a much smaller head. What looks off: the waist sashes
+      (Reika's, Daizen's) turn blocky, Chiyo's apron pouch becomes a tall narrow
+      rectangle, tall boots (Krista, Viktor) read as knee-high, and the cover's
+      Satoshi shrinks in the frame. All of those size themselves off the waist
+      and hip bands `tall_chibi` moves and were only ever fitted on Katherina.
+      Not judged yet: whether the smaller head costs too much of the chibi look.
+
 **Held:**
 
 - **T4.** Boot/toe silhouette: the reference's toe is more tapered than ours;

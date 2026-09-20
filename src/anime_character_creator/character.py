@@ -416,7 +416,7 @@ class CharacterParams:
     # A named body type from `BODY_TYPES`, laid over the chibi build; `None` is
     # the shared chibi. A name rather than the numbers, like
     # `hairstyle`, so a character stays a flat, linkable set of fields.
-    body: str | None = None
+    body: str | None = "tall_chibi"
     # A bat familiar in flight beside the figure's left shoulder: his fur (and
     # membranes, which the reference draws in the same tone) and his eyes.
     # `None` draws nothing. Two fields rather than one because the book's two
