@@ -684,6 +684,19 @@ chest back over the arm is the open question: a seam drawn under the arm is
 covered by it wherever the two overlap, and the arm's own outline would still
 compete with it.
 
+**Resolved, 2026-09-21: neither, for now.** Looking at what the reference
+actually does settles the seam: the coat's own panel edge *is* the armhole
+seam, with the sleeve outside it, and the hand is drawn over the coat, which
+the hand-shaped notch bitten out of the coat's segment crop proves. So the
+reference's order is sleeve, then coat, then hand, and no seam needs tracing at
+all; the panel's edge is already it.
+
+Putting the chest in front of the arm is the owner's call and the right one for
+a female figure, and it turns on the figure having a chest at all, which ours
+does not. That is now `docs/bust-plan.md`, and this milestone's second pass is
+folded into its B5. Nothing further is built here until that lands, because a
+traced armhole seam is a thing B5 would delete.
+
 ### Out of scope, still
 
 Her height (K7), the realistic build (K7, cuts are chibi-only, so none of the
