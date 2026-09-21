@@ -520,16 +520,28 @@ from the neck alone.
 
 ### P3. The lapel meets the collar unnaturally
 
-**Status: done, 2026-09-21.** The cause was not the junction at all: **the
-notch was never drawn**. K2's own notes said it is interior line work and not
-silhouette, and then traced the lapel as a closed contour anyway, where a step
-that never reaches the region's boundary is simply smoothed away. The facing
-was a plain wedge because it had no notch in it.
+**Status: done, 2026-09-21, after two wrong diagnoses.** The facing was a
+plain wedge because **the notch was never drawn**, and the reason was a bug in
+this campaign's own trace, not anything about the reference.
 
-Traced now as the open stroke it is, per the skill's interior-line case, and
-carried in `GarmentCut.lines`. Its ends are extended back out along their own
-direction, because the hull has to be eroded past the outline's width to find
-the ink and that leaves the stroke floating in the middle of the facing.
+The first pass called the notch interior line work, on the strength of K2's
+note, and traced it as an open stroke in `GarmentCut.lines`. That put a notch
+on the coat but left it floating in the middle of the facing, needing its ends
+extended by hand to reach anything.
+
+Looking at the component mask settled it: **the notch is part of the lapel's
+own boundary**, plainly visible as a zigzag in its left edge. What had closed
+it up was `side_mask` applying the belt's vertical bridging to every piece.
+That closing is 49 px deep and fills any notch cut in from the side, which is
+exactly this one. The lapel ends at y 2.29, well above the belt, so it never
+needed bridging at all. With the bridging off and the tolerance at 0.006 the
+notch traces with the rest of the outline, in 16 and 19 segments against the
+old 12, and the interior-line pass now finds nothing, which is the check that
+the ink is all on the boundary where it belongs.
+
+The owner drew the intended edge on the reference: neck, collar corner, the
+notch's two steps, then the long run down to the facing's point. That is what
+the boundary now follows.
 
 The other suspect is ruled out: `_interp_flat` returns its first value at and
 below the first knot, so `_garment_placement`'s x scale is continuous across

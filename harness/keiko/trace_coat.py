@@ -107,9 +107,19 @@ def tidy(m, clip=True):
     return m & whole if clip else m
 
 
-def side_mask(ids, side):
+def side_mask(ids, side, bridge=True):
+    """One piece of the coat on one side.
+
+    `bridge=False` for a piece the belt does not cross. The vertical closing
+    that bridges the belt's cut also fills any notch cut in from the side, and
+    the lapel's notch is exactly that: the facing ends at y 2.29, well above the
+    belt, so it never needed bridging, and with it the notch was closed up and
+    the facing traced as a plain wedge (`docs/keiko-clothes-plan.md`, P3).
+    """
     m = np.isin(lab, ids) & ((np.arange(W)[None, :] - OX) * side > 0)
-    return tidy(ndi.binary_closing(m, structure=VERT))
+    if bridge:
+        m = ndi.binary_closing(m, structure=VERT)
+    return tidy(m)
 
 
 def split_panel_and_sleeve(side):
@@ -187,7 +197,7 @@ def interior_lines(side):
     outline's own width, take the dark pixels left inside it, drop specks, order
     each stroke along its principal axis and fit an open chain.
     """
-    hull = ndi.binary_fill_holes(side_mask(pieces["lapel"], side))
+    hull = ndi.binary_fill_holes(side_mask(pieces["lapel"], side, bridge=False))
     inner = ndi.binary_erosion(hull, structure=disk, iterations=HALF_STROKE + 2)
     dark = inner & (rgb.sum(2) < 200)
     lab_, n_ = ndi.label(dark, structure=np.ones((3, 3), bool))
@@ -237,7 +247,7 @@ for side, name in ((-1, "left"), (1, "right")):
     panel, sleeve = split_panel_and_sleeve(side)
     cuff = side_mask(pieces["cuff"], side)
     shapes[f"panel_{name}"] = trace(panel, 0.012)
-    shapes[f"lapel_{name}"] = trace(side_mask(pieces["lapel"], side), 0.010)
+    shapes[f"lapel_{name}"] = trace(side_mask(pieces["lapel"], side, bridge=False), 0.006)
     shapes[f"sleeve_{name}"] = trace(sleeve, 0.012)
     shapes[f"cuff_{name}"] = trace(cuff, 0.010)
     lines[name] = interior_lines(side)

@@ -141,18 +141,10 @@ for name in ("left", "right"):
             + ["to where the facing ends above the belt."],
         )
     )
-for name in ("left", "right"):
-    ch = data["lines"][name][0]
-    blocks.append(
-        const(
-            f"_LAB_COAT_NOTCH_{name.upper()}",
-            tuple(ch["start"]),
-            [(tuple(a), tuple(b)) for a, b in ch["segs"]],
-            ["The step where the collar band meets the lapel facing, traced as the open"]
-            + ["stroke it is: the reference draws both as one fill, so the notch never"]
-            + ["reaches the region's boundary and a closed contour smooths it away."],
-        )
-    )
+# No interior lines: the notch is part of the lapel's own boundary, and is
+# traced with it once the belt's vertical bridging is kept off this piece. It
+# was only ever "interior ink" because that bridging had closed it up.
+assert not any(data["lines"].values()), "unexpected interior line work in the lapel"
 blocks.append(END)
 block = "\n\n".join(blocks) + "\n"
 
