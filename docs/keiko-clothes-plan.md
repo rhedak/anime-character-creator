@@ -642,6 +642,31 @@ shows only as a short bar across the dress strip, which is what every other
 belted character already looks like. Simplest form is a reach field on the
 belt; the principled form samples the cut's own edge at the belt's height.
 
+### P7. The shoulder-to-sleeve transition
+
+**Status: first pass done, 2026-09-21. Second pass open.**
+
+P5 put the arms over the coat, which exposed an edge that had never been
+visible: the arm's outline closes across its top with a straight `L`, and with
+the coat drawn over the arms that cut was always hidden under the panel. On
+show it reads as a square shoulder tacked onto the coat. The reference has no
+such line at all: the shoulder rounds from the neck straight down into the
+sleeve as one outline, and the only thing dividing sleeve from body is the
+armhole seam on the inner side.
+
+**First pass, the owner's suggestion: simply do not stroke that top edge.** The
+arm is filled as one closed path with no stroke and its outline drawn as an
+open one, from the outer top corner down and back up the inside. No geometry
+changes, nothing else moves, and the square shoulder is gone. Gated on
+`coat_sleeves`, so the rest of the cast keeps its single stroked path.
+
+**Second pass, open: trace the armhole seams.** Ours are now two straight
+vertical lines starting partway down the chest. The reference's are shaped, and
+the owner's reading of why they work is that they put the arm *behind* the
+chest rather than in front of it. They are unoccluded in
+`segments/white-lab-coat.png` and would be line work in the sleeve's own frame,
+not the body's.
+
 ### Out of scope, still
 
 Her height (K7), the realistic build (K7, cuts are chibi-only, so none of the

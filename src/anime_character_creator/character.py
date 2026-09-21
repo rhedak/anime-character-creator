@@ -6360,9 +6360,15 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             tip_y = _cap_tip_y(sk)
             top_in = _cap_underside_y(sk, centre_top - w_top, tip_y)
             top_out = _cap_underside_y(sk, centre_top + w_top, tip_y)
-        d = (
-            f"M {x(centre_top - w_top):.1f} {top_in:.1f} "
-            f"L {x(centre_top + w_top):.1f} {top_out:.1f} "
+        # The arm's outline, from its outer top corner down and back up the
+        # inside, and the flat edge across the top that closes it. They are kept
+        # apart because a sleeve worn over its own coat does not show that edge:
+        # the shoulder rounds into the sleeve as one line in the reference, and
+        # a straight cut across the top reads as a square shoulder tacked on.
+        # It was never visible before, the coat being drawn over the arms; P5
+        # flipped that order and put it on show (the owner, 2026-09-21).
+        top_edge = f"M {x(centre_top - w_top):.1f} {top_in:.1f} L {x(centre_top + w_top):.1f} {top_out:.1f} "
+        body = (
             f"Q {x(centre_top + w_top * 1.03):.1f} {top_out + (elbow_y - top_out) * 0.55:.1f} "
             f"{x(centre_elbow + w_elbow):.1f} {elbow_y:.1f} "
             f"Q {x(centre_wrist + w_wrist * 1.06):.1f} {elbow_y + (wrist_y - elbow_y) * 0.5:.1f} "
@@ -6372,8 +6378,8 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             f"{x(centre_elbow - w_elbow):.1f} {elbow_y:.1f} "
             f"Q {x(centre_top - w_top * 1.03):.1f} {top_in + (elbow_y - top_in) * 0.55:.1f} "
             f"{x(centre_top - w_top):.1f} {top_in:.1f} "
-            f"Z"
         )
+        d = top_edge + body + "Z"
         # No tone down the sleeve. It was a turn along the inner side, and a
         # narrower one was tried, but a stripe running the length of something as
         # long and thin as a sleeve reads as a two-tone plank at any width. The
@@ -6402,6 +6408,13 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             limb = [
                 f'<path d="{traced(part)}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
                 for part in (cut.sleeve, cut.cuff)
+            ]
+        elif p.outfit.coat_sleeves:
+            # Filled whole, stroked everywhere but across the top.
+            limb = [
+                f'<path d="{d}" fill="{sleeve_fill}" stroke="none" />',
+                f'<path d="M {x(centre_top + w_top):.1f} {top_out:.1f} {body}" fill="none" '
+                f'stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" stroke-linejoin="round" />',
             ]
         else:
             limb = [
