@@ -316,6 +316,10 @@
             {
               "value": "a_line",
               "label": "A-line (traced)"
+            },
+            {
+              "value": "column",
+              "label": "Narrow column"
             }
           ]
         }

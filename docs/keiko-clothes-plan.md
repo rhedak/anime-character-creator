@@ -475,6 +475,10 @@ landmarks, from `harness/keiko/landmarks.py` and the cut's mapped panel.
 
 ### P1. The dress is three times too wide
 
+**Status: done, 2026-09-21.** `SKIRT_CUTS["column"]`, built from the measured
+profile the way K2's panels were, and Keiko wears it. The silhouette is now
+the coat's own outline, with nothing showing past it.
+
 **The root cause of the clipping**, and the reason it goes first. Keiko still
 wears the shared parametric skirt, which flares to **1.153** half-width at
 y 4.30 where the reference's dress is a narrow column: **0.214** at the belt,
@@ -531,12 +535,11 @@ Ours reaches **0.679** and the coat's own panel edge at that height is
 (0.640 against a 0.84 panel); it looks short because our coat and arms are
 broader on a shorter body, so the fix is to our figure, not to the ratio.
 
-The owner offered either extending it or moving it under the coat.
-**Recommended: extend it**, because a belted coat is this design's signature
-and a belt under the coat shows only as a short bar across the dress strip,
-which is what every other belted character already looks like. Simplest form
-is a reach field on the belt; the principled form samples the cut's own edge
-at the belt's height.
+**The owner's call, 2026-09-21: the belt stays over the coat and is
+extended.** A belted coat is this design's signature, and a belt under it
+shows only as a short bar across the dress strip, which is what every other
+belted character already looks like. Simplest form is a reach field on the
+belt; the principled form samples the cut's own edge at the belt's height.
 
 ### Out of scope, still
 

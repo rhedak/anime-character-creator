@@ -240,7 +240,10 @@ CRYSTAL_4 = GarmentSlot(
     bools=(_bool("crystal_tongs", "Handling tongs (a small clipped tool)"),),
     requires="belt",
 )
-SKIRT_CUT_LABELS: dict[str, str] = {"a_line": "A-line (traced)"}
+SKIRT_CUT_LABELS: dict[str, str] = {
+    "a_line": "A-line (traced)",
+    "column": "Narrow column",
+}
 assert set(SKIRT_CUT_LABELS) == set(SKIRT_CUTS)
 SKIRT = GarmentSlot(
     "skirt",

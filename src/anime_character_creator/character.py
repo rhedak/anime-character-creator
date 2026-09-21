@@ -3516,6 +3516,38 @@ COLLAR_CUTS: dict[str, GarmentCut] = {
 }
 
 
+# Keiko's dress below the belt: a narrow column, not a skirt that flares.
+#
+# The shared parametric skirt takes its flare from the hip and hem anchors, and
+# on her that came to 1.153 half-widths at y 4.30 where her reference's dress is
+# 0.327 (`harness/keiko/landmarks.py`). Three times too wide, so it spilled out
+# past the coat's panels on both sides and read as a second garment clipping
+# through the first (`docs/keiko-clothes-plan.md`, P1).
+#
+# Built from the measured profile rather than walked from pixels, for the reason
+# K2's panels were: the reference's dress is occluded by the coat over most of
+# its length. Its own head radii, squashed about the chin by 0.9215 into the cut
+# frame, are 0.214 at y 2.659, 0.276 at 3.580, 0.307 at 4.133, 0.327 at 4.503,
+# and a flat hem at 4.566. It starts well above the belt, where the coat and the
+# belt cover it, so no seam shows where the tucked tunic hands over to it.
+_LAB_DRESS_COLUMN: Chain = (
+    (0.200, 2.000),
+    [
+        ((0.207, 2.330), (0.214, 2.659)),
+        ((0.245, 3.120), (0.276, 3.580)),
+        ((0.292, 3.857), (0.307, 4.133)),
+        ((0.317, 4.318), (0.327, 4.503)),
+        ((0.327, 4.535), (0.327, 4.566)),
+        ((0.000, 4.566), (-0.327, 4.566)),
+        ((-0.327, 4.535), (-0.327, 4.503)),
+        ((-0.317, 4.318), (-0.307, 4.133)),
+        ((-0.292, 3.857), (-0.276, 3.580)),
+        ((-0.245, 3.120), (-0.214, 2.659)),
+        ((-0.207, 2.330), (-0.200, 2.000)),
+        ((0.000, 2.000), (0.200, 2.000)),
+    ],
+)
+
 # Traced skirt cuts, drawn by `_skirt` when `Outfit.skirt_cut` names one.
 # `a_line` is the dress skirt of `katherina_grok.jpg` (`katherina-clothes-plan.md`,
 # C2): component 204 where it shows, carried straight under the belt and the
@@ -3553,6 +3585,8 @@ SKIRT_CUTS: dict[str, GarmentCut] = {
             ),
         ),
     ),
+    # Keiko's: one narrow column, above.
+    "column": GarmentCut(fills=(_LAB_DRESS_COLUMN,)),
 }
 
 

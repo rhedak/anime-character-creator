@@ -587,6 +587,7 @@ KEIKO = CharacterParams(
         coat_sleeves=True,
         tunic_tucked=True,
         skirt_color=DRESS,
+        skirt_cut="column",
         skirt_length=0.82,
         # See Satoko's `skirt_length_chibi` comment: same reasoning.
         skirt_length_chibi=0.552,

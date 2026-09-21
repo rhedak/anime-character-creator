@@ -606,6 +606,26 @@ def test_a_belt_worn_with_an_open_coat_is_drawn_under_it(preset: str) -> None:
     assert bare_svg.index(character._belt(sk, bare)) > bare_svg.index(character._tunic(sk, bare))
 
 
+def test_keikos_dress_is_a_column_not_a_flared_skirt() -> None:
+    """The shared parametric skirt flares from the hip and hem anchors, which on
+    Keiko came to 1.153 half-widths where her reference's dress is 0.327: three
+    times too wide, spilling past the coat's panels on both sides and reading as
+    a second garment clipping through the first. The column stays inside the
+    coat's own opening all the way down."""
+    p = PRESETS["keiko"]
+    assert p.outfit.skirt_cut == "column"
+    column = character.SKIRT_CUTS["column"].fills[0]
+    xs = [column[0]] + [e for _, e in column[1]]
+    assert max(abs(x) for x, _ in xs) < 0.40, "the column is as wide as a skirt"
+    sk = character.skeleton_for(p)
+    flared = character._skirt_half_w(sk, sk.head_cy + 4.30 * sk.head_r) / sk.head_r
+    assert flared > 1.0, "the shared skirt is no longer the wide one this replaces"
+    # and the cut is what she actually draws, not the flare
+    assert character._skirt(sk, p) == character._draw_cut(
+        sk, character.SKIRT_CUTS["column"], p.outfit.skirt_color
+    )
+
+
 def test_the_lab_coats_opening_pinches_at_the_waist() -> None:
     """The one reversal that makes the front read as tailored.
 
