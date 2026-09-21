@@ -639,6 +639,29 @@ def test_the_lab_coat_leaves_the_shared_coat_alone() -> None:
         assert character._coat(sk, p), f"{preset} lost the shared coat"
 
 
+def test_a_dress_belt_carries_a_keeper_either_side_of_the_buckle() -> None:
+    """Two loops set out from the buckle and standing proud of the band, against
+    the working belt's single small loop beside it. Off by default, because
+    `_belt_drawn` dresses all seventeen presets: the other sixteen keep the one
+    keeper, byte for byte."""
+    p = PRESETS["keiko"]
+    sk = character.skeleton_for(p)
+    assert p.outfit.belt_keeper_pair
+    _, h = character._belt_band(sk, p.outfit.belt_scale)
+    pair = character._belt_drawn(sk, p)
+    single = character._belt_drawn(sk, replace(p, outfit=replace(p.outfit, belt_keeper_pair=False)))
+    assert pair != single
+    # Above the band and above the buckle, which is 1.08 of it; the keepers are
+    # 1.27. The band's own printed height rounds up past `h`, hence the margin.
+    tall = [w for w in re.findall(r'height="(\d+\.\d+)"', pair) if float(w) > h * 1.15]
+    assert len(tall) == 2, f"expected two keepers standing above the band, got {tall}"
+    for other in ("satoshi", "satoko", "elara"):
+        q = PRESETS[other]
+        assert not q.outfit.belt_keeper_pair
+        o_sk = character.skeleton_for(q)
+        assert character._belt_drawn(o_sk, q) == character._belt_drawn(o_sk, q)
+
+
 def test_keikos_belt_is_worn_over_her_coat() -> None:
     """The reference wears a belt over the lab coat, and the cast's other open
     coats wear theirs under (see the test above, which keeps them). The traced

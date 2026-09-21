@@ -166,6 +166,11 @@ class Outfit:
     # Long sleeve worn under the tunic's short one. None leaves the arm bare.
     undersleeve_color: str | None = None
     belt_color: str | None = None
+    # A keeper loop either side of the buckle, set out from it and standing
+    # proud of the band, in place of the single small loop beside it: what a
+    # dress belt carries rather than a working one. Keiko's reference
+    # (`docs/keiko-clothes-plan.md`, K3).
+    belt_keeper_pair: bool = False
     # A traced cut from `BELT_CUTS`; `None` is the shared band.
     belt_cut: str | None = None
     # Front panel hanging from the belt, over the skirt.
@@ -7000,9 +7005,17 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
             f'<rect x="{bx:.1f}" y="{by:.1f}" width="{bw:.1f}" height="{bh:.1f}" rx="{bh * 0.22:.1f}" '
             f'fill="#8a8578" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
         )
+        # The buckle's opening shows the cloth behind the belt. On a dark belt a
+        # shade of its own colour says that well enough, but on a pale one it
+        # says nothing: Keiko's white belt lost its buckle to a light grey
+        # square, where the reference's reads near-black because her charcoal
+        # dress is what is behind it. So a dress belt takes the garment's tone.
+        opening = (
+            shade(p.outfit.tunic_color, 0.9) if p.outfit.belt_keeper_pair else shade(color, 0.7)
+        )
         parts.append(
             f'<rect x="{bx + inset:.1f}" y="{by + inset:.1f}" width="{bw - inset * 2:.1f}" '
-            f'height="{bh - inset * 2:.1f}" rx="{bh * 0.10:.1f}" fill="{shade(color, 0.7)}" />'
+            f'height="{bh - inset * 2:.1f}" rx="{bh * 0.10:.1f}" fill="{opening}" />'
         )
         parts.append(
             f'<line x1="{cx:.1f}" y1="{by:.1f}" x2="{cx:.1f}" y2="{by + bh * 0.55:.1f}" '
@@ -7012,12 +7025,29 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
         # buckle. One small band, and it is most of what tells a buckle from the
         # hollow square this used to read as: a square alone is a shape, a square
         # with a strap running through a loop beside it is a fastening.
-        kw = h * 0.22
-        parts.append(
-            f'<rect x="{bx + bw + h * 0.30:.1f}" y="{y + h * 0.08:.1f}" width="{kw:.1f}" '
-            f'height="{h * 0.84:.1f}" rx="{kw * 0.3:.1f}" fill="{shade(color, 0.7)}" '
-            f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" />'
-        )
+        # A dress belt carries one either side of the buckle instead, set well
+        # out from it and standing proud of the band: Keiko's reference has
+        # them 0.085 wide and 0.28 tall against a 0.220 band, their inner edges
+        # about 1.36 band-heights out from the buckle's own edge
+        # (`harness/keiko/landmarks.py`). Off by default, because
+        # `_belt_drawn` dresses all seventeen presets.
+        if p.outfit.belt_keeper_pair:
+            kw, kh = h * 0.39, h * 1.27
+            ky = y + (h - kh) / 2
+            for s in (-1, 1):
+                kx = cx + s * (bw / 2 + h * 1.36) - kw / 2
+                parts.append(
+                    f'<rect x="{kx:.1f}" y="{ky:.1f}" width="{kw:.1f}" height="{kh:.1f}" '
+                    f'rx="{kw * 0.3:.1f}" fill="{color}" '
+                    f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" />'
+                )
+        else:
+            kw = h * 0.22
+            parts.append(
+                f'<rect x="{bx + bw + h * 0.30:.1f}" y="{y + h * 0.08:.1f}" width="{kw:.1f}" '
+                f'height="{h * 0.84:.1f}" rx="{kw * 0.3:.1f}" fill="{shade(color, 0.7)}" '
+                f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" />'
+            )
         # The tail continues from the buckle's own bottom edge when both show,
         # so the strap reads as one piece running through the buckle rather
         # than two unrelated ornaments stacked on the belt.

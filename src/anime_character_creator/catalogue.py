@@ -207,6 +207,7 @@ BELT = GarmentSlot(
     "belt",
     "Belt",
     _color("belt_color", "Belt"),
+    bools=(_bool("belt_keeper_pair", "Keeper either side"),),
     # 1.0 (the default) through 2.8, Chiyo's obi and the tallest in the cast.
     # Capped a little above that rather than left open, since nothing wider has
     # been rendered and judged.

@@ -330,6 +330,30 @@ white and on black, 4x at the notch, the waist pinch and the hem corner.
 
 ### K3. The belt, over the coat
 
+**Status: done, 2026-09-21.** No `BELT_CUTS` entry was needed in the end. The
+z-order came free with K2 (the traced path appends `_belt_drawn` after its
+jacket), and the band already measured right: **0.679 half-width against the
+reference's 0.640, and 0.218 deep against 0.220**, so only two details were
+wrong.
+
+- **`Outfit.belt_keeper_pair`**, off by default: two loops set out from the
+  buckle and standing proud of the band (0.39 of the band's height wide, 1.27
+  tall, their inner edges 1.36 band-heights out), in place of the working
+  belt's single small loop beside it. A test holds that the other sixteen
+  presets keep the single keeper.
+- **The buckle's opening shows the cloth behind the belt.** On a dark belt a
+  shade of its own colour says that; on Keiko's white one it said nothing and
+  the buckle vanished into a light grey square, where the reference's reads
+  near-black because her charcoal dress is behind it. A dress belt takes the
+  garment's tone instead.
+
+Her belt also moved to the reference's `#ececec` here rather than waiting for
+K5, because a dark belt hides both of the above.
+
+Known and left: the keepers read as rather solid blocks at figure size, and
+the band sits about 0.12 head radii lower than the reference's.
+
+The original plan for this milestone, kept for the record.
 `BELT_CUTS["lab"]` beside `"buckled"`, and the z-order decision from
 Katherina's C5 applies unchanged: **the order depends on the cut, never
 globally.** `render_character`'s layer list hardcodes belt-under-coat whenever

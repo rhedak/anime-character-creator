@@ -347,6 +347,12 @@
           "max": 3.0
         }
       ],
+      "bools": [
+        {
+          "field": "belt_keeper_pair",
+          "label": "Keeper either side"
+        }
+      ],
       "selects": [
         {
           "field": "belt_cut",
