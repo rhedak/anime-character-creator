@@ -663,9 +663,26 @@ changes, nothing else moves, and the square shoulder is gone. Gated on
 **Second pass, open: trace the armhole seams.** Ours are now two straight
 vertical lines starting partway down the chest. The reference's are shaped, and
 the owner's reading of why they work is that they put the arm *behind* the
-chest rather than in front of it. They are unoccluded in
-`segments/white-lab-coat.png` and would be line work in the sleeve's own frame,
-not the body's.
+chest rather than in front of it.
+
+Located, in `panel_seams` in the trace script: the reference's seam is a
+near-vertical line at **x about 0.82**, running from **y 1.27 to 2.33**, broken
+partway where something crosses it. Ours is the arm's own inner outline at
+**0.752**, and it runs the whole length of the arm to the wrist rather than
+stopping near the belt. Two things to weigh when it is built:
+
+- Finding it took excluding the lapel from the panel's hull. Filling the
+  panel's holes swallows the facing, and its own outline then reads as seam
+  ink; the first attempt "found" three seams per side that were all lapel.
+- The seam ending near the belt while ours runs to the wrist may matter as much
+  as its position. Below the belt our arm's inner edge (0.752) sits almost on
+  the coat's panel edge (0.784), so the two nearly coincide and draw as a
+  doubled line.
+
+Whether this is drawn as line work on the coat or becomes a reason to put the
+chest back over the arm is the open question: a seam drawn under the arm is
+covered by it wherever the two overlap, and the arm's own outline would still
+compete with it.
 
 ### Out of scope, still
 

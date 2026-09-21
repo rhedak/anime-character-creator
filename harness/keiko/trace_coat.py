@@ -184,6 +184,31 @@ def trace(mask, tol):
     return {"start": start, "segs": segs}
 
 
+def panel_seams(side):
+    """The armhole seam on the coat's chest, which is line work inside the panel.
+
+    The reference draws a seam where the sleeve is set into the body, running
+    from near the shoulder down toward the belt. It is what says the arm is
+    *behind* the chest rather than in front of it (the owner, 2026-09-21), and
+    ours has nothing in its place but the arm's own inner outline.
+    """
+    hull = ndi.binary_fill_holes(side_mask(pieces["panel"], side))
+    # Filling the panel's holes swallows the lapel facing, which sits inside it,
+    # and then its own outline reads as seam ink. Take it back out.
+    hull = hull & ~grow(side_mask(pieces["lapel"], side, bridge=False), 1)
+    inner = ndi.binary_erosion(hull, structure=disk, iterations=HALF_STROKE + 2)
+    dark = inner & (rgb.sum(2) < 200)
+    lab_, n_ = ndi.label(dark, structure=np.ones((3, 3), bool))
+    out = []
+    for i in range(1, n_ + 1):
+        m = lab_ == i
+        ys_, xs_ = np.nonzero(m)
+        if m.sum() < 25 or hy(ys_.max()) > 3.4:
+            continue
+        out.append((m.sum(), hy(ys_.min()), hy(ys_.max()), hx(xs_.min()), hx(xs_.max())))
+    return sorted(out, reverse=True)
+
+
 def interior_lines(side):
     """The lapel's fold and notch, which are line work rather than silhouette.
 
@@ -264,6 +289,9 @@ for side, name in ((-1, "left"), (1, "right")):
 for k, v in shapes.items():
     print(f"{k:14s} {len(v['segs']):3d} segments")
 print("interior lines", {k: len(v) for k, v in lines.items()})
+for side, name in ((-1, "left"), (1, "right")):
+    for sz, t, b, l, r in panel_seams(side):
+        print(f"  {name} panel seam: {sz:5d}px  y {t:+.3f}..{b:+.3f}  x {l:+.3f}..{r:+.3f}")
 print("sleeve landmarks", land)
 
 colours = {}
