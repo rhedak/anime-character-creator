@@ -728,8 +728,16 @@ def test_keikos_belt_is_worn_over_her_coat_and_her_arms_over_both() -> None:
         "the lab coat is not drawn under the arms"
     )
     belt = character._belt_drawn(sk, p)
-    assert svg.index(belt) > svg.index(coat), "the belt is not over the coat"
-    assert svg.index(belt) > svg.index(character._arms(sk, p)), "an arm is drawn over the belt"
+    jacket = character._draw_cut(sk, character.COAT_CUTS["lab_coat"], p.outfit.coat_color)
+    assert svg.index(belt) > svg.index(jacket), "the belt is not over the coat"
+    # ...and it travels under the arms with the coat it is worn over, so the
+    # arm's outline is what ends the band. Her belt has no end caps, so
+    # something has to stop it: drawn over the arms its ends sat on the arm's
+    # own outline and read as a strap laid across the front rather than a belt
+    # going round the body.
+    assert svg.index(belt) < svg.index(character._arms(sk, p)), (
+        "the belt is drawn over the arms, so nothing ends the band"
+    )
     # Katherina's jacket keeps the other order, and her cut is what says so.
     assert character.COAT_CUTS["open_jacket"].over_arms
     assert not character.COAT_CUTS["lab_coat"].over_arms
@@ -790,9 +798,11 @@ def test_a_mock_collar_is_worn_under_an_open_coat() -> None:
     p = PRESETS["keiko"]
     sk = character.skeleton_for(p)
     svg = render_character(p, sk)
-    # Her coat is traced, so it is `_traced_coat_and_belt` that draws it, after
+    # Her coat is traced, so it is `_traced_coat_and_belt` that draws it, before
     # the arms; the band still has to come first.
-    assert svg.index(character._collar(sk, p)) < svg.index(character._traced_coat_and_belt(sk, p))
+    assert svg.index(character._collar(sk, p)) < svg.index(
+        character._traced_coat_and_belt(sk, p, after_arms=False)
+    )
     other = PRESETS["katherina"]
     o_sk = character.skeleton_for(other)
     assert not other.outfit.collar_mock

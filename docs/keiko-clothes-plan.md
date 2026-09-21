@@ -358,6 +358,16 @@ second tone is for small elements where it reads as thickness, so where it
 stops doing that it goes. The other sixteen presets keep theirs, held by a
 test.
 
+**The end caps went too, and the belt moved back under the arms with them**
+(the owner, 2026-09-21). A belt goes *around* a body, so its ends have nothing
+to show: capped and rounded they read as the two ends of a strap laid on the
+front, and once the arms were drawn over the coat (P5) those caps sat right on
+top of the arm's own outline. Her belt is now a fill with only its top and
+bottom edges stroked, reaching 1.25 of its usual half-width so those two lines
+end on the arm's outline and the band reads as continuing behind it. The belt
+travels with the jacket it is worn over, so a coat drawn under the arms takes
+its belt under them too; the other sixteen presets keep their capped band.
+
 Known and left: the keepers read as rather solid blocks at figure size, and
 the band sits about 0.12 head radii lower than the reference's.
 

@@ -3448,8 +3448,12 @@ def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams, after_arms: bool = T
     if not _traced_coat(sk, p):
         return ""
     cut = COAT_CUTS[p.outfit.coat_cut]
-    jacket = _draw_cut(sk, cut, p.outfit.coat_color) if cut.over_arms == after_arms else ""
-    return jacket + (_belt_drawn(sk, p) if after_arms else "")
+    if cut.over_arms != after_arms:
+        return ""
+    # The belt travels with the jacket it is worn over, so a coat drawn under
+    # the arms takes its belt under them too: the arm's outline is then what
+    # ends the band, which is what a belt passing round a body looks like.
+    return _draw_cut(sk, cut, p.outfit.coat_color) + _belt_drawn(sk, p)
 
 
 def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> str:
@@ -7092,10 +7096,28 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     # middle of the coat (the owner's review, P6).
     half_w *= p.outfit.belt_reach
     y, h = _belt_band(sk, p.outfit.belt_scale)
-    parts = [
-        f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '
-        f'rx="{h * 0.18:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
-    ]
+    if p.outfit.belt_keeper_pair:
+        # No end caps. A belt goes *around* a body, so its ends have nothing to
+        # show: capped and rounded they read as the two ends of a strap laid on
+        # the front, and here they sat right on top of the arm's own outline
+        # (the owner, 2026-09-21). Drawn instead as a fill with only its top and
+        # bottom edges stroked, running out past the arm's inner edge so those
+        # two lines end on the arm's outline and the band reads as continuing
+        # behind it. Square, not rounded, since the corners are never seen.
+        parts = [
+            f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '
+            f'fill="{color}" stroke="none" />'
+        ]
+        parts += [
+            f'<line x1="{cx - half_w:.1f}" y1="{edge:.1f}" x2="{cx + half_w:.1f}" y2="{edge:.1f}" '
+            f'stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+            for edge in (y, y + h)
+        ]
+    else:
+        parts = [
+            f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '
+            f'rx="{h * 0.18:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+        ]
     # Not on a dress belt. This band is meant to read as the strap's own
     # thickness, which it does on the dark leather the rest of the cast wears
     # and does not on a pale one: on Keiko's white belt it read as a grey
