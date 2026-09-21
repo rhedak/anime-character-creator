@@ -564,6 +564,21 @@ scaling, which is a second suspect worth ruling out.
 
 ### P4. The coat's outer line against the arm
 
+**Status: done with P5, 2026-09-21, and the fix was the draw order, not the
+edge.** The panel's outer edge at the belt is 0.784 and the arm's spans 0.752
+to 1.150, so the arm already overlapped the panel rather than missing it. With
+the arm drawn *under* the coat and its sleeve in the coat's own colour, panel
+and sleeve merged into one undivided white field running out to 1.150, and
+nothing marked where the coat's front ended. That is what made the belt look
+like it stopped in the middle of nothing, and why widening the belt further
+would have been treating the symptom: it already reaches 0.781 against the
+panel's 0.784, and is proportionally wider against the visible coat than the
+reference's is (0.68 against 0.54).
+
+Drawing the arm over the coat (P5) gives the sleeve its own outline across the
+body, which restores the panel's edge as a visible boundary. No change to the
+traced edge was needed.
+
 The arm's outer edge sits at **1.150** while the coat's panel edge at the belt
 is **0.784**, so the arm hangs outside the coat's silhouette and the two
 outlines cross. The reference keeps one outline: the coat's own, with the
@@ -572,6 +587,17 @@ actually hangs, remembering that the rows the sleeve covers are the one
 inferred run in the cut (K2) and so are the free ones to move.
 
 ### P5. The arms are drawn over the coat
+
+**Status: done, 2026-09-21.** `GarmentCut.over_arms`, default `True`, and
+`COAT_CUTS["lab_coat"]` sets it `False`. `_traced_coat_and_belt` takes the
+phase and draws the cut in whichever one it asks for, so Katherina's jacket
+keeps going over the arms and Keiko's coat goes under, with a test holding
+both. The belt is drawn after the arms either way, so an arm cannot cut across
+it.
+
+The shoulder junction the plan warned about did not appear: her sleeve is the
+parametric one filled in the coat's colour, not a traced sleeve swung about a
+pivot, so there is no cap to leave a gap.
 
 Cheap, and blocked on P4. `_traced_coat_and_belt` draws after `_arms` so the
 jacket's armholes cover the sleeve tops, which is Katherina's need, not

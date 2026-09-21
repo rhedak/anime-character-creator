@@ -702,17 +702,35 @@ def test_a_dress_belt_carries_a_keeper_either_side_of_the_buckle() -> None:
         assert character._belt_drawn(o_sk, q) == character._belt_drawn(o_sk, q)
 
 
-def test_keikos_belt_is_worn_over_her_coat() -> None:
+def test_keikos_belt_is_worn_over_her_coat_and_her_arms_over_both() -> None:
     """The reference wears a belt over the lab coat, and the cast's other open
-    coats wear theirs under (see the test above, which keeps them). The traced
-    path already draws its belt after its jacket, so the order rides on the cut
-    rather than changing globally."""
+    coats wear theirs under, so the order rides on the cut and never changes
+    globally. Her coat also goes *under* the arms, unlike Katherina's jacket,
+    whose armholes have to cover the tops of her sleeves: Keiko's sleeve is a
+    piece in its own right and has to lie over the body carrying its own
+    outline, or panel and sleeve merge into one undivided field and the belt
+    looks like it stops in the middle of nothing (P4, P5)."""
     p = PRESETS["keiko"]
     sk = character.skeleton_for(p)
     assert character._traced_coat(sk, p)
     assert character._belt(sk, p) == "", "the under-coat belt still draws as well"
-    drawn = character._traced_coat_and_belt(sk, p)
-    assert drawn.index(character._belt_drawn(sk, p)) > drawn.index(f'fill="{p.outfit.coat_color}"')
+    svg = render_character(p, sk)
+    coat = character._traced_coat_and_belt(sk, p, after_arms=False)
+    assert coat and svg.index(coat) < svg.index(character._arms(sk, p)), (
+        "the lab coat is not drawn under the arms"
+    )
+    belt = character._belt_drawn(sk, p)
+    assert svg.index(belt) > svg.index(coat), "the belt is not over the coat"
+    assert svg.index(belt) > svg.index(character._arms(sk, p)), "an arm is drawn over the belt"
+    # Katherina's jacket keeps the other order, and her cut is what says so.
+    assert character.COAT_CUTS["open_jacket"].over_arms
+    assert not character.COAT_CUTS["lab_coat"].over_arms
+    k = PRESETS["katherina"]
+    k_sk = character.skeleton_for(k)
+    k_svg = render_character(k, k_sk)
+    assert k_svg.index(character._traced_coat_and_belt(k_sk, k)) > k_svg.index(
+        character._arms(k_sk, k)
+    )
 
 
 @pytest.mark.parametrize("build", ["chibi", "realistic"])

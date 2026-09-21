@@ -3403,6 +3403,15 @@ class GarmentCut:
 
     fills: tuple[Chain, ...]
     lines: tuple[Chain, ...] = ()
+    # Whether the garment is drawn over the arms or under them. A jacket whose
+    # armholes have to cover the top of a sleeve goes over (Katherina's, whose
+    # reference hides that top under the hair). A coat whose sleeve is a piece
+    # in its own right goes under, so the arm carries its own outline across
+    # the body and the front panel's edge stays a visible boundary: without
+    # that, panel and sleeve merge into one undivided field and anything
+    # ending at the panel's edge, the belt above all, looks like it stops in
+    # the middle of nothing (`docs/keiko-clothes-plan.md`, P4 and P5).
+    over_arms: bool = True
 
 
 def _wears_cuts(sk: Skeleton) -> bool:
@@ -3420,19 +3429,27 @@ def _traced_coat(sk: Skeleton, p: CharacterParams) -> bool:
     return p.outfit.coat_color is not None and p.outfit.coat_cut is not None and _wears_cuts(sk)
 
 
-def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams) -> str:
-    """A traced jacket and the belt over it, drawn after the arms.
+def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams, after_arms: bool = True) -> str:
+    """A traced jacket, on whichever side of the arms its cut asks for, and the
+    belt over it.
 
     The shared coat goes under the arms, the order every other character is
-    drawn in. A traced jacket goes over them, because its armholes are what
-    covers the top of a sleeve: the reference hides that top under the hair,
+    drawn in. Katherina's jacket goes over them, because its armholes are what
+    covers the top of a sleeve: her reference hides that top under the hair,
     and a body whose hair is narrower would show it standing out of the
-    shoulder. The belt is worn over the jacket, so it moves with it.
+    shoulder. Keiko's lab coat goes under, because her sleeve is a piece in its
+    own right and has to lie over the body with its own outline. The cut says
+    which (`GarmentCut.over_arms`), so the order rides on the garment and never
+    changes globally.
+
+    The belt is worn over the jacket either way, and always after the arms, so
+    an arm cannot cut across it.
     """
     if not _traced_coat(sk, p):
         return ""
-    jacket = _draw_cut(sk, COAT_CUTS[p.outfit.coat_cut], p.outfit.coat_color)
-    return jacket + _belt_drawn(sk, p)
+    cut = COAT_CUTS[p.outfit.coat_cut]
+    jacket = _draw_cut(sk, cut, p.outfit.coat_color) if cut.over_arms == after_arms else ""
+    return jacket + (_belt_drawn(sk, p) if after_arms else "")
 
 
 def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> str:
@@ -3786,7 +3803,8 @@ COAT_CUTS: dict[str, GarmentCut] = {
             _LAB_COAT_PANEL_RIGHT,
             _LAB_COAT_LAPEL_LEFT,
             _LAB_COAT_LAPEL_RIGHT,
-        )
+        ),
+        over_arms=False,
     ),
 }
 
@@ -8965,6 +8983,9 @@ def render_character(
         # Held in the hand, so under the arm that holds it and over everything else
         # below the neck.
         _staff(sk, p),
+        # A traced coat whose cut asks to go under the arms, so the arm lies
+        # over the body with its own outline; see the function.
+        _traced_coat_and_belt(sk, p, after_arms=False),
         _arms(sk, p),
         # A traced jacket covers the tops of the sleeves; see the function.
         _traced_coat_and_belt(sk, p),
