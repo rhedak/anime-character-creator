@@ -87,6 +87,80 @@ B5 moving before B2 also means the plan's milestone order below is stale from
 B2 onward. It is left as written rather than rewritten, so the reason for the
 change stays legible.
 
+## The body layer (the owner's call, 2026-09-21)
+
+**There is no torso.** This project draws a head, a neck, arms and legs as body
+parts, and the torso only ever as a garment: `_tunic` is the body between the
+shoulders and the hip, and `tunic_color` is not even optional. So a bust has
+nowhere to live except on a garment, which is why every attempt so far has been
+shaping a tunic rather than a figure.
+
+The bare study (`harness/bust/bare.py`, stripped to skin) also measured why the
+chibi reads as a slab, which is a body fact worth having written down
+regardless of the bust:
+
+| half-widths | shoulder | bust | waist | hip | arm inner |
+| --- | --- | --- | --- | --- | --- |
+| chibi | 0.943 | 0.930 | 0.512 | 0.755 | **0.752** |
+| realistic | 1.508 | 1.275 | 0.991 | 1.343 | **0.838** |
+
+At the chibi the waist sits 0.24 head radii *inside* the arm, so the whole
+torso from armpit to hip is behind the arms and none of its shape is visible.
+At the adult build the waist is outside the arm's inner edge and the shape
+reads. The invisible-bust problem is the invisible-*torso* problem, and it is
+specific to the chibi.
+
+### The invariant weakens, deliberately
+
+`bust = 0` can no longer be byte-identical, because adding a layer changes the
+SVG text even when it changes no pixel. It becomes: **the PNGs are identical**,
+compared as images, with the SVGs gaining one element. That is still a real
+guarantee across seventeen presets and it is still checked rather than assumed;
+it is just checked differently, and `refresh-ref-out.sh`'s report is no longer
+the whole test.
+
+### L1. A torso that draws nothing new
+
+`_torso(sk, p)`, the body's own silhouette in the skin tone, in `layers`
+immediately before `_tunic`. Its shape is exactly what `_tunic` draws today, so
+an opaque tunic over it hides it completely.
+
+Acceptance: every `ref-out/` PNG pixel-identical, compared as images. Any
+preset whose pixels move is a garment that does not cover the body it is on,
+and is a finding, not a failure to paper over.
+
+### L2. The torso becomes the source of the shape
+
+`_tunic` stops computing the torso's silhouette and reads the body's, so the
+two cannot drift. The same for `_coat`, `_robe` and `_apron` as each is
+touched. A garment then differs from the body by its own allowance, not by a
+separate copy of the proportions.
+
+Acceptance: PNGs still identical; the tunic's path derived rather than
+duplicated.
+
+### L3. Where the body actually shows
+
+A neckline, a hem, a sleeveless arm: the places a garment does not cover the
+body and the body has to be right on its own. Today what shows through a
+tunic's V is whatever happens to be behind it, and that is the bit most likely
+to be wrong once there is a real layer.
+
+Acceptance: looked at on every preset that has a neckline, at 4x.
+
+### L4. The bust lives on the body
+
+`bust_half_w` shapes `_torso`, and garments follow it because they read the
+body (L2) and the skeleton anchor (B1). B2's work on `_tunic` stays as it is;
+what changes is that it is no longer the only thing with a bust.
+
+### L5. The chest in front of the arm
+
+As B5, but now with a body to put in front: the question stops being "should
+the coat overlap the sleeve" and becomes "where does the torso sit in the
+order". Keiko's `over_arms` and the hand lifted out of `_arms` are the same
+work either way.
+
 ## Milestones
 
 ### B0. Decide the shape, and build the sweep
