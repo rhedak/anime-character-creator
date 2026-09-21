@@ -123,6 +123,12 @@ SATOSHI = CharacterParams(
         # reference (`ref-local/satoshi-tall-chibi-katana/`). The scabbard's own
         # colour; the fittings are the default brass.
         katana_color="#3c322b",
+        # A little under the traced sword's own length: his is the short sword
+        # (the book's kozashi), so it stays shorter than Haruto's and Daizen's
+        # katanas (1.25). The owner's pick from variants at 0.80 to 1.00 on
+        # 2026-09-21, by eye; a true wakizashi against a katana would be nearer
+        # 0.85, but this is a fantasy setting.
+        katana_length=0.95,
     ),
     # Broader across the shoulder and narrow in the hip, which is the whole of
     # what tells him from Satoko below the neck once the clothes match.
@@ -412,6 +418,13 @@ DAIZEN = CharacterParams(
         robe_color="#293040",
         sleeve_drop=0.45,
         belt_scale=2.8,
+        # A katana in a warm brown lacquer that shows against his dark haori and
+        # trousers, full length for the chibi (1.25 of Satoshi's kozashi, which is
+        # about as long as a chibi's legs allow: a true katana's 1.35 would put the
+        # tip through the floor). In the book he changes to the short sword after
+        # his shoulder is injured; until then this is his sword.
+        katana_color="#7a5636",
+        katana_length=1.25,
     ),
     frame=1.0,
     # Shrewd and severe, and the oldest-looking man in the cast next to Tenno.
@@ -517,6 +530,10 @@ HARUTO = CharacterParams(
         # See Satoko's `skirt_length_chibi` comment: same reasoning, applied
         # to the hakama's own chibi-end field.
         hakama_length_chibi=0.454,
+        # A katana in a deep red lacquer against his near-black robe and hakama, full
+        # length for the chibi (see Daizen's `katana_length`).
+        katana_color="#6a3326",
+        katana_length=1.25,
     ),
     frame=0.7,
     face=FaceStyle(

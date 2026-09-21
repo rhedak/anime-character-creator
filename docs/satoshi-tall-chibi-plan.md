@@ -373,6 +373,24 @@ one; not yet fixed unless ticked above.
       regenerated from it (`generate-refs`, `generate-covers`, `generate-inserts`);
       ch36, the appendix, had no insert before and now has one.
 
+- [x] **T3i. Sword length, 2026-09-21.** The traced sword is a kozashi's length
+      (about 0.46 of the reference figure's height, roughly 76 cm on a 165 cm
+      person; a katana is about 0.62), which is Satoshi's in the book. `Outfit.
+      katana_length` (default 1.0, the traced sword; slider 0.8 to 1.4) lengthens
+      it: only the plain scabbard between the brown ring and the end cap stretches
+      (`_katana_stretched`), the handle, guard, collar, rings and the cap keep their
+      size and the cap moves as one, so a longer sword is a longer blade in its
+      scabbard and not an enlarged one. The tip would go through the floor at the
+      reference's tilt, so a longer sword swings out about the guard until its tip
+      stands above the soles (capped at 38 degrees, past which it looks like it is
+      leaving the body). Satoshi's is 0.95 (the owner's pick by eye from 0.80 to 1.00; a true wakizashi against a katana would be nearer 0.85, but this is a fantasy setting). Haruto and Daizen carry katanas at 1.25 (a red lacquer and a
+      warm brown, to show against their dark clothes): a true katana's 1.35 to 1.45
+      is more than a chibi's legs allow. Kurogane switches to the short sword after
+      his shoulder is injured, so his katana is the earlier state; ch14's "ceremonial
+      short blade" for him is the prose's to make explicit. The sword stays on the
+      cover and the early inserts by the owner's call: the reader's question is when
+      he picks one up, not whether.
+
 **Held:**
 
 - **T4.** Boot/toe silhouette: the reference's toe is more tapered than ours;

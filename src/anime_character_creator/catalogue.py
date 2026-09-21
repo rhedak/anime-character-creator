@@ -335,7 +335,13 @@ STAFF_CRYSTAL = GarmentSlot(
     requires="staff",
 )
 KATANA = GarmentSlot(
-    "katana", "Katana (sheathed, left hip)", _color("katana_color", "Katana scabbard")
+    "katana",
+    "Katana (sheathed, left hip)",
+    _color("katana_color", "Katana scabbard"),
+    # 1.0 is the traced short sword's length (a kozashi), 1.25 a katana's on a
+    # chibi. The top is 1.4, where the tilt cap that keeps the tip off the floor
+    # runs out on the shortest legs.
+    ranges=(_range("katana_length", "Katana length", 0.8, 1.4),),
 )
 KATANA_FITTINGS = GarmentSlot(
     "katana_fittings",

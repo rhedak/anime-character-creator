@@ -618,7 +618,15 @@
         "field": "katana_color",
         "label": "Katana scabbard",
         "optional": true
-      }
+      },
+      "ranges": [
+        {
+          "field": "katana_length",
+          "label": "Katana length",
+          "min": 0.8,
+          "max": 1.4
+        }
+      ]
     },
     {
       "id": "katana_fittings",

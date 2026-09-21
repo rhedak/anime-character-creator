@@ -737,6 +737,48 @@ def test_a_sheet_tile_draws_the_figure_on_its_own_body(preset: str) -> None:
         assert re.sub(r"\A<svg[^>]*>\s*", "", old) not in svg
 
 
+def test_katana_length_stretches_the_scabbard_and_nothing_else() -> None:
+    """A longer sword is a longer scabbard: the handle, guard, collar, rings and the
+    end cap keep their size (the cap moves as one), and 1.0 is the traced sword."""
+    grow1 = character._katana_stretched(1.0)
+    for pt in ((-1.2, 0.1), (0.0, 0.2), (0.3, 0.14), (1.5, 0.15), (2.4, 0.1)):
+        assert grow1(pt) == pt
+    grow = character._katana_stretched(1.3)
+    f = character._katana_stretch_factor(1.3)
+    a, b = character._KATANA_STRETCH_FROM, character._KATANA_STRETCH_TO
+    assert grow((-1.2, 0.1)) == (-1.2, 0.1)
+    assert grow((a, 0.1)) == (a, 0.1)
+    assert grow((b - 0.1, 0.1))[0] == pytest.approx(a + (b - 0.1 - a) * f)
+    tip = grow((character._KATANA_TIP_U, 0.0))[0]
+    assert tip - (-1.295) == pytest.approx(1.3 * character._KATANA_TRACED_LENGTH, abs=0.02)
+    cap0, cap1 = grow((b, 0.0))[0], grow((character._KATANA_TIP_U, 0.0))[0]
+    assert cap1 - cap0 == pytest.approx(character._KATANA_TIP_U - b), "the cap changed size"
+
+
+@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("length", [0.8, 1.0, 1.25, 1.4])
+def test_a_longer_katana_keeps_its_tip_off_the_floor(length: float, body: str | None) -> None:
+    """A longer sword swings out about the guard until its tip stands above the
+    soles, as far as the tilt cap allows, and never comes out shorter."""
+    p = replace(PRESETS["haruto"], body=body)
+    p = replace(p, outfit=replace(p.outfit, katana_length=length))
+    sk = character.skeleton_for(p)
+    xf = character._katana_placement(sk, length)
+    tip = xf(character._katana_stretched(length)((character._KATANA_TIP_U, 0.0)))
+    assert sk.head_cy + tip[1] * sk.head_r <= sk.foot_y + 0.05 * sk.head_r, (
+        f"{body} at {length}: the tip is through the floor"
+    )
+    assert character._katana(sk, p) != ""
+
+
+def test_haruto_and_daizen_carry_full_length_katanas_and_satoshi_the_short_one() -> None:
+    satoshi = PRESETS["satoshi"].outfit.katana_length
+    assert satoshi == 0.95
+    for name in ("haruto", "daizen"):
+        assert PRESETS[name].outfit.katana_color is not None
+        assert PRESETS[name].outfit.katana_length > satoshi + 0.2
+
+
 def test_sleeve_under_cap_defers_to_a_traced_jacket() -> None:
     """A traced jacket draws its own shoulders and armholes, so the flag must not
     reshape the tunic beneath it."""

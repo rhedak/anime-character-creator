@@ -335,6 +335,12 @@ class Outfit:
     katana_color: str | None = None
     # Its pommel cap, collar, guard and end cap; `None` is brass.
     katana_fittings_color: str | None = None
+    # How long it is, against the traced sword's own 1.0, which is a short sword
+    # (about 0.46 of the reference figure's height, a kozashi's length): 1.35 is a
+    # full katana's. Only the scabbard grows: the handle, guard, collar and end cap
+    # keep their size, so a longer sword is a longer blade in its scabbard and not
+    # an enlarged one.
+    katana_length: float = 1.0
     # An outer layer hanging open over whatever is worn under it: a cropped
     # jacket, a lab coat, a long coat, or (at the short end of `coat_length`)
     # an open vest or cardigan over a tunic. One garment rather than four,
@@ -5882,7 +5888,45 @@ _KATANA_REF_BELT = 2.736
 _KATANA_DIAMOND = "#c3b7a6"
 
 
-def _katana_placement(sk: Skeleton) -> Callable[[Point], Point]:
+# Where the scabbard's plain stretch runs, along the sword's axis in the reference's
+# head radii: from the brown ring's lower edge to the end cap's upper edge. The
+# rings, guard and handle above it and the cap below it keep their size at any
+# length; only this stretch grows. `_KATANA_TRACED_LENGTH` is the traced sword's
+# whole length, pommel to tip, which `katana_length` multiplies.
+_KATANA_STRETCH_FROM = 0.375
+_KATANA_STRETCH_TO = 2.215
+_KATANA_TRACED_LENGTH = 3.735
+_KATANA_TIP_U = 2.436
+# The furthest a longer sword is swung out to keep its tip off the floor.
+_KATANA_MAX_TILT = 38.0
+
+
+def _katana_stretch_factor(length: float) -> float:
+    """How much the plain scabbard grows for a sword `length` times as long, so
+    the whole sword is `length` times the traced one."""
+    return 1.0 + (length - 1.0) * _KATANA_TRACED_LENGTH / (
+        _KATANA_STRETCH_TO - _KATANA_STRETCH_FROM
+    )
+
+
+def _katana_stretched(length: float) -> Callable[[Point], Point]:
+    """The katana's own frame, lengthened: points on the scabbard's stretch grow
+    along the axis, the cap below it moves as one, everything above is unchanged."""
+    f = _katana_stretch_factor(length)
+    a, b = _KATANA_STRETCH_FROM, _KATANA_STRETCH_TO
+
+    def stretched(pt: Point) -> Point:
+        u, v = pt
+        if u <= a:
+            return pt
+        if u >= b:
+            return (u + (f - 1.0) * (b - a), v)
+        return (a + (u - a) * f, v)
+
+    return stretched
+
+
+def _katana_placement(sk: Skeleton, length: float = 1.0) -> Callable[[Point], Point]:
     """Map the katana's own frame onto this figure, as a point function in head
     radii.
 
@@ -5919,6 +5963,14 @@ def _katana_placement(sk: Skeleton) -> Callable[[Point], Point]:
     ox = min(ox, arm_inner - guard_half - _stroke_w(sk) / r)
     oy = belt_c + _KATANA_HIP_Y * k
     t = math.radians(_KATANA_TILT)
+    # A longer sword would put its tip through the floor at the reference's tilt,
+    # so it swings further out, about the guard, until the tip stands a stroke
+    # above the soles (or as far as `_KATANA_MAX_TILT` allows, and then it simply
+    # ends at the boots).
+    tip_u = _katana_stretched(length)((_KATANA_TIP_U, 0.0))[0]
+    room = (ground - 0.05 - oy) / (k * tip_u)
+    if room < math.cos(t):
+        t = min(math.radians(_KATANA_MAX_TILT), math.acos(max(-1.0, min(1.0, room))))
     ax, ay = math.sin(t), math.cos(t)
 
     def placed(pt: Point) -> Point:
@@ -5943,7 +5995,12 @@ def _katana(sk: Skeleton, p: CharacterParams) -> str:
         return ""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk)
-    xf = _katana_placement(sk)
+    place = _katana_placement(sk, p.outfit.katana_length)
+    grow = _katana_stretched(p.outfit.katana_length)
+
+    def xf(pt: Point) -> Point:
+        return place(grow(pt))
+
     metal = p.outfit.katana_fittings_color or _KATANA_BRASS
     wrap = shade(saya, value_factor=0.86, saturation_boost=0.3)
     band = shade(saya, value_factor=1.35, saturation_boost=1.15)
