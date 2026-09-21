@@ -130,13 +130,35 @@ for side, name in ((-1, "LEFT"), (1, "RIGHT")):
             + ["and back up the front opening."],
         )
     )
+# How far the notch is carried down the facing, in cut units. The trace puts it
+# 0.290 of the way down the lapel where the reference has it at 0.324, and on a
+# torso as short as ours that reads as the fold clashing with the shoulder (the
+# owner, 2026-09-21). Applied as a tent that is zero at the collar tip and at
+# the facing's point and full at the notch, so the facing still starts and ends
+# exactly where it was traced and the straight runs between stay straight.
+NOTCH_DROP = 0.10
+NOTCH_Y = 1.278  # the notch's own centre, from the trace
+TIP_Y, POINT_Y = 0.800, 2.254
+
+
+def dropped(pt):
+    x, y = pt
+    if y <= TIP_Y or y >= POINT_Y:
+        return (x, y)
+    if y <= NOTCH_Y:
+        t = (y - TIP_Y) / (NOTCH_Y - TIP_Y)
+    else:
+        t = (POINT_Y - y) / (POINT_Y - NOTCH_Y)
+    return (x, y + NOTCH_DROP * t)
+
+
 for name in ("left", "right"):
     ch = data["shapes"][f"lapel_{name}"]
     blocks.append(
         const(
             f"_LAB_COAT_LAPEL_{name.upper()}",
-            tuple(ch["start"]),
-            [(tuple(a), tuple(b)) for a, b in ch["segs"]],
+            dropped(tuple(ch["start"])),
+            [(dropped(tuple(a)), dropped(tuple(b))) for a, b in ch["segs"]],
             [f"The {name} lapel facing, traced: collar point, the notch's step, and down"]
             + ["to where the facing ends above the belt."],
         )

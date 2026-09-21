@@ -543,6 +543,15 @@ The owner drew the intended edge on the reference: neck, collar corner, the
 notch's two steps, then the long run down to the facing's point. That is what
 the boundary now follows.
 
+**Then the notch was carried down the facing by 0.10 cut units** at the
+owner's eye: the trace puts it 0.290 of the way down the lapel where the
+reference has it at 0.324, and on a torso as short as ours that read as the
+fold clashing with the shoulder. Applied in `emit_coat.py` as a tent that is
+zero at the collar tip and at the facing's point and full at the notch, so the
+facing still starts and ends exactly where it was traced and the straight runs
+between stay straight. It is an adjustment by eye on top of a trace, not a
+measurement, and is the one such in this cut.
+
 The other suspect is ruled out: `_interp_flat` returns its first value at and
 below the first knot, so `_garment_placement`'s x scale is continuous across
 y = 1.0 and the lapel is not distorted by crossing it.
