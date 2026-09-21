@@ -463,6 +463,86 @@ signed off here. Nothing in this campaign touches it.
   body question, not a clothes one.
 - **Hair, face, glasses, boots.** Not called wrong, not in scope.
 
+## Phase two: the silhouette (2026-09-21)
+
+The owner's review of the first phase, with the measurements that back each
+item. Phase one got the garments right one at a time; what is wrong now is how
+they meet each other, so this phase is about the figure's outline rather than
+any one piece.
+
+Numbers below are ours, on Keiko's own body, against the reference's own
+landmarks, from `harness/keiko/landmarks.py` and the cut's mapped panel.
+
+### P1. The dress is three times too wide
+
+**The root cause of the clipping**, and the reason it goes first. Keiko still
+wears the shared parametric skirt, which flares to **1.153** half-width at
+y 4.30 where the reference's dress is a narrow column: **0.214** at the belt,
+0.276 at 3.80, 0.327 at 4.80. So the dress spills out past the coat's panels
+on both sides and reads as a second garment clipping through the first.
+
+Narrow it to the measured column. A `SKIRT_CUTS` entry is the registry-shaped
+way; a width field on the parametric skirt may do, and is checked first, the
+way K1 checked `collar_color` before writing a new shape.
+
+### P2. The neck: skin above a turtleneck, not a square block
+
+The collar is **0.277** half-width and the coat's opening narrows to **0.207**
+at the waist, so the band is wider than the gap it sits in and steps out past
+the dress below it. That step is the block. The reference also shows **skin
+between the chin and the collar**: its 0.856 top edge is the collar's highest
+point at the sides, beside the jaw, not a flat top across the throat, which is
+what `_mock_collar` draws.
+
+Measure the collar's top edge per column rather than as one minimum, give the
+band that profile, and take its width from the opening it sits in rather than
+from the neck alone.
+
+### P3. The lapel meets the collar unnaturally
+
+Mostly downstream of P2: the facing was traced against the reference's collar
+and now lands against a block of a different width. Re-check the junction once
+P2 is in, and only then judge whether the facing itself is too plain. The cut
+crosses y = 1.0, where `_garment_placement` switches from head to body
+scaling, which is a second suspect worth ruling out.
+
+### P4. The coat's outer line against the arm
+
+The arm's outer edge sits at **1.150** while the coat's panel edge at the belt
+is **0.784**, so the arm hangs outside the coat's silhouette and the two
+outlines cross. The reference keeps one outline: the coat's own, with the
+figure's shape in it. Reconcile the panel's outer edge with where the arm
+actually hangs, remembering that the rows the sleeve covers are the one
+inferred run in the cut (K2) and so are the free ones to move.
+
+### P5. The arms are drawn over the coat
+
+Cheap, and blocked on P4. `_traced_coat_and_belt` draws after `_arms` so the
+jacket's armholes cover the sleeve tops, which is Katherina's need, not
+Keiko's. Order depends on the cut, never globally, the rule this campaign has
+followed twice already. Watch the shoulder junction when it flips: an arm
+drawn over its garment is exactly what produced "the arm tube emerging
+mid-torso" in Katherina's campaign.
+
+### P6. The belt stops short of the coat
+
+Ours reaches **0.679** and the coat's own panel edge at that height is
+**0.784**. Against the reference figure ours is proportionally the wider belt
+(0.640 against a 0.84 panel); it looks short because our coat and arms are
+broader on a shorter body, so the fix is to our figure, not to the ratio.
+
+The owner offered either extending it or moving it under the coat.
+**Recommended: extend it**, because a belted coat is this design's signature
+and a belt under the coat shows only as a short bar across the dress strip,
+which is what every other belted character already looks like. Simplest form
+is a reach field on the belt; the principled form samples the cut's own edge
+at the belt's height.
+
+### Out of scope, still
+
+Her height (K7), the realistic build (K7, cuts are chibi-only, so none of the
+above reaches it), and hair, face, glasses and boots.
+
 ## Acceptance, every milestone
 
 - The K0 harness: per-region overlap and mean contour distance against the
