@@ -426,7 +426,20 @@ where it can be seen.
 
 ### K6. Integration
 
-In this order, each checked before the next: the catalogue entry for every new
+**Status: part done, 2026-09-21.** Done: every new field and cut is in
+`catalogue.py` (`lab_coat` in `COAT_CUT_LABELS` with its assert, `collar_mock`,
+`coat_sleeves`, `belt_keeper_pair`), `catalogue.json` refreshed, and the cast
+sheet checked at tile size, where she reads as a white lab coat over a
+charcoal dress with the belt and cuffs visible and Satoko beside her is
+untouched. Across the whole campaign `refresh-ref-out.sh` never reported a
+render other than keiko, real/keiko and the two sheets.
+
+Left, and wanting the owner: the web tool restaged and looked at in a browser,
+the cover, and `../valley_of_mist`'s reference sheet and chapter inserts,
+which that repo checks in and regenerates from here. That regeneration stays a
+separate, explicit step at the owner's request, in that repo.
+
+The original plan for this milestone, kept for the record. In this order, each checked before the next: the catalogue entry for every new
 cut (`COAT_CUT_LABELS` and its `assert set(...) == set(COAT_CUTS)`, the same
 for the collar, belt and sleeve label maps, plus the slot's `selects`), the
 web GUI restaged and looked at, the cast sheet, then the cover.
