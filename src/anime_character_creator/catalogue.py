@@ -277,6 +277,7 @@ COLLAR = GarmentSlot(
     "collar",
     "Collar",
     _color("collar_color", "Collar"),
+    bools=(_bool("collar_mock", "Mock neck"),),
     selects=(
         SelectField(
             "collar_cut",

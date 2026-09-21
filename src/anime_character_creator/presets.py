@@ -551,6 +551,11 @@ HARUTO = CharacterParams(
     ),
 )
 
+# Keiko's dress, sampled off `ref-local/keiko-tall-chibi/`. One name because
+# the garment is one piece: the tunic, the skirt and the mock collar are the
+# same cloth, and a seam between them is what the reference does not have.
+DRESS = "#373833"
+
 KEIKO = CharacterParams(
     skin_tone=SKIN,
     # Deep plum-violet rather than plain dark brown, with dusty rose-violet
@@ -562,14 +567,20 @@ KEIKO = CharacterParams(
     hairstyle="long_traced",
     hair_length=0.55,
     eye_color="#a58a92",
-    # Waiting on: an open lab coat at full length, and spectacles. The charcoal
-    # is the researcher's robes the coat hangs over.
+    # The charcoal is a one-piece dress under the coat, closed at the throat
+    # with a mock neck: one colour above and below the belt, and tucked, so
+    # nothing marks a waist the reference does not have
+    # (`docs/keiko-clothes-plan.md`, K1). The tone is the reference's own
+    # sampled `#373833`.
     outfit=Outfit(
-        tunic_color="#3f3f3a",
+        tunic_color=DRESS,
         boot_color="#232323",
         undersleeve_color="#e8e9e6",
         belt_color="#33332f",
-        skirt_color="#3a3a35",
+        collar_color=DRESS,
+        collar_mock=True,
+        tunic_tucked=True,
+        skirt_color=DRESS,
         skirt_length=0.82,
         # See Satoko's `skirt_length_chibi` comment: same reasoning.
         skirt_length_chibi=0.552,

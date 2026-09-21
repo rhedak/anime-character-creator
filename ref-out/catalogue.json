@@ -438,6 +438,12 @@
         "label": "Collar",
         "optional": true
       },
+      "bools": [
+        {
+          "field": "collar_mock",
+          "label": "Mock neck"
+        }
+      ],
       "selects": [
         {
           "field": "collar_cut",

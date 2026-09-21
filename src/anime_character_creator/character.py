@@ -251,6 +251,14 @@ class Outfit:
     # A traced cut from `COLLAR_CUTS` in place of the standing band; `None` is
     # the band.
     collar_cut: str | None = None
+    # The collar hugs the neck as a mock (turtle) neck rather than standing out
+    # over the shoulders. The standing band is 1.70 neck half-widths across,
+    # which is right for a uniform's collar and wrong for knitwear: Keiko's
+    # reference puts her dress's collar at 0.276 head radii against a neck of
+    # 0.269, so the cloth simply takes the neck's own silhouette. It also drops
+    # the band's centre notch, which says "two halves meeting" about a garment
+    # that has no opening at all.
+    collar_mock: bool = False
     # A row of buttons down the centre front, from collar to belt.
     placket_color: str | None = None
     # A flapped pocket on each breast.
@@ -4493,6 +4501,35 @@ def _goggles(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+def _mock_collar(sk: Skeleton, p: CharacterParams, color: str, sw: float) -> str:
+    """A mock neck: the collar takes the neck's own silhouette.
+
+    Knitwear pulled up the throat has no opening and stands no wider than what
+    it covers, so this is one band at the neck's width from the top of the neck
+    down past the tunic's neckline, and no notch. The standing band `_collar`
+    draws is the other thing, a uniform's collar spreading toward the
+    shoulders; drawn at 1.70 neck half-widths on a mock neck it reads as a
+    yoke.
+
+    It has to reach below the tunic's V or a sliver of throat shows under it.
+    `_tunic` cuts that V to `neck_half_w * 0.28` below the shoulder line
+    whenever a collar is worn, so the band clears the V's point by a stroke
+    width rather than stopping on the shoulder line where the cloth's own
+    seam would sit.
+    """
+    cx, sy = sk.head_cx, sk.shoulder_y
+    # Just outside the neck, so the band's outline sits beside the neck's
+    # rather than on top of it.
+    half = sk.neck_half_w * 1.03
+    top = sk.neck_y
+    bottom = sy + sk.neck_half_w * 0.28 + sw
+    d = (
+        f"M {cx - half:.1f} {top:.1f} L {cx + half:.1f} {top:.1f} "
+        f"L {cx + half:.1f} {bottom:.1f} L {cx - half:.1f} {bottom:.1f} Z"
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+
+
 def _collar(sk: Skeleton, p: CharacterParams) -> str:
     """A standing collar closing at the throat, over the tunic's open V.
 
@@ -4513,6 +4550,8 @@ def _collar(sk: Skeleton, p: CharacterParams) -> str:
     cx, sy = sk.head_cx, sk.shoulder_y
     color = p.outfit.collar_color
     sw = _stroke_w(sk)
+    if p.outfit.collar_mock:
+        return _mock_collar(sk, p, color, sw)
     # Off the neck, not off the shoulder: a collar wraps a throat, and reading
     # the shoulder here would widen it into a yoke as the frame gets broader.
     half = sk.neck_half_w * 1.70
@@ -8646,6 +8685,12 @@ def render_character(
         # the panels it stopped short of the arms and read as a patch on the middle
         # one, and widening it to the arms read as a strap laid across the coat.
         _belt(sk, p) if p.outfit.coat_color is not None else "",
+        # A mock neck goes under the coat, unlike the standing collar below: it
+        # is the garment underneath pulled up the throat, so the coat's lapels
+        # lie over its corners, which is what the reference shows. Drawn in the
+        # collar's usual late place instead, its corners sat on top of the
+        # lapels and the band read as a bib over the coat.
+        _collar(sk, p) if p.outfit.collar_mock else "",
         # Over the tunic and the trim on it, under the arms: a coat hangs open in
         # front of the body and behind the arms.
         _coat(sk, p),
@@ -8663,8 +8708,9 @@ def render_character(
         _traced_coat_and_belt(sk, p),
         # After the arms and before the ear: a standing collar wraps the throat,
         # so it belongs over the neck and the tunic's V, and it is the one
-        # garment high enough that the head has to be drawn after it.
-        _collar(sk, p),
+        # garment high enough that the head has to be drawn after it. A mock
+        # neck is drawn earlier, under the coat; see above.
+        _collar(sk, p) if not p.outfit.collar_mock else "",
         # The ear goes under the head and over the back hair: the canon runs the
         # face's outline unbroken across the ear and hangs the hair behind it.
         _ears(sk, p),

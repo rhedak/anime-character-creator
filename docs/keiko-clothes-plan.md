@@ -186,6 +186,43 @@ snapshot change.
 
 ### K1. The dress and the closed throat
 
+**Status: done, 2026-09-21.** `Outfit.collar_mock`, a new `_mock_collar`, and
+Keiko wearing one colour (`DRESS = "#373833"`, the reference's own) for tunic,
+skirt and collar, tucked.
+
+Predicted before rendering, from `_collar`'s constants: top 0.741, bottom
+1.212, half-width **0.458** against the reference's 0.276. The width was the
+whole problem: the standing band spreads to 1.70 neck half-widths, which is a
+uniform's collar, and the reference's mock neck is 0.276 against a neck of
+0.269, so the cloth simply takes the neck's own silhouette. Measured after:
+top **0.850** against 0.856, half-width **0.277** against 0.276.
+
+The band's bottom lands at 1.236 against the reference's seam at 1.068,
+because it has to clear the tunic's V (`neck_half_w * 0.28` below the shoulder
+line whenever a collar is worn) or a sliver of throat shows under it. That is
+0.17 head radii deeper than the reference's seam and was accepted by eye: the
+dress below it is the same cloth and the same colour, so the edge reads as
+where the knit ends, not as a garment boundary in the wrong place.
+
+Two things the render answered that the numbers did not:
+
+- **The mock neck goes under the coat.** In the collar's usual late place its
+  corners sat on top of the lapels and the band read as a bib. The reference
+  has the lapels over the collar. The order is conditional on `collar_mock`,
+  not global: Katherina's pointed collar keeps the late place, and a test
+  holds both halves of that.
+- **The collar still makes a T** against the strip of dress below it, because
+  our coat's opening is about half the reference's width. That is K2's, not
+  the collar's: rendered without the coat the band reads correctly at 4x, on
+  white and on black.
+
+`refresh-ref-out.sh` reported keiko, real/keiko, sheet and sheet_satoshi
+changed, and nothing else; `catalogue.json` refreshed for the new field. 507
+tests pass. K5's dress colour is therefore already landed; its belt colour is
+not.
+
+The original plan for this milestone, kept for the record:
+
 Cheapest thing first, and it may need no new shape code at all:
 `collar_color` plus `_collar` already draws a standing band that closes at the
 throat, which is what a mock neck is. Try the fields before writing anything:

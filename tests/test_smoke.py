@@ -606,6 +606,48 @@ def test_a_belt_worn_with_an_open_coat_is_drawn_under_it(preset: str) -> None:
     assert bare_svg.index(character._belt(sk, bare)) > bare_svg.index(character._tunic(sk, bare))
 
 
+@pytest.mark.parametrize("build", ["chibi", "realistic"])
+def test_a_mock_collar_hugs_the_neck_and_covers_the_tunics_v(build: str) -> None:
+    """A mock neck takes the neck's own silhouette, where the standing band
+    spreads to 1.70 neck half-widths and reads as a yoke. It also has to reach
+    below the tunic's V, which is cut to `neck_half_w * 0.28` under the shoulder
+    line whenever a collar is worn, or a sliver of throat shows under the band,
+    and it carries no centre notch: there are no two halves to meet."""
+    p = PRESETS["keiko"]
+    assert p.outfit.collar_mock and p.outfit.collar_color is not None
+    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    band = character._collar(sk, p)
+    for side in (-1, 1):
+        x = sk.head_cx + side * sk.neck_half_w * 1.03
+        assert f"{x:.1f}" in band, f"{build}: the band is not at the neck's own width"
+    standing = replace(p, outfit=replace(p.outfit, collar_mock=False))
+    assert character._collar(sk, standing) != band
+    assert band.count("<path") == 1, "the mock neck draws a notch it has no opening for"
+    v_point = sk.shoulder_y + sk.neck_half_w * 0.28
+    bottom = max(
+        float(t) for t in re.findall(r"\d+\.\d+", band.split('d="')[1].split('"')[0])[1::2]
+    )
+    assert bottom >= v_point, (
+        f"{build}: the band stops at {bottom:.1f}, above the V's {v_point:.1f}"
+    )
+
+
+def test_a_mock_collar_is_worn_under_an_open_coat() -> None:
+    """The lapels lie over the band's corners, which is what the reference shows.
+    Drawn in the standing collar's late place the corners sat on top of the coat
+    and the band read as a bib. The standing collar keeps that late place, so
+    Katherina's does not move under her jacket with it."""
+    p = PRESETS["keiko"]
+    svg = render_character(p, character.skeleton_for(p))
+    sk = character.skeleton_for(p)
+    assert svg.index(character._collar(sk, p)) < svg.index(character._coat(sk, p))
+    other = PRESETS["katherina"]
+    o_sk = character.skeleton_for(other)
+    assert not other.outfit.collar_mock
+    o_svg = render_character(other, o_sk)
+    assert o_svg.index(character._collar(o_sk, other)) > o_svg.index(character._tunic(o_sk, other))
+
+
 @pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
 @pytest.mark.parametrize("preset", ["daizen", "haruto", "reika"])
 def test_a_sash_stays_a_wide_flat_band_on_every_chibi_body(preset: str, body: str | None) -> None:
