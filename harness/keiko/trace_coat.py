@@ -174,7 +174,64 @@ def trace(mask, tol):
     return {"start": start, "segs": segs}
 
 
+def interior_lines(side):
+    """The lapel's fold and notch, which are line work rather than silhouette.
+
+    The reference draws the collar band and the lapel facing as one fill, so the
+    step between them, the notch, never reaches the component's boundary: it is
+    ink *inside* the region. Traced as part of the closed contour it is simply
+    smoothed away, which is why the first pass produced a lapel with no notch in
+    it at all and read plain (`docs/keiko-clothes-plan.md`, P3).
+
+    Method is the skill's interior-line case: erode the region's hull past the
+    outline's own width, take the dark pixels left inside it, drop specks, order
+    each stroke along its principal axis and fit an open chain.
+    """
+    hull = ndi.binary_fill_holes(side_mask(pieces["lapel"], side))
+    inner = ndi.binary_erosion(hull, structure=disk, iterations=HALF_STROKE + 2)
+    dark = inner & (rgb.sum(2) < 200)
+    lab_, n_ = ndi.label(dark, structure=np.ones((3, 3), bool))
+    out = []
+    for i in range(1, n_ + 1):
+        m = lab_ == i
+        if m.sum() < 25:
+            continue
+        ys_, xs_ = np.nonzero(m)
+        pts = np.stack([xs_, ys_], 1).astype(float)
+        c0 = pts.mean(0)
+        _, _, vt = np.linalg.svd(pts - c0, full_matrices=False)
+        t = (pts - c0) @ vt[0]
+        order = np.argsort(t)
+        # Average along the stroke in bins, which is its centre line; the raw
+        # pixels are a few wide and zigzag at this line weight.
+        bins = np.array_split(order, min(8, max(2, len(order) // 12)))
+        centre = [pts[b].mean(0) for b in bins if len(b)]
+        loc = local([(q[0], q[1]) for q in centre])
+        keep = tl.simplify(loc, 0.010)
+        if len(keep) < 3:
+            continue
+        start, segs = tl.fit_chain(loc, keep)
+        # The hull was eroded past the outline's width to find this ink, so both
+        # ends stop short of the edges the stroke actually runs between and it
+        # floats in the middle of the facing. Carry each end back out along its
+        # own direction by that much again; the overshoot hides under the
+        # outline it meets.
+        ext = (HALF_STROKE + 11) / R
+
+        def carried(pt, toward):
+            dx, dy = pt[0] - toward[0], pt[1] - toward[1]
+            n = (dx * dx + dy * dy) ** 0.5 or 1.0
+            return (pt[0] + dx / n * ext, pt[1] + dy / n * ext)
+
+        start = carried(start, segs[0][0])
+        segs = list(segs)
+        segs[-1] = (segs[-1][0], carried(segs[-1][1], segs[-1][0]))
+        out.append({"start": start, "segs": segs})
+    return out
+
+
 shapes = {}
+lines = {}
 land = {}
 for side, name in ((-1, "left"), (1, "right")):
     panel, sleeve = split_panel_and_sleeve(side)
@@ -183,6 +240,7 @@ for side, name in ((-1, "left"), (1, "right")):
     shapes[f"lapel_{name}"] = trace(side_mask(pieces["lapel"], side), 0.010)
     shapes[f"sleeve_{name}"] = trace(sleeve, 0.012)
     shapes[f"cuff_{name}"] = trace(cuff, 0.010)
+    lines[name] = interior_lines(side)
     # The sleeve's landmarks, for `SleeveCut`: the shoulder joint is the centre
     # of the sleeve's topmost rows, the wrist the cuff's bottom centre.
     sy, sx = np.nonzero(sleeve)
@@ -195,6 +253,7 @@ for side, name in ((-1, "left"), (1, "right")):
     }
 for k, v in shapes.items():
     print(f"{k:14s} {len(v['segs']):3d} segments")
+print("interior lines", {k: len(v) for k, v in lines.items()})
 print("sleeve landmarks", land)
 
 colours = {}
@@ -204,7 +263,7 @@ for name, ids in (("coat", pieces["panel"]),):
 print(colours, "squash %.4f" % SQUASH)
 
 OUT.mkdir(parents=True, exist_ok=True)
-json.dump({"shapes": shapes, "landmarks": land, "colours": colours, "squash": SQUASH}, open(OUT / "coat_trace.json", "w"))
+json.dump({"shapes": shapes, "lines": lines, "landmarks": land, "colours": colours, "squash": SQUASH}, open(OUT / "coat_trace.json", "w"))
 
 # --- overlay: the fitted chains back over the reference, to be looked at -----
 S = 2

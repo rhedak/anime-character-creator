@@ -3600,6 +3600,8 @@ SKIRT_CUTS: dict[str, GarmentCut] = {
 # traced lower panel flaring from it. The sleeve (`SLEEVE_CUTS["wide"]`) fills
 # the rest of the shoulder, so the two read as one jacket. Built from the right
 # side and mirrored, so the shoulders match.
+
+
 # Keiko's lab coat, per `docs/keiko-clothes-plan.md` K2.
 # The panels are built from the profile measured in `harness/keiko/landmarks.py`
 # and the lapels are traced off `ref-local/keiko-tall-chibi/segments/white-lab-coat.png`;
@@ -3696,6 +3698,30 @@ _LAB_COAT_LAPEL_RIGHT: Chain = (
     ],
 )
 
+# The step where the collar band meets the lapel facing, traced as the open
+# stroke it is: the reference draws both as one fill, so the notch never
+# reaches the region's boundary and a closed contour smooths it away.
+_LAB_COAT_NOTCH_LEFT: Chain = (
+    (-0.396, 1.221),
+    [
+        ((-0.492, 1.219), (-0.485, 1.231)),
+        ((-0.464, 1.254), (-0.443, 1.276)),
+        ((-0.498, 1.315), (-0.609, 1.398)),
+    ],
+)
+
+# The step where the collar band meets the lapel facing, traced as the open
+# stroke it is: the reference draws both as one fill, so the notch never
+# reaches the region's boundary and a closed contour smooths it away.
+_LAB_COAT_NOTCH_RIGHT: Chain = (
+    (0.469, 1.154),
+    [
+        ((0.512, 1.223), (0.512, 1.233)),
+        ((0.493, 1.254), (0.473, 1.276)),
+        ((0.528, 1.315), (0.637, 1.397)),
+    ],
+)
+
 # (end of the lab coat)
 
 
@@ -3769,7 +3795,8 @@ COAT_CUTS: dict[str, GarmentCut] = {
             _LAB_COAT_PANEL_RIGHT,
             _LAB_COAT_LAPEL_LEFT,
             _LAB_COAT_LAPEL_RIGHT,
-        )
+        ),
+        lines=(_LAB_COAT_NOTCH_LEFT, _LAB_COAT_NOTCH_RIGHT),
     ),
 }
 

@@ -520,6 +520,21 @@ from the neck alone.
 
 ### P3. The lapel meets the collar unnaturally
 
+**Status: done, 2026-09-21.** The cause was not the junction at all: **the
+notch was never drawn**. K2's own notes said it is interior line work and not
+silhouette, and then traced the lapel as a closed contour anyway, where a step
+that never reaches the region's boundary is simply smoothed away. The facing
+was a plain wedge because it had no notch in it.
+
+Traced now as the open stroke it is, per the skill's interior-line case, and
+carried in `GarmentCut.lines`. Its ends are extended back out along their own
+direction, because the hull has to be eroded past the outline's width to find
+the ink and that leaves the stroke floating in the middle of the facing.
+
+The other suspect is ruled out: `_interp_flat` returns its first value at and
+below the first knot, so `_garment_placement`'s x scale is continuous across
+y = 1.0 and the lapel is not distorted by crossing it.
+
 Mostly downstream of P2: the facing was traced against the reference's collar
 and now lands against a block of a different width. Re-check the junction once
 P2 is in, and only then judge whether the facing itself is too plain. The cut
