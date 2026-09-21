@@ -210,8 +210,12 @@ BELT = GarmentSlot(
     bools=(_bool("belt_keeper_pair", "Keeper either side"),),
     # 1.0 (the default) through 2.8, Chiyo's obi and the tallest in the cast.
     # Capped a little above that rather than left open, since nothing wider has
-    # been rendered and judged.
-    ranges=(_range("belt_scale", "Belt height", 1.0, 3.0),),
+    # been rendered and judged. `belt_reach` is how far it goes across: 1.0 is
+    # the waist it would wrap on a bare figure, more for a belt worn over a coat.
+    ranges=(
+        _range("belt_scale", "Belt height", 1.0, 3.0),
+        _range("belt_reach", "Belt reach", 0.8, 1.4),
+    ),
     selects=(SelectField("belt_cut", "Cut", ((None, "Band"), *sorted(BELT_CUT_LABELS.items()))),),
 )
 APRON = GarmentSlot("apron", "Apron", _color("apron_color", "Apron"), requires="belt")

@@ -171,6 +171,10 @@ class Outfit:
     # dress belt carries rather than a working one. Keiko's reference
     # (`docs/keiko-clothes-plan.md`, K3).
     belt_keeper_pair: bool = False
+    # How far the belt reaches across, as a multiple of its usual half-width.
+    # A belt worn over an open coat has to reach the coat's own front edge, not
+    # just the waist it would wrap on a bare figure.
+    belt_reach: float = 1.0
     # A traced cut from `BELT_CUTS`; `None` is the shared band.
     belt_cut: str | None = None
     # Front panel hanging from the belt, over the skirt.
@@ -7078,6 +7082,11 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
         # square corners stood out under its rounded ends as a small step.
         gap, w_top = _leg_gap_and_top(sk, True)
         half_w = max(half_w, gap + w_top + _stroke_w(sk) * 0.5)
+    # A belt worn over a coat has further to go than one worn over a waist: it
+    # reaches the coat's own front edge. Keiko's stopped at 0.679 head radii
+    # where her coat's panel is 0.784, so it read as a short bar floating in the
+    # middle of the coat (the owner's review, P6).
+    half_w *= p.outfit.belt_reach
     y, h = _belt_band(sk, p.outfit.belt_scale)
     parts = [
         f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '

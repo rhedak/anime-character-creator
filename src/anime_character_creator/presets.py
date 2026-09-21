@@ -581,6 +581,7 @@ KEIKO = CharacterParams(
         undersleeve_color=None,
         belt_color="#ececec",
         belt_keeper_pair=True,
+        belt_reach=1.15,
         collar_color=DRESS,
         collar_mock=True,
         coat_cut="lab_coat",

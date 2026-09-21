@@ -561,6 +561,11 @@ mid-torso" in Katherina's campaign.
 
 ### P6. The belt stops short of the coat
 
+**Status: done, 2026-09-21.** `Outfit.belt_reach`, a multiple of the belt's
+usual half-width, default 1.0 so nobody else moves; Keiko's is 1.15, which
+carries her 0.679 out to the coat's own 0.784. A belt worn over a coat has
+further to go than one worn over a waist.
+
 Ours reaches **0.679** and the coat's own panel edge at that height is
 **0.784**. Against the reference figure ours is proportionally the wider belt
 (0.640 against a 0.84 panel); it looks short because our coat and arms are

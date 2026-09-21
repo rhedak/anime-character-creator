@@ -349,6 +349,12 @@
           "label": "Belt height",
           "min": 1.0,
           "max": 3.0
+        },
+        {
+          "field": "belt_reach",
+          "label": "Belt reach",
+          "min": 0.8,
+          "max": 1.4
         }
       ],
       "bools": [
