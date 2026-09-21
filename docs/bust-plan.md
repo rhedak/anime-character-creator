@@ -51,11 +51,53 @@ It constrains the design in one useful way: the bust knot added to
 draws between shoulder and waist when the bust is zero, or the knot alone moves
 every traced cut. Anything that cannot be written that way does not go in.
 
+## Owner's decisions (2026-09-21)
+
+1. **One knob**, `bust`.
+2. **It rides the build.** Per-character values are iterated later, not now.
+3. **Silhouette first, line work decided separately**, as recommended.
+4. **Traced cuts follow the bust**, as recommended.
+5. **Keiko's P7 second pass folds into B5** and her campaign waits.
+
+## B0's result: the side silhouette is the wrong lever
+
+**Measured, and it reorders this plan.** The torso at `bust_y` runs 0.930 head
+radii flat to 1.061 at `bust = 1.0`. The arm hangs from 0.752 to 1.150. The
+whole of the bulge is *inside* the arm's span, so every value of `bust` is
+hidden behind the arm, on every character, at every build. The sweep is flat
+not because the amplitude is small but because nothing of it is visible.
+
+This is not a traced-coat problem. `_tunic` is drawn before `_arms` for all
+seventeen presets, so the region a bust would occupy is behind the arms for the
+whole cast, whatever they wear.
+
+So a bust needs one of three things, and B2 as written cannot work alone:
+
+- **The chest in front of the arm** (B5), which is the owner's stated intent
+  and would make the bulge visible against the sleeve. It is now a
+  prerequisite for B2 rather than a milestone after it.
+- **Line work on the chest's front**, the under-bust curve (B4), which is what
+  chibi art of this kind usually reads a bust from and which needs no layering
+  change at all.
+- **Arms further out**, so the torso shows between them. A proportion change
+  affecting every figure and every garment; noted for completeness, not
+  recommended.
+
+B5 moving before B2 also means the plan's milestone order below is stale from
+B2 onward. It is left as written rather than rewritten, so the reason for the
+change stays legible.
+
 ## Milestones
 
 ### B0. Decide the shape, and build the sweep
 
-No `src/` change. `harness/bust/sweep.py` renders one character across
+**Status: done, 2026-09-21, and it changed the plan; see above.** The sweep is
+`harness/bust/sweep.py`. The ordering as written here was also wrong: a sweep
+needs the parameter it sweeps, so B1 and a first cut of B2 were built first,
+both no-ops at `bust = 0`, and the sweep then ran against them. Prototyping the
+shape in the harness first would have meant building it twice.
+
+Originally: no `src/` change. `harness/bust/sweep.py` renders one character across
 `bust = 0, 0.25, 0.5, 0.75, 1.0` side by side at one scale, on white and on
 black, at chibi and at realistic, the way `harness/body/head_size_variants.py`
 did for the head. Also a second sheet with the same sweep under three
@@ -66,6 +108,17 @@ before any of it is wired into a preset. Nothing below is worth building
 against a guess about how much is too much.
 
 ### B1. The anchor, drawing nothing
+
+**Status: done, 2026-09-21.** `Skeleton.bust_y` and `bust_half_w`,
+`CharacterParams.bust`, threaded through `skeleton_for`'s three
+`build_skeleton` calls beside `frame`. `_BUST_ALONG = 0.45` of the way from
+shoulder to waist, and `_BUST_REACH` 0.10 head radii at chibi to 0.20 at the
+adult build, both first guesses. `build_skeleton(bust=0.0)` is equal to
+`build_skeleton()`, and `refresh-ref-out.sh` reported nothing changed.
+
+`BodyProfile` did **not** gain the field, against what this plan said: it holds
+measured proportions, and nothing measures a bust here yet. It goes in when a
+body carries one.
 
 `Skeleton` gains `bust_y` and `bust_half_w`. `CharacterParams` gains
 `bust: float = 0.0`, threaded through `skeleton_for`'s three
@@ -84,6 +137,11 @@ that a skeleton built with `bust=0.0` is equal to one built without the
 argument at all.
 
 ### B2. The silhouette
+
+**Status: written, and invisible until B5; see B0's result.** `_tunic`'s
+armpit-to-waist run takes the bust, and at `bust = 0` it emits the single
+original curve character for character rather than a two-segment form tracing
+the same path, because `ref-out/` compares the numbers and not the geometry.
 
 `_tunic`'s armpit-to-waist quadratic reads the anchor: at `bust = 0` it is the
 curve it draws today, and above zero it bows out to `bust_half_w` at `bust_y`.

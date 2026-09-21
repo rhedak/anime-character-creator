@@ -467,6 +467,12 @@ class CharacterParams:
     # Shoulder against hip: -1 narrow-shouldered and wide-hipped, 0 neutral, +1
     # the other way. Only bites at taller builds. Ignored when handed a skeleton.
     frame: float = 0.0
+    # How far the figure's bust carries, 0 flat. A character trait rather than a
+    # proportion of the build, which is why it lives here and not on the
+    # skeleton: the skeleton says where a bust sits, this says how much of one
+    # there is. Male characters stay at 0 and render byte-identically to before
+    # the anchor existed (`docs/bust-plan.md`).
+    bust: float = 0.0
     # Where the upper body ends and the lower begins, in head radii: shifts the
     # waist and hip lines together, so the belt (and everything hung from it)
     # rides up (negative) or down (positive) while the shoulders, knees and
@@ -2728,17 +2734,43 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # pulled out toward the shoulder's own width on the way.
     rib_ctrl_y = cuff_y + (wy - cuff_y) * 0.55
 
-    def down(s: int) -> str:
-        return (
-            f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
-            f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "
+    # The armpit-to-waist run, which is where a bust lives: one quadratic from
+    # the torso's width at the armpit down to the waist. With a bust it becomes
+    # two, passing through `bust_half_w` at `bust_y`.
+    #
+    # At `bust = 0` the single curve is emitted unchanged, character for
+    # character, rather than a two-segment form that happens to trace the same
+    # path. Splitting a quadratic at a point on it reproduces the curve exactly
+    # in geometry and not in the numbers written down, and `ref-out/` compares
+    # the numbers: every one of the seventeen presets would have come out
+    # "changed" for no visible reason (`docs/bust-plan.md`, B1's invariant).
+    bw, by = sk.bust_half_w, sk.bust_y
+
+    def rib(s: int, descending: bool) -> str:
+        if p.bust <= 0:
+            return (
+                f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
+                if descending
+                else f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} "
+                f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
+            )
+        upper = (
+            f"Q {cx + s * bw:.1f} {cuff_y + (by - cuff_y) * 0.5:.1f} {cx + s * bw:.1f} {by:.1f} "
+        )
+        lower = f"Q {cx + s * bw:.1f} {by + (wy - by) * 0.35:.1f} {cx + s * ww:.1f} {wy:.1f} "
+        if descending:
+            return upper + lower
+        back_up = f"Q {cx + s * bw:.1f} {by + (wy - by) * 0.35:.1f} {cx + s * bw:.1f} {by:.1f} "
+        return back_up + (
+            f"Q {cx + s * bw:.1f} {cuff_y + (by - cuff_y) * 0.5:.1f} "
+            f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
         )
 
+    def down(s: int) -> str:
+        return rib(s, True) + f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "
+
     def up(s: int) -> str:
-        return (
-            f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
-            f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
-        )
+        return f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} " + rib(s, False)
 
     stand = (
         p.outfit.neckline_stand and p.outfit.collar_color is None and not p.outfit.neckline_round
@@ -3304,10 +3336,10 @@ def _skeleton_at(p: CharacterParams, heads: float | None) -> Skeleton:
         # covers it for whoever wears one, so this only widens the floor,
         # never narrows it.
         margin = max(margin, default_hair_margin(heads))
-        sk = build_skeleton(heads=profile.heads, frame=p.frame, min_hair_margin=margin)
-        chibi = build_skeleton(heads=heads, frame=p.frame).build
+        sk = build_skeleton(heads=profile.heads, frame=p.frame, bust=p.bust, min_hair_margin=margin)
+        chibi = build_skeleton(heads=heads, frame=p.frame, bust=p.bust).build
         return profile.applied(sk, chibi)
-    return build_skeleton(heads=heads, frame=p.frame, min_hair_margin=margin)
+    return build_skeleton(heads=heads, frame=p.frame, bust=p.bust, min_hair_margin=margin)
 
 
 # Traced garments ("cuts", `katherina-clothes-plan.md`) are drawn in the head

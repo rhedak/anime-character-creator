@@ -52,6 +52,14 @@ class Skeleton:
     shoulder_half_w: float
     waist_y: float
     waist_half_w: float
+    # Where a bust sits on the torso and how far it carries. The height is a
+    # proportion of the build like every other anchor: what a character differs
+    # on is the size, not where a bust is on a body. At `bust=0` the half-width
+    # is exactly what the shoulder-to-waist run already gives at that height, so
+    # the anchor draws nothing and changes nothing until it is asked for
+    # (`docs/bust-plan.md`).
+    bust_y: float
+    bust_half_w: float
     hip_y: float
     hip_half_w: float
     hem_y: float
@@ -192,11 +200,22 @@ def default_hair_margin(heads: float) -> float:
     return _lerp(0.75, 0.36, t0)
 
 
+# Where the bust sits between the shoulder and the waist, and how far `bust=1`
+# carries it out, in head radii. The height is anatomy and does not vary; the
+# reach rides the build, because the shared chibi is a small child's proportion
+# and an adult figure carries more. Both are first guesses for `harness/bust/`
+# to refine by eye, which is the only way this gets decided: no reference in
+# this project measures a bust (`docs/bust-plan.md`, B0).
+_BUST_ALONG = 0.45
+_BUST_REACH = (0.10, 0.20)
+
+
 def build_skeleton(
     canvas_w: float = 400,
     canvas_h: float = 500,
     heads: float = DEFAULT_HEADS,
     frame: float = 0.0,
+    bust: float = 0.0,
     hair_margin: float | None = None,
     bottom_margin: float = 0.03,
     min_hair_margin: float = 0.0,
@@ -235,6 +254,18 @@ def build_skeleton(
     # a percent of the width, so a chibi comes out the same whatever it is handed.
     f = max(-1.0, min(1.0, frame)) * t
 
+    shoulder_y = chin_y + body * _lerp(0.02, 0.028, t)
+    shoulder_half_w = head_r * _lerp(0.68, 1.55, t) * (1.0 + 0.09 * f)
+    waist_y = chin_y + body * _lerp(0.46, 0.333, t)
+    waist_half_w = head_r * _lerp(0.88, 1.00, t) * (1.0 + 0.03 * f)
+    bust_y = shoulder_y + (waist_y - shoulder_y) * _BUST_ALONG
+    # The width the torso already has at that height, plus whatever the
+    # character asks for. The first term is what makes `bust=0` a no-op, and it
+    # has to stay exactly the shoulder-to-waist interpolation `_body_knots`
+    # hands the garment placement, or the anchor alone moves every traced cut.
+    bust_half_w = shoulder_half_w + (waist_half_w - shoulder_half_w) * _BUST_ALONG
+    bust_half_w += head_r * _lerp(*_BUST_REACH, t) * max(0.0, bust)
+
     return Skeleton(
         canvas_w=canvas_w,
         canvas_h=canvas_h,
@@ -245,13 +276,15 @@ def build_skeleton(
         head_r=head_r,
         neck_y=head_cy + head_r * 0.85,
         neck_half_w=head_r * _lerp(0.21, 0.40, t),
-        shoulder_y=chin_y + body * _lerp(0.02, 0.028, t),
-        shoulder_half_w=head_r * _lerp(0.68, 1.55, t) * (1.0 + 0.09 * f),
-        waist_y=chin_y + body * _lerp(0.46, 0.333, t),
+        shoulder_y=shoulder_y,
+        shoulder_half_w=shoulder_half_w,
+        waist_y=waist_y,
         # A chibi barely has a waist: it stays wider than its own shoulders and
         # only a little narrower than its hips, which is what keeps it reading as
         # a small child rather than a shrunken adult. An adult takes in sharply.
-        waist_half_w=head_r * _lerp(0.88, 1.00, t) * (1.0 + 0.03 * f),
+        waist_half_w=waist_half_w,
+        bust_y=bust_y,
+        bust_half_w=bust_half_w,
         hip_y=chin_y + body * _lerp(0.58, 0.417, t),
         hip_half_w=head_r * _lerp(0.95, 1.30, t) * (1.0 - 0.11 * f),
         hem_y=chin_y + body * _lerp(0.70, 0.58, t),
