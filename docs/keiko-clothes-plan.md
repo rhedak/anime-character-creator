@@ -350,6 +350,14 @@ wrong.
 Her belt also moved to the reference's `#ececec` here rather than waiting for
 K5, because a dark belt hides both of the above.
 
+The band across its lower half went too, on a later look: it is meant to read
+as the strap's own thickness, which it does on the dark leather the rest of
+the cast wears and does not on a pale one, where it read as a grey stripe down
+the belt. `CLAUDE.md`'s rule is that a garment carries no shading plane and a
+second tone is for small elements where it reads as thickness, so where it
+stops doing that it goes. The other sixteen presets keep theirs, held by a
+test.
+
 Known and left: the keepers read as rather solid blocks at figure size, and
 the band sits about 0.12 head radii lower than the reference's.
 

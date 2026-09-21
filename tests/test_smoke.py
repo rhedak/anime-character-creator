@@ -694,6 +694,14 @@ def test_a_dress_belt_carries_a_keeper_either_side_of_the_buckle() -> None:
     # Above the band and above the buckle, which is 1.08 of it; the keepers are
     # 1.27. The band's own printed height rounds up past `h`, hence the margin.
     tall = [w for w in re.findall(r'height="(\d+\.\d+)"', pair) if float(w) > h * 1.15]
+    # and it is flat: the band across the lower half reads as the strap's own
+    # thickness on dark leather and as a grey stripe on a white belt, so a
+    # dress belt does without it while the rest of the cast keeps it.
+    assert f'fill="{character.shade(p.outfit.belt_color)}"' not in pair
+    assert (
+        f'fill="{character.shade(PRESETS["satoshi"].outfit.belt_color)}"'
+        in character._belt_drawn(character.skeleton_for(PRESETS["satoshi"]), PRESETS["satoshi"])
+    )
     assert len(tall) == 2, f"expected two keepers standing above the band, got {tall}"
     for other in ("satoshi", "satoko", "elara"):
         q = PRESETS[other]

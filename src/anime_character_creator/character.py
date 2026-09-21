@@ -7096,7 +7096,14 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
         f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '
         f'rx="{h * 0.18:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
     ]
-    if p.shaded:
+    # Not on a dress belt. This band is meant to read as the strap's own
+    # thickness, which it does on the dark leather the rest of the cast wears
+    # and does not on a pale one: on Keiko's white belt it read as a grey
+    # stripe down the lower half, a two-tone plank rather than a belt (the
+    # owner, 2026-09-21). `CLAUDE.md`'s rule is that a garment carries no
+    # shading plane and a second tone is for small elements where it reads as
+    # thickness, so where it stops doing that it goes.
+    if p.shaded and not p.outfit.belt_keeper_pair:
         parts.append(
             f'<rect x="{cx - half_w:.1f}" y="{y + h * 0.62:.1f}" width="{half_w * 2:.1f}" height="{h * 0.38:.1f}" '
             f'rx="{h * 0.18:.1f}" fill="{shade(color)}" opacity="0.8" />'
