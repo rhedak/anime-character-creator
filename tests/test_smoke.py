@@ -588,7 +588,7 @@ def test_a_tall_boot_stops_below_the_knee_not_at_the_belt(body: str | None) -> N
     )
 
 
-@pytest.mark.parametrize("preset", ["keiko", "kyoko", "gero", "tomohiro"])
+@pytest.mark.parametrize("preset", ["kyoko", "gero", "tomohiro"])
 def test_a_belt_worn_with_an_open_coat_is_drawn_under_it(preset: str) -> None:
     """The coat's panels lie over the belt, which shows only in the opening: drawn
     over the panels it stopped short of the arms and read as a patch on the
@@ -604,6 +604,53 @@ def test_a_belt_worn_with_an_open_coat_is_drawn_under_it(preset: str) -> None:
     bare = replace(p, outfit=replace(p.outfit, coat_color=None))
     bare_svg = render_character(bare, sk)
     assert bare_svg.index(character._belt(sk, bare)) > bare_svg.index(character._tunic(sk, bare))
+
+
+def test_the_lab_coats_opening_pinches_at_the_waist() -> None:
+    """The one reversal that makes the front read as tailored.
+
+    The shared `_coat` opens steadily from throat to hem (`gap_top` under
+    `gap_hem`), and the reference does not: measured clear of the belt it runs
+    0.580 wide at the throat, narrows to about 0.45 from y 2.0 down to the
+    belt, then widens again to 0.687 by 4.75 (`harness/keiko/landmarks.py`).
+    Checked on the cut's own coordinates, where those numbers live, rather than
+    on a render, so it cannot be confused by the body it is mapped onto."""
+    panel = character.COAT_CUTS["lab_coat"].fills[1]  # the viewer's right
+    start, segs = panel
+    xs = [start] + [e for _, e in segs]
+    inner = [(y, x) for x, y in xs if 0 < x < 0.45]
+    throat = min(inner, key=lambda t: t[0])[1]
+    waist = min(x for y, x in inner if 1.8 < y < 2.6)
+    hem = max(inner, key=lambda t: t[0])[1]
+    assert waist < throat, f"the opening does not narrow: {throat:.3f} to {waist:.3f}"
+    assert hem > waist, f"the opening does not widen again: {waist:.3f} to {hem:.3f}"
+
+
+def test_the_lab_coat_leaves_the_shared_coat_alone() -> None:
+    """The cut is why this campaign touches nobody else. `_coat` serves gero,
+    kyoko and tomohiro as well as Keiko, so the lab coat is a registry entry and
+    the shared two-panel coat is unchanged: the other three render identically
+    whatever the cut does."""
+    assert set(character.COAT_CUTS) >= {"open_jacket", "lab_coat"}
+    for preset in ("gero", "kyoko", "tomohiro"):
+        p = PRESETS[preset]
+        assert p.outfit.coat_cut is None and not p.outfit.coat_sleeves
+        sk = character.skeleton_for(p)
+        assert character._coat(sk, p), f"{preset} lost the shared coat"
+
+
+def test_keikos_belt_is_worn_over_her_coat() -> None:
+    """The reference wears a belt over the lab coat, and the cast's other open
+    coats wear theirs under (see the test above, which keeps them). The traced
+    path already draws its belt after its jacket, so the order rides on the cut
+    rather than changing globally."""
+    p = PRESETS["keiko"]
+    sk = character.skeleton_for(p)
+    assert character._traced_coat(sk, p)
+    assert character._belt(sk, p) == "", "the under-coat belt still draws as well"
+    drawn = character._traced_coat_and_belt(sk, p)
+    assert drawn.index(character._belt_drawn(sk, p)) > 0
+    assert drawn.index(character._belt_drawn(sk, p)) > drawn.index('fill="#eceded"')
 
 
 @pytest.mark.parametrize("build", ["chibi", "realistic"])
@@ -638,9 +685,11 @@ def test_a_mock_collar_is_worn_under_an_open_coat() -> None:
     and the band read as a bib. The standing collar keeps that late place, so
     Katherina's does not move under her jacket with it."""
     p = PRESETS["keiko"]
-    svg = render_character(p, character.skeleton_for(p))
     sk = character.skeleton_for(p)
-    assert svg.index(character._collar(sk, p)) < svg.index(character._coat(sk, p))
+    svg = render_character(p, sk)
+    # Her coat is traced, so it is `_traced_coat_and_belt` that draws it, after
+    # the arms; the band still has to come first.
+    assert svg.index(character._collar(sk, p)) < svg.index(character._traced_coat_and_belt(sk, p))
     other = PRESETS["katherina"]
     o_sk = character.skeleton_for(other)
     assert not other.outfit.collar_mock
@@ -1478,6 +1527,11 @@ def test_the_coats_lapel_actually_reaches_the_neck(preset: str, build: str) -> N
     """
     p = PRESETS[preset]
     sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    if character._traced_coat(sk, p):
+        # Keiko wears `COAT_CUTS["lab_coat"]` at the chibi builds, which draws
+        # its own notched lapel and leaves `_coat` empty; she still falls
+        # through to the shared coat at the realistic build, where this holds.
+        pytest.skip(f"{preset} wears a traced coat at {build}")
     d = re.search(r'd="([^"]+)"', character._coat(sk, p)).group(1)
     nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d.split("Z")[0])]
     pts = list(zip(nums[0::2], nums[1::2], strict=True))

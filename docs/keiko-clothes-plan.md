@@ -245,8 +245,56 @@ black; `skirt_length_chibi` still lands the hem where the reference's does.
 
 ### K2. The coat: `COAT_CUTS["lab_coat"]`
 
-The campaign's main shape. Traced off `segments/white-lab-coat.png`, which is
-a verified crop, as one `GarmentCut` beside `"open_jacket"`.
+**Status: done, 2026-09-21, with the owner's call partway through.**
+`COAT_CUTS["lab_coat"]`, four fills: two panels and two lapel facings. Keiko
+wears it with `coat_sleeves`, a new `Outfit` flag that fills the parametric
+sleeve in the coat's colour.
+
+**The panels are built from the measured profile; only the lapels are
+traced.** The plan called for tracing both. The coat's crop is occlusion-cut
+and the reference draws the coat and its sleeve as one fill, so a traced panel
+has to infer where the sleeve ends, and the shoulder is under the hair and not
+in the image at all. Three reconstructions were tried and each traded one
+artifact for another: carrying the widest edge down the panel picked up the
+sleeve's outer edge and ran it past the hem as a straight line outside the
+coat; bridging the hand horizontally over too deep a band merged the sleeve
+into the panel; and the per-row split left stair-steps at the armpit and the
+belt's keepers whatever the band. The owner's call, put as a choice of three:
+**build the panel from the profile, keep the traced lapel.** The lapel is
+unoccluded, traces cleanly in 12 segments, and is the one shape that is
+miserable to eyeball, which is what tracing is for.
+
+The belt came over the coat with it, unasked: the traced path already appends
+`_belt_drawn` after its jacket, so K3's z-order question is answered and only
+the belt's own shape and colour are left.
+
+Two things that made the trace usable and are worth keeping:
+
+- **The reference is not the cut frame.** Katherina's reference *is*
+  `tall_chibi`, so her traced head radii were already cut coordinates. Keiko's
+  stands 3.68 heads against 3.47, so every height is squashed about the chin
+  by 0.9215 and widths are left alone, because widths already agree (her
+  collar 0.276 against `tall_chibi`'s neck 0.280). That normalisation is also
+  what makes the cut independent of the calibration estimate.
+- **The belt is bridged vertically only.** A square structuring element closes
+  the coat's front opening along with the belt's cut, and the opening is the
+  feature the milestone is about.
+
+`refresh-ref-out.sh` reported keiko, sheet and sheet_satoshi changed. Not
+`real/keiko`: cuts are chibi-only, so the realistic build still wears the
+shared coat, which is K7 as agreed. Four tests moved deliberately, all named
+in this plan before the work started: Keiko left the under-coat belt test and
+the shared lapel test (which now skips a traced coat rather than dropping her,
+so it still covers her realistic build), and gained tests for the waist pinch,
+for the shared coat being untouched, and for the belt over the coat.
+
+Still open, for a later pass by eye: the lapel facings read a little large
+against our narrower opening, and the skirt's flare is wider than the
+reference's at the same height.
+
+The original plan for this milestone, kept for the record. Traced off
+`segments/white-lab-coat.png`, which is a verified crop, as one `GarmentCut`
+beside `"open_jacket"`.
 
 - The silhouette: coat top 0.794, shoulder y 1.420 at half-width 0.941; the
   opening 0.580 wide at the throat, a 0.45 plateau from y 2.0 to the belt,

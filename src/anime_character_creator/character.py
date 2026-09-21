@@ -359,6 +359,12 @@ class Outfit:
     coat_color: str | None = None
     # A traced cut from `COAT_CUTS`; `None` is the shared two-panel coat.
     coat_cut: str | None = None
+    # The arm's sleeve is the coat's, in the coat's colour, rather than the
+    # garment underneath showing below a cap sleeve. A lab coat has full
+    # sleeves to the wrist and nothing of the dress shows on the arm at all;
+    # without this Keiko's charcoal dress ran down both arms under a white
+    # coat. A traced sleeve (`sleeve_cut`) already does this for itself.
+    coat_sleeves: bool = False
     # Where the coat's hem falls, shoulder (0) to ankle (1). Roughly: 0.20 an
     # open vest or cardigan over a tunic, 0.30 a jacket cropped at the waist,
     # 0.62 below the knee, 0.75 mid-calf.
@@ -3555,6 +3561,105 @@ SKIRT_CUTS: dict[str, GarmentCut] = {
 # traced lower panel flaring from it. The sleeve (`SLEEVE_CUTS["wide"]`) fills
 # the rest of the shoulder, so the two read as one jacket. Built from the right
 # side and mirrored, so the shoulders match.
+# Keiko's lab coat, per `docs/keiko-clothes-plan.md` K2.
+# The panels are built from the profile measured in `harness/keiko/landmarks.py`
+# and the lapels are traced off `ref-local/keiko-tall-chibi/segments/white-lab-coat.png`;
+# `harness/keiko/emit_coat.py` writes this block and says why the two differ.
+# Cut coordinates, head radii on `_GARMENT_REF_BODY`: the reference stands 3.68
+# heads against its 3.47, so every height here is the reference's squashed about
+# the chin by 0.9215. The collar's point reaches 0.810.
+
+# The left front panel: throat, shoulder, outer edge, rounded hem corner,
+# and back up the front opening.
+_LAB_COAT_PANEL_LEFT: Chain = (
+    (-0.290, 0.997),
+    [
+        ((-0.615, 1.192), (-0.941, 1.387)),
+        ((-0.901, 1.885), (-0.862, 2.383)),
+        ((-0.852, 2.611), (-0.842, 2.840)),
+        ((-0.843, 3.210), (-0.845, 3.580)),
+        ((-0.988, 3.904), (-1.132, 4.227)),
+        ((-1.151, 4.365), (-1.169, 4.503)),
+        ((-1.169, 4.658), (-0.924, 4.638)),
+        ((-0.636, 4.648), (-0.348, 4.658)),
+        ((-0.339, 4.580), (-0.330, 4.501)),
+        ((-0.316, 4.251), (-0.302, 4.000)),
+        ((-0.286, 3.750), (-0.271, 3.499)),
+        ((-0.258, 3.248), (-0.245, 2.997)),
+        ((-0.236, 2.749), (-0.228, 2.501)),
+        ((-0.227, 2.250), (-0.226, 2.000)),
+        ((-0.258, 1.498), (-0.290, 0.997)),
+        ((-0.290, 0.997), (-0.290, 0.997)),
+    ],
+)
+
+# The right front panel: throat, shoulder, outer edge, rounded hem corner,
+# and back up the front opening.
+_LAB_COAT_PANEL_RIGHT: Chain = (
+    (0.290, 0.997),
+    [
+        ((0.615, 1.192), (0.941, 1.387)),
+        ((0.901, 1.885), (0.862, 2.383)),
+        ((0.852, 2.611), (0.842, 2.840)),
+        ((0.843, 3.210), (0.845, 3.580)),
+        ((0.988, 3.904), (1.132, 4.227)),
+        ((1.151, 4.365), (1.169, 4.503)),
+        ((1.169, 4.658), (0.924, 4.638)),
+        ((0.636, 4.648), (0.348, 4.658)),
+        ((0.339, 4.580), (0.330, 4.501)),
+        ((0.316, 4.251), (0.302, 4.000)),
+        ((0.286, 3.750), (0.271, 3.499)),
+        ((0.258, 3.248), (0.245, 2.997)),
+        ((0.236, 2.749), (0.228, 2.501)),
+        ((0.227, 2.250), (0.226, 2.000)),
+        ((0.258, 1.498), (0.290, 0.997)),
+        ((0.290, 0.997), (0.290, 0.997)),
+    ],
+)
+
+# The left lapel facing, traced: collar point, the notch's step, and down
+# to where the facing ends above the belt.
+_LAB_COAT_LAPEL_LEFT: Chain = (
+    (-0.228, 2.217),
+    [
+        ((-0.242, 2.204), (-0.256, 2.191)),
+        ((-0.308, 2.041), (-0.369, 1.890)),
+        ((-0.481, 1.639), (-0.600, 1.387)),
+        ((-0.596, 1.278), (-0.606, 1.169)),
+        ((-0.533, 1.049), (-0.448, 0.930)),
+        ((-0.372, 0.855), (-0.296, 0.800)),
+        ((-0.276, 0.794), (-0.256, 0.816)),
+        ((-0.256, 1.000), (-0.256, 1.184)),
+        ((-0.230, 1.410), (-0.211, 1.636)),
+        ((-0.208, 1.862), (-0.200, 2.088)),
+        ((-0.210, 2.142), (-0.206, 2.197)),
+        ((-0.217, 2.207), (-0.228, 2.217)),
+    ],
+)
+
+# The right lapel facing, traced: collar point, the notch's step, and down
+# to where the facing ends above the belt.
+_LAB_COAT_LAPEL_RIGHT: Chain = (
+    (0.245, 2.254),
+    [
+        ((0.237, 2.246), (0.228, 2.238)),
+        ((0.232, 2.189), (0.223, 2.140)),
+        ((0.231, 1.872), (0.239, 1.605)),
+        ((0.263, 1.356), (0.290, 1.106)),
+        ((0.290, 0.966), (0.290, 0.826)),
+        ((0.302, 0.802), (0.324, 0.800)),
+        ((0.397, 0.847), (0.470, 0.920)),
+        ((0.564, 1.044), (0.634, 1.169)),
+        ((0.624, 1.278), (0.628, 1.387)),
+        ((0.501, 1.657), (0.380, 1.927)),
+        ((0.318, 2.077), (0.273, 2.228)),
+        ((0.259, 2.241), (0.245, 2.254)),
+    ],
+)
+
+# (end of the lab coat)
+
+
 COAT_CUTS: dict[str, GarmentCut] = {
     "open_jacket": GarmentCut(
         fills=(
@@ -3613,6 +3718,19 @@ COAT_CUTS: dict[str, GarmentCut] = {
                 ],
             ),
         ),
+    ),
+    # Keiko's, from `ref-local/keiko-tall-chibi/`: two front panels with a
+    # notched lapel on each. The panels are built from the measured profile and
+    # the lapels are traced; `harness/keiko/emit_coat.py` writes both and says
+    # why they are derived differently. Drawn panels first so each lapel's
+    # facing lies on the panel it belongs to.
+    "lab_coat": GarmentCut(
+        fills=(
+            _LAB_COAT_PANEL_LEFT,
+            _LAB_COAT_PANEL_RIGHT,
+            _LAB_COAT_LAPEL_LEFT,
+            _LAB_COAT_LAPEL_RIGHT,
+        )
     ),
 }
 
@@ -6154,8 +6272,12 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
         # canon's are flat tan, separated from the torso by the outline alone.
         cut = _worn_sleeve(sk, p)
         # A traced sleeve under a traced jacket is the jacket's own sleeve: one
-        # garment from the shoulder to the cuff, in the jacket's colour.
-        sleeve_fill = p.outfit.coat_color if cut is not None and _traced_coat(sk, p) else sleeve
+        # garment from the shoulder to the cuff, in the jacket's colour, and
+        # `coat_sleeves` says the same of the parametric sleeve.
+        wears_coat_sleeve = p.outfit.coat_color is not None and (
+            (cut is not None and _traced_coat(sk, p)) or p.outfit.coat_sleeves
+        )
+        sleeve_fill = p.outfit.coat_color if wears_coat_sleeve else sleeve
         if cut is not None:
             place = _sleeve_placement(sk, cut, s)
 

@@ -350,7 +350,10 @@ KATANA_FITTINGS = GarmentSlot(
     _color("katana_fittings_color", "Katana fittings"),
     requires="katana",
 )
-COAT_CUT_LABELS: dict[str, str] = {"open_jacket": "Open jacket (traced)"}
+COAT_CUT_LABELS: dict[str, str] = {
+    "open_jacket": "Open jacket (traced)",
+    "lab_coat": "Lab coat (notched lapel)",
+}
 assert set(COAT_CUT_LABELS) == set(COAT_CUTS)
 COAT = GarmentSlot(
     "coat",
@@ -361,6 +364,7 @@ COAT = GarmentSlot(
     # little past both rather than left at the type's full domain. 0.20 opens
     # the floor down to the vest/cardigan length task 31 found already worked.
     ranges=(_range("coat_length", "Coat length", 0.20, 0.85),),
+    bools=(_bool("coat_sleeves", "Full sleeves"),),
     selects=(
         SelectField("coat_cut", "Cut", ((None, "Two panels"), *sorted(COAT_CUT_LABELS.items()))),
     ),

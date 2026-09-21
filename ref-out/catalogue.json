@@ -544,6 +544,12 @@
           "max": 0.85
         }
       ],
+      "bools": [
+        {
+          "field": "coat_sleeves",
+          "label": "Full sleeves"
+        }
+      ],
       "selects": [
         {
           "field": "coat_cut",
@@ -552,6 +558,10 @@
             {
               "value": null,
               "label": "Two panels"
+            },
+            {
+              "value": "lab_coat",
+              "label": "Lab coat (notched lapel)"
             },
             {
               "value": "open_jacket",
