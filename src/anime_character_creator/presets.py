@@ -575,7 +575,10 @@ KEIKO = CharacterParams(
     outfit=Outfit(
         tunic_color=DRESS,
         boot_color="#232323",
-        undersleeve_color="#e8e9e6",
+        # No undersleeve: the coat's own sleeve runs to the wrist and ends in a
+        # cuff line, so there is nothing of the dress showing on the arm to
+        # trim. It drew a grey band at each wrist before.
+        undersleeve_color=None,
         belt_color="#ececec",
         belt_keeper_pair=True,
         collar_color=DRESS,
@@ -587,7 +590,7 @@ KEIKO = CharacterParams(
         skirt_length=0.82,
         # See Satoko's `skirt_length_chibi` comment: same reasoning.
         skirt_length_chibi=0.552,
-        coat_color="#eceded",
+        coat_color="#eeeeee",
         coat_length=0.80,
     ),
     frame=-0.3,

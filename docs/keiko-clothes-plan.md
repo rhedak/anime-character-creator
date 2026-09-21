@@ -382,7 +382,20 @@ just the snapshot report.
 
 ### K4. The sleeve cuff line
 
-Replace the filled grey band with a thin stroke at y 3.63, just above the
+**Status: done, 2026-09-21.** `_cuff_line`, one stroke across the sleeve at
+0.161 head radii above the wrist (the reference's 0.175, squashed), thinner
+than the outline and round-capped like the placket's centre line. Keiko's
+`undersleeve_color` is gone with it: the coat's sleeve runs to the wrist, so
+there is no undersleeve to show.
+
+Two regressions on the way, both now held by a test. Dropping the undersleeve
+left her **bare-armed**, because only an undersleeve or `sleeve_long` made a
+sleeve reach the wrist; `coat_sleeves` now implies a long sleeve, which a
+coat's sleeve is by definition. Then the arm came out in the **dress's
+charcoal under a white coat**, because the parametric sleeve was filled from
+`sleeve` while only the traced one read `sleeve_fill`.
+
+The original plan for this milestone, kept for the record. Replace the filled grey band with a thin stroke at y 3.63, just above the
 sleeve's end, the wrist at 3.65, sleeve half-width about 0.24. These are the
 one set of numbers K0 did not re-derive (the harness measures the coat's
 sleeve end at 3.70, which is consistent but not the same measurement), so
@@ -399,7 +412,12 @@ is a fold crease, texture under the flat-colour rule, and is not ported.
 
 ### K5. Colours
 
-Move the preset to the sampled values one milestone at a time, as Katherina's
+**Status: done, 2026-09-21, spread across the milestones as planned.** Dress
+`#373833` in K1, belt `#ececec` in K3 (a dark belt hid both of that
+milestone's details), coat `#eceded` to the sampled `#eeeeee` in K4. The
+buckle keeps the shared metal tone; its opening now takes the dress's.
+
+The original plan for this milestone, kept for the record. Move the preset to the sampled values one milestone at a time, as Katherina's
 campaign did, rather than in one jump: coat `#eeeeee`, dress `#373833`, belt
 `#ececec`, buckle frame `#8c8478` over a near-black interior. Ours are
 already close on the coat and the dress; the belt is the real change, from

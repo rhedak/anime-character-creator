@@ -639,6 +639,26 @@ def test_the_lab_coat_leaves_the_shared_coat_alone() -> None:
         assert character._coat(sk, p), f"{preset} lost the shared coat"
 
 
+def test_a_coat_sleeve_runs_to_the_wrist_in_the_coats_colour() -> None:
+    """A lab coat has full sleeves and nothing of the dress shows on the arm.
+
+    Two things went wrong here and both are held: dropping the undersleeve left
+    the arm bare, because only an undersleeve or `sleeve_long` made the sleeve
+    reach the wrist; and the parametric sleeve was filled from `sleeve` while
+    only the traced one read `sleeve_fill`, so the arm came out in the dress's
+    charcoal under a white coat. The cuff is one line, not a filled band in a
+    second tone: the reference's cuff is the same cloth turned back."""
+    p = PRESETS["keiko"]
+    assert p.outfit.coat_sleeves and p.outfit.undersleeve_color is None
+    sk = character.skeleton_for(p)
+    arms = character._arms(sk, p)
+    assert f'fill="{p.outfit.coat_color}"' in arms, "the sleeve is not the coat's colour"
+    assert f'fill="{p.outfit.tunic_color}"' not in arms, "the dress shows on the arm"
+    assert 'stroke-linecap="round"' in arms and "<line" in arms, "no cuff line"
+    bare = replace(p, outfit=replace(p.outfit, coat_sleeves=False))
+    assert character._arms(sk, bare) != arms
+
+
 def test_a_dress_belt_carries_a_keeper_either_side_of_the_buckle() -> None:
     """Two loops set out from the buckle and standing proud of the band, against
     the working belt's single small loop beside it. Off by default, because
@@ -672,8 +692,7 @@ def test_keikos_belt_is_worn_over_her_coat() -> None:
     assert character._traced_coat(sk, p)
     assert character._belt(sk, p) == "", "the under-coat belt still draws as well"
     drawn = character._traced_coat_and_belt(sk, p)
-    assert drawn.index(character._belt_drawn(sk, p)) > 0
-    assert drawn.index(character._belt_drawn(sk, p)) > drawn.index('fill="#eceded"')
+    assert drawn.index(character._belt_drawn(sk, p)) > drawn.index(f'fill="{p.outfit.coat_color}"')
 
 
 @pytest.mark.parametrize("build", ["chibi", "realistic"])

@@ -6218,7 +6218,13 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
     through it.
     """
     cx = sk.head_cx
-    long_sleeve = p.outfit.sleeve_long
+    # A coat's sleeve runs to the wrist by definition, so `coat_sleeves` is a
+    # long sleeve whether or not anything is worn under it. Without this, a
+    # character given coat sleeves and no undersleeve came out bare-armed: the
+    # cap sleeve ended at the shoulder and skin ran from there to the hand.
+    long_sleeve = p.outfit.sleeve_long or (
+        p.outfit.coat_sleeves and p.outfit.coat_color is not None
+    )
     sleeve = p.outfit.tunic_color if long_sleeve else (p.outfit.undersleeve_color or p.skin_tone)
     centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
     elbow_y = sk.waist_y
@@ -6302,9 +6308,11 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             ]
         else:
             limb = [
-                f'<path d="{d}" fill="{sleeve}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+                f'<path d="{d}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
             ]
-        if cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
+        if cut is None and p.outfit.coat_sleeves:
+            limb.append(_cuff_line(sk, x(centre_wrist), wrist_y, w_wrist))
+        elif cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
         limb.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
 
@@ -6355,6 +6363,28 @@ def _arm_joint_cap(sk: Skeleton, color: str, cx: float, cy: float, w_top: float)
     return (
         f'<path d="M {cx - r:.1f} {cy:.1f} A {r:.1f} {r:.1f} 0 0 0 {cx + r:.1f} {cy:.1f} Z" '
         f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    )
+
+
+def _cuff_line(sk: Skeleton, cx: float, wrist_y: float, w: float) -> str:
+    """The cuff on a coat's sleeve: one line across it, no second tone.
+
+    The reference draws the cuff as a band of the same white as the sleeve, so
+    the only thing that shows is the line dividing them, 0.175 head radii above
+    the sleeve's end on a figure whose heights this project squashes by 0.9215
+    (`harness/keiko/trace_coat.py`). A filled band in a second tone is what
+    `_wrist_cuff` draws for an undersleeve showing past a short one, which is
+    the other garment and the other story: there the cuff is a different piece
+    of cloth, here it is the same piece turned back.
+
+    Line work, so it is drawn thinner than the outline and with round caps, the
+    same as the placket's centre line.
+    """
+    y = wrist_y - sk.head_r * 0.161
+    sw = _stroke_w(sk)
+    return (
+        f'<line x1="{cx - w:.1f}" y1="{y:.1f}" x2="{cx + w:.1f}" y2="{y:.1f}" '
+        f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
     )
 
 
