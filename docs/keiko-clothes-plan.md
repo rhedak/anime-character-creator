@@ -491,6 +491,22 @@ way K1 checked `collar_color` before writing a new shape.
 
 ### P2. The neck: skin above a turtleneck, not a square block
 
+**Status: done, 2026-09-21.** Three changes, each against a measurement:
+
+- **The top edge sags under the jaw**, 0.868 head radii at the band's outer
+  edges against 0.907 at the centre, and sits below the chin so a sliver of
+  neck shows. Drawn flat and above the chin it was simply covered by the head,
+  which is why no skin showed at all.
+- **The band tapers**, 0.276 across at the top to 0.256 at its seam. That 7%
+  is also what keeps its lower corners inside the coat's opening, which
+  narrows from the throat down; parallel sides poked out over the lapels.
+- **The seam at its lower edge is line work, not an outline.** The dress below
+  is the same cloth in the same colour, and a full-weight edge across it was
+  the other half of what read as a block.
+
+The taper was measured back in K1 and not used; that is what put the step
+there.
+
 The collar is **0.277** half-width and the coat's opening narrows to **0.207**
 at the waist, so the band is wider than the gap it sits in and steps out past
 the dress below it. That step is the block. The reference also shows **skin

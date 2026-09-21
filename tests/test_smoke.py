@@ -731,7 +731,22 @@ def test_a_mock_collar_hugs_the_neck_and_covers_the_tunics_v(build: str) -> None
         assert f"{x:.1f}" in band, f"{build}: the band is not at the neck's own width"
     standing = replace(p, outfit=replace(p.outfit, collar_mock=False))
     assert character._collar(sk, standing) != band
-    assert band.count("<path") == 1, "the mock neck draws a notch it has no opening for"
+    assert band.count("<path") == 2, (
+        "the mock neck is a fill and an open edge, so the seam at its lower edge can "
+        "be line work; either way it draws no centre notch, having no opening for one"
+    )
+    # That seam is thinner than an outline: the dress below the band is the same
+    # cloth in the same colour, and a full-weight edge across it read as a block
+    # (the owner's review, P2).
+    seam = band[band.index("<line") :]
+    width = float(re.search(r'stroke-width="(\d+\.\d+)"', seam).group(1))
+    assert width < character._stroke_w(sk), f"{build}: the seam is a full outline"
+    # Skin shows between the chin and the band: drawn above the chin it was
+    # covered by the head and the throat read as one dark slab.
+    assert (
+        min(float(t) for t in re.findall(r"\d+\.\d+", band.split('d="')[1].split('"')[0])[1::2])
+        > sk.head_cy + sk.head_r
+    ), f"{build}: the band rises above the chin"
     v_point = sk.shoulder_y + sk.neck_half_w * 0.28
     bottom = max(
         float(t) for t in re.findall(r"\d+\.\d+", band.split('d="')[1].split('"')[0])[1::2]

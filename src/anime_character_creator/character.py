@@ -4677,14 +4677,38 @@ def _mock_collar(sk: Skeleton, p: CharacterParams, color: str, sw: float) -> str
     cx, sy = sk.head_cx, sk.shoulder_y
     # Just outside the neck, so the band's outline sits beside the neck's
     # rather than on top of it.
-    half = sk.neck_half_w * 1.03
-    top = sk.neck_y
+    # Tapered, not parallel-sided: the reference's band runs 0.276 head radii
+    # across at the top and 0.256 at its seam. That 7% is also what keeps its
+    # lower corners inside the coat's opening, which narrows from the throat
+    # down; parallel sides poked out over the lapels and put the step back.
+    half, half_low = sk.neck_half_w * 1.03, sk.neck_half_w * 0.95
+    chin = sk.head_cy + sk.head_r
+    # The top edge sags in the middle, under the jaw, instead of running flat
+    # across the throat: measured on the reference at 0.868 head radii at the
+    # band's outer edges against 0.907 at the centre line, a sag of 0.039, with
+    # a sliver of neck skin above it. Drawn flat and above the chin it was
+    # simply covered by the head, so no skin showed and the band read as a
+    # square block sitting under the face (the owner's review, P2). The control
+    # point is placed so the curve's own midpoint lands on the sag, since a
+    # quadratic reaches only a quarter of the way to its control.
+    top = chin + sk.head_r * 0.015
+    sag = chin + sk.head_r * 0.075
+    ctrl = top + (sag - top) * 2.0
     bottom = sy + sk.neck_half_w * 0.28 + sw
-    d = (
-        f"M {cx - half:.1f} {top:.1f} L {cx + half:.1f} {top:.1f} "
-        f"L {cx + half:.1f} {bottom:.1f} L {cx - half:.1f} {bottom:.1f} Z"
+    lip = f"M {cx - half:.1f} {top:.1f} Q {cx:.1f} {ctrl:.1f} {cx + half:.1f} {top:.1f}"
+    return (
+        # The fill and the edges are separate so the seam at the bottom can be
+        # line work rather than an outline: the dress below the band is the same
+        # cloth in the same colour, and a full-weight edge across it was the
+        # other half of what read as a block.
+        f'<path d="{lip} L {cx + half_low:.1f} {bottom:.1f} L {cx - half_low:.1f} {bottom:.1f} Z" '
+        f'fill="{color}" stroke="none" />'
+        f'<path d="M {cx - half_low:.1f} {bottom:.1f} L {cx - half:.1f} {top:.1f} '
+        f'Q {cx:.1f} {ctrl:.1f} {cx + half:.1f} {top:.1f} L {cx + half_low:.1f} {bottom:.1f}" '
+        f'fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" stroke-linejoin="round" />'
+        f'<line x1="{cx - half_low:.1f}" y1="{bottom:.1f}" x2="{cx + half_low:.1f}" y2="{bottom:.1f}" '
+        f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
     )
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
 
 
 def _collar(sk: Skeleton, p: CharacterParams) -> str:
