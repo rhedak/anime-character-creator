@@ -2671,11 +2671,11 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) 
     The body and the garments over it draw this one run, so a bust on the body
     is a bust on the tunic without either keeping its own copy. Without a bust it
     is one quadratic from the torso's width at the armpit down to the waist. With
-    one it is three pieces: from the armpit out to the fullest point, which is
-    that curve's own point at `bust_y` moved out by `bust_reach`; from there
-    down and back in to an under-bust point on the curve, arriving on the
-    diagonal, which is the tuck a bust reads by; and the curve's own remainder to
-    the waist. The under-bust point sits `_BUST_DROP` reaches below the fullest
+    one it runs down the plain curve to where the bust starts, swells out to the
+    fullest point, which is that curve's own point at `bust_y` moved out by
+    `bust_reach`, comes back in to an under-bust point on the curve, arriving
+    on the diagonal, which is the tuck a bust reads by, and follows the curve's
+    own remainder to the waist (`_bust_shape`). The under-bust point sits `_BUST_DROP` reaches below the fullest
     point, so as the reach goes to zero the middle piece shrinks to nothing and
     the other two become the original curve: the bust grows out of this torso
     rather than jumping to a width of its own (`docs/bust-plan.md`, step 1).
@@ -2705,28 +2705,35 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) 
 
     b = bust
     if descending:
-        return q(b.above, b.peak) + q(b.tuck, b.under) + q(b.below, b.waist)
-    return q(b.below, b.under) + q(b.tuck, b.peak) + q(b.above, b.armpit)
+        return "".join(q(c, e) for c, e in b.outline) + q(b.below, b.waist)
+    starts = [b.armpit] + [e for _, e in b.outline[:-1]]
+    back = "".join(q(c, st) for (c, _), st in reversed(list(zip(b.outline, starts, strict=True))))
+    return q(b.below, b.under) + back
 
 
 @dataclass(frozen=True)
 class _Bust:
     """The bust's outline on one side, as offsets from the centre line.
 
-    `armpit`, `peak`, `under` and `waist` lie on the outline, with `above`,
-    `tuck` and `below` the controls between them. `plain_up` is the plain
-    curve's control from `under` back up to `armpit`, which with the outline
-    bounds the lobe a bust adds to the torso (`_bust_over_arms`).
+    `outline` is the run from `armpit` down to `under` as quadratic pieces,
+    each its control and its end point; `peak` is the fullest point on it.
+    `below` is the plain curve's control on from `under` to `waist`, and
+    `plain_up` its control from `under` back up to `armpit`, which with the
+    outline bounds the lobe a bust adds to the torso (`_bust_over_arms`).
     """
 
     armpit: Point
-    above: Point
+    outline: tuple[tuple[Point, Point], ...]
     peak: Point
-    tuck: Point
     under: Point
     below: Point
     waist: Point
     plain_up: Point
+
+    def pieces(self) -> list[tuple[Point, Point, Point]]:
+        """The outline as `(start, control, end)` triples, armpit first."""
+        starts = [self.armpit] + [e for _, e in self.outline[:-1]]
+        return [(st, c, e) for st, (c, e) in zip(starts, self.outline, strict=True)]
 
 
 def _bust_shape(sk: Skeleton, inset: float = 0.0) -> _Bust | None:
@@ -2741,19 +2748,23 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0) -> _Bust | None:
     above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
     under_y = min(peak[1] + reach * _BUST_DROP, wy - (wy - peak[1]) * 0.25)
     plain_up, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
-    # Leaves the fullest point along the upper piece's own tangent, so the join
-    # is smooth, and arrives at the under-bust point on the diagonal: the control
+    # The bust swells straight from the armpit. Starting it lower, below an
+    # upper chest, was tried for step 9a and put back: at the chibi there are
+    # 0.28 head radii between the armpit and the fullest point and the extra turn
+    # pinched into a hook, and at the adult build it read as a knob and is under
+    # the arm anyway until that build's own fix pass (`docs/bust-status.md`).
+    lean = (peak[0] - above[0]) / (peak[1] - above[1])
+    # Leaves the fullest point along the swell's own tangent, so the join is
+    # smooth, and arrives at the under-bust point on the diagonal: the control
     # is where that tangent meets a 45 degree line up and out from the
     # under-bust point. Arriving level made a right-angled shelf against the
     # torso's near-vertical side, which showed as a step below the arm.
-    lean = (peak[0] - above[0]) / (peak[1] - above[1])
     tuck_x = (peak[0] + lean * (under[1] + under[0] - peak[1])) / (1 + lean)
     tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
     return _Bust(
         armpit=(torso_at_cuff, cuff_y),
-        above=above,
+        outline=((above, peak), (tuck, under)),
         peak=peak,
-        tuck=tuck,
         under=under,
         below=below,
         waist=(ww, wy),
@@ -2800,7 +2811,7 @@ def _bust_over_arms(sk: Skeleton, chest: str) -> str:
         def pt(v: Point, dx: float = 0.0, s: int = s) -> str:
             return f"{cx + s * (v[0] + dx):.1f} {v[1]:.1f}"
 
-        edge = f"M {pt(b.armpit)} Q {pt(b.above)} {pt(b.peak)} Q {pt(b.tuck)} {pt(b.under)} "
+        edge = f"M {pt(b.armpit)} " + "".join(f"Q {pt(c)} {pt(e)} " for c, e in b.outline)
         outline.append(edge)
         lobe.append(edge + f"L {pt(b.under, -sw)} Q {pt(b.plain_up, -sw)} {pt(b.armpit, -sw)} Z")
     d = " ".join(lobe)
@@ -3611,9 +3622,11 @@ def _bust_bulge(sk: Skeleton, y: float) -> float:
     b = _bust_shape(sk)
     if b is None:
         return 0.0
-    out = _quad_x_at(b.armpit, b.above, b.peak, y)
-    if out is None:
-        out = _quad_x_at(b.peak, b.tuck, b.under, y)
+    out = None
+    for piece in b.pieces():
+        out = _quad_x_at(*piece, y)
+        if out is not None:
+            break
     if out is None:
         return 0.0
     plain = _quad_x_at(b.armpit, (b.armpit[0], _rib_ctrl_y(sk)), b.waist, y)

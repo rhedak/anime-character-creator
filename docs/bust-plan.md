@@ -361,7 +361,7 @@ cuts, since a jacket is a loose garment.
 
 Numbered 9 because it was added last; it runs before 5b and 4.
 
-**9a. The bust starts below the armpit.** The upper chest runs down from the
+**9a. The bust starts below the armpit.** *Tried 2026-09-25 and deferred to the realistic build's fix pass: it pinched into a hook at the chibi and read as a knob at the adult build (`bust-status.md`).* The upper chest runs down from the
 armpit before the breast begins, a little concave where the arm's front fold
 meets it, and the bulge starts there rather than at the armpit itself.
 `_bust_shape`'s upper piece changes; the fullest point, the reach and the

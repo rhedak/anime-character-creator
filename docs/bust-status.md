@@ -6,10 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 6 done, awaiting sign-off. The plan was updated 2026-09-25
-  with an anatomy review, which added step 9 (9a the bust starts below the
-  armpit, 9b loose garments hang from the fullest point) ahead of 5b and 4.
-  Order: 6 sign-off, 9a, 9b, 5b, 4, 7, 8.
+- **Now:** step 9b, loose garments hang from the fullest point. 9a was tried
+  and deferred (see its finding). Then 5b, 4, 7, 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -34,8 +32,8 @@ lessons live in `bust-strategy.md`.
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
 | 5 bust over the arm | 5a done (chibi); 5b Keiko waits | zero case byte-identical |
-| 6 traced cuts follow | done, awaiting sign-off | zero case byte-identical; widening tested |
-| 9 fit and drape (added 2026-09-25) | planned, runs before 5b and 4 | |
+| 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
+| 9 fit and drape (added 2026-09-25) | 9a tried, deferred to the realistic pass; 9b next | |
 | 7 cast values | not started | |
 | 8 integration | not started | |
 
@@ -100,6 +98,34 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 9a, the bust starting below the armpit: tried, not kept
+
+**Owner's calls before it:** step 6 signed off; fit is a property of the
+garment kind, not a new knob (for 9b).
+
+**Tried.** The plain side from the armpit down to an onset 35% of the way to
+the fullest point, then an S of two tangent-matched quadratics out to it (a
+slight hollow where the arm's front fold meets the chest, then the swell).
+The fullest point, reach and tuck unchanged, so the bust-row widths were
+predicted and measured unchanged (0.579, 0.631, 0.687); `ref-out/` unchanged.
+
+**Looked at, rejected at both builds** (`out/bust/onset.png`,
+`onset_real.png`):
+- **Chibi:** the chibi has 0.28 head radii between the armpit and the fullest
+  point, against 0.53 at the adult build. An upper chest plus a 0.11 swell in
+  that height pinched into a hook just below the armpit, at 0.5 as well as
+  1.0. A smooth run from one near-vertical line to another set outward has to
+  be an S or a corner, so no tuning fixes it. The bust starting at the armpit
+  is the chibi's style, which is the anatomy review's own point 4.
+- **Adult build:** the S read as a knob, a tight hollow then a small bump, and
+  that build's bust is under the arm until its own fix pass anyway.
+
+**Kept:** the refactor it needed. `_Bust` now carries its outline as a chain
+of quadratic pieces (`outline`, `pieces()`), which `_rib`, `_bust_over_arms`
+and `_bust_bulge` all walk, and which 9b needs. Output identical to the
+previous commit on 18 renders (Satoko, Keiko, Katherina; bust 0.25, 0.5, 1.0;
+both builds). 9a itself is **deferred to the realistic build's fix pass**.
 
 ### 2026-09-25: step 6, traced cuts follow the bust
 
