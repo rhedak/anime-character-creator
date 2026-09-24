@@ -47,6 +47,20 @@ this when a method lesson lands, not when a number changes.
 - **Arithmetic stated from memory.** "A quadratic reaches a quarter of the
   way to its control" was wrong by two, in a sentence warning about exactly
   that error. Check against a curve already in the code.
+- **Predicting "no pixel moves" for a layer under a garment.** Predicted 0 of
+  54 for the body layer; measured 54 of 54. A second outline on the same edge
+  darkens the antialiased rim, a vertical inset is thinner than it looks on a
+  sloping line, and a garment's edge is not where its anchor says (trousers at
+  leg width, not hip width; a slanted cap short of the arm). Inset by more than
+  a stroke, measured square to the line, and expect the pixel check to find the
+  garments' own choices.
+- **Chasing the worst file.** The body layer's first run moved every image;
+  the six-pixel Kyoko was the one that named a cause at a glance. Start from
+  the smallest diff, with the changed pixels painted red on a crop
+  (`bust-status.md`, step 3a).
+- **A new local name in a long part function.** `slope` was already read
+  further down `_tunic`; reusing it gave every sleeve a horn. Grep a name in
+  the whole function before introducing it.
 - **Reading an offset tuple in the wrong order** (Keiko's campaign): segment
   offsets came back `(y, x)` and were read as `(x, y)`, so three correct crops
   "failed". Ask delegates to name the order, and test both when a result is

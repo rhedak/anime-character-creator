@@ -6,15 +6,15 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 1 of `bust-plan.md` done (1a reach, 1b height, 1c shape),
-  awaiting the owner's sign-off on `out/bust/sweep.png` and `why_hidden.png`.
+- **Now:** step 3b, garments read the body. 3a (the body layer) is done, and
+  step 3c has a list waiting in 3a's finding.
 - **Tree:** clean at `e3b65e5` when preparation began.
 - **Measure** with `harness/bust/drawn_widths.py` (the drawn ink). Never quote
   a `Skeleton` field as a body measurement.
-- **Run harness scripts** with
-  `DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib:/usr/local/lib" .venv/bin/python harness/bust/<script>.py`.
-  `harness/run.sh` only adds `/opt/homebrew/lib`, and this machine's cairo is
-  under `/usr/local/lib`, so it fails here (open, see below).
+- **Run harness scripts** with `./harness/run.sh harness/bust/<script>.py`.
+- **Check a change that should move no pixel** with
+  `./refresh-ref-out.sh --pixels`; `ref-out/bases/` is not covered by it and
+  is compared by hand with `compare_pixels.py`.
 - **Owner sign-off** is needed after each step before the next.
 - **Commits:** one line, repo style, no trailer.
 
@@ -24,9 +24,9 @@ lessons live in `bust-strategy.md`.
 | --- | --- | --- |
 | B0 sweep harness | done, readings void | harness stands |
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
-| 1 reach, not width | 1a, 1b, 1c done; awaiting sign-off | continuity and armpit tests green |
+| 1 reach, not width | done, signed off | continuity and armpit tests green |
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
-| 3 body layer | not started | |
+| 3 body layer | 3a done; 3b next | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
 | 5 bust over the arm | not started | |
 | 6 traced cuts follow | not started | |
@@ -91,11 +91,65 @@ expect the rendered sweep to look unchanged.
 
 ## Open items outside the steps
 
-- `harness/run.sh` exports only `/opt/homebrew/lib`. A one-line fix
-  (`:/opt/homebrew/lib:/usr/local/lib`), not made yet because it is outside
-  the plan; the owner's call.
+- None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-24: step 3a, the body layer
+
+**Owner's calls before it** (on step 1's sheets): the shape is accepted as a
+base; the notch below the arm is deferred to step 5, which turns it into the
+visible under-bust contour; steps in the recommended order (3 before 4);
+`harness/run.sh` fixed (`f61c3c1`).
+
+**Change.** A byte-identical refactor first (`ba66b6a`): the torso's measures
+(`_shoulder_slope`, `_torso_at_armpit`, `_rib_ctrl_y`) and its armpit-to-waist
+run with the bust (`_rib`) moved out of `_tunic` into shared module functions.
+Then `_torso(sk, p)`: skin, outlined, drawn just before `_neck`, reading no
+`Outfit` field (tested). `_BODY_INSET = 1.5` strokes inside the garments.
+
+**Predicted: 0 of 54 PNGs change**, with the slanted cap, a coat and the traced
+jacket as the likely exceptions. **Measured, first version: 54 of 54.** Chased
+from the smallest (Kyoko's chibi, 6 pixels), three causes, none predicted:
+
+1. The torso's side on the tunic's own curve drew the outline twice, and the
+   second pass darkens the first one's antialiased rim along every shared edge.
+   A body exactly under a garment can never be pixel-identical; it has to sit
+   under the fill. Fixed by the inset.
+2. At the realistic build the slanted cap stops short of the arm's outer edge,
+   and a shoulder out to the sleeve's width showed past it as a skin crescent.
+   Fixed by giving the body the arm's own shoulder: out to the arm's outer edge
+   where it leaves the body (`_arm_line`), then down the diagonal to the armpit
+   that the arm's top edge follows.
+3. The bottom outline showed between the tops of Kyoko's legs.
+
+**Second version: 28 of 54**, two clusters. The nine trouser-wearers at the
+chibi showed a skin wedge beside each hip: their trousers are straight columns
+at leg width, narrower than `hip_half_w`, which is the owner's standing call in
+`_seat_notch_d`, and below a tucked tunic the body is already the legs'
+(`_bare_seat`). So the torso now stops in the belt band, where a tucked tunic
+ends and the seat starts, at the bare seat's width (both from skeleton-only
+functions). The rest were slivers along sloping shoulders, where an inset
+measured straight down is less than the same inset square to the line; the
+shoulder line is now inset twice as far.
+
+**Third version: 5 of 54**, 5 to 11 pixels each, all at the left stand-collar
+tab's corner on the realistic Elara, Krista, Reinhard, Tenno and Viktor: the
+tunic left a wedge of page under less than a pixel wide there, and the torso's
+outline fills it. **Accepted as a finding**, per the plan's rule, and
+arguably cleaner; left side only because of how the tunic's path closes.
+`ref-out/` refreshed: the 37 SVGs gain the layer, those 5 PNGs move, no
+other PNG does. `ref-out/bases/` (not covered by `--pixels`) refreshed and
+compared by hand with `compare_pixels.py`: 0 of 2 differ.
+
+**For step 3c, where the body shows** (`harness/bust/torso.py`, garments off):
+the neck's side lines run on down onto the chest; at the chibi a wedge of
+page shows between the shoulder tip and the arm; a gap shows between the
+torso's end and the legs where nothing covers the seat; the realistic torso
+is straight-sided. At `bust = 1.0` the bust shows on the bare body, since
+nothing covers the side the sleeve cap used to.
+
+Suite: 524 passed, 1 skipped.
 
 ### 2026-09-24: step 2, the pixel check
 

@@ -2663,7 +2663,7 @@ def _quad_split(p0: Point, p1: Point, p2: Point, u: float) -> tuple[Point, Point
     return a, (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u), b
 
 
-def _rib(sk: Skeleton, cx: float, s: int, descending: bool) -> str:
+def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) -> str:
     """The torso's side from the armpit to the waist on side `s`, as path
     commands continuing from wherever the path is, down or back up.
 
@@ -2685,9 +2685,11 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool) -> str:
     geometry and not in the numbers written down, and `ref-out/` compares the
     numbers: every one of the seventeen presets would have come out "changed"
     for no visible reason.
+
+    `inset` pulls the whole run in, for the body under a garment (`_torso`).
     """
-    torso_at_cuff, cuff_y = _torso_at_armpit(sk), _sleeve_hem_y(sk)
-    rib_ctrl_y, ww, wy = _rib_ctrl_y(sk), sk.waist_half_w, sk.waist_y
+    torso_at_cuff, cuff_y = _torso_at_armpit(sk) - inset, _sleeve_hem_y(sk)
+    rib_ctrl_y, ww, wy = _rib_ctrl_y(sk), sk.waist_half_w - inset, sk.waist_y
     reach = sk.bust_reach
     if reach <= 0:
         return (
@@ -2716,6 +2718,69 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool) -> str:
     if descending:
         return q(above, peak) + q(tuck, under) + q(below, (ww, wy))
     return q(below, under) + q(tuck, peak) + q(above, (torso_at_cuff, cuff_y))
+
+
+def _torso(sk: Skeleton, p: CharacterParams) -> str:
+    """The body from the shoulders to the hip, in the skin tone.
+
+    Built from the skeleton alone and reading no garment: every garment is drawn
+    over it and has to cover it, which `refresh-ref-out.sh --pixels` checks
+    (`docs/bust-plan.md`, step 3). Before this there was no torso at all, only
+    the tunic, so a bust had nowhere to live but on a garment.
+
+    The tunic's plain side, from the same helpers, but with the shoulder the
+    arm's own: out to the arm's outer edge where it leaves the body, then down
+    the diagonal to the armpit that the arm's top edge follows. A shoulder out to
+    the sleeve's width showed past the slanted cap at the adult build.
+
+    The whole outline sits `_BODY_INSET` strokes inside the garment's. A body
+    edge on a garment's edge draws the outline twice, and the second pass
+    darkens the antialiased rim of the first along every shared edge, so the
+    body has to be under the garment's fill, not its stroke. Its top is closed
+    straight across the neck, and drawn before the neck, whose skin runs down
+    past the shoulder line and covers it, so no outline shows in a neckline.
+    """
+    k = _stroke_w(sk) * _BODY_INSET
+    cx, nw = sk.head_cx, sk.neck_half_w
+    # Twice the inset along the shoulder: it slopes, and an inset measured
+    # straight down is less than the same inset measured square to the line.
+    sy = sk.shoulder_y + 2 * k
+    centre_top, _, _, _ = _arm_line(sk)
+    tip = centre_top + sk.arm_half_w - k
+    slope, cuff_y = _shoulder_slope(sk), _sleeve_hem_y(sk)
+    tac, ww, wy = _torso_at_armpit(sk) - k, sk.waist_half_w - k, sk.waist_y
+    # The torso stops in the belt band, at the line a tucked tunic ends on and
+    # the seat starts from, and narrows there to the bare seat's width. Below
+    # that the body is the legs' (`_bare_seat`, `_seat_notch_d`): at the chibi
+    # they are a straight column at leg width, narrower than `hip_half_w`, and a
+    # torso carried down to the hip at that width showed beside the trousers of
+    # every figure that wears them.
+    belt_y, belt_h = _belt_band(sk)
+    gap, w_top = _leg_gap_and_top(sk, trousers=False)
+    hw, hy = min(ww, gap + w_top - k), belt_y + belt_h * 0.5 - k
+    hip_ctrl_y = hy - (hy - wy) * 0.45
+    d = (
+        f"M {cx - nw:.1f} {sy:.1f} "
+        f"Q {cx - tip * 0.50:.1f} {sy + slope * 0.62:.1f} {cx - tip:.1f} {sy + slope:.1f} "
+        f"L {cx - tac:.1f} {cuff_y:.1f} "
+        + _rib(sk, cx, -1, True, inset=k)
+        + f"Q {cx - hw:.1f} {hip_ctrl_y:.1f} {cx - hw:.1f} {hy:.1f} "
+        f"L {cx + hw:.1f} {hy:.1f} "
+        f"Q {cx + hw:.1f} {hip_ctrl_y:.1f} {cx + ww:.1f} {wy:.1f} "
+        + _rib(sk, cx, 1, False, inset=k)
+        + f"L {cx + tip:.1f} {sy + slope:.1f} "
+        f"Q {cx + tip * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + nw:.1f} {sy:.1f} Z"
+    )
+    return (
+        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
+        f'stroke-width="{_stroke_w(sk):.1f}" />'
+    )
+
+
+# How far inside a garment's outline the body sits, in stroke widths: past half
+# a stroke to clear the garment's own outline, and a little more for the
+# antialiased rim either side of it (`_torso`).
+_BODY_INSET = 1.5
 
 
 def _tunic(sk: Skeleton, p: CharacterParams) -> str:
@@ -9122,6 +9187,9 @@ def render_character(
         # by definition outside it.
         _hair_tail(sk, p),
         _hair_mass(sk, p),
+        # The body under everything it wears, and under the neck, whose skin
+        # covers its top edge; see the function.
+        _torso(sk, p),
         _neck(sk, p),
         _legs_and_boots(sk, p),
         _underskirt(sk, p),

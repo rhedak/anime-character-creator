@@ -1998,3 +1998,13 @@ def test_a_bust_changes_nothing_above_the_armpit(name):
         return sorted((x, y) for x, y in pts if y < sk.armpit_y - 0.5)
 
     assert above_armpit(1.0) == above_armpit(0.0)
+
+
+@pytest.mark.parametrize("name", ["satoko", "keiko", "katherina", "reinhard"])
+def test_the_body_reads_no_garment(name):
+    """`_torso` is the body, built from the skeleton alone, so what a character
+    wears cannot change it; garments go over it and have to cover it
+    (`docs/bust-plan.md`, step 3)."""
+    p = PRESETS[name]
+    sk = character.skeleton_for(p)
+    assert character._torso(sk, p) == character._torso(sk, replace(p, outfit=character.Outfit()))

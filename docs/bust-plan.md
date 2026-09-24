@@ -42,6 +42,13 @@ on step 5.
    her campaign waits.
 6. **Build a real body layer** rather than giving the bust only to garments.
 
+## Owner's decisions (2026-09-24)
+
+1. Step 1's shape is accepted as a base for the steps after it.
+2. The notch where the bust shows below the arm is deferred to step 5, which
+   makes it the visible under-bust contour.
+3. Steps in the recommended order: the body layer (3) before the line (4).
+
 ## What exists now, measured from the ink
 
 All half-widths in head radii from the centre line, right side, rasterized at
