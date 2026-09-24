@@ -3810,6 +3810,34 @@ def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams, after_arms: bool = T
     return _draw_cut(sk, cut, p.outfit.coat_color) + _belt_drawn(sk, p)
 
 
+def _cut_half_w_at(sk: Skeleton, cut: GarmentCut, y: float) -> float | None:
+    """How far out from the centre line a placed cut's fills reach at height
+    `y`, both in pixels: the outermost crossing of that row by any fill's
+    outline, or None if no fill crosses it."""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    xf = _garment_placement(sk)
+    reach = None
+    for start, segs in cut.fills:
+        p0 = xf(start)
+        for c, e in segs:
+            p1, p2 = xf(c), xf(e)
+            prev = None
+            for i in range(25):
+                t = i / 24
+                pt = (
+                    (1 - t) ** 2 * p0[0] + 2 * t * (1 - t) * p1[0] + t * t * p2[0],
+                    (1 - t) ** 2 * p0[1] + 2 * t * (1 - t) * p1[1] + t * t * p2[1],
+                )
+                pt = (cx + pt[0] * r, cy + pt[1] * r)
+                if prev is not None and (prev[1] - y) * (pt[1] - y) <= 0 and prev[1] != pt[1]:
+                    k = (y - prev[1]) / (pt[1] - prev[1])
+                    w = abs(prev[0] + (pt[0] - prev[0]) * k - cx)
+                    reach = w if reach is None else max(reach, w)
+                prev = pt
+            p0 = p2
+    return reach
+
+
 def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> str:
     """`weight` scales the outline, for small hardware whose own parts are
     thinner than the figure's line (a buckle's frame)."""
@@ -4162,7 +4190,7 @@ COAT_CUTS: dict[str, GarmentCut] = {
             _LAB_COAT_LAPEL_LEFT,
             _LAB_COAT_LAPEL_RIGHT,
         ),
-        over_arms=False,
+        over_arms=True,
     ),
 }
 
@@ -6645,7 +6673,7 @@ def _katana(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
-def _arms(sk: Skeleton, p: CharacterParams) -> str:
+def _arms(sk: Skeleton, p: CharacterParams, hands: bool | None = None) -> str:
     """The arm from the sleeve hem down to the hand.
 
     The tunic draws its own sleeve now, so this starts where the sleeve ends. The
@@ -6667,6 +6695,12 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
     the tunic's own colour instead of the undersleeve's, since a long sleeve is
     the tunic's own cloth continuing rather than a second garment showing
     through it.
+
+    `hands` splits the limb for a garment drawn over the arms: False draws the
+    arms without their hands, True only the hands, each in its arm's own swing,
+    and None, the default, both together. A coat worn over the arms covers them
+    down to its hem, and the hand still has to come out over it
+    (`_hands_after_coat`).
     """
     cx = sk.head_cx
     # A coat's sleeve runs to the wrist by definition, so `coat_sleeves` is a
@@ -6778,7 +6812,11 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             limb.append(_cuff_line(sk, x(centre_wrist), wrist_y, w_wrist))
         elif cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
-        limb.append(_hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s))
+        hand = _hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s)
+        if hands is None:
+            limb.append(hand)
+        elif hands:
+            limb = [hand]
 
         # `s == -1` is the character's own right arm (viewer's left), `s == 1`
         # the left (viewer's right); see `CharacterParams.right_arm_out`. The
@@ -6794,7 +6832,7 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             # see `_arm_joint_cap` for why this closes the gap the rotation
             # opens at the shoulder. A traced sleeve's cap is a disc about its
             # pivot and needs none.
-            if cut is None:
+            if cut is None and not hands:
                 parts.append(_arm_joint_cap(sk, sleeve, pivot_x, pivot_y, w_top))
             parts.append(
                 f'<g transform="rotate({angle:.2f} {pivot_x:.1f} {pivot_y:.1f})">'
@@ -6807,6 +6845,14 @@ def _arms(sk: Skeleton, p: CharacterParams) -> str:
             # every preset that never touches this knob renders unchanged.
             parts.extend(limb)
     return "".join(parts)
+
+
+def _hands_after_coat(sk: Skeleton, p: CharacterParams) -> bool:
+    """Whether a traced coat is worn over the arms, so the hands have to be
+    drawn after it rather than with their arms. Keiko's reference draws her hand
+    over her lab coat, which the hand-shaped bite in the coat's traced crop
+    shows (`docs/bust-plan.md`, step 5b)."""
+    return _traced_coat(sk, p) and COAT_CUTS[p.outfit.coat_cut].over_arms
 
 
 def _arm_joint_cap(sk: Skeleton, color: str, cx: float, cy: float, w_top: float) -> str:
@@ -7463,6 +7509,17 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     # middle of the coat (the owner's review, P6).
     half_w *= p.outfit.belt_reach
     y, h = _belt_band(sk, p.outfit.belt_scale)
+    if _hands_after_coat(sk, p):
+        # Over a coat worn over the arms, the band runs to the coat's own edge
+        # at its height and stops half a stroke inside it, so the edge's outline
+        # stays whole and reads as the sleeve passing over the belt, the way the
+        # arm's outline ended it while the arms were drawn over the coat. The
+        # reach does not apply: shorter, the band floats in the middle of the
+        # coat (the owner's review, P6); longer, it is drawn over the sleeve
+        # (`docs/bust-plan.md`, step 5b).
+        edge = _cut_half_w_at(sk, COAT_CUTS[p.outfit.coat_cut], y + h / 2)
+        if edge is not None:
+            half_w = edge - _stroke_w(sk) / 2
     if p.outfit.belt_keeper_pair:
         # No end caps. A belt goes *around* a body, so its ends have nothing to
         # show: capped and rounded they read as the two ends of a strap laid on
@@ -9427,13 +9484,15 @@ def render_character(
         # below the neck.
         _staff(sk, p),
         *under_arms,
-        _arms(sk, p),
+        _arms(sk, p, hands=False if _hands_after_coat(sk, p) else None),
         # The bust in front of the arms: the chest drawn again, masked to the
         # lobe a bust adds, so the katana and the staff, held at the side, stay
         # under the arm. Nothing without a bust; see the function.
         _bust_over_arms(sk, "".join(chest + under_arms)),
         # A traced jacket covers the tops of the sleeves; see the function.
         _traced_coat_and_belt(sk, p),
+        # The hands over a coat worn over the arms; see the function.
+        _arms(sk, p, hands=True) if _hands_after_coat(sk, p) else "",
         # After the arms and before the ear: a standing collar wraps the throat,
         # so it belongs over the neck and the tunic's V, and it is the one
         # garment high enough that the head has to be drawn after it. A mock

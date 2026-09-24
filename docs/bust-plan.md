@@ -316,7 +316,7 @@ arms, masked to the lobe the bust adds, with its outline on top. Chibi-range
 only; at the realistic build the arm lies across the torso and the bust stays
 under it (anatomy review, 5).
 
-**5b, Keiko, proposed 2026-09-25:** anchor the over-arm lobe at the arm's inner
+**5b, done 2026-09-25** (coat over the arms, hands after it, the belt to the coat's edge; the arm-edge anchor below turned out unnecessary, see `bust-status.md`). **As proposed:** anchor the over-arm lobe at the arm's inner
 edge rather than the torso's side. On a plain tunic at the chibi the two are
 within 0.01 head radii, so 5a does not move; on her coat, whose panel edge is
 the armhole seam at the arm's inner edge, the bust's edge becomes the panel's

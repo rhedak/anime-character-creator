@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 9b done, awaiting the owner's sign-off beside 5a
-  (`out/bust/drape.png`). Then 5b (Keiko), 4, 7, 8.
+- **Now:** step 5b done, awaiting sign-off (`out/bust/keiko_5b.png`). Then
+  step 4, whose line is what will carry Keiko's bust under her hair; then 7, 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -31,9 +31,9 @@ lessons live in `bust-strategy.md`.
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
-| 5 bust over the arm | 5a done (chibi); 5b Keiko waits | zero case byte-identical |
+| 5 bust over the arm | 5a signed off; 5b done, awaiting sign-off | Keiko and Katherina's hand moved, deliberately |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
-| 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, awaiting sign-off | zero case byte-identical; drape tested |
+| 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
 | 7 cast values | not started | |
 | 8 integration | not started | |
 
@@ -98,6 +98,46 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 5b, Keiko's coat over the arms
+
+**Owner's call before it:** 9b's draped tunic signed off in place of 5a's look.
+
+**Done, one variable at a time** (`out/bust/keiko_5b_a.png`, `_b`, `_c`):
+1. `lab_coat` back over the arms. The bracket went under the coat's panel,
+   whose own edge now swells with the bust (step 6), so **the proposed arm-edge
+   anchor for the lobe was not needed** and was not built. Two regressions, as
+   predicted: the coat's front edge cut across both hands, and the belt's open
+   ends stopped in the middle of the panel.
+2. `_arms(hands=...)`: the arms without their hands, and the hands on their
+   own, each in its arm's swing; `_hands_after_coat` switches it on for a
+   traced coat worn over the arms, and the hands are drawn after that coat.
+3. The belt over such a coat runs to the coat's own edge at its height
+   (`_cut_half_w_at`, new) and stops half a stroke inside it, so the coat's
+   outline ends the band as the arm's used to. `belt_reach` no longer applies
+   there: shorter floats mid-coat (P6), longer draws over the sleeve. Keiko's
+   plan's P5 and P6 carry the reversal in place.
+
+**Pixel check at `bust = 0`:** Keiko (5625 pixels) and Katherina (477, all at
+one hand) and the sheets; nothing else. Katherina's jacket hem used to clip
+her hand's edge; the hand is now whole in front of it, which is the right
+order for a hand and counted as a fix.
+
+**Looked at** (`out/bust/keiko_5b.png`, before and after, bust 0 and 1.0): at
+zero, one clean edge where the armhole line was doubled, the hands over the
+coat, the belt ended by the coat's edge. The sleeve reads narrower, since the
+coat now covers the arm's inner part out to 0.836 head radii.
+
+**Finding: on Keiko the side outline cannot carry a bust.** Her panel does
+swell (edge at the bust row 0.836, 0.869, 0.903 for 0, 0.5, 1.0), but her long
+hair hangs over that part of the chest at the chibi, and the swell only shows
+below the hair's tips. For her, the line under the bust (step 4) is what will
+read, which matters for step 7.
+
+Tests: the belt test rewritten for the new order (arms, coat, belt, hands; the
+band's end on the coat's edge), the mock-collar test pointed at the coat's new
+place. Suite: 527 passed, 1 skipped. `ref-out/` refreshed (Keiko, Katherina,
+sheets); bases unchanged.
 
 ### 2026-09-25: step 9b, loose garments hang from the fullest point
 

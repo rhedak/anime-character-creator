@@ -606,6 +606,12 @@ inferred run in the cut (K2) and so are the free ones to move.
 
 ### P5. The arms are drawn over the coat
 
+**Reversed 2026-09-25 by `bust-plan.md`, step 5b.** The lab coat is back over
+the arms (`over_arms=True`), with the hands lifted out of `_arms` and drawn
+after it, and the belt running to the coat's own edge instead of being ended
+by the arm's outline (so `belt_reach` no longer applies to her). What follows
+is the record of the order as it was.
+
 **Status: done, 2026-09-21.** `GarmentCut.over_arms`, default `True`, and
 `COAT_CUTS["lab_coat"]` sets it `False`. `_traced_coat_and_belt` takes the
 phase and draws the cut in whichever one it asks for, so Katherina's jacket
@@ -625,6 +631,10 @@ drawn over its garment is exactly what produced "the arm tube emerging
 mid-torso" in Katherina's campaign.
 
 ### P6. The belt stops short of the coat
+
+**Superseded 2026-09-25** for a coat worn over the arms: the band now runs to
+the coat's edge at its height (`bust-plan.md`, step 5b). `belt_reach` still
+applies to every other belt.
 
 **Status: done, 2026-09-21.** `Outfit.belt_reach`, a multiple of the belt's
 usual half-width, default 1.0 so nobody else moves; Keiko's is 1.15, which
