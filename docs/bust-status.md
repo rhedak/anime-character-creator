@@ -6,12 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 6 (traced cuts follow the bust) in progress. `_body_knots`
-  gained seven bust knots (`_BUST_KNOTS`, widths from `_bust_bulge`); at zero
-  `ref-out/` is byte-identical and the suite green. **Not yet looked at**:
-  render Keiko and Katherina at bust 0.5 and 1.0 (`sweep.py` row 3), add a
-  test that a cut widens at `bust_y` with a bust, record, then 5b (Keiko's
-  coat over the arms, hand lifted out of `_arms`) and step 4.
+- **Now:** step 6 done, awaiting sign-off, with a proposal for 5b (anchor the
+  over-arm lobe at the arm's inner edge). Then 5b, then step 4.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -36,7 +32,7 @@ lessons live in `bust-strategy.md`.
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
 | 5 bust over the arm | 5a done (chibi); 5b Keiko waits | zero case byte-identical |
-| 6 traced cuts follow | knots in, not yet looked at | zero case byte-identical |
+| 6 traced cuts follow | done, awaiting sign-off | zero case byte-identical; widening tested |
 | 7 cast values | not started | |
 | 8 integration | not started | |
 
@@ -101,6 +97,37 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 6, traced cuts follow the bust
+
+**Change** (`8e47780`). `_body_knots` gained seven knots at fixed fractions of
+the armpit-to-waist run (`_BUST_KNOTS`, 0 to 0.6), each as wide as the
+straight shoulder-to-waist line plus the body's own bulge there
+(`_bust_bulge`, read off `_bust_shape`). A traced garment then swells in the
+bust's shape, not to a point at one knot. At the same fractions on every body
+and adding nothing without a bust, they lie on the line the other knots draw:
+`ref-out/` byte-identical, and the identity-on-the-traced-body test still
+passes.
+
+**Measured.** A traced point 1.0 head radius out at the reference's bust
+height, on Katherina: 0.998 flat, 1.072 at `bust = 0.5`, 1.147 at 1.0. More
+than the body's own reach (0.11 at 1.0), because placement scales a point by
+the knot widths' ratio and this point lies outside the knot line there, so a
+garment's side swells a little more than the body under it. New test: a cut
+widens at the bust and not at the shoulder or the waist.
+
+**Looked at** (`out/bust/cuts.png`, chest crops at 3x):
+- **Katherina** (traced jacket, worn over the arms): the jacket's sides swell
+  over the chest and come back in to the waist, smoothly. Works.
+- **Keiko** (lab coat, worn under the arms): the bust's outline still sits
+  inside her coat's panel like a bracket. Her panel's edge is the armhole
+  seam, which is the arm's inner edge, while the over-arm lobe is anchored at
+  the torso's side, which lies under her panel. That is 5b's problem, with a
+  proposal to the owner: anchor the over-arm lobe at the arm's inner edge
+  rather than the torso's side. At the chibi those are within 0.01 of each
+  other on a plain tunic, so nothing already signed off would move, and on a
+  coat whose panel ends at the sleeve the bust's edge becomes the panel's
+  edge bulging over the sleeve, which step 6's knots now make it do.
 
 ### 2026-09-24: step 5a, the bust over the arms (taken before step 4)
 

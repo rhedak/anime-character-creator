@@ -2026,3 +2026,21 @@ def test_the_bust_comes_over_the_arms_at_the_chibi_only():
     ).group(1)
     real = character.skeleton_for(replace(p, bust=1.0), BUILDS["realistic"])
     assert character._bust_over_arms(real, "x") == ""
+
+
+def test_a_traced_cut_widens_at_the_bust_and_nowhere_else():
+    """With a bust, a traced garment's point at the reference's bust height
+    moves out, and its points at the shoulder and the waist do not; without
+    one, placement is what it was (`docs/bust-plan.md`, step 6)."""
+    ref = character.skeleton_for(CharacterParams(body=character._GARMENT_REF_BODY))
+    ref_ys, _ = character._body_knots(ref)
+    bust_y = (ref.bust_y - ref.head_cy) / ref.head_r
+    flat = character._garment_placement(character.skeleton_for(PRESETS["katherina"]))
+    full = character._garment_placement(
+        character.skeleton_for(replace(PRESETS["katherina"], bust=1.0))
+    )
+    assert full((1.0, bust_y))[0] > flat((1.0, bust_y))[0] + 0.05
+    shoulder, waist = ref_ys[1], ref_ys[1 + len(character._BUST_KNOTS) + 1]
+    for y in (shoulder, waist):
+        assert abs(full((1.0, y))[0] - flat((1.0, y))[0]) < 1e-9
+        assert abs(full((1.0, y))[1] - flat((1.0, y))[1]) < 1e-9
