@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 3b, garments read the body. 3a (the body layer) is done, and
-  step 3c has a list waiting in 3a's finding.
+- **Now:** step 3c, where the body shows. 3a and 3b are done; 3c is a
+  design question for the owner (see 3a's list), so it waits for a call.
 - **Tree:** clean at `e3b65e5` when preparation began.
 - **Measure** with `harness/bust/drawn_widths.py` (the drawn ink). Never quote
   a `Skeleton` field as a body measurement.
@@ -26,7 +26,7 @@ lessons live in `bust-strategy.md`.
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
 | 1 reach, not width | done, signed off | continuity and armpit tests green |
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
-| 3 body layer | 3a done; 3b next | 5 of 54 PNGs moved, a finding |
+| 3 body layer | 3a, 3b done; 3c needs the owner | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
 | 5 bust over the arm | not started | |
 | 6 traced cuts follow | not started | |
@@ -94,6 +94,22 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-24: step 3b, garments read the body
+
+**Change.** Mostly landed with 3a's refactor (`ba66b6a`): `_tunic` reads the
+shared measures and `_rib`, the same ones `_torso` draws. The remaining exact
+copies were in the cap sleeve's helpers: `_cap_underside_y` recomputed the
+armpit width and `_cap_tip_y` the shoulder drop; both now read
+`_torso_at_armpit` and `_shoulder_slope`. `refresh-ref-out.sh --check`:
+nothing changed, so not one float moved.
+
+**Scope closed, and what it left.** The robe front (`torso_at_shoulder =
+_sleeve_half_w * 0.80`), the coat, the belt (`waist_half_w * 1.03`) and the
+apron use their own fractions of the anchors. Those are each garment's own
+ease, not copies of the torso line, and putting them on the body would move
+pixels, against this step's acceptance. Per the plan they move onto the body
+as each is reshaped: the coat and whatever lies over the chest at step 5.
 
 ### 2026-09-24: step 3a, the body layer
 

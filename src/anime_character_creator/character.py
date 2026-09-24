@@ -2609,14 +2609,14 @@ def _cap_underside_y(sk: Skeleton, x_off: float, tip_y: float) -> float:
     strokes land on each other and read as one line.
     """
     cuff_y = _sleeve_hem_y(sk)
-    torso_at_cuff = sk.waist_half_w + (sk.shoulder_half_w - sk.waist_half_w) * 0.12
+    torso_at_cuff = _torso_at_armpit(sk)
     tip_x = _cap_tip_x(sk)
     t = (tip_x - x_off) / (tip_x - torso_at_cuff)
     return tip_y + (cuff_y - tip_y) * max(0.0, min(1.0, t))
 
 
 def _cap_tip_y(sk: Skeleton) -> float:
-    return sk.shoulder_y + (sk.waist_y - sk.shoulder_y) * 0.24
+    return sk.shoulder_y + _shoulder_slope(sk)
 
 
 def _shoulder_slope(sk: Skeleton) -> float:
