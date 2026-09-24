@@ -25,7 +25,7 @@ lessons live in `bust-strategy.md`.
 | B0 sweep harness | done, readings void | harness stands |
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
 | 1 reach, not width | 1a, 1b, 1c done; awaiting sign-off | continuity and armpit tests green |
-| 2 pixel check | not started | |
+| 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
 | 3 body layer | not started | |
 | 4 line under the bust | not started | |
 | 5 bust over the arm | not started | |
@@ -96,6 +96,38 @@ expect the rendered sweep to look unchanged.
   the plan; the owner's call.
 
 ## Findings, newest first
+
+### 2026-09-24: step 2, the pixel check
+
+**Built by a delegate** (`general-purpose`, `sonnet`, in a worktree, 85k
+tokens), reviewed and brought in: `./refresh-ref-out.sh --pixels` renders to
+the staging area as the other modes do, then `compare_pixels.py` compares every
+PNG it would publish (54: chibi, on-white, realistic, three pages) as decoded
+RGBA, reporting changed pixels and their box per file. Writes nothing; exits 1
+on any pixel change; still prints the SVG byte count, for information.
+
+**Acceptance.** Clean tree: 0 of 54 differ. The delegate's test (a skin colour
+changed on Satoko) flagged her PNGs, Kyoko's (derived from her) and the sheet.
+
+**First use, which is also a measurement.** `bust=1.0` set on Satoko for one
+run and reverted:
+
+| file | SVG | pixels changed |
+| --- | --- | --- |
+| `satoko.png` (chibi) | differs | 1113, box (293, 450) to (480, 587) |
+| `real/satoko.png` | differs | **0** |
+| `kyoko.png`, `real/kyoko.png` | differ | 0 (her coat covers it) |
+| `sheet.png` | differs | 602 |
+
+At the realistic build a full bust changes no pixel at all: the arm hides all
+of it. At the chibi, 1113 pixels, the notch below the arm. Step 1's
+prediction, now counted.
+
+**Also answered by the delegate.** `test_ref_out_matches_the_code`
+(`tests/test_smoke.py`) compares SVG text only. A pixel variant in pytest is
+feasible (cairosvg and Pillow are in the dev group) but needs the system cairo
+library; recommended as a separate test that skips without cairo. Not built;
+step 3 is where it would first matter.
 
 ### 2026-09-24: step 1c, the shape below the bust
 

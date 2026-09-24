@@ -8,6 +8,17 @@
 #
 #   ./refresh-ref-out.sh          re-render, report which files moved
 #   ./refresh-ref-out.sh --check  compare only, write nothing, exit 1 if stale
+#   ./refresh-ref-out.sh --pixels compare decoded PNG pixels, write nothing,
+#                                  exit 1 if any PNG's pixels changed
+#
+# --pixels exists for the case --check cannot answer: a change to how the SVG
+# is assembled (a new layer, reordered elements, added markup) that moves no
+# visible pixel. --check's byte comparison would call every preset stale;
+# --pixels renders the same way, then decodes each staged and committed PNG
+# with Pillow/numpy and compares RGBA arrays exactly, in compare_pixels.py
+# beside this script. It never touches ref-out/, and it still prints the SVG
+# byte-diff count for information, since that number is still worth seeing,
+# it just no longer decides the exit code.
 #
 # The layout, and what each directory is for:
 #
@@ -48,10 +59,12 @@ if [ ! -x "$py" ]; then
 fi
 
 check_only=false
+pixels_only=false
 case "${1-}" in
     --check) check_only=true ;;
+    --pixels) pixels_only=true ;;
     "") ;;
-    *) echo "usage: $(basename "$0") [--check]" >&2; exit 2 ;;
+    *) echo "usage: $(basename "$0") [--check|--pixels]" >&2; exit 2 ;;
 esac
 
 # Where a build's renders go, relative to ref-out/, as a directory prefix. The
@@ -224,6 +237,24 @@ for page in $pages; do
     done
 done
 
+# Every PNG path --pixels will compare, relative to both the stage dir and
+# ref-out/. Built unconditionally, since it costs nothing and keeping it next
+# to the loops that define what gets staged is what keeps it from drifting
+# from them; only the --pixels branch at the bottom reads it.
+png_rels=()
+i=0
+while [ "$i" -lt "$characters" ]; do
+    rel=${rel_of[$i]}
+    png_rels+=("$rel.png")
+    if displayed "${build_of[$i]}"; then
+        png_rels+=("on-white/$rel.png")
+    fi
+    i=$((i + 1))
+done
+for page in $pages; do
+    png_rels+=("$page.png")
+done
+
 changed=0
 i=0
 while [ "$i" -lt "$characters" ]; do
@@ -249,7 +280,7 @@ while [ "$i" -lt "$characters" ]; do
         continue
     fi
     changed=$((changed + 1))
-    if $check_only; then
+    if $check_only || $pixels_only; then
         echo "  STALE      $rel"
     else
         echo "  updated    $rel"
@@ -274,7 +305,7 @@ for page in $pages; do
         echo "  unchanged  $page"
     else
         changed=$((changed + 1))
-        if $check_only; then
+        if $check_only || $pixels_only; then
             echo "  STALE      $page"
         else
             echo "  updated    $page"
@@ -289,6 +320,12 @@ if $check_only; then
     fi
     echo "ref-out/ matches the code"
     exit 0
+fi
+
+if $pixels_only; then
+    echo "$changed of $count differ in SVG bytes (informational only under --pixels; PNG pixels decide the exit code)"
+    "$py" "$root/compare_pixels.py" "$stage" "$root/ref-out" "${png_rels[@]}"
+    exit $?
 fi
 
 for build in $builds; do
