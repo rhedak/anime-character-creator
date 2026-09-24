@@ -3588,18 +3588,67 @@ def _skeleton_at(p: CharacterParams, heads: float | None) -> Skeleton:
 _GARMENT_REF_BODY = "tall_chibi"
 
 
+# Where the bust's knots sit, as fractions of the armpit-to-waist run: from the
+# armpit to past the lowest under-bust `_BUST_DROP` gives at full size.
+_BUST_KNOTS = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6)
+
+
+def _quad_x_at(p0: Point, p1: Point, p2: Point, y: float) -> float | None:
+    """The x where a quadratic whose height only increases crosses `y`, or None
+    if it does not."""
+    if not p0[1] <= y <= p2[1]:
+        return None
+    qa = p0[1] - 2 * p1[1] + p2[1]
+    qb = 2 * (p1[1] - p0[1])
+    qc = p0[1] - y
+    u = -qc / qb if abs(qa) < 1e-9 else (-qb + math.sqrt(qb * qb - 4 * qa * qc)) / (2 * qa)
+    u = min(1.0, max(0.0, u))
+    return (1 - u) ** 2 * p0[0] + 2 * u * (1 - u) * p1[0] + u * u * p2[0]
+
+
+def _bust_bulge(sk: Skeleton, y: float) -> float:
+    """How far the bust stands out from the torso's plain side at height `y`."""
+    b = _bust_shape(sk)
+    if b is None:
+        return 0.0
+    out = _quad_x_at(b.armpit, b.above, b.peak, y)
+    if out is None:
+        out = _quad_x_at(b.peak, b.tuck, b.under, y)
+    if out is None:
+        return 0.0
+    plain = _quad_x_at(b.armpit, (b.armpit[0], _rib_ctrl_y(sk)), b.waist, y)
+    return max(0.0, out - plain) if plain is not None else 0.0
+
+
 def _body_knots(sk: Skeleton) -> tuple[tuple[float, ...], tuple[float, ...]]:
     """A skeleton's landmark heights and half-widths, in head radii.
 
     What a traced garment hangs from: the chin (the neck's width), shoulder,
-    waist, hip and hem, then the ankle and sole below. The knee is left out
+    the bust's run, waist, hip and hem, then the ankle and sole below. The knee is left out
     on purpose: it sits below the hem on a tall body and above it on the
     shared chibi, and knots have to keep one order on every body.
     """
+    r = sk.head_r
+    sy, wy = (sk.shoulder_y - sk.head_cy) / r, (sk.waist_y - sk.head_cy) / r
+    sw, ww = sk.shoulder_half_w / r, sk.waist_half_w / r
+    # The bust, as knots at fixed fractions of the armpit-to-waist run, each as
+    # wide as the straight shoulder-to-waist line plus what the body's bust adds
+    # at that height. At the same fractions on every body, and adding nothing
+    # without a bust, they lie on the line the other knots already draw, so they
+    # move no cut until a wearer has one; with one, a traced jacket bulges in the
+    # bust's own shape rather than to a point (`docs/bust-plan.md`, step 6).
+    armpit, waist = _sleeve_hem_y(sk), sk.waist_y
+    bust_ys, bust_ws = [], []
+    for frac in _BUST_KNOTS:
+        y = armpit + (waist - armpit) * frac
+        ky = (y - sk.head_cy) / r
+        bust_ys.append(ky)
+        bust_ws.append(sw + (ww - sw) * (ky - sy) / (wy - sy) + _bust_bulge(sk, y) / r)
     ys = (
         1.0,
-        (sk.shoulder_y - sk.head_cy) / sk.head_r,
-        (sk.waist_y - sk.head_cy) / sk.head_r,
+        sy,
+        *bust_ys,
+        wy,
         (sk.hip_y - sk.head_cy) / sk.head_r,
         (sk.hem_y - sk.head_cy) / sk.head_r,
         (sk.ankle_y - sk.head_cy) / sk.head_r,
@@ -3607,8 +3656,9 @@ def _body_knots(sk: Skeleton) -> tuple[tuple[float, ...], tuple[float, ...]]:
     )
     ws = (
         sk.neck_half_w / sk.head_r,
-        sk.shoulder_half_w / sk.head_r,
-        sk.waist_half_w / sk.head_r,
+        sw,
+        *bust_ws,
+        ww,
         sk.hip_half_w / sk.head_r,
         sk.hem_half_w / sk.head_r,
         sk.hem_half_w / sk.head_r,

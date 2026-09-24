@@ -6,8 +6,15 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 5a (the bust over the arms, chibi) done, awaiting sign-off;
-  then step 6 (traced cuts follow), which Keiko's 5b needs, then step 4.
+- **Now:** step 6 (traced cuts follow the bust) in progress. `_body_knots`
+  gained seven bust knots (`_BUST_KNOTS`, widths from `_bust_bulge`); at zero
+  `ref-out/` is byte-identical and the suite green. **Not yet looked at**:
+  render Keiko and Katherina at bust 0.5 and 1.0 (`sweep.py` row 3), add a
+  test that a cut widens at `bust_y` with a bust, record, then 5b (Keiko's
+  coat over the arms, hand lifted out of `_arms`) and step 4.
+- **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
+  needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
+  clip ids get fixed at the appropriate time.
 - **Tree:** clean at `e3b65e5` when preparation began.
 - **Measure** with `harness/bust/drawn_widths.py` (the drawn ink). Never quote
   a `Skeleton` field as a body measurement.
@@ -29,7 +36,7 @@ lessons live in `bust-strategy.md`.
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
 | 5 bust over the arm | 5a done (chibi); 5b Keiko waits | zero case byte-identical |
-| 6 traced cuts follow | not started | |
+| 6 traced cuts follow | knots in, not yet looked at | zero case byte-identical |
 | 7 cast values | not started | |
 | 8 integration | not started | |
 
