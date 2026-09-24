@@ -6,6 +6,7 @@ scales as one unit via the skeleton's head_r.
 
 from __future__ import annotations
 
+import hashlib
 import itertools
 import math
 from collections.abc import Callable
@@ -2690,19 +2691,56 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) 
     """
     torso_at_cuff, cuff_y = _torso_at_armpit(sk) - inset, _sleeve_hem_y(sk)
     rib_ctrl_y, ww, wy = _rib_ctrl_y(sk), sk.waist_half_w - inset, sk.waist_y
-    reach = sk.bust_reach
-    if reach <= 0:
+    bust = _bust_shape(sk, inset)
+    if bust is None:
         return (
             f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
             if descending
             else f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} "
             f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
         )
+
+    def q(ctrl: Point, end: Point) -> str:
+        return f"Q {cx + s * ctrl[0]:.1f} {ctrl[1]:.1f} {cx + s * end[0]:.1f} {end[1]:.1f} "
+
+    b = bust
+    if descending:
+        return q(b.above, b.peak) + q(b.tuck, b.under) + q(b.below, b.waist)
+    return q(b.below, b.under) + q(b.tuck, b.peak) + q(b.above, b.armpit)
+
+
+@dataclass(frozen=True)
+class _Bust:
+    """The bust's outline on one side, as offsets from the centre line.
+
+    `armpit`, `peak`, `under` and `waist` lie on the outline, with `above`,
+    `tuck` and `below` the controls between them. `plain_up` is the plain
+    curve's control from `under` back up to `armpit`, which with the outline
+    bounds the lobe a bust adds to the torso (`_bust_over_arms`).
+    """
+
+    armpit: Point
+    above: Point
+    peak: Point
+    tuck: Point
+    under: Point
+    below: Point
+    waist: Point
+    plain_up: Point
+
+
+def _bust_shape(sk: Skeleton, inset: float = 0.0) -> _Bust | None:
+    """The bust on `_rib`'s curve, or None without one; see `_rib`."""
+    reach = sk.bust_reach
+    if reach <= 0:
+        return None
+    torso_at_cuff, cuff_y = _torso_at_armpit(sk) - inset, _sleeve_hem_y(sk)
+    rib_ctrl_y, ww, wy = _rib_ctrl_y(sk), sk.waist_half_w - inset, sk.waist_y
     rib_curve = ((torso_at_cuff, cuff_y), (torso_at_cuff, rib_ctrl_y), (ww, wy))
     above, peak, _ = _quad_split(*rib_curve, _quad_crossing(*rib_curve, sk.bust_y))
     above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
     under_y = min(peak[1] + reach * _BUST_DROP, wy - (wy - peak[1]) * 0.25)
-    _, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
+    plain_up, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
     # Leaves the fullest point along the upper piece's own tangent, so the join
     # is smooth, and arrives at the under-bust point on the diagonal: the control
     # is where that tangent meets a 45 degree line up and out from the
@@ -2711,13 +2749,74 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) 
     lean = (peak[0] - above[0]) / (peak[1] - above[1])
     tuck_x = (peak[0] + lean * (under[1] + under[0] - peak[1])) / (1 + lean)
     tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
+    return _Bust(
+        armpit=(torso_at_cuff, cuff_y),
+        above=above,
+        peak=peak,
+        tuck=tuck,
+        under=under,
+        below=below,
+        waist=(ww, wy),
+        plain_up=plain_up,
+    )
 
-    def q(ctrl: Point, end: Point) -> str:
-        return f"Q {cx + s * ctrl[0]:.1f} {ctrl[1]:.1f} {cx + s * end[0]:.1f} {end[1]:.1f} "
 
-    if descending:
-        return q(above, peak) + q(tuck, under) + q(below, (ww, wy))
-    return q(below, under) + q(tuck, peak) + q(above, (torso_at_cuff, cuff_y))
+def _bust_over_arms(sk: Skeleton, chest: str) -> str:
+    """The bust in front of the arms: `chest`, the layers worn on the torso up
+    to the arms, drawn again masked to the lobe a bust adds to the torso, then
+    the bust's outline over it. Nothing without a bust.
+
+    A bust stands forward of the arm hanging beside it, and the torso's side
+    does not: so only the lobe comes over the arm, and whatever is worn there
+    comes with it in its own colour and line work (a tunic, a coat's panel, a
+    strap), since it is those same layers drawn again. At the chibi the arm's
+    inner edge runs along the torso's side, and drawn under the arm the whole
+    bust was hidden: at the realistic build it moved no pixel at all
+    (`docs/bust-status.md`, step 2).
+
+    The lobe also runs a stroke inside the plain side, so the arm's own
+    outline, which lies along it at the chibi, is covered rather than left as a
+    line through the bust.
+
+    Chibi-range figures only, on the same halfway point the traced cuts switch
+    on. At the realistic build the arm hangs 0.45 head radii across the torso:
+    a lobe stopping at the plain side left a strip of chest showing through the
+    middle of the arm, and one carried in past the arm floated as a pad over it
+    at middling values and read as a ledge at full size (`docs/bust-status.md`,
+    step 5). That is the adult arm's placement, not the bust's shape, and it is
+    left under the arm there.
+
+    The mask's id carries a hash of its shape, so figures sharing one document
+    (a cast sheet) cannot pick up each other's.
+    """
+    bust = _bust_shape(sk)
+    if bust is None or sk.build >= 0.5:
+        return ""
+    cx, sw = sk.head_cx, _stroke_w(sk)
+    b = bust
+    lobe, outline = [], []
+    for s in (-1, 1):
+
+        def pt(v: Point, dx: float = 0.0, s: int = s) -> str:
+            return f"{cx + s * (v[0] + dx):.1f} {v[1]:.1f}"
+
+        edge = f"M {pt(b.armpit)} Q {pt(b.above)} {pt(b.peak)} Q {pt(b.tuck)} {pt(b.under)} "
+        outline.append(edge)
+        lobe.append(edge + f"L {pt(b.under, -sw)} Q {pt(b.plain_up, -sw)} {pt(b.armpit, -sw)} Z")
+    d = " ".join(lobe)
+    mask_id = "bust-" + hashlib.sha1(d.encode()).hexdigest()[:10]
+    # A mask rather than a clip path: a clip is applied to each layer in turn,
+    # so along its soft edge every layer under the top one bleeds through, and a
+    # dark tunic under a white coat showed as a grey seam down the bust. A mask
+    # cuts out the chest once it is composited.
+    return (
+        f'<defs><mask id="{mask_id}" maskUnits="userSpaceOnUse" x="0" y="0" '
+        f'width="{sk.canvas_w:.0f}" height="{sk.canvas_h:.0f}">'
+        f'<path d="{d}" fill="white" /></mask></defs>'
+        f'<g mask="url(#{mask_id})">{chest}</g>'
+        f'<path d="{" ".join(outline)}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{sw:.1f}" stroke-linecap="round" />'
+    )
 
 
 def _torso(sk: Skeleton, p: CharacterParams) -> str:
@@ -9177,30 +9276,9 @@ def render_character(
     # the arms go over every garment so nothing can clip a hand: the apron is
     # narrow enough to sit between them, but only just, and the hands are the
     # one place a collision would show.
-    layers = [
-        _hair_defs(sk, p),
-        # The far side of a hat's brim, behind the hair, the head and everything.
-        _hat_underside(sk, p),
-        # Behind the mass, so both emerge from the silhouette instead of sitting
-        # on the face. That is the whole point of them being parts rather than
-        # hairstyles: a cut owns the outline around the skull, and these two are
-        # by definition outside it.
-        _hair_tail(sk, p),
-        _hair_mass(sk, p),
-        # The body under everything it wears, and under the neck, whose skin
-        # covers its top edge; see the function.
-        _torso(sk, p),
-        _neck(sk, p),
-        _legs_and_boots(sk, p),
-        _underskirt(sk, p),
-        _skirt(sk, p),
-        # Over the legs and whatever they wear, under the kimono top: the top of
-        # a hakama sits at the waist, so the tunic and the robe front drawn next
-        # cover its upper reach the same way they cover the top of a skirt.
-        _hakama(sk, p),
-        # Behind the tunic: a kimono sleeve hangs off the shoulder seam, so the
-        # torso's own outline has to close over the top of it.
-        _hanging_sleeves(sk, p),
+    # Everything worn on the torso up to the arms, built once: drawn in its
+    # place below, and again over the arms masked to a bust (`_bust_over_arms`).
+    chest = [
         _tunic(sk, p),
         # The crossed front, over the tunic it re-fronts and under the obi.
         _robe_front(sk, p),
@@ -9228,16 +9306,49 @@ def render_character(
         _belt(sk, p) if p.outfit.coat_color is None else "",
         _pouches(sk, p),
         _crystal_harness(sk, p),
+    ]
+    under_arms = [
+        # A traced coat whose cut asks to go under the arms, so the arm lies
+        # over the body with its own outline; see the function.
+        _traced_coat_and_belt(sk, p, after_arms=False),
+    ]
+    layers = [
+        _hair_defs(sk, p),
+        # The far side of a hat's brim, behind the hair, the head and everything.
+        _hat_underside(sk, p),
+        # Behind the mass, so both emerge from the silhouette instead of sitting
+        # on the face. That is the whole point of them being parts rather than
+        # hairstyles: a cut owns the outline around the skull, and these two are
+        # by definition outside it.
+        _hair_tail(sk, p),
+        _hair_mass(sk, p),
+        # The body under everything it wears, and under the neck, whose skin
+        # covers its top edge; see the function.
+        _torso(sk, p),
+        _neck(sk, p),
+        _legs_and_boots(sk, p),
+        _underskirt(sk, p),
+        _skirt(sk, p),
+        # Over the legs and whatever they wear, under the kimono top: the top of
+        # a hakama sits at the waist, so the tunic and the robe front drawn next
+        # cover its upper reach the same way they cover the top of a skirt.
+        _hakama(sk, p),
+        # Behind the tunic: a kimono sleeve hangs off the shoulder seam, so the
+        # torso's own outline has to close over the top of it.
+        _hanging_sleeves(sk, p),
+        *chest,
         # Worn at the hip, over the tunic and the trousers and under the arm at
         # that side.
         _katana(sk, p),
         # Held in the hand, so under the arm that holds it and over everything else
         # below the neck.
         _staff(sk, p),
-        # A traced coat whose cut asks to go under the arms, so the arm lies
-        # over the body with its own outline; see the function.
-        _traced_coat_and_belt(sk, p, after_arms=False),
+        *under_arms,
         _arms(sk, p),
+        # The bust in front of the arms: the chest drawn again, masked to the
+        # lobe a bust adds, so the katana and the staff, held at the side, stay
+        # under the arm. Nothing without a bust; see the function.
+        _bust_over_arms(sk, "".join(chest + under_arms)),
         # A traced jacket covers the tops of the sleeves; see the function.
         _traced_coat_and_belt(sk, p),
         # After the arms and before the ear: a standing collar wraps the throat,

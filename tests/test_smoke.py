@@ -2008,3 +2008,21 @@ def test_the_body_reads_no_garment(name):
     p = PRESETS[name]
     sk = character.skeleton_for(p)
     assert character._torso(sk, p) == character._torso(sk, replace(p, outfit=character.Outfit()))
+
+
+def test_the_bust_comes_over_the_arms_at_the_chibi_only():
+    """Nothing without a bust; over the arms at the chibi; left under them at the
+    realistic build, whose arm hangs across the torso (`docs/bust-status.md`,
+    step 5). The mask's id follows its shape, so a sheet of several figures
+    cannot share one."""
+    p = PRESETS["satoko"]
+    chibi = character.skeleton_for(p)
+    assert character._bust_over_arms(chibi, "x") == ""
+    small = character._bust_over_arms(character.skeleton_for(replace(p, bust=0.5)), "x")
+    full = character._bust_over_arms(character.skeleton_for(replace(p, bust=1.0)), "x")
+    assert 'mask="url(#bust-' in full
+    assert re.search(r'id="(bust-\w+)"', small).group(1) != re.search(
+        r'id="(bust-\w+)"', full
+    ).group(1)
+    real = character.skeleton_for(replace(p, bust=1.0), BUILDS["realistic"])
+    assert character._bust_over_arms(real, "x") == ""

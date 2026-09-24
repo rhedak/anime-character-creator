@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 3c, where the body shows. 3a and 3b are done; 3c is a
-  design question for the owner (see 3a's list), so it waits for a call.
+- **Now:** step 5a (the bust over the arms, chibi) done, awaiting sign-off;
+  then step 6 (traced cuts follow), which Keiko's 5b needs, then step 4.
 - **Tree:** clean at `e3b65e5` when preparation began.
 - **Measure** with `harness/bust/drawn_widths.py` (the drawn ink). Never quote
   a `Skeleton` field as a body measurement.
@@ -26,9 +26,9 @@ lessons live in `bust-strategy.md`.
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
 | 1 reach, not width | done, signed off | continuity and armpit tests green |
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
-| 3 body layer | 3a, 3b done; 3c needs the owner | 5 of 54 PNGs moved, a finding |
+| 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
-| 5 bust over the arm | not started | |
+| 5 bust over the arm | 5a done (chibi); 5b Keiko waits | zero case byte-identical |
 | 6 traced cuts follow | not started | |
 | 7 cast values | not started | |
 | 8 integration | not started | |
@@ -94,6 +94,54 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-24: step 5a, the bust over the arms (taken before step 4)
+
+**Owner's call:** step 3c deferred until a garment exposes the body (no preset
+shows any torso today, per the pixel check), and step 5 before step 4, since
+the line under the bust is easier to judge once the bust shows.
+
+**Change.** `render_character` builds the chest layers (`_tunic` through
+`_crystal_harness`, plus the traced coat worn under the arms) once, draws them
+in place, and after `_arms` draws them again inside `_bust_over_arms`: masked
+to the lobe a bust adds to the torso (the bust's outline, closed back along
+the plain side a stroke inside it), then the outline stroked over the arm.
+The katana and staff are left out, being held at the side. `_bust_shape`
+holds the bust's points for `_rib` and the lobe alike. Nothing is added at
+`bust = 0`; `ref-out/` byte-identical.
+
+**Looked at** (`sweep.py`, 4x zooms):
+- **Chibi, plain tunic:** the bust reads, from 0.5 clearly, over both arms,
+  tucking back into the side. The notch deferred at step 1 is gone, replaced
+  by the under-bust contour as predicted. A small crease at the armpit where
+  the sleeve's hem meets the bust.
+- **Realistic, tried and rejected.** The arm hangs 0.45 head radii across the
+  torso. A lobe to the plain side left a detached strip of chest over the
+  arm's middle. Carried in past the arm's inner edge at full depth it hid a
+  strip of arm even at a tiny bust, against continuity. Scaled with the bust,
+  it floated as a green pad over the arm at 0.25 to 0.75 and read as a ledge
+  at 1.0. That is the adult arm's placement, not the bust; the over-arm bust is
+  **chibi-range only** (`build < 0.5`, the traced cuts' switch), and at the
+  realistic build the bust stays under the arm. Tested.
+- **A clip bled.** Clipping applies per layer, so along the soft edge each
+  layer under the top one showed through: on Keiko, a grey seam (215 against
+  the coat's 238) where her dark dress lies under the white coat. Group opacity
+  nearly fixed it (235) but shifts colour; a **mask** composites the chest
+  first and leaves no seam (238). Masked, with a user-space region the size of
+  the canvas, and an id hashed from the lobe so figures on one sheet cannot
+  borrow each other's.
+- **Keiko** (coat and traced cut): the bust's outline floats inside the coat
+  like a bracket, because her traced coat does not yet bulge with the bust
+  (step 6) and her coat and sleeve order is the Keiko-specific part of this
+  step (5b). Both wait for the owner.
+
+**Also found, outside this plan:** the eye clips (`eye-l`, `eye-r`) and the
+hair clips (`hair-tips`, `hair-front`) use fixed ids, so on a cast sheet every
+figure's clip shares one id. It renders because the figures are similar; a
+clip that differed per figure would be taken from whichever one the renderer
+resolves. Not touched.
+
+Suite: 525 passed, 1 skipped.
 
 ### 2026-09-24: step 3b, garments read the body
 
