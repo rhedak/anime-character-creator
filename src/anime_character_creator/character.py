@@ -96,6 +96,13 @@ class FaceStyle:
     # part of a face the way a scar is: nobody in this cast is drawn once with
     # them and once without, and an expression must not be able to remove them.
     glasses: bool = False
+    # Both eyes shut: each drawn as one lash line instead of an aperture. Not a
+    # mood, so not on `Expression`: it is a moment (a blink, a frame of an
+    # animation built from stills) rather than a face someone wears, and a
+    # still that means "asleep" or "at peace" can set it directly. Why
+    # `eye_openness` cannot reach this on its own: it moves only the upper lid,
+    # and at 0 the lower half of the almond, white and iris, is still there.
+    eyes_closed: bool = False
     # Which cheek carries a scar, **stated from the viewer's side**: -1 the left
     # of the picture, 1 the right, 0 none. The figure faces us, so the viewer's
     # right is the character's left, and a description written the other way
@@ -8153,6 +8160,37 @@ def _eye_anime(
     return "".join(parts)
 
 
+# How far a closed lid's line sags below its two corners, and where those
+# corners sit, both in eye radii measured down from the eye's own center. A
+# shut eye in this style is the lash line alone: the lids meet low in the
+# aperture, so the line sits below where the open eye's middle was, and bows
+# down between the corners the way a relaxed lid does. Picked by render sweep
+# against the open eye at chibi scale, judged by whether it reads as the same
+# eye shut rather than a new mark on the face.
+_EYE_CLOSED_DROP = 0.30
+_EYE_CLOSED_SAG = 0.38
+
+
+def _eye_closed(ex: float, ey: float, er: float, side: int, f: FaceStyle, sw: float) -> str:
+    """`FaceStyle.eyes_closed`: one lash line from the inner corner to the outer.
+
+    The corners are `_eye_shape`'s own (same width, same tilt), so the shut
+    eye spans exactly what the open one did and a cut between the two reads
+    as a blink rather than as the eye jumping. Same stroke weight as the open
+    aperture's outline, and round caps, as its redrawn lid has.
+    """
+    w = er * f.eye_width * _EYE_ASPECT
+    tilt = er * f.eye_tilt * 0.30
+    y = ey + er * _EYE_CLOSED_DROP
+    x0, y0 = ex - side * w, y + tilt
+    x1, y1 = ex + side * w, y - tilt
+    cx, cy = ex + side * w * 0.05, y + er * _EYE_CLOSED_SAG
+    return (
+        f'<path d="M {x0:.1f} {y0:.1f} Q {cx:.1f} {cy:.1f} {x1:.1f} {y1:.1f}" fill="none" '
+        f'stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" stroke-linecap="round" />'
+    )
+
+
 # Which `eye_style` names exist, keyed the way `HAIRSTYLES` keys hairstyles:
 # a plain dict from name to the callable that draws it, so a new style is an
 # addition here rather than a branch somewhere else. Every entry takes the
@@ -8325,9 +8363,12 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             f'x2="{ex + side * eye_r:.1f}" y2="{brow_y - tilt:.1f}" '
             f'stroke="{brow_color}" stroke-width="{sw * f.brow_weight:.1f}" stroke-linecap="round" />'
         )
-        parts.append(
-            EYESTYLES[f.eye_style](ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio)
-        )
+        if f.eyes_closed:
+            parts.append(_eye_closed(ex, eye_y, eye_r, side, f, sw))
+        else:
+            parts.append(
+                EYESTYLES[f.eye_style](ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio)
+            )
 
     if sk.build > 0.5:
         # Two short strokes, mirrored, only at builds where the face has

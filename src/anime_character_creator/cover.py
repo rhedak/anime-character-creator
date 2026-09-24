@@ -135,7 +135,15 @@ def _jitter(i: int) -> float:
     return x - math.floor(x)
 
 
-def _mist_band(p: CoverParams, y: float, depth: float, color: str, seed: int, scale: float) -> str:
+def mist_band(
+    width: float,
+    y: float,
+    depth: float,
+    color: str,
+    seed: int,
+    scale: float,
+    flatness: float = 0.30,
+) -> str:
     """One bank of mist: low wide bumps along the top, flat along the bottom.
 
     The bumps are **elliptical, and much wider than they are tall**. Circular
@@ -149,16 +157,23 @@ def _mist_band(p: CoverParams, y: float, depth: float, color: str, seed: int, sc
     bank its uneven skyline; varying the baseline as well breaks it into
     separate objects, which is what several overlapping bands are for.
 
-    It runs off both edges of the page on purpose, so the bank is cut by the
-    trim rather than ending inside the picture.
+    It runs off both edges of a `width`-wide page on purpose, so the bank is cut
+    by the trim rather than ending inside the picture. Bump size is a fraction
+    (`scale`) of `width`, so a caller that wants a bank wider than its page, to
+    slide across it, passes the wider width and gets proportionally the same
+    bumps only if it scales `scale` down to match.
+
+    Public so a page other than the cover (a backdrop, a scene) can stand a
+    figure in the same mist; `render_cover` goes through `_mist_band`, which
+    only unpacks its params into this.
     """
-    over = p.width * 0.1
+    over = width * 0.1
     x = -over
     d = [f"M {-over:.1f} {y + depth:.1f}", f"L {-over:.1f} {y:.1f}"]
     i = seed
-    while x < p.width + over:
-        rx = p.width * scale * (0.5 + _jitter(i) * 1.1)
-        ry = rx * p.mist_flatness
+    while x < width + over:
+        rx = width * scale * (0.5 + _jitter(i) * 1.1)
+        ry = rx * flatness
         x2 = x + rx * 2
         # Sweep 1 going right bulges the arc upward, which is the whole shape.
         d.append(f"A {rx:.1f} {ry:.1f} 0 0 1 {x2:.1f} {y:.1f}")
@@ -167,6 +182,11 @@ def _mist_band(p: CoverParams, y: float, depth: float, color: str, seed: int, sc
     d.append(f"L {x:.1f} {y + depth:.1f}")
     d.append("Z")
     return f'<path d="{" ".join(d)}" fill="{color}" />'
+
+
+def _mist_band(p: CoverParams, y: float, depth: float, color: str, seed: int, scale: float) -> str:
+    """`mist_band` at the cover's own width and flatness."""
+    return mist_band(p.width, y, depth, color, seed, scale, p.mist_flatness)
 
 
 def _backdrop(p: CoverParams) -> str:

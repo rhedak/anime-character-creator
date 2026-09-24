@@ -133,6 +133,7 @@ quadratics, and these deform it; there is no second eye shape to choose.
 | `mouth_curve` | `1.0` | `1` the stock smile, `0` flat, negative a frown. |
 | `mouth_width` | `1.0` | |
 | `blush` | `1.0` | `0` removes the cheek patches. |
+| `eyes_closed` | `False` | Both eyes shut, each drawn as one lash line across the open aperture's own corners. A moment (a blink), not a mood, so it is not on `Expression`. |
 | `scar_side` | `0` | `-1` left cheek, `1` right, `0` none. |
 
 ## Skeleton and build_skeleton

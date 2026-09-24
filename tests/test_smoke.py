@@ -1906,3 +1906,33 @@ def test_the_cover_wears_its_chosen_expression() -> None:
     # And it can be taken off, which is what `None` is for.
     _sk, plain, *_ = cover._placement(replace(p, expression=None))
     assert plain.face == PRESETS["satoshi"].face
+
+
+def test_mist_band_is_the_covers_own_bank():
+    from anime_character_creator.cover import CoverParams, _mist_band, mist_band
+
+    p = CoverParams()
+    assert mist_band(p.width, 700, 800, "#2b3d41", 3, 0.055) == _mist_band(
+        p, 700, 800, "#2b3d41", 3, 0.055
+    )
+    assert mist_band(3000, 0, 10, "#000", 1, 0.02).startswith('<path d="M -300.0 10.0')
+
+
+def test_closed_eyes_are_a_lash_line_spanning_the_open_aperture():
+    """A shut eye draws no aperture, iris or clip, and its line starts and ends
+    on the open almond's own corners, so a cut between the two reads as a blink
+    rather than the eye moving."""
+    from anime_character_creator.character import _eye_closed, _eye_shape
+
+    f = PRESETS["satoshi"].face
+    closed = replace(PRESETS["satoshi"], face=replace(f, eyes_closed=True))
+    svg = render_character(closed)
+    assert 'id="eye-l"' not in svg and 'id="eye-r"' not in svg
+    assert 'id="eye-l"' in render_character(PRESETS["satoshi"])
+
+    d_open, _ = _eye_shape(100.0, 200.0, 20.0, 1, f)
+    open_x = [float(v) for v in re.findall(r"(-?\d+\.\d) -?\d+\.\d", d_open)]
+    line = _eye_closed(100.0, 200.0, 20.0, 1, f, 3.0)
+    ends = re.search(r"M (\S+) \S+ Q \S+ \S+ (\S+) ", line)
+    assert float(ends.group(1)) == pytest.approx(min(open_x), abs=0.11)
+    assert float(ends.group(2)) == pytest.approx(max(open_x), abs=0.11)
