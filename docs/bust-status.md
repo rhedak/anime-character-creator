@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 9b, loose garments hang from the fullest point. 9a was tried
-  and deferred (see its finding). Then 5b, 4, 7, 8.
+- **Now:** step 9b done, awaiting the owner's sign-off beside 5a
+  (`out/bust/drape.png`). Then 5b (Keiko), 4, 7, 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -33,7 +33,7 @@ lessons live in `bust-strategy.md`.
 | 4 line under the bust | not started | |
 | 5 bust over the arm | 5a done (chibi); 5b Keiko waits | zero case byte-identical |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
-| 9 fit and drape (added 2026-09-25) | 9a tried, deferred to the realistic pass; 9b next | |
+| 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, awaiting sign-off | zero case byte-identical; drape tested |
 | 7 cast values | not started | |
 | 8 integration | not started | |
 
@@ -98,6 +98,42 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 9b, loose garments hang from the fullest point
+
+**Change.** `_bust_shape(drape=True)`: the plain curve split at the bust with
+the fullest point and both controls either side of it moved out by the reach,
+so the side is smooth at the fullest point, back on the plain curve at the
+waist, and the plain curve itself as the reach goes to zero. This is the shape
+step 1a drew and rejected as a barrel ribcage: wrong for the body, right for
+cloth. The body (`_torso`) keeps the tuck; the tunic, the over-arm lobe and the
+traced cuts' knots (`_bust_bulge`) drape, per the owner's call that fit belongs
+to the garment kind. `_Bust` now carries the whole run to the waist and says
+how many of its pieces bound the lobe.
+
+**Predicted vs measured** (Satoko, `drawn_widths.py`, new row 30% of the way
+from the bust row to the waist): bust row and waist unchanged, as predicted
+(0.687, 0.538 at the chibi). The new row, at `bust = 1.0`: 0.568 tucked, 0.668
+draped, against a predicted 0.64 to 0.66; the cloth falls more slowly just
+below the fullest point than guessed. At 0.01 it moved 0.004, one raster pixel
+at that scale. `ref-out/` byte-identical at zero.
+
+**Looked at** (`out/bust/drape.png`, previous commit above, draped below;
+`drape_zoom.png` at 5x): Satoko's tunic now reads as cloth over a bust, taken
+in at the belt, rather than two round lobes tucked under; at 5x the fall
+comes over the arm and meets the side just above the belt, with the existing
+daylight between arm and body below it. Katherina's jacket changes slightly.
+Keiko's outline now falls toward the belt but still floats inside her coat
+(5b). **This changes the look signed off at 5a**, so it is shown to the owner
+beside it rather than assumed.
+
+**Not yet following the bust:** the parametric `_coat` (Kyoko) and
+`_robe_front` (Reika). Both need to read the body when step 7 gives their
+wearers a value. Aprons, straps and plackets sit on the front and are redrawn
+over the arm correctly as they are.
+
+New test: the draped side stands clear of the body's tuck and meets it at the
+peak and the waist. Suite: 527 passed, 1 skipped.
 
 ### 2026-09-25: step 9a, the bust starting below the armpit: tried, not kept
 

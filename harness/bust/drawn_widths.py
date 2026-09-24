@@ -55,7 +55,8 @@ def main() -> None:
             r, cx = sk.head_r, sk.head_cx
             torso, arm = ink(c._tunic(sk, p), sk), ink(c._arms(sk, p), sk)
             cells = []
-            for label, y in (("bust row", sk.bust_y), ("waist", sk.waist_y)):
+            fall_y = sk.bust_y + (sk.waist_y - sk.bust_y) * 0.3
+            for label, y in (("bust row", sk.bust_y), ("below", fall_y), ("waist", sk.waist_y)):
                 t, a = right_of_centre(torso, y, cx), right_of_centre(arm, y, cx)
                 cells.append(
                     f"{label}: torso {(t.max() / SCALE - cx) / r:.3f}"

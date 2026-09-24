@@ -2664,7 +2664,9 @@ def _quad_split(p0: Point, p1: Point, p2: Point, u: float) -> tuple[Point, Point
     return a, (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u), b
 
 
-def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) -> str:
+def _rib(
+    sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0, drape: bool = False
+) -> str:
     """The torso's side from the armpit to the waist on side `s`, as path
     commands continuing from wherever the path is, down or back up.
 
@@ -2688,10 +2690,12 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) 
     for no visible reason.
 
     `inset` pulls the whole run in, for the body under a garment (`_torso`).
+    `drape` is for a loose garment, which hangs from the fullest point rather
+    than following the body back in under it (`_bust_shape`).
     """
     torso_at_cuff, cuff_y = _torso_at_armpit(sk) - inset, _sleeve_hem_y(sk)
     rib_ctrl_y, ww, wy = _rib_ctrl_y(sk), sk.waist_half_w - inset, sk.waist_y
-    bust = _bust_shape(sk, inset)
+    bust = _bust_shape(sk, inset, drape)
     if bust is None:
         return (
             f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
@@ -2703,31 +2707,27 @@ def _rib(sk: Skeleton, cx: float, s: int, descending: bool, inset: float = 0.0) 
     def q(ctrl: Point, end: Point) -> str:
         return f"Q {cx + s * ctrl[0]:.1f} {ctrl[1]:.1f} {cx + s * end[0]:.1f} {end[1]:.1f} "
 
-    b = bust
     if descending:
-        return "".join(q(c, e) for c, e in b.outline) + q(b.below, b.waist)
-    starts = [b.armpit] + [e for _, e in b.outline[:-1]]
-    back = "".join(q(c, st) for (c, _), st in reversed(list(zip(b.outline, starts, strict=True))))
-    return q(b.below, b.under) + back
+        return "".join(q(c, e) for _, c, e in bust.pieces())
+    return "".join(q(c, st) for st, c, _ in reversed(bust.pieces()))
 
 
 @dataclass(frozen=True)
 class _Bust:
     """The bust's outline on one side, as offsets from the centre line.
 
-    `outline` is the run from `armpit` down to `under` as quadratic pieces,
-    each its control and its end point; `peak` is the fullest point on it.
-    `below` is the plain curve's control on from `under` to `waist`, and
-    `plain_up` its control from `under` back up to `armpit`, which with the
-    outline bounds the lobe a bust adds to the torso (`_bust_over_arms`).
+    `outline` is the whole run from `armpit` down to the waist as quadratic
+    pieces, each its control and its end point; `peak` is the fullest point on
+    it. Its first `lobe_pieces` pieces run off the plain curve and the last of
+    them ends back on it, and `plain_up` is the plain curve's control from that
+    end back up to the armpit: together they bound the lobe a bust adds to the
+    torso (`_bust_over_arms`).
     """
 
     armpit: Point
     outline: tuple[tuple[Point, Point], ...]
     peak: Point
-    under: Point
-    below: Point
-    waist: Point
+    lobe_pieces: int
     plain_up: Point
 
     def pieces(self) -> list[tuple[Point, Point, Point]]:
@@ -2736,16 +2736,34 @@ class _Bust:
         return [(st, c, e) for st, (c, e) in zip(starts, self.outline, strict=True)]
 
 
-def _bust_shape(sk: Skeleton, inset: float = 0.0) -> _Bust | None:
-    """The bust on `_rib`'s curve, or None without one; see `_rib`."""
+def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust | None:
+    """The bust on `_rib`'s curve, or None without one; see `_rib`.
+
+    `drape` is for a loose garment over the bust rather than the body under it.
+    The body comes back in below the fullest point to the under-bust tuck; cloth
+    does not follow it there, it hangs from the fullest point and is taken in
+    only at the waist (the anatomy review in `docs/bust-plan.md`, step 9b). So
+    a draped side is the plain curve split at the bust with the fullest point
+    and both controls either side of it moved out by the reach: smooth at the
+    fullest point, back on the plain curve at the waist, and the plain curve
+    itself as the reach goes to zero.
+    """
     reach = sk.bust_reach
     if reach <= 0:
         return None
     torso_at_cuff, cuff_y = _torso_at_armpit(sk) - inset, _sleeve_hem_y(sk)
     rib_ctrl_y, ww, wy = _rib_ctrl_y(sk), sk.waist_half_w - inset, sk.waist_y
     rib_curve = ((torso_at_cuff, cuff_y), (torso_at_cuff, rib_ctrl_y), (ww, wy))
-    above, peak, _ = _quad_split(*rib_curve, _quad_crossing(*rib_curve, sk.bust_y))
+    above, peak, fall = _quad_split(*rib_curve, _quad_crossing(*rib_curve, sk.bust_y))
     above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
+    if drape:
+        return _Bust(
+            armpit=(torso_at_cuff, cuff_y),
+            outline=((above, peak), ((fall[0] + reach, fall[1]), (ww, wy))),
+            peak=peak,
+            lobe_pieces=2,
+            plain_up=rib_curve[1],
+        )
     under_y = min(peak[1] + reach * _BUST_DROP, wy - (wy - peak[1]) * 0.25)
     plain_up, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
     # The bust swells straight from the armpit. Starting it lower, below an
@@ -2763,11 +2781,9 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0) -> _Bust | None:
     tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
     return _Bust(
         armpit=(torso_at_cuff, cuff_y),
-        outline=((above, peak), (tuck, under)),
+        outline=((above, peak), (tuck, under), (below, (ww, wy))),
         peak=peak,
-        under=under,
-        below=below,
-        waist=(ww, wy),
+        lobe_pieces=2,
         plain_up=plain_up,
     )
 
@@ -2800,7 +2816,7 @@ def _bust_over_arms(sk: Skeleton, chest: str) -> str:
     The mask's id carries a hash of its shape, so figures sharing one document
     (a cast sheet) cannot pick up each other's.
     """
-    bust = _bust_shape(sk)
+    bust = _bust_shape(sk, drape=True)
     if bust is None or sk.build >= 0.5:
         return ""
     cx, sw = sk.head_cx, _stroke_w(sk)
@@ -2811,9 +2827,11 @@ def _bust_over_arms(sk: Skeleton, chest: str) -> str:
         def pt(v: Point, dx: float = 0.0, s: int = s) -> str:
             return f"{cx + s * (v[0] + dx):.1f} {v[1]:.1f}"
 
-        edge = f"M {pt(b.armpit)} " + "".join(f"Q {pt(c)} {pt(e)} " for c, e in b.outline)
+        run = b.outline[: b.lobe_pieces]
+        edge = f"M {pt(b.armpit)} " + "".join(f"Q {pt(c)} {pt(e)} " for c, e in run)
+        end = run[-1][1]
         outline.append(edge)
-        lobe.append(edge + f"L {pt(b.under, -sw)} Q {pt(b.plain_up, -sw)} {pt(b.armpit, -sw)} Z")
+        lobe.append(edge + f"L {pt(end, -sw)} Q {pt(b.plain_up, -sw)} {pt(b.armpit, -sw)} Z")
     d = " ".join(lobe)
     mask_id = "bust-" + hashlib.sha1(d.encode()).hexdigest()[:10]
     # A mask rather than a clip path: a clip is applied to each layer in turn,
@@ -3013,13 +3031,14 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
 
     def down(s: int) -> str:
         return (
-            _rib(sk, cx, s, True)
+            # A tunic is worn loose: it hangs from the bust (`_bust_shape`).
+            _rib(sk, cx, s, True, drape=True)
             + f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "
         )
 
     def up(s: int) -> str:
         return f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} " + _rib(
-            sk, cx, s, False
+            sk, cx, s, False, drape=True
         )
 
     stand = (
@@ -3618,8 +3637,9 @@ def _quad_x_at(p0: Point, p1: Point, p2: Point, y: float) -> float | None:
 
 
 def _bust_bulge(sk: Skeleton, y: float) -> float:
-    """How far the bust stands out from the torso's plain side at height `y`."""
-    b = _bust_shape(sk)
+    """How far a loose garment over the bust stands out from the torso's plain
+    side at height `y`: the traced cuts are all worn loose (`_bust_shape`)."""
+    b = _bust_shape(sk, drape=True)
     if b is None:
         return 0.0
     out = None
@@ -3629,7 +3649,7 @@ def _bust_bulge(sk: Skeleton, y: float) -> float:
             break
     if out is None:
         return 0.0
-    plain = _quad_x_at(b.armpit, (b.armpit[0], _rib_ctrl_y(sk)), b.waist, y)
+    plain = _quad_x_at(b.armpit, (b.armpit[0], _rib_ctrl_y(sk)), b.outline[-1][1], y)
     return max(0.0, out - plain) if plain is not None else 0.0
 
 

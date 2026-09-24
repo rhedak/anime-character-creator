@@ -2044,3 +2044,21 @@ def test_a_traced_cut_widens_at_the_bust_and_nowhere_else():
     for y in (shoulder, waist):
         assert abs(full((1.0, y))[0] - flat((1.0, y))[0]) < 1e-9
         assert abs(full((1.0, y))[1] - flat((1.0, y))[1]) < 1e-9
+
+
+def test_a_loose_garment_hangs_from_the_bust_where_the_body_tucks_under_it():
+    """Below the fullest point the body comes back in to the under-bust tuck;
+    a loose garment hangs clear of it and meets the body again only at the
+    waist (`docs/bust-plan.md`, step 9b)."""
+    sk = character.skeleton_for(replace(PRESETS["satoko"], bust=1.0))
+    body, cloth = character._bust_shape(sk), character._bust_shape(sk, drape=True)
+
+    def x_at(bust, y):
+        return next(
+            x for x in (character._quad_x_at(*pc, y) for pc in bust.pieces()) if x is not None
+        )
+
+    tuck_y = body.outline[1][1][1]
+    assert x_at(cloth, tuck_y) > x_at(body, tuck_y) + 0.3 * sk.bust_reach
+    assert cloth.peak == body.peak
+    assert cloth.outline[-1][1] == body.outline[-1][1]
