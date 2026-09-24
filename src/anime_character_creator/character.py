@@ -2619,6 +2619,30 @@ def _cap_tip_y(sk: Skeleton) -> float:
     return sk.shoulder_y + (sk.waist_y - sk.shoulder_y) * 0.24
 
 
+# How far below the bust's fullest point its under-bust tuck lands, in multiples
+# of its reach: a larger bust is taller as well as fuller. A first guess, for
+# the sweep to settle (`docs/bust-plan.md`, step 1).
+_BUST_DROP = 2.0
+
+
+def _quad_crossing(p0: Point, p1: Point, p2: Point, y: float) -> float:
+    """The parameter where a quadratic whose height only increases crosses `y`,
+    kept inside the run so a height near either end still splits it."""
+    qa = p0[1] - 2 * p1[1] + p2[1]
+    qb = 2 * (p1[1] - p0[1])
+    qc = p0[1] - y
+    u = -qc / qb if abs(qa) < 1e-9 else (-qb + math.sqrt(qb * qb - 4 * qa * qc)) / (2 * qa)
+    return min(0.95, max(0.05, u))
+
+
+def _quad_split(p0: Point, p1: Point, p2: Point, u: float) -> tuple[Point, Point, Point]:
+    """Split a quadratic at `u` (de Casteljau): the first half's control, the
+    point on the curve, and the second half's control."""
+    a = (p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u)
+    b = (p1[0] + (p2[0] - p1[0]) * u, p1[1] + (p2[1] - p1[1]) * u)
+    return a, (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u), b
+
+
 def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     """The torso garment, shoulder to hip, with its own short sleeves.
 
@@ -2742,12 +2766,15 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     rib_ctrl_y = cuff_y + (wy - cuff_y) * 0.55
 
     # The armpit-to-waist run, which is where a bust lives: one quadratic from
-    # the torso's width at the armpit down to the waist. With a bust the curve is
-    # split where it crosses `bust_y`, and the split point and the two control
-    # points either side of it move out by `bust_reach`. The three stay in line,
-    # so the join is smooth, and as the reach goes to zero the two halves are
-    # the original curve exactly: the bust grows out of this torso's own width
-    # rather than jumping to a width of its own (`docs/bust-plan.md`, step 1).
+    # the torso's width at the armpit down to the waist. With a bust it becomes
+    # three pieces. From the armpit out to the fullest point, which is this
+    # curve's own point at `bust_y` moved out by `bust_reach`; from there down
+    # and back in to an under-bust point on this curve, arriving level, which is
+    # the tuck a bust reads by; and this curve's own remainder to the waist. The
+    # under-bust point sits `_BUST_DROP` reaches below the fullest point, so as
+    # the reach goes to zero the middle piece shrinks to nothing and the other
+    # two become the original curve: the bust grows out of this torso rather than
+    # jumping to a width of its own (`docs/bust-plan.md`, step 1).
     #
     # At `bust = 0` the single curve is emitted unchanged, character for
     # character, rather than a two-segment form that happens to trace the same
@@ -2757,21 +2784,20 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # "changed" for no visible reason.
     reach = sk.bust_reach
     if reach > 0:
-        # Where the curve crosses `bust_y`: its height is a quadratic in the
-        # curve's parameter, solved for the root inside the run.
-        qa = cuff_y - 2 * rib_ctrl_y + wy
-        qb = 2 * (rib_ctrl_y - cuff_y)
-        qc = cuff_y - sk.bust_y
-        u = -qc / qb if abs(qa) < 1e-9 else (-qb + math.sqrt(qb * qb - 4 * qa * qc)) / (2 * qa)
-        u = min(0.9, max(0.1, u))
-        (x0, y0), (x1, y1), (x2, y2) = (
-            (torso_at_cuff, cuff_y),
-            (torso_at_cuff, rib_ctrl_y),
-            (ww, wy),
-        )
-        above = (x0 + (x1 - x0) * u + reach, y0 + (y1 - y0) * u)
-        below = (x1 + (x2 - x1) * u + reach, y1 + (y2 - y1) * u)
-        peak = (above[0] + (below[0] - above[0]) * u, above[1] + (below[1] - above[1]) * u)
+        rib_curve = ((torso_at_cuff, cuff_y), (torso_at_cuff, rib_ctrl_y), (ww, wy))
+        above, peak, _ = _quad_split(*rib_curve, _quad_crossing(*rib_curve, sk.bust_y))
+        above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
+        under_y = min(peak[1] + reach * _BUST_DROP, wy - (wy - peak[1]) * 0.25)
+        _, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
+        # Leaves the fullest point along the upper piece's own tangent, so the
+        # join is smooth, and arrives at the under-bust point on the diagonal:
+        # the control is where that tangent meets a 45 degree line up and out
+        # from the under-bust point. Arriving level made a right-angled shelf
+        # against the torso's near-vertical side, which showed as a step below
+        # the arm.
+        lean = (peak[0] - above[0]) / (peak[1] - above[1])
+        tuck_x = (peak[0] + lean * (under[1] + under[0] - peak[1])) / (1 + lean)
+        tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
 
     def rib(s: int, descending: bool) -> str:
         if reach <= 0:
@@ -2786,8 +2812,8 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             return f"Q {cx + s * ctrl[0]:.1f} {ctrl[1]:.1f} {cx + s * end[0]:.1f} {end[1]:.1f} "
 
         if descending:
-            return q(above, peak) + q(below, (ww, wy))
-        return q(below, peak) + q(above, (torso_at_cuff, cuff_y))
+            return q(above, peak) + q(tuck, under) + q(below, (ww, wy))
+        return q(below, under) + q(tuck, peak) + q(above, (torso_at_cuff, cuff_y))
 
     def down(s: int) -> str:
         return rib(s, True) + f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "

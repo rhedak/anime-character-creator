@@ -41,7 +41,12 @@ def render(preset: str, build: str, bg: str, bust: float) -> Image.Image:
     im = Image.open(io.BytesIO(png)).convert("RGB")
     # The torso only: the whole figure buries the change at this size.
     cx, cy, r = sk.head_cx * 2, sk.head_cy * 2, sk.head_r * 2
-    return im.crop((int(cx - 1.6 * r), int(cy + 0.6 * r), int(cx + 1.6 * r), int(cy + 3.4 * r)))
+    # From the shoulder to below the waist, whatever the build. A fixed window
+    # in head radii stopped the realistic row above the bust it was meant to
+    # show (`docs/bust-strategy.md`).
+    top, bottom = sk.shoulder_y * 2 - 0.4 * r, sk.waist_y * 2 + 0.4 * r
+    half = max(1.6 * r, (sk.arm_x + sk.arm_half_w * 2.0) * 2 - cx)
+    return im.crop((int(cx - half), int(top), int(cx + half), int(bottom)))
 
 
 def main() -> None:

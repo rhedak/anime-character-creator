@@ -68,7 +68,12 @@ def bare(preset: str, bust: float, build: str | None = None):
     )
     im = Image.open(io.BytesIO(png)).convert("RGB")
     cx, cy, r = sk.head_cx * SCALE, sk.head_cy * SCALE, sk.head_r * SCALE
-    return im.crop((int(cx - 1.7 * r), int(cy - 1.4 * r), int(cx + 1.7 * r), int(cy + 4.2 * r))), sk
+    # Down past the hip whatever the build. A fixed 4.2 head radii stopped the
+    # realistic row at the collarbone, and it was reported on as if its torso
+    # had been seen (`docs/bust-strategy.md`).
+    bottom = max(cy + 4.2 * r, (sk.hip_y + 0.6 * sk.head_r) * SCALE)
+    half = max(1.7 * r, (sk.arm_x + sk.arm_half_w * 2.0) * SCALE - cx)
+    return im.crop((int(cx - half), int(cy - 1.4 * r), int(cx + half), int(bottom))), sk
 
 
 def main() -> None:

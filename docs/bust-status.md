@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 1 of `bust-plan.md`. 1a (reach rather than width) and 1b
-  (height from the armpit) done; 1c (the shape below the bust) next.
+- **Now:** step 1 of `bust-plan.md` done (1a reach, 1b height, 1c shape),
+  awaiting the owner's sign-off on `out/bust/sweep.png` and `why_hidden.png`.
 - **Tree:** clean at `e3b65e5` when preparation began.
 - **Measure** with `harness/bust/drawn_widths.py` (the drawn ink). Never quote
   a `Skeleton` field as a body measurement.
@@ -24,7 +24,7 @@ lessons live in `bust-strategy.md`.
 | --- | --- | --- |
 | B0 sweep harness | done, readings void | harness stands |
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
-| 1 reach, not width | 1a, 1b done; 1c (shape below the bust) next | continuity test green |
+| 1 reach, not width | 1a, 1b, 1c done; awaiting sign-off | continuity and armpit tests green |
 | 2 pixel check | not started | |
 | 3 body layer | not started | |
 | 4 line under the bust | not started | |
@@ -96,6 +96,41 @@ expect the rendered sweep to look unchanged.
   the plan; the owner's call.
 
 ## Findings, newest first
+
+### 2026-09-24: step 1c, the shape below the bust
+
+**Change.** The bust is three pieces on `_tunic`'s own rib curve: armpit out to
+the fullest point (the curve's point at `bust_y` plus the reach), down and back
+in to an under-bust point `_BUST_DROP = 2.0` reaches lower, and the curve's own
+remainder to the waist. The tuck arrives on a 45 degree diagonal. New helpers
+`_quad_crossing` and `_quad_split` beside `_tunic`.
+
+**Looked at, three versions** (`why_hidden.py`, arms taken away):
+1. 1b's shape, reach added on both sides of the split, tapered all the way to
+   the waist: a barrel ribcage, not a bust.
+2. The tuck arriving level: a bust, but a right-angled shelf against the
+   torso's side, which showed as a step just below the arm as rendered.
+3. The tuck on the diagonal: a rounded bust coming back into the side. Kept.
+
+**Bug found by looking, fixed, tested.** The first version named the tuck's
+lean `slope`, which `_tunic`'s shoulder already reads further down, so every
+sleeve tip grew a horn at `bust > 0`. New test
+`test_a_bust_changes_nothing_above_the_armpit`, confirmed failing with the
+clash put back (3 failed) and passing without it.
+
+**Measured.** Bust-row widths identical to 1b (chibi 0.579, 0.579, 0.631,
+0.687; realistic 1.070, 1.070, 1.172, 1.274), as predicted, since the fullest
+point is the same point.
+
+**As rendered** (`sweep.py`, whose crop now runs shoulder to waist at every
+build; the old fixed window cut the realistic row above the bust): the bust is
+under the arm at every value on both builds, as predicted in step 1's
+preparation. The only visible trace at the chibi is a small diagonal notch
+where the tuck comes back out past the arm's inner edge, from about 0.5 up.
+Keiko's traced coat hides all of it. For the owner to judge.
+
+**Zero case.** `refresh-ref-out.sh --check`: nothing changed. Suite: 520
+passed, 1 skipped.
 
 ### 2026-09-24: step 1b, the bust's height from the armpit
 
