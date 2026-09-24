@@ -6,8 +6,10 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 6 done, awaiting sign-off, with a proposal for 5b (anchor the
-  over-arm lobe at the arm's inner edge). Then 5b, then step 4.
+- **Now:** step 6 done, awaiting sign-off. The plan was updated 2026-09-25
+  with an anatomy review, which added step 9 (9a the bust starts below the
+  armpit, 9b loose garments hang from the fullest point) ahead of 5b and 4.
+  Order: 6 sign-off, 9a, 9b, 5b, 4, 7, 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -33,6 +35,7 @@ lessons live in `bust-strategy.md`.
 | 4 line under the bust | not started | |
 | 5 bust over the arm | 5a done (chibi); 5b Keiko waits | zero case byte-identical |
 | 6 traced cuts follow | done, awaiting sign-off | zero case byte-identical; widening tested |
+| 9 fit and drape (added 2026-09-25) | planned, runs before 5b and 4 | |
 | 7 cast values | not started | |
 | 8 integration | not started | |
 
