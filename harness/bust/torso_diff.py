@@ -41,6 +41,9 @@ for name, build in [(n, b) for n in sys.argv[1:] for b in ("chibi", "realistic")
     for r in row:
         t.paste(r, (x, 16)); x += r.width + 10
     tiles.append(t)
+if not tiles:
+    print("no pixel changed for", " ".join(sys.argv[1:]))
+    sys.exit(0)
 W = max(t.width for t in tiles); H = sum(t.height + 8 for t in tiles)
 sheet = Image.new("RGB", (W, H), (200, 200, 200)); y = 0
 for t in tiles:
