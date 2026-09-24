@@ -2619,6 +2619,26 @@ def _cap_tip_y(sk: Skeleton) -> float:
     return sk.shoulder_y + (sk.waist_y - sk.shoulder_y) * 0.24
 
 
+def _shoulder_slope(sk: Skeleton) -> float:
+    """How far the shoulder line drops from the neck to its outer tip. The body's
+    and every garment's shoulder share it; see `_tunic` for why it is this much."""
+    return (sk.waist_y - sk.shoulder_y) * 0.24
+
+
+def _torso_at_armpit(sk: Skeleton) -> float:
+    """The torso's half-width where the arm leaves it, measured up from the waist
+    rather than down from the shoulder; see `_tunic` for why."""
+    return sk.waist_half_w + (sk.shoulder_half_w - sk.waist_half_w) * 0.12
+
+
+def _rib_ctrl_y(sk: Skeleton) -> float:
+    """The armpit-to-waist curve's control height: low enough that the side
+    leaves the armpit vertically and curves in to the waist, rather than being
+    pulled out toward the shoulder's own width on the way."""
+    cuff_y = _sleeve_hem_y(sk)
+    return cuff_y + (sk.waist_y - cuff_y) * 0.55
+
+
 # How far below the bust's fullest point its under-bust tuck lands, in multiples
 # of its reach: a larger bust is taller as well as fuller. A first guess, for
 # the sweep to settle (`docs/bust-plan.md`, step 1).
@@ -2643,6 +2663,61 @@ def _quad_split(p0: Point, p1: Point, p2: Point, u: float) -> tuple[Point, Point
     return a, (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u), b
 
 
+def _rib(sk: Skeleton, cx: float, s: int, descending: bool) -> str:
+    """The torso's side from the armpit to the waist on side `s`, as path
+    commands continuing from wherever the path is, down or back up.
+
+    The body and the garments over it draw this one run, so a bust on the body
+    is a bust on the tunic without either keeping its own copy. Without a bust it
+    is one quadratic from the torso's width at the armpit down to the waist. With
+    one it is three pieces: from the armpit out to the fullest point, which is
+    that curve's own point at `bust_y` moved out by `bust_reach`; from there
+    down and back in to an under-bust point on the curve, arriving on the
+    diagonal, which is the tuck a bust reads by; and the curve's own remainder to
+    the waist. The under-bust point sits `_BUST_DROP` reaches below the fullest
+    point, so as the reach goes to zero the middle piece shrinks to nothing and
+    the other two become the original curve: the bust grows out of this torso
+    rather than jumping to a width of its own (`docs/bust-plan.md`, step 1).
+
+    At `bust = 0` the single curve is emitted unchanged, character for
+    character, rather than a two-segment form that happens to trace the same
+    path. Splitting a quadratic at a point on it reproduces the curve exactly in
+    geometry and not in the numbers written down, and `ref-out/` compares the
+    numbers: every one of the seventeen presets would have come out "changed"
+    for no visible reason.
+    """
+    torso_at_cuff, cuff_y = _torso_at_armpit(sk), _sleeve_hem_y(sk)
+    rib_ctrl_y, ww, wy = _rib_ctrl_y(sk), sk.waist_half_w, sk.waist_y
+    reach = sk.bust_reach
+    if reach <= 0:
+        return (
+            f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
+            if descending
+            else f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} "
+            f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
+        )
+    rib_curve = ((torso_at_cuff, cuff_y), (torso_at_cuff, rib_ctrl_y), (ww, wy))
+    above, peak, _ = _quad_split(*rib_curve, _quad_crossing(*rib_curve, sk.bust_y))
+    above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
+    under_y = min(peak[1] + reach * _BUST_DROP, wy - (wy - peak[1]) * 0.25)
+    _, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
+    # Leaves the fullest point along the upper piece's own tangent, so the join
+    # is smooth, and arrives at the under-bust point on the diagonal: the control
+    # is where that tangent meets a 45 degree line up and out from the
+    # under-bust point. Arriving level made a right-angled shelf against the
+    # torso's near-vertical side, which showed as a step below the arm.
+    lean = (peak[0] - above[0]) / (peak[1] - above[1])
+    tuck_x = (peak[0] + lean * (under[1] + under[0] - peak[1])) / (1 + lean)
+    tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
+
+    def q(ctrl: Point, end: Point) -> str:
+        return f"Q {cx + s * ctrl[0]:.1f} {ctrl[1]:.1f} {cx + s * end[0]:.1f} {end[1]:.1f} "
+
+    if descending:
+        return q(above, peak) + q(tuck, under) + q(below, (ww, wy))
+    return q(below, under) + q(tuck, peak) + q(above, (torso_at_cuff, cuff_y))
+
+
 def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     """The torso garment, shoulder to hip, with its own short sleeves.
 
@@ -2658,7 +2733,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     upper body is one continuous edge.
     """
     cx = sk.head_cx
-    sw, ww, hw = sk.shoulder_half_w, sk.waist_half_w, sk.hip_half_w
+    ww, hw = sk.waist_half_w, sk.hip_half_w
     sy, wy, hy = sk.shoulder_y, sk.waist_y, sk.hip_y
     if p.outfit.tunic_tucked:
         # Tucked in: the hem stops half way into the belt band rather than
@@ -2697,14 +2772,14 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # canon's shoulder leaves the neck already going down as well as out, and at
     # 0.14 ours held its height across most of the span and then dropped at the
     # end, which is a horizontal cap with a corner on it rather than a slope.
-    slope = (wy - sy) * 0.24
+    slope = _shoulder_slope(sk)
     # The torso's own width where the sleeve leaves it. Measured up from the
     # waist, not down from the shoulder: `shoulder_half_w` is the span across the
     # deltoids, so a ribcage derived from it comes out wider than the arm hanging
     # in front of it, and the arm then covers the body's side contour instead of
     # standing clear of it. Both refs show the torso's side and the arm as two
     # separate edges with daylight between them below the armpit.
-    torso_at_cuff = ww + (sw - ww) * 0.12
+    torso_at_cuff = _torso_at_armpit(sk)
     if _traced_coat(sk, p):
         # Under a traced jacket the tunic's own sleeve cap has nowhere to show but
         # past the jacket's shoulder, where the hair is narrower than the
@@ -2761,65 +2836,16 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
         )
 
-    # Leaves the armpit vertically and curves in to the waist, rather than being
-    # pulled out toward the shoulder's own width on the way.
-    rib_ctrl_y = cuff_y + (wy - cuff_y) * 0.55
-
-    # The armpit-to-waist run, which is where a bust lives: one quadratic from
-    # the torso's width at the armpit down to the waist. With a bust it becomes
-    # three pieces. From the armpit out to the fullest point, which is this
-    # curve's own point at `bust_y` moved out by `bust_reach`; from there down
-    # and back in to an under-bust point on this curve, arriving level, which is
-    # the tuck a bust reads by; and this curve's own remainder to the waist. The
-    # under-bust point sits `_BUST_DROP` reaches below the fullest point, so as
-    # the reach goes to zero the middle piece shrinks to nothing and the other
-    # two become the original curve: the bust grows out of this torso rather than
-    # jumping to a width of its own (`docs/bust-plan.md`, step 1).
-    #
-    # At `bust = 0` the single curve is emitted unchanged, character for
-    # character, rather than a two-segment form that happens to trace the same
-    # path. Splitting a quadratic at a point on it reproduces the curve exactly
-    # in geometry and not in the numbers written down, and `ref-out/` compares
-    # the numbers: every one of the seventeen presets would have come out
-    # "changed" for no visible reason.
-    reach = sk.bust_reach
-    if reach > 0:
-        rib_curve = ((torso_at_cuff, cuff_y), (torso_at_cuff, rib_ctrl_y), (ww, wy))
-        above, peak, _ = _quad_split(*rib_curve, _quad_crossing(*rib_curve, sk.bust_y))
-        above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
-        under_y = min(peak[1] + reach * _BUST_DROP, wy - (wy - peak[1]) * 0.25)
-        _, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
-        # Leaves the fullest point along the upper piece's own tangent, so the
-        # join is smooth, and arrives at the under-bust point on the diagonal:
-        # the control is where that tangent meets a 45 degree line up and out
-        # from the under-bust point. Arriving level made a right-angled shelf
-        # against the torso's near-vertical side, which showed as a step below
-        # the arm.
-        lean = (peak[0] - above[0]) / (peak[1] - above[1])
-        tuck_x = (peak[0] + lean * (under[1] + under[0] - peak[1])) / (1 + lean)
-        tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
-
-    def rib(s: int, descending: bool) -> str:
-        if reach <= 0:
-            return (
-                f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
-                if descending
-                else f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} "
-                f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
-            )
-
-        def q(ctrl: Point, end: Point) -> str:
-            return f"Q {cx + s * ctrl[0]:.1f} {ctrl[1]:.1f} {cx + s * end[0]:.1f} {end[1]:.1f} "
-
-        if descending:
-            return q(above, peak) + q(tuck, under) + q(below, (ww, wy))
-        return q(below, under) + q(tuck, peak) + q(above, (torso_at_cuff, cuff_y))
-
     def down(s: int) -> str:
-        return rib(s, True) + f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "
+        return (
+            _rib(sk, cx, s, True)
+            + f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "
+        )
 
     def up(s: int) -> str:
-        return f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} " + rib(s, False)
+        return f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} " + _rib(
+            sk, cx, s, False
+        )
 
     stand = (
         p.outfit.neckline_stand and p.outfit.collar_color is None and not p.outfit.neckline_round
