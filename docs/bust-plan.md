@@ -23,16 +23,12 @@ came up but it will not settle it: the reference is a chibi and reads close to
 flat. `CLAUDE.md`'s direction applies, that references are not a target for new
 work and new design is judged by eye against the intent.
 
-## RESUME (for a fresh context)
+## Where it stands
 
-- Done: B0 (a sweep harness) and B1 (a `bust` parameter and a skeleton anchor).
-  A first silhouette in `_tunic` exists but uses the wrong base width and is
-  to be reworked in step 1; see the retractions.
-- Next: **step 1, reach rather than width.** Nothing else starts until a bust
-  of 0.01 looks like a bust of 0.01.
-- Measure with `harness/bust/drawn_widths.py`, which reads the drawn ink, not
-  the anchors. Never quote a skeleton value as a body measurement again.
-- Keiko's clothes campaign waits on step 5.
+The RESUME, scoreboard and findings are in `bust-status.md`; how to work and
+the mistakes to avoid are in `bust-strategy.md`. In short: B0 and B1 are done,
+step 1 (reach rather than width) is next, and Keiko's clothes campaign waits
+on step 5.
 
 ## Owner's decisions (2026-09-21)
 
