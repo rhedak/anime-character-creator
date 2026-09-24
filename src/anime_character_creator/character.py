@@ -2561,7 +2561,7 @@ def _sleeve_hem_y(sk: Skeleton) -> float:
     """Where the tunic's short sleeve ends, which is also where the arm starts.
     Both parts read it, since the sleeve hem and the arm's top edge are the same
     line and have to land on each other."""
-    return sk.shoulder_y + (sk.waist_y - sk.shoulder_y) * 0.42
+    return sk.armpit_y
 
 
 def _sleeve_half_w(sk: Skeleton) -> float:

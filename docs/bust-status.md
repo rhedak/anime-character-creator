@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 1 of `bust-plan.md`. 1a (reach rather than width) done;
-  1b (the bust height, measured from the armpit) next, then 1c (the shape below the bust).
+- **Now:** step 1 of `bust-plan.md`. 1a (reach rather than width) and 1b
+  (height from the armpit) done; 1c (the shape below the bust) next.
 - **Tree:** clean at `e3b65e5` when preparation began.
 - **Measure** with `harness/bust/drawn_widths.py` (the drawn ink). Never quote
   a `Skeleton` field as a body measurement.
@@ -24,7 +24,7 @@ lessons live in `bust-strategy.md`.
 | --- | --- | --- |
 | B0 sweep harness | done, readings void | harness stands |
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
-| 1 reach, not width | 1a done (reach, continuity); 1b height next | continuity test green |
+| 1 reach, not width | 1a, 1b done; 1c (shape below the bust) next | continuity test green |
 | 2 pixel check | not started | |
 | 3 body layer | not started | |
 | 4 line under the bust | not started | |
@@ -96,6 +96,30 @@ expect the rendered sweep to look unchanged.
   the plan; the owner's call.
 
 ## Findings, newest first
+
+### 2026-09-24: step 1b, the bust's height from the armpit
+
+**Change.** `Skeleton.armpit_y` (0.42 of shoulder to waist, the arithmetic
+`_sleeve_hem_y` already used, which now reads it) and `bust_y` at
+`_BUST_ALONG = 0.30` of armpit to waist, a first guess. Previously 0.45 of
+shoulder to waist.
+
+**Predicted vs measured** (torso half-width at the bust row):
+
+| | 0 | 0.01 | 0.5 | 1.0 |
+| --- | --- | --- | --- | --- |
+| chibi predicted, row 2.066 | 0.580 | 0.581 | 0.635 | 0.690 |
+| chibi measured, row 2.065 | 0.579 | 0.579 | 0.631 | 0.687 |
+| realistic predicted, row 3.092 | 1.073 | 1.075 | 1.173 | 1.273 |
+| realistic measured | 1.070 | 1.070 | 1.172 | 1.274 |
+
+Within 0.004 everywhere: the split now lands about 28% along the curve, no
+clamp, and the full reach shows at the row. The arm's ink at the new row still
+starts at 0.587 (chibi) and 0.637 (realistic), so as predicted the bulge is
+under the arm at every value above about 0.07 (chibi).
+
+**Zero case.** `refresh-ref-out.sh --check`: nothing changed, so moving
+`_sleeve_hem_y` onto `armpit_y` changed no float.
 
 ### 2026-09-24: step 1a, reach rather than width
 

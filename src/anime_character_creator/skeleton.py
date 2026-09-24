@@ -72,9 +72,18 @@ class Skeleton:
     bust: float = 0.0
 
     @property
+    def armpit_y(self) -> float:
+        """Where the arm leaves the torso, which is also where a short sleeve
+        ends: `_sleeve_hem_y` in `character.py` reads it, since the sleeve's hem
+        and the arm's top edge are the same line."""
+        return self.shoulder_y + (self.waist_y - self.shoulder_y) * 0.42
+
+    @property
     def bust_y(self) -> float:
-        """The height of the bust's fullest point."""
-        return self.shoulder_y + (self.waist_y - self.shoulder_y) * _BUST_ALONG
+        """The height of the bust's fullest point, measured down from the
+        armpit. Measured from the shoulder it sat hard up under the armpit on
+        one chibi body and 60% of the way to the waist on another."""
+        return self.armpit_y + (self.waist_y - self.armpit_y) * _BUST_ALONG
 
     @property
     def bust_reach(self) -> float:
@@ -215,13 +224,13 @@ def default_hair_margin(heads: float) -> float:
     return _lerp(0.75, 0.36, t0)
 
 
-# Where the bust sits between the shoulder and the waist, and how far `bust=1`
+# Where the bust sits between the armpit and the waist, and how far `bust=1`
 # carries it out, in head radii. The height is anatomy and does not vary; the
 # reach rides the build, because the shared chibi is a small child's proportion
 # and an adult figure carries more. Both are first guesses for `harness/bust/`
 # to refine by eye, which is the only way this gets decided: no reference in
 # this project measures a bust (`docs/bust-plan.md`, B0).
-_BUST_ALONG = 0.45
+_BUST_ALONG = 0.30
 _BUST_REACH = (0.10, 0.20)
 
 
