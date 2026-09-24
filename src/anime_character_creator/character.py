@@ -2742,36 +2742,52 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     rib_ctrl_y = cuff_y + (wy - cuff_y) * 0.55
 
     # The armpit-to-waist run, which is where a bust lives: one quadratic from
-    # the torso's width at the armpit down to the waist. With a bust it becomes
-    # two, passing through `bust_half_w` at `bust_y`.
+    # the torso's width at the armpit down to the waist. With a bust the curve is
+    # split where it crosses `bust_y`, and the split point and the two control
+    # points either side of it move out by `bust_reach`. The three stay in line,
+    # so the join is smooth, and as the reach goes to zero the two halves are
+    # the original curve exactly: the bust grows out of this torso's own width
+    # rather than jumping to a width of its own (`docs/bust-plan.md`, step 1).
     #
     # At `bust = 0` the single curve is emitted unchanged, character for
     # character, rather than a two-segment form that happens to trace the same
     # path. Splitting a quadratic at a point on it reproduces the curve exactly
     # in geometry and not in the numbers written down, and `ref-out/` compares
     # the numbers: every one of the seventeen presets would have come out
-    # "changed" for no visible reason (`docs/bust-plan.md`, B1's invariant).
-    bw, by = sk.bust_half_w, sk.bust_y
+    # "changed" for no visible reason.
+    reach = sk.bust_reach
+    if reach > 0:
+        # Where the curve crosses `bust_y`: its height is a quadratic in the
+        # curve's parameter, solved for the root inside the run.
+        qa = cuff_y - 2 * rib_ctrl_y + wy
+        qb = 2 * (rib_ctrl_y - cuff_y)
+        qc = cuff_y - sk.bust_y
+        u = -qc / qb if abs(qa) < 1e-9 else (-qb + math.sqrt(qb * qb - 4 * qa * qc)) / (2 * qa)
+        u = min(0.9, max(0.1, u))
+        (x0, y0), (x1, y1), (x2, y2) = (
+            (torso_at_cuff, cuff_y),
+            (torso_at_cuff, rib_ctrl_y),
+            (ww, wy),
+        )
+        above = (x0 + (x1 - x0) * u + reach, y0 + (y1 - y0) * u)
+        below = (x1 + (x2 - x1) * u + reach, y1 + (y2 - y1) * u)
+        peak = (above[0] + (below[0] - above[0]) * u, above[1] + (below[1] - above[1]) * u)
 
     def rib(s: int, descending: bool) -> str:
-        if p.bust <= 0:
+        if reach <= 0:
             return (
                 f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} {cx + s * ww:.1f} {wy:.1f} "
                 if descending
                 else f"Q {cx + s * torso_at_cuff:.1f} {rib_ctrl_y:.1f} "
                 f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
             )
-        upper = (
-            f"Q {cx + s * bw:.1f} {cuff_y + (by - cuff_y) * 0.5:.1f} {cx + s * bw:.1f} {by:.1f} "
-        )
-        lower = f"Q {cx + s * bw:.1f} {by + (wy - by) * 0.35:.1f} {cx + s * ww:.1f} {wy:.1f} "
+
+        def q(ctrl: Point, end: Point) -> str:
+            return f"Q {cx + s * ctrl[0]:.1f} {ctrl[1]:.1f} {cx + s * end[0]:.1f} {end[1]:.1f} "
+
         if descending:
-            return upper + lower
-        back_up = f"Q {cx + s * bw:.1f} {by + (wy - by) * 0.35:.1f} {cx + s * bw:.1f} {by:.1f} "
-        return back_up + (
-            f"Q {cx + s * bw:.1f} {cuff_y + (by - cuff_y) * 0.5:.1f} "
-            f"{cx + s * torso_at_cuff:.1f} {cuff_y:.1f} "
-        )
+            return q(above, peak) + q(below, (ww, wy))
+        return q(below, peak) + q(above, (torso_at_cuff, cuff_y))
 
     def down(s: int) -> str:
         return rib(s, True) + f"Q {cx + s * hw:.1f} {hip_ctrl_y:.1f} {cx + s * hw:.1f} {hy:.1f} "

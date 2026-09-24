@@ -63,7 +63,7 @@ def main() -> None:
                 )
             print(
                 f"  {preset:7s} {build or 'chibi':9s} bust {bust:4.2f}"
-                f"  anchor {sk.bust_half_w / r:.3f} | " + " | ".join(cells)
+                f"  reach {sk.bust_reach / r:.3f} y {(sk.bust_y - sk.head_cy) / r:.3f} | " + " | ".join(cells)
             )
 
 

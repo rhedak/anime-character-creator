@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 1 of `bust-plan.md`, reach rather than width. Prepared
-  2026-09-24, not started.
+- **Now:** step 1 of `bust-plan.md`. 1a (reach rather than width) done;
+  1b (the bust height, measured from the armpit) next, then 1c (the shape below the bust).
 - **Tree:** clean at `e3b65e5` when preparation began.
 - **Measure** with `harness/bust/drawn_widths.py` (the drawn ink). Never quote
   a `Skeleton` field as a body measurement.
@@ -24,7 +24,7 @@ lessons live in `bust-strategy.md`.
 | --- | --- | --- |
 | B0 sweep harness | done, readings void | harness stands |
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
-| 1 reach, not width | prepared | |
+| 1 reach, not width | 1a done (reach, continuity); 1b height next | continuity test green |
 | 2 pixel check | not started | |
 | 3 body layer | not started | |
 | 4 line under the bust | not started | |
@@ -96,6 +96,43 @@ expect the rendered sweep to look unchanged.
   the plan; the owner's call.
 
 ## Findings, newest first
+
+### 2026-09-24: step 1a, reach rather than width
+
+**Change.** `Skeleton` stores only the knob, `bust`; `bust_y` and
+`bust_reach` are properties derived from the final shoulder, waist and build.
+`_tunic` splits its armpit-to-waist quadratic where it crosses `bust_y` and
+moves the split point and both neighbouring controls out by the reach, so the
+join stays smooth and the halves become the original curve as the reach goes
+to zero. At zero it still emits the original single curve.
+
+**Second defect found and fixed with it.** `BodyProfile.applied` and
+`waist_shift` replace the shoulder and waist, but the stored `bust_y` and
+`bust_half_w` were computed from the unprofiled skeleton, so on every
+profiled body the bust sat at a height unrelated to that body's own waist, and
+its reach rode the profile's `heads` rather than the chibi build the figure is
+pinned to. Derived properties make both impossible.
+
+**Predicted vs measured** (torso half-width at the bust row, head radii,
+`drawn_widths.py`):
+
+| | 0 | 0.01 | 0.5 | 1.0 |
+| --- | --- | --- | --- | --- |
+| chibi predicted | 0.584 | 0.585 | 0.639 | 0.694 |
+| chibi measured | 0.583 | 0.583 | 0.624 | 0.668 |
+| realistic predicted | 1.077 | 1.079 | 1.177 | 1.277 |
+| realistic measured | 1.077 | 1.077 | 1.153 | 1.236 |
+
+Continuity holds. The shortfall at 1.0 (0.026 chibi, 0.041 realistic) is the
+bust height: `bust_y` sits so close to the armpit that the crossing lands at
+about 5% of the way along the curve, and the split is clamped at 10%, so the
+peak lies below the row being measured. That is step 1b's variable, and this
+number is the evidence for it.
+
+**Zero case.** `refresh-ref-out.sh --check`: nothing changed. Suite: 513
+passed, 1 skipped, before the new tests; the three new tests (skeleton
+equality, the bust following a profile and a waist shift, continuity and
+monotonic growth) pass.
 
 ### 2026-09-24: the first draft read anchors as the figure
 

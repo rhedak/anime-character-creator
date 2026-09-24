@@ -1936,3 +1936,49 @@ def test_closed_eyes_are_a_lash_line_spanning_the_open_aperture():
     ends = re.search(r"M (\S+) \S+ Q \S+ \S+ (\S+) ", line)
     assert float(ends.group(1)) == pytest.approx(min(open_x), abs=0.11)
     assert float(ends.group(2)) == pytest.approx(max(open_x), abs=0.11)
+
+
+def test_a_skeleton_with_no_bust_is_the_skeleton_built_without_one():
+    """`bust=0` is the default in fact, not only in intent (`docs/bust-plan.md`)."""
+    for heads in BUILDS.values():
+        assert build_skeleton(heads=heads, bust=0.0) == build_skeleton(heads=heads)
+        assert build_skeleton(heads=heads).bust_reach == 0.0
+
+
+def test_the_bust_rides_a_profiled_body_rather_than_the_one_it_replaced():
+    """The bust's height is derived from the shoulder and waist a profile or a
+    waist shift leaves behind, so it always lies between them. Stored, it kept
+    the unprofiled body's height and went stale (`docs/bust-status.md`)."""
+    for name in ("satoko", "katherina"):
+        sk = character.skeleton_for(replace(PRESETS[name], bust=1.0))
+        assert sk.shoulder_y < sk.bust_y < sk.waist_y
+        shifted = character.skeleton_for(replace(PRESETS[name], bust=1.0, waist_shift=0.3))
+        assert shifted.bust_y > sk.bust_y
+
+
+def _torso_widest(p: CharacterParams) -> float:
+    """The tunic path's furthest point right of centre between armpit and
+    waist, in head radii, control points included."""
+    sk = character.skeleton_for(p)
+    d = re.search(r'd="([^"]+)"', character._tunic(sk, p)).group(1)
+    nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d)]
+    top, bottom = character._sleeve_hem_y(sk), sk.waist_y
+    xs = [
+        x
+        for x, y in zip(nums[0::2], nums[1::2], strict=False)
+        if top + 0.5 < y < bottom - 0.5 and x > sk.head_cx
+    ]
+    return (max(xs) - sk.head_cx) / sk.head_r
+
+
+@pytest.mark.parametrize("build", ["chibi", "realistic"])
+def test_a_small_bust_moves_the_torso_a_small_amount(build):
+    """The dial is continuous at zero and grows with the value. The first draft
+    switched the torso 0.37 head radii out at `bust = 0.01`, because it drew a
+    width of its own rather than adding to the tunic's (`docs/bust-plan.md`)."""
+    base = replace(PRESETS["satoko"], heads=BUILDS[build])
+    if build != "chibi":
+        base = replace(base, body=None)
+    widths = [_torso_widest(replace(base, bust=v)) for v in (0.0, 0.01, 0.5, 1.0)]
+    assert widths[1] - widths[0] <= 0.01 + 0.1 / character.skeleton_for(base).head_r
+    assert widths[0] <= widths[1] < widths[2] < widths[3]

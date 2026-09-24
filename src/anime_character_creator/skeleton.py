@@ -52,14 +52,6 @@ class Skeleton:
     shoulder_half_w: float
     waist_y: float
     waist_half_w: float
-    # Where a bust sits on the torso and how far it carries. The height is a
-    # proportion of the build like every other anchor: what a character differs
-    # on is the size, not where a bust is on a body. At `bust=0` the half-width
-    # is exactly what the shoulder-to-waist run already gives at that height, so
-    # the anchor draws nothing and changes nothing until it is asked for
-    # (`docs/bust-plan.md`).
-    bust_y: float
-    bust_half_w: float
     hip_y: float
     hip_half_w: float
     hem_y: float
@@ -72,6 +64,29 @@ class Skeleton:
     knee_y: float
     ankle_y: float
     foot_y: float
+    # How much bust the figure carries, 0 for none. Only the knob is stored:
+    # where the bust sits and how far it reaches are derived from the final
+    # shoulder, waist and build (`bust_y`, `bust_reach`), so a `BodyProfile` or
+    # a waist shift that moves those carries the bust with them. Stored as
+    # values they went stale under both (`docs/bust-status.md`).
+    bust: float = 0.0
+
+    @property
+    def bust_y(self) -> float:
+        """The height of the bust's fullest point."""
+        return self.shoulder_y + (self.waist_y - self.shoulder_y) * _BUST_ALONG
+
+    @property
+    def bust_reach(self) -> float:
+        """How far the bust carries the torso out at `bust_y`, 0 with none.
+
+        An offset rather than a width, so each part adds it to the width it
+        already draws there. One absolute width cannot be a no-op for two parts
+        that disagree about the torso's width at that height, and `_tunic` and
+        `_body_knots` do: the first draft's width was `_body_knots`' and put the
+        tunic's torso 0.37 head radii out at `bust = 0.01`.
+        """
+        return self.head_r * _lerp(*_BUST_REACH, self.build) * max(0.0, self.bust)
 
 
 @dataclass(frozen=True)
@@ -258,13 +273,6 @@ def build_skeleton(
     shoulder_half_w = head_r * _lerp(0.68, 1.55, t) * (1.0 + 0.09 * f)
     waist_y = chin_y + body * _lerp(0.46, 0.333, t)
     waist_half_w = head_r * _lerp(0.88, 1.00, t) * (1.0 + 0.03 * f)
-    bust_y = shoulder_y + (waist_y - shoulder_y) * _BUST_ALONG
-    # The width the torso already has at that height, plus whatever the
-    # character asks for. The first term is what makes `bust=0` a no-op, and it
-    # has to stay exactly the shoulder-to-waist interpolation `_body_knots`
-    # hands the garment placement, or the anchor alone moves every traced cut.
-    bust_half_w = shoulder_half_w + (waist_half_w - shoulder_half_w) * _BUST_ALONG
-    bust_half_w += head_r * _lerp(*_BUST_REACH, t) * max(0.0, bust)
 
     return Skeleton(
         canvas_w=canvas_w,
@@ -283,8 +291,6 @@ def build_skeleton(
         # only a little narrower than its hips, which is what keeps it reading as
         # a small child rather than a shrunken adult. An adult takes in sharply.
         waist_half_w=waist_half_w,
-        bust_y=bust_y,
-        bust_half_w=bust_half_w,
         hip_y=chin_y + body * _lerp(0.58, 0.417, t),
         hip_half_w=head_r * _lerp(0.95, 1.30, t) * (1.0 - 0.11 * f),
         hem_y=chin_y + body * _lerp(0.70, 0.58, t),
@@ -313,4 +319,5 @@ def build_skeleton(
         knee_y=chin_y + body * _lerp(0.81, 0.708, t),
         ankle_y=chin_y + body * _lerp(0.93, 0.95, t),
         foot_y=chin_y + body,
+        bust=bust,
     )

@@ -103,7 +103,7 @@ def main() -> None:
             w = lambda v: v / sk.head_r  # noqa: E731
             print(
                 f"  {preset:7s} {build or 'chibi':9s} shoulder {w(sk.shoulder_half_w):.3f}"
-                f"  bust {w(sk.bust_half_w):.3f}  waist {w(sk.waist_half_w):.3f}"
+                f"  bust reach {w(sk.bust_reach):.3f}  waist {w(sk.waist_half_w):.3f}"
                 f"  hip {w(sk.hip_half_w):.3f}  arm inner {w(sk.arm_x - sk.arm_half_w):.3f}"
             )
 
