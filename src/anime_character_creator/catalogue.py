@@ -160,15 +160,15 @@ def _face_select(field: str, label: str, options: tuple[tuple[object, str], ...]
     return SelectField(field, label, options)
 
 
-# Always worn, so no toggle: a character with `tunic_color=None` is not
-# something the generator can draw. `TUNIC_TUCKED` rides with it because it
-# only changes where the tunic's own hem sits.
+# Optional since `docs/bare-body-plan.md` step 2: off, the body shows, and the
+# tunic's trim (placket, chest pockets) goes with it. `TUNIC_TUCKED` rides
+# with it because it only changes where the tunic's own hem sits.
 SLEEVE_CUT_LABELS: dict[str, str] = {"wide": "Wide, turned cuff (traced)"}
 assert set(SLEEVE_CUT_LABELS) == set(SLEEVE_CUTS)
 TUNIC = GarmentSlot(
     "tunic",
     "Tunic",
-    _color("tunic_color", "Tunic", optional=False),
+    _color("tunic_color", "Tunic"),
     bools=(
         _bool("tunic_tucked", "Tucked in"),
         _bool("neckline_round", "Round neckline"),

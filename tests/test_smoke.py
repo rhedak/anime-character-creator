@@ -2116,3 +2116,34 @@ def test_the_bare_body_is_closed_where_it_shows(name):
     d = re.search(r'd="([^"]+)"', character._torso(sk, p)).group(1)
     ys = [float(v) for v in re.findall(r"-?\d+\.?\d*", d)][1::2]
     assert max(ys) >= sk.hip_y
+
+
+def _tunic_off(p: CharacterParams) -> CharacterParams:
+    return replace(p, outfit=replace(p.outfit, tunic_color=None))
+
+
+@pytest.mark.parametrize("build", ["chibi", "realistic"])
+@pytest.mark.parametrize("name", sorted(PRESETS))
+def test_every_preset_renders_with_its_tunic_off(name, build):
+    """The tunic is optional like every other garment (`docs/bare-body-plan.md`,
+    step 2): off, it draws nothing and nothing that reads it gets a `None`."""
+    p = _tunic_off(PRESETS[name])
+    svg = render_character(p, character.skeleton_for(p, BUILDS[build]))
+    assert '"None"' not in svg
+
+
+def test_the_tunic_s_own_parts_go_with_it():
+    """The placket, the chest pockets and the line under the bust are the
+    tunic's: with it off they are not left on bare skin (the audit found
+    Tenno's placket and pockets floating on his chest)."""
+    for name in ("tenno", "krista"):
+        p = _tunic_off(PRESETS[name])
+        sk = character.skeleton_for(p)
+        for part in (character._tunic, character._placket, character._chest_pockets):
+            assert part(sk, p) == ""
+        assert character._bust_lines(sk, p) == ""
+    worn = PRESETS["tenno"]
+    sk = character.skeleton_for(worn)
+    assert character._placket(sk, worn) and character._chest_pockets(sk, worn)
+    krista = PRESETS["krista"]
+    assert character._bust_lines(character.skeleton_for(krista), krista)

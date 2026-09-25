@@ -169,7 +169,9 @@ class Outfit:
     the generator started with; the layered values live on the presets.
     """
 
-    tunic_color: str = "#4f7a52"
+    # None takes the tunic off, and its trim with it (the placket, the chest
+    # pockets, the line under the bust): the body shows (`bare-body-plan.md`).
+    tunic_color: str | None = "#4f7a52"
     boot_color: str = "#5b4632"
     # Long sleeve worn under the tunic's short one. None leaves the arm bare.
     undersleeve_color: str | None = None
@@ -2925,10 +2927,11 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
     than appearing whole.
 
     Drawn right after the tunic: an outer layer, a coat or a robe front, hangs
-    over the bust and covers it, its own outline being the cue there.
+    over the bust and covers it, its own outline being the cue there. It is the
+    tunic's line, its cloth's fold, so it goes when the tunic does.
     """
     body, cloth = _bust_shape(sk), _bust_shape(sk, drape=True)
-    if body is None or cloth is None:
+    if body is None or cloth is None or p.outfit.tunic_color is None:
         return ""
     cx, sw, reach = sk.head_cx, _stroke_w(sk), sk.bust_reach
     heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5)
@@ -3096,6 +3099,8 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     outside, then steps in at the hem and carries on down the torso, so the whole
     upper body is one continuous edge.
     """
+    if p.outfit.tunic_color is None:
+        return ""
     cx = sk.head_cx
     ww, hw = sk.waist_half_w, sk.hip_half_w
     sy, wy, hy = sk.shoulder_y, sk.waist_y, sk.hip_y
@@ -5358,7 +5363,8 @@ def _placket(sk: Skeleton, p: CharacterParams) -> str:
     seam rather than drawn discs, because at tile size a disc with an outline is
     a smudge and a dot is a button.
     """
-    if p.outfit.placket_color is None:
+    # Sewn on the tunic, so it goes when the tunic does.
+    if p.outfit.placket_color is None or p.outfit.tunic_color is None:
         return ""
     cx = sk.head_cx
     color = p.outfit.placket_color
@@ -5392,7 +5398,8 @@ def _chest_pockets(sk: Skeleton, p: CharacterParams) -> str:
     shape; what says "military tunic" is the horizontal flap with a stitch under
     it.
     """
-    if p.outfit.chest_pocket_color is None:
+    # Sewn on the tunic, like the placket.
+    if p.outfit.chest_pocket_color is None or p.outfit.tunic_color is None:
         return ""
     cx = sk.head_cx
     color = p.outfit.chest_pocket_color
@@ -6887,10 +6894,18 @@ def _arms(
     # long sleeve whether or not anything is worn under it. Without this, a
     # character given coat sleeves and no undersleeve came out bare-armed: the
     # cap sleeve ended at the shoulder and skin ran from there to the hand.
-    long_sleeve = p.outfit.sleeve_long or (
-        p.outfit.coat_sleeves and p.outfit.coat_color is not None
+    #
+    # A long sleeve is the tunic's, so it goes with the tunic; a coat's sleeve
+    # over no tunic takes the coat's colour, since the coat is then the only
+    # cloth on the arm.
+    tunic = p.outfit.tunic_color
+    coat_sleeve = p.outfit.coat_sleeves and p.outfit.coat_color is not None
+    long_sleeve = (p.outfit.sleeve_long and tunic is not None) or coat_sleeve
+    sleeve = (
+        (tunic or p.outfit.coat_color)
+        if long_sleeve
+        else (p.outfit.undersleeve_color or p.skin_tone)
     )
-    sleeve = p.outfit.tunic_color if long_sleeve else (p.outfit.undersleeve_color or p.skin_tone)
     centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
     elbow_y = sk.waist_y
 
@@ -7782,7 +7797,9 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
         # square, where the reference's reads near-black because her charcoal
         # dress is what is behind it. So a dress belt takes the garment's tone.
         opening = (
-            shade(p.outfit.tunic_color, 0.9) if p.outfit.belt_keeper_pair else shade(color, 0.7)
+            shade(p.outfit.tunic_color, 0.9)
+            if p.outfit.belt_keeper_pair and p.outfit.tunic_color is not None
+            else shade(color, 0.7)
         )
         parts.append(
             f'<rect x="{bx + inset:.1f}" y="{by + inset:.1f}" width="{bw - inset * 2:.1f}" '

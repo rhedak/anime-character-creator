@@ -208,7 +208,7 @@
       "color": {
         "field": "tunic_color",
         "label": "Tunic",
-        "optional": false
+        "optional": true
       },
       "bools": [
         {
