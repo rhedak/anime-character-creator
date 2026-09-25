@@ -6,8 +6,9 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4's second round, awaiting the owner's call
-  (`out/bust/lines3.png`, `sweep.png`). Then 7 (cast values), 8.
+- **Now:** step 7 proposed (`out/bust/female_overview.png`), awaiting the
+  owner's values. On approval: into `presets.py`, `ref-out/` and the sheets
+  refreshed, the cast sheet looked at. Then step 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -30,11 +31,11 @@ lessons live in `bust-strategy.md`.
 | 1 reach, not width | done, signed off | continuity and armpit tests green |
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
-| 4 line under the bust | second round, awaiting the owner's call | zero case byte-identical; tested |
+| 4 line under the bust | done, signed off | zero case byte-identical; tested |
 | 5 bust over the arm | 5a, 5c signed off; 5b reversed | Keiko as before 5b; Katherina's hand fixed |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
-| 7 cast values | not started | |
+| 7 cast values | proposed in the harness, awaiting the owner | overview rendered |
 | 8 integration | not started | |
 
 ## Step 1 preparation
@@ -98,6 +99,26 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 7, the proposal (not yet applied)
+
+**Owner's calls before it:** step 4's second round signed off. Katherina is
+14 (the owner); Linnea is 15 (her preset's own comment).
+
+**Proposal** (`harness/bust/cast_proposal.py`, `out/bust/female_overview.png`,
+each female character at the chibi, now against proposed): Krista 1.0 (her
+brief asks for "a noticeable bust"), Chiyo 0.6 (late 40s to mid 50s, "strong
+capable build"), Reika 0.6, Keiko 0.6, Satoko 0.5 and so Kyoko 0.5 (one
+person; `_before` carries the value), Elara 0.4 ("slender strong build").
+Katherina and Linnea are children and stay at zero, as do the male presets.
+Kept in the harness, not `presets.py`, so `ref-out/` does not move before
+the owner approves.
+
+**Looked at:** Krista reads clearly, silhouette and lines through her strap;
+Chiyo and Satoko read on their tunics; Reika, Keiko and Kyoko are subtle,
+their outer layers covering the chest as agreed at step 4; Elara is a slight
+suggestion. Kyoko's parametric coat does not swell with the bust yet, the gap
+noted at 9b.
 
 ### 2026-09-25: step 4, second round: the line reaches the side, tapers, and lies under outer layers
 
