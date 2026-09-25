@@ -486,6 +486,11 @@ HAIR_TAIL = RangeField("hair_tail", "Tail (ponytail/braid)", 0.0, 1.0)
 # anything else enforces.
 WAIST_SHIFT = RangeField("waist_shift", "Belt line (up / down)", -1.0, 1.5)
 assert WAIST_SHIFT.field in _CHARACTER_FIELDS
+# How much bust the figure carries, 0 for none (`docs/bust-plan.md`). The range
+# is the one swept and judged, and the cast's own values sit inside it: Krista
+# at the top, the men at zero.
+BUST = RangeField("bust", "Bust", 0.0, 1.0)
+assert BUST.field in _CHARACTER_FIELDS
 assert HAIR_TAIL.field in _CHARACTER_FIELDS
 HAIR_KNOT = BoolField("hair_knot", "Top-knot")
 assert HAIR_KNOT.field in _CHARACTER_FIELDS
@@ -664,6 +669,7 @@ def build_catalogue() -> dict[str, object]:
         "hair_length": _range_json(HAIR_LENGTH),
         "hair_tail": _range_json(HAIR_TAIL),
         "waist_shift": _range_json(WAIST_SHIFT),
+        "bust": _range_json(BUST),
         "hair_knot": _bool_json(HAIR_KNOT),
         "garments": [_garment_json(g) for g in GARMENTS],
         "face": {

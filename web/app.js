@@ -295,6 +295,14 @@ function buildBuildControls() {
     setField(ws.field, v);
     scheduleRender();
   });
+
+  // `catalogue.bust`: the same kind of plain range, beside the belt line since
+  // both reshape the torso. Zero draws the figure exactly as it was before.
+  const bust = catalogue.bust;
+  rangeRow(buildControls, bust.field, bust.label, bust.min, bust.max, fieldValue(bust.field), (v) => {
+    setField(bust.field, v);
+    scheduleRender();
+  });
 }
 
 function buildColorControls() {

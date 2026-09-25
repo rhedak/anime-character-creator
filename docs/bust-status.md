@@ -6,9 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 7 done. Next, step 8: the catalogue slider, `catalogue.json`,
-  the web tool, the sheets and cover; `../valley_of_mist` last and only on the
-  owner's explicit say-so.
+- **Now:** step 8 done in this repo. Left: `../valley_of_mist`, only on the
+  owner's explicit say-so; the deferred list in `bust-plan.md`.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -36,7 +35,7 @@ lessons live in `bust-strategy.md`.
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
 | 7 cast values | done, applied at the owner's call | cast sheet looked at |
-| 8 integration | not started | |
+| 8 integration | done in this repo; valley_of_mist waits for the owner | catalogue test; bridge checked |
 
 ## Step 1 preparation
 
@@ -99,6 +98,23 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 8, integration (up to `../valley_of_mist`)
+
+**Change.** `catalogue.BUST`, a plain `RangeField` from 0 to 1 beside the belt
+line, in `build_catalogue()` as `"bust"`; `ref-out/catalogue.json` refreshed
+(the one entry added). `web/app.js` gives it a slider in the build section,
+the same kind of row as `waist_shift`, needing no bridge change. `docs/api.md`
+lists the field. A catalogue test that the slider covers every preset's value.
+
+**Checked.** The page's own Python path (`params_from_dict`, then
+`render_character`) keeps `bust` through the URL round trip and renders the
+bust. The staged site (`./web-stage.sh`) serves the new catalogue entry and
+slider on the local server already running on port 8000; the slider itself was
+not driven, since the Chrome extension was not connected. Sheets, cover and
+bases were refreshed at step 7 (the cover did not move).
+
+**Not done:** `../valley_of_mist`, which waits for the owner's explicit say-so.
 
 ### 2026-09-25: step 7, the cast's values applied
 

@@ -191,6 +191,12 @@
     "min": -1.0,
     "max": 1.5
   },
+  "bust": {
+    "field": "bust",
+    "label": "Bust",
+    "min": 0.0,
+    "max": 1.0
+  },
   "hair_knot": {
     "field": "hair_knot",
     "label": "Top-knot"

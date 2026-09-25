@@ -213,3 +213,15 @@ def test_catalogue_json_matches_ref_out() -> None:
 
     committed = (Path(__file__).resolve().parent.parent / "ref-out" / "catalogue.json").read_text()
     assert committed == to_json(), "ref-out/catalogue.json is stale; run ./refresh-catalogue.sh"
+
+
+def test_the_bust_slider_covers_every_preset_s_value() -> None:
+    """`bust` is offered as a plain range beside the belt line, and the cast's
+    own values sit inside it (`docs/bust-plan.md`, step 8)."""
+    from anime_character_creator import PRESETS
+    from anime_character_creator.catalogue import build_catalogue
+
+    bust = build_catalogue()["bust"]
+    assert bust["field"] == "bust" and bust["min"] == 0.0 and bust["max"] == 1.0
+    for p in PRESETS.values():
+        assert bust["min"] <= p.bust <= bust["max"]
