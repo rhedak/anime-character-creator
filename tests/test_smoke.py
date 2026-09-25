@@ -1992,8 +1992,10 @@ def test_a_small_bust_moves_the_torso_a_small_amount(build):
 
 @pytest.mark.parametrize("name", ["satoko", "keiko", "katherina"])
 def test_a_bust_changes_nothing_above_the_armpit(name):
-    """The bust only reshapes the armpit-to-waist run. Its first version reused
-    a name `_tunic`'s shoulder already read and gave every sleeve tip a horn."""
+    """The bust only reshapes the armpit-to-waist run, and carries the armpit out
+    with it (`_armpit_x`), which tilts a slanted sleeve's underside: so nothing
+    above the sleeve's tip moves. Its first version reused a name `_tunic`'s
+    shoulder already read and gave every sleeve tip a horn."""
 
     def above_armpit(bust: float) -> list[tuple[float, float]]:
         p = replace(PRESETS[name], bust=bust)
@@ -2001,7 +2003,7 @@ def test_a_bust_changes_nothing_above_the_armpit(name):
         d = re.search(r'd="([^"]+)"', character._tunic(sk, p)).group(1)
         nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d)]
         pts = zip(nums[0::2], nums[1::2], strict=False)
-        return sorted((x, y) for x, y in pts if y < sk.armpit_y - 0.5)
+        return sorted((x, y) for x, y in pts if y < character._cap_tip_y(sk) - 0.5)
 
     assert above_armpit(1.0) == above_armpit(0.0)
 

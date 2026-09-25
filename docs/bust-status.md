@@ -99,6 +99,35 @@ expect the rendered sweep to look unchanged.
 
 ## Findings, newest first
 
+### 2026-09-25: the gap between the shoulder and the bust
+
+**The owner's report:** an unnatural gap between the bust and the shoulder,
+at Satoko 1.0 in the web tool. The crease noted when the bust was raised to
+0.15: the sleeve's slanted underside and the bust's outline both met at the
+plain torso's armpit, and the bust swung out from it straight away, so the two
+met in a V.
+
+**Change.** `_armpit_x`: the armpit carried out by `_BUST_ARMPIT_FILL = 0.7`
+reaches, read by everything meeting there (the tunic's sleeve, the slanted
+underside the arm's top edge shares, the body's shoulder, the bust's outline
+start). The bust's geometry and the traced cuts' bulge keep the plain side, and
+a traced coat's hidden tunic sleeve keeps the plain width. Exactly the plain
+width without a bust: the men and zero values unchanged.
+
+**A second artifact, found at 12x and fixed:** the over-arm lobe closed back up
+to the carried-out armpit, which is past the arm's inner edge, so the top of
+that edge was left half covered, a grey smear under the armpit. The lobe now
+closes to the plain armpit. A slightly soft cut remains at 12x where the
+lobe's top crosses the sleeve's underside stroke; under a pixel at size.
+
+**Looked at** (`out/bust/armpit.png` before and after at 4x: Satoko 1.0 and
+0.5, Krista 1.0, Chiyo 0.6; `armpit_zoom.png` at 12x; `female_overview.png`):
+the outline runs on from the sleeve into the bust with no V.
+
+The armpit test now checks nothing above the sleeve's tip moves, since the
+slanted underside tilts with the bust by design. `ref-out/`: the nine women
+and the sheets; bases unchanged. Suite: 529 passed, 1 skipped.
+
 ### 2026-09-25: step 8, integration (up to `../valley_of_mist`)
 
 **Change.** `catalogue.BUST`, a plain `RangeField` from 0 to 1 beside the belt

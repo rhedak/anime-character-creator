@@ -2610,7 +2610,7 @@ def _cap_underside_y(sk: Skeleton, x_off: float, tip_y: float) -> float:
     strokes land on each other and read as one line.
     """
     cuff_y = _sleeve_hem_y(sk)
-    torso_at_cuff = _torso_at_armpit(sk)
+    torso_at_cuff = _armpit_x(sk)
     tip_x = _cap_tip_x(sk)
     t = (tip_x - x_off) / (tip_x - torso_at_cuff)
     return tip_y + (cuff_y - tip_y) * max(0.0, min(1.0, t))
@@ -2630,6 +2630,24 @@ def _torso_at_armpit(sk: Skeleton) -> float:
     """The torso's half-width where the arm leaves it, measured up from the waist
     rather than down from the shoulder; see `_tunic` for why."""
     return sk.waist_half_w + (sk.shoulder_half_w - sk.waist_half_w) * 0.12
+
+
+# How far a bust moves the armpit out, in reaches. The sleeve's underside and
+# the bust's outline meet at the armpit; left at the plain torso's width, the
+# bust swung out from it straight away and the two met in a V, which read as a
+# gap cut between the shoulder and the bust (the owner, 2026-09-25). Carried out
+# with the bust, the sleeve lands on the bust's upper slope and the outline runs
+# on from one into the other, as the breast runs up into the armpit.
+_BUST_ARMPIT_FILL = 0.7
+
+
+def _armpit_x(sk: Skeleton, inset: float = 0.0) -> float:
+    """Where the sleeve's underside meets the torso's side: the plain torso's
+    width at the armpit, carried out by a bust. Every part meeting there reads
+    it (the tunic's sleeve, the arm's top edge, the body's shoulder, the bust's
+    outline), so none can open a sliver against another. Exactly
+    `_torso_at_armpit` without a bust."""
+    return _torso_at_armpit(sk) - inset + _BUST_ARMPIT_FILL * sk.bust_reach
 
 
 def _rib_ctrl_y(sk: Skeleton) -> float:
@@ -2758,7 +2776,7 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
     above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
     if drape:
         return _Bust(
-            armpit=(torso_at_cuff, cuff_y),
+            armpit=(_armpit_x(sk, inset), cuff_y),
             outline=((above, peak), ((fall[0] + reach, fall[1]), (ww, wy))),
             peak=peak,
             lobe_pieces=2,
@@ -2780,7 +2798,7 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
     tuck_x = (peak[0] + lean * (under[1] + under[0] - peak[1])) / (1 + lean)
     tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
     return _Bust(
-        armpit=(torso_at_cuff, cuff_y),
+        armpit=(_armpit_x(sk, inset), cuff_y),
         outline=((above, peak), (tuck, under), (below, (ww, wy))),
         peak=peak,
         lobe_pieces=2,
@@ -2830,6 +2848,7 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
         return ""
     cx, sw = sk.head_cx, _stroke_w(sk)
     b = bust
+    plain = (_torso_at_armpit(sk), b.armpit[1])
     lobe, outline = [], []
     for s in (-1, 1):
 
@@ -2840,7 +2859,11 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
         edge = f"M {pt(b.armpit)} " + "".join(f"Q {pt(c)} {pt(e)} " for c, e in run)
         end = run[-1][1]
         outline.append(edge)
-        lobe.append(edge + f"L {pt(end, -sw)} Q {pt(b.plain_up, -sw)} {pt(b.armpit, -sw)} Z")
+        # Closed back up the plain side to the plain armpit, not the bust's
+        # (`_armpit_x`): that one is carried out past the arm's inner edge, and a
+        # lobe closing there left the top of that edge half covered, a grey
+        # smear under the armpit.
+        lobe.append(edge + f"L {pt(end, -sw)} Q {pt(b.plain_up, -sw)} {pt(plain, -sw)} Z")
     d = " ".join(lobe)
     mask_id = "bust-" + hashlib.sha1(d.encode()).hexdigest()[:10]
     # A mask rather than a clip path: a clip is applied to each layer in turn,
@@ -2958,7 +2981,7 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     centre_top, _, _, _ = _arm_line(sk)
     tip = centre_top + sk.arm_half_w - k
     slope, cuff_y = _shoulder_slope(sk), _sleeve_hem_y(sk)
-    tac, ww, wy = _torso_at_armpit(sk) - k, sk.waist_half_w - k, sk.waist_y
+    tac, ww, wy = _armpit_x(sk, k), sk.waist_half_w - k, sk.waist_y
     # The torso stops in the belt band, at the line a tucked tunic ends on and
     # the seat starts from, and narrows there to the bare seat's width. Below
     # that the body is the legs' (`_bare_seat`, `_seat_notch_d`): at the chibi
@@ -3054,12 +3077,14 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # in front of it, and the arm then covers the body's side contour instead of
     # standing clear of it. Both refs show the torso's side and the arm as two
     # separate edges with daylight between them below the armpit.
-    torso_at_cuff = _torso_at_armpit(sk)
+    torso_at_cuff = _armpit_x(sk)
     if _traced_coat(sk, p):
         # Under a traced jacket the tunic's own sleeve cap has nowhere to show but
         # past the jacket's shoulder, where the hair is narrower than the
         # reference's; the traced sleeve starts inside the armhole instead.
-        sleeve_w = torso_at_cuff
+        # The plain width, not the bust's armpit: under the jacket it shows
+        # nowhere, and the shoulder above it has no reason to move.
+        sleeve_w = _torso_at_armpit(sk)
     slanted = _sleeve_under_cap(sk, p)
     tip_round = ((0.0, 0.0), (0.0, 0.0))
     if slanted:
@@ -3731,7 +3756,8 @@ def _bust_bulge(sk: Skeleton, y: float) -> float:
             break
     if out is None:
         return 0.0
-    plain = _quad_x_at(b.armpit, (b.armpit[0], _rib_ctrl_y(sk)), b.outline[-1][1], y)
+    armpit = (_torso_at_armpit(sk), b.armpit[1])
+    plain = _quad_x_at(armpit, (armpit[0], _rib_ctrl_y(sk)), b.outline[-1][1], y)
     return max(0.0, out - plain) if plain is not None else 0.0
 
 
