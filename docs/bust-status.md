@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** all steps done in this repo, 3c included. Left: `../valley_of_mist`,
-  only on the owner's explicit say-so; the realistic build's own fix pass.
+- **Now:** the plan is done. `../valley_of_mist` is regenerated and waits for
+  the owner's commit call there. Left: the realistic build's own fix pass.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -35,7 +35,7 @@ lessons live in `bust-strategy.md`.
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
 | 7 cast values | done, applied at the owner's call | cast sheet looked at |
-| 8 integration | done in this repo; valley_of_mist waits for the owner | catalogue test; bridge checked |
+| 8 integration | done; valley_of_mist regenerated, uncommitted there | catalogue test; bridge checked; browser checked |
 
 ## Step 1 preparation
 
@@ -98,6 +98,26 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: `../valley_of_mist` regenerated (uncommitted there)
+
+**Owner's call:** regenerate its character references, cover and chapter
+images.
+
+**Done** with that repo's own `valley_of_mist_tools.generate_assets`
+(`generate-refs`, `generate-covers`, `generate-inserts`, Book 1; Book 2 has no
+images yet). 52 files rewritten; the 9 with no pixel changed (the cover,
+every male reference, ch26) were restored, leaving 43. Pixels changed: the
+women's references 0.1 to 0.6% (the bust), Keiko's 14% (her lab coat campaign,
+never regenerated there before); inserts 0.1 to 3% (the women in them), ch13
+7.4% and ch25 a new size (1952 to 2904 tall): both now name more characters
+(Viktor in ch13; Haruto and Reika in ch25) since the 2026-09-23 consistency
+passes edited those chapters after their images were last made. Looked at:
+`out/bust/vom_refs.png`, `vom_ch13.png`, `vom_ch25.png`.
+
+Not committed there: its `CLAUDE.md` says not to commit unless asked. Its
+trailer imports this package directly and picks the bust up on its next build;
+not rebuilt.
 
 ### 2026-09-25: step 3c, the bare body where it shows
 
