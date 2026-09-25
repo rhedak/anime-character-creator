@@ -2865,38 +2865,68 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
 
     Seen from the front, the side outline says little: at the chibi it is half
     under the arm and on some characters under their hair. What reads is the
-    underside, so each side gets a short arc under the breast (the anatomy
-    review in `docs/bust-plan.md`, step 4). A stroke like the garments' fold lines, never a shaded tone
-    (`CLAUDE.md`). Its weight grows with `bust` up to 0.5, so the line fades in
-    rather than appearing whole at the first step off zero.
+    underside (the anatomy review in `docs/bust-plan.md`, step 4). Each side's
+    curve starts on the tunic's own side outline, where the bust's lower curve
+    turns in, dips to its lowest point under the breast's centre, and rises
+    toward the sternum. Starting on the outline is the owner's "matching the
+    width": a short arc centred under the breast floated inside the silhouette.
+
+    Drawn as a thin filled shape rather than a stroke, thickest in the middle
+    and tapering to nothing at both ends, so it varies in weight the way a drawn
+    line does and melts into the outline it leaves. Flat and hard-edged: line
+    work, not a tone (`CLAUDE.md`). Its reach toward the sternum and its dip grow
+    with the bust, and its weight with the bust up to 0.5, so it fades in rather
+    than appearing whole.
+
+    Drawn right after the tunic: an outer layer, a coat or a robe front, hangs
+    over the bust and covers it, its own outline being the cue there.
     """
-    bust = _bust_shape(sk)
-    if bust is None:
+    body, cloth = _bust_shape(sk), _bust_shape(sk, drape=True)
+    if body is None or cloth is None:
         return ""
     cx, sw, reach = sk.head_cx, _stroke_w(sk), sk.bust_reach
-    weight = sw * 0.6 * min(1.0, sk.bust / 0.5)
-    peak, under = bust.peak, bust.outline[1][1]
-    # A short arc under the breast, centred on it, the usual convention: the
-    # breast's centre half way between the sternum and the plain side, and the
-    # arc's span and dip grown with the bust. A long sweep from the side toward
-    # the sternum read at small values as a crease across the ribs.
-    radius = (peak[0] - reach) * 0.5
+    heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5)
     grow = min(1.0, sk.bust / 0.75)
-    half = radius * (0.35 + 0.35 * grow)
-    sag = radius * 0.30 * grow
-    low = (radius, peak[1] + (under[1] - peak[1]) * 0.9)
-    outer = (radius + half * 1.1, low[1] - sag * 0.8)
-    inner = (radius - half * 0.9, low[1] - sag)
-    # A quadratic whose midpoint is `low`: its control is twice as far from the
-    # chord's midpoint.
-    q = (2 * low[0] - (outer[0] + inner[0]) / 2, 2 * low[1] - (outer[1] + inner[1]) / 2)
+    peak, under = body.peak, body.outline[1][1]
+    low_y = peak[1] + (under[1] - peak[1]) * 0.85
+    centre = (peak[0] - reach) * 0.5
+    # The bottom of the breast as the lower arc of an ellipse centred on it: its
+    # outer rim on the tunic's side at the fullest point, its lowest point at
+    # the under-bust height under the breast's centre, and its inner rim toward
+    # the sternum. The arc starts a little below the side, where it merges into
+    # the silhouette, and runs round the bottom and half way up the inner side.
+    # Two quadratics were tried first and fought the shape: one left the side
+    # flat and hooked up at the sternum like a smirk.
+    side = next(
+        (x for x in (_quad_x_at(*pc, peak[1]) for pc in cloth.pieces()) if x is not None),
+        peak[0],
+    )
+    out_r = side - centre
+    in_r = centre * 0.6 * grow + sw
+    depth = low_y - peak[1]
+    start, stop = math.radians(20), math.radians(150)
+    steps = 28
+    spine: list[Point] = []
+    for k in range(steps + 1):
+        th = start + (stop - start) * k / steps
+        r_x = out_r if math.cos(th) >= 0 else in_r
+        spine.append((centre + r_x * math.cos(th), peak[1] + depth * math.sin(th)))
+    n = len(spine) - 1
+    left: list[Point] = []
+    right: list[Point] = []
+    for k, (x, y) in enumerate(spine):
+        a0, a1 = spine[max(0, k - 1)], spine[min(n, k + 1)]
+        dx, dy = a1[0] - a0[0], a1[1] - a0[1]
+        norm = math.hypot(dx, dy) or 1.0
+        half = heaviest * 0.5 * math.sin(math.pi * k / n) ** 0.7
+        nx, ny = -dy / norm * half, dx / norm * half
+        left.append((x + nx, y + ny))
+        right.append((x - nx, y - ny))
+    ring = left + right[::-1]
     parts = []
     for s in (-1, 1):
-        parts.append(
-            f'<path d="M {cx + s * outer[0]:.1f} {outer[1]:.1f} Q {cx + s * q[0]:.1f} {q[1]:.1f} '
-            f'{cx + s * inner[0]:.1f} {inner[1]:.1f}" fill="none" stroke="{OUTLINE}" '
-            f'stroke-width="{weight:.2f}" stroke-linecap="round" />'
-        )
+        d = "M " + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in ring) + " Z"
+        parts.append(f'<path d="{d}" fill="{OUTLINE}" stroke="none" />')
     return "".join(parts)
 
 
@@ -9488,6 +9518,10 @@ def render_character(
     # place below, and again over the arms masked to a bust (`_bust_over_arms`).
     chest = [
         _tunic(sk, p),
+        # On the tunic, the garment next to the body, and under every layer worn
+        # over it: a coat or a robe hangs over the bust and its own swelling
+        # outline is the cue there (the owner, step 4). See the function.
+        _bust_lines(sk, p),
         # The crossed front, over the tunic it re-fronts and under the obi.
         _robe_front(sk, p),
         # Uniform trim, over the tunic it sits on and under the belt that
@@ -9519,11 +9553,6 @@ def render_character(
         # A traced coat whose cut asks to go under the arms, so the arm lies
         # over the body with its own outline; see the function.
         _traced_coat_and_belt(sk, p, after_arms=False),
-        # Last on the chest, after a traced coat worn under the arms as well, so
-        # it is drawn on whatever is worn on top there and comes over the arms
-        # with the bust; under that coat it showed only as ticks in its opening.
-        # See the function.
-        _bust_lines(sk, p),
     ]
     layers = [
         _hair_defs(sk, p),

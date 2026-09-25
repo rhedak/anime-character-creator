@@ -2070,22 +2070,27 @@ def test_a_loose_garment_hangs_from_the_bust_where_the_body_tucks_under_it():
 
 
 def test_the_line_under_the_bust_sits_under_it_and_fades_in():
-    """No line without a bust; with one, a short arc on each side, inside the
-    torso and below the fullest point, whose weight grows with the bust up to
-    0.5 rather than appearing whole (`docs/bust-plan.md`, step 4)."""
+    """No line without a bust; with one, a tapered shape under each breast that
+    reaches the tunic's side, stays inside the torso and below the fullest
+    point, and whose thickness grows with the bust up to 0.5 rather than
+    appearing whole (`docs/bust-plan.md`, step 4)."""
     p = PRESETS["satoko"]
     assert character._bust_lines(character.skeleton_for(p), p) == ""
-    weights = []
+    thickness = []
     for v in (0.1, 0.25, 0.5, 1.0):
         q = replace(p, bust=v)
         sk = character.skeleton_for(q)
         lines = character._bust_lines(sk, q)
-        assert lines.count("<path") == 2
-        nums = [
-            float(n) for n in re.findall(r"-?\d+\.?\d*", re.search(r'd="([^"]+)"', lines).group(1))
-        ]
+        assert lines.count("<path") == 2 and 'stroke="none"' in lines
+        d = re.search(r'd="([^"]+)"', lines).group(1)
+        nums = [float(n) for n in re.findall(r"-?\d+\.?\d*", d)]
         xs, ys = nums[0::2], nums[1::2]
-        assert all(sk.head_cx - character._bust_shape(sk).peak[0] < x < sk.head_cx for x in xs)
-        assert all(y > sk.bust_y for y in ys)
-        weights.append(float(re.search(r'stroke-width="([\d.]+)"', lines).group(1)))
-    assert weights[0] < weights[1] < weights[2] == weights[3]
+        side = sk.head_cx - character._bust_shape(sk, drape=True).peak[0]
+        assert all(side - 1 < x < sk.head_cx for x in xs)
+        assert min(xs) < side + 0.1 * sk.head_r, "it does not reach the side"
+        assert all(y >= sk.bust_y for y in ys)
+        # Thickest across the middle of the ring: its two walls' widest gap.
+        half = len(xs) // 2
+        thickness.append(max(abs(ys[k] - ys[-1 - k]) for k in range(half)))
+    assert thickness[0] < thickness[1] < thickness[2]
+    assert abs(thickness[2] - thickness[3]) < 0.25

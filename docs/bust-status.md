@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4 proposed, awaiting the owner's call on having the line at
-  all (`out/bust/lines.png`, `sweep.png`). Then 7 (cast values), 8.
+- **Now:** step 4's second round, awaiting the owner's call
+  (`out/bust/lines3.png`, `sweep.png`). Then 7 (cast values), 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -30,7 +30,7 @@ lessons live in `bust-strategy.md`.
 | 1 reach, not width | done, signed off | continuity and armpit tests green |
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
-| 4 line under the bust | proposed, awaiting the owner's call | zero case byte-identical; tested |
+| 4 line under the bust | second round, awaiting the owner's call | zero case byte-identical; tested |
 | 5 bust over the arm | 5a, 5c signed off; 5b reversed | Keiko as before 5b; Katherina's hand fixed |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
@@ -98,6 +98,37 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 4, second round: the line reaches the side, tapers, and lies under outer layers
+
+**Owner's review of the first round:** the lines mostly work, but should match
+the bust's width and could vary in weight; and a lab coat, as the outer layer,
+should cover them.
+
+**Change.**
+- **Under outer layers.** `_bust_lines` is drawn right after `_tunic`, so a
+  coat, robe front or apron bib over the bust covers it; the outer layer's
+  own swelling outline is the cue there (steps 6, 9b). On Keiko the line now
+  shows only in her coat's opening.
+- **Matching the width.** The bottom of the breast as the lower arc of an
+  ellipse centred on it: its outer rim on the tunic's draped side at the
+  fullest point, its lowest point at the under-bust height under the
+  breast's centre, its inner rim reaching toward the sternum as the bust
+  grows. The arc runs from a little below the side, where it merges into the
+  silhouette, round the bottom and half way up the inner side.
+- **Varying the weight.** A filled shape rather than a stroke, thickest in the
+  middle and tapering to nothing at both ends; flat and hard-edged.
+
+**Looked at, three shapes** (`out/bust/lines3.png` at 3x and tile size,
+`sweep.png`): two quadratics from the side, first lower and flat (ran long,
+hooked up at the sternum, read as a smirk), then leaving the side straight
+down (the tapered start vanished into the outline and it still read as a
+shelf); then the ellipse, which reads as the underside, clearest at 0.75 and
+1.0 and legible at tile size from 0.5.
+
+Test rewritten for the filled, tapered shape: reaches the side, stays inside
+the torso and below the fullest point, thickens with the bust to 0.5. Suite:
+528 passed, 1 skipped; `ref-out/` byte-identical at zero.
 
 ### 2026-09-25: step 4, the line under the bust (proposed, for the owner)
 
