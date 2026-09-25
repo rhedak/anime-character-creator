@@ -4,7 +4,7 @@ judged in (`docs/bare-body-plan.md`, from step 2 on).
 Through the real outfit route, not by stubbing the garment parts the way
 `harness/bust/bare_proportions.py` did: every `*_color` of `Outfit` set to
 `None`, the tunic included. Two things are stubbed, both base layer rather
-than body: the underpants, and (from step 3) the base top. The boots stay on
+than body: the underpants and the top (`_underwear_top`). The boots stay on
 until step 5 gives a bare foot. No anatomical detail is drawn; the project
 draws none.
 
@@ -28,9 +28,9 @@ from anime_character_creator.presets import PRESETS
 
 ADULTS = ("satoko", "chiyo", "keiko", "krista", "reika", "elara", "gero", "daizen", "tenno")
 COLOR_FIELDS = [
-    f.name for f in dataclasses.fields(c.Outfit) if f.name.endswith("_color") and f.name != "boot_color"
+    f.name for f in dataclasses.fields(c.Outfit) if f.name.endswith("_color") and f.name not in ("boot_color", "underwear_color")
 ]
-BASE_LAYER = ("_underpants", "_base_top")
+BASE_LAYER = ("_underpants", "_underwear_top")
 SCALE = 3
 
 

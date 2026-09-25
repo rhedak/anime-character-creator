@@ -271,6 +271,21 @@
       ]
     },
     {
+      "id": "underwear",
+      "label": "Underwear",
+      "color": {
+        "field": "underwear_color",
+        "label": "Underwear",
+        "optional": false
+      },
+      "bools": [
+        {
+          "field": "underwear_top",
+          "label": "Top without a bust"
+        }
+      ]
+    },
+    {
       "id": "undersleeve",
       "label": "Undersleeves (long sleeves underneath)",
       "color": {

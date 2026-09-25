@@ -5,8 +5,8 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4b built, waiting for the owner's look; then step 3 (the
-  base top). 4a signed off (`7bc300e`).
+- **Now:** step 3 (the base layer) built, waiting for the owner's look.
+  4b signed off (`756a94e`). Next: the rest of step 4 (shoulder, crotch).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -20,7 +20,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | --- | --- | --- |
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
-| 3 base top | | |
+| 3 base layer | built | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
 | 4 close the body | 4a done; 4b built (the breast's own shape) | tests; `ref-out/` byte-identical |
 | 5 bare feet | | |
 | 6 male torso minimum | | |
@@ -28,6 +28,40 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 3: the base layer (2026-09-25)
+
+`Outfit.underwear_color` (the old `_UNDERWEAR_COLOR`, same default) for both
+halves, and `underwear_top: bool = False`. **A deviation from the decision as
+recorded** (`bool | None`, `None` following the bust): as a plain bool meaning
+"a top even without a bust", a character with a bust always wears one. The
+tri-state's `False` would have made any preset with a bust topless in the web
+tool, the minors included, against decision 5 (bare is a harness view only).
+Flagged to the owner. The catalogue has an Underwear slot, colour not
+optional.
+
+`_underwear_top`: only with the tunic off. A plain band down each breast's
+outer outline (`_bare_breast_spine`) to its lowest point, straight across
+under both, closed by a shallow dip from armpit to armpit, with a thin line
+along each breast's inner lower curve for the cups. In the chest after the
+breasts, so garments lie over it and at the chibi it comes over the arms with
+them. Without a bust, when asked, a flat band.
+
+Found on the cast sheet (`harness/bare/base_layer.py`,
+`out/bare/base_layer.png`), fixed here rather than in step 4, since the base
+layer cannot ship without them:
+
+1. **Satoko, Chiyo and Reika had no underpants** (step 1, finding 3): the
+   hem read the knee landmark, above the hip on the long-torso profile.
+   `_real_knee_y`, lifted out of `_boot`, now gives both. This moves the
+   underpants' path under every skirt: **predicted** 0 pixels, **measured**
+   `--pixels` 0 of 54, the female base 0 of 800x1000 by hand; 7 SVGs and
+   `bases/female.svg` refreshed for their bytes.
+2. **Tucked presets wore shorts, untucked ones briefs**: the seat started
+   where a tucked tunic would end. With no tunic it starts at the hip.
+3. **At the hip the briefs were a strip, and the torso's crotch notch showed
+   above them** (the crotch still reads the landmark knee; step 4). With no
+   tunic the underpants start a third of the way from the hip to the waist.
 
 ### Step 4b: the bare breast's shape (2026-09-25)
 

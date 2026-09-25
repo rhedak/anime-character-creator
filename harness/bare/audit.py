@@ -38,7 +38,12 @@ from anime_character_creator.skeleton import BUILDS
 # are adult by their design briefs. Anyone not listed is left out of images,
 # including presets whose age the notes do not state.
 ADULTS = ("satoko", "chiyo", "keiko", "krista", "reika", "elara", "gero", "daizen", "tenno")
-COLOR_FIELDS = [f.name for f in dataclasses.fields(c.Outfit) if f.name.endswith("_color")]
+# The underwear is always worn (step 3), so "all off" leaves it on.
+COLOR_FIELDS = [
+    f.name
+    for f in dataclasses.fields(c.Outfit)
+    if f.name.endswith("_color") and f.name != "underwear_color"
+]
 SCALE = 1
 
 

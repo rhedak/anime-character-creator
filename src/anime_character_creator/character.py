@@ -289,6 +289,14 @@ class Outfit:
     # How far up the shin the boot climbs, on top of the ankle boot every
     # character already has: 0 leaves it alone, 1 takes it to the knee.
     boot_shaft: float = 0.0
+    # --- The base layer, what shows with the tunic off (`bare-body-plan.md`,
+    # step 3). Not optional: with nothing else worn it is what the figure
+    # wears, for every character (the owner's call, 2026-09-25); a fully bare
+    # figure is a harness view only. The underpants are drawn under every
+    # bare leg; the top with the tunic off, with a bust, or without one when
+    # `underwear_top` asks for it.
+    underwear_color: str = "#e8e4dc"
+    underwear_top: bool = False
     # --- Robe. Three fields, and between them they carry the whole cluster:
     # what says "kimono" at tile size is a front that crosses, a sleeve that
     # hangs, and a wide sash. Embroidery, the checked panels, layered inner
@@ -3097,6 +3105,55 @@ def _bare_breasts(sk: Skeleton, p: CharacterParams) -> str:
             f'<circle cx="{cx + s * x0:.1f}" cy="{y0:.1f}" r="{heaviest * 0.5:.2f}" fill="{OUTLINE}" />'
         )
     return "".join(parts)
+
+
+def _underwear_top(sk: Skeleton, p: CharacterParams) -> str:
+    """The base layer's top, drawn only with the tunic off, so no clothed
+    figure can move (`docs/bare-body-plan.md`, step 3).
+
+    A plain band in `underwear_color`: down each breast's outer outline from
+    the armpit to its lowest point (`_bare_breast_spine`, so it sits on the
+    bare shape at any bust and comes over the arms with it at the chibi),
+    straight across under both, and closed by a shallow dip from armpit to
+    armpit. A thin line along each breast's inner lower curve says two cups
+    rather than a tube. Without a bust, and only when `underwear_top` asks
+    for one, a flat band inside the torso's side instead.
+    """
+    if p.outfit.tunic_color is not None:
+        return ""
+    spine = _bare_breast_spine(sk, p)
+    if not spine and not p.outfit.underwear_top:
+        return ""
+    cx, sw = sk.head_cx, _stroke_w(sk)
+    color = p.outfit.underwear_color
+    if not spine:
+        side = _torso_at_armpit(sk) - sw
+        top, bottom = _sleeve_hem_y(sk), sk.bust_y + (sk.waist_y - sk.shoulder_y) * 0.15
+        dip = (bottom - top) * 0.3
+        d = (
+            f"M {cx - side:.1f} {top:.1f} L {cx - side:.1f} {bottom:.1f} "
+            f"L {cx + side:.1f} {bottom:.1f} L {cx + side:.1f} {top:.1f} "
+            f"Q {cx:.1f} {top + dip:.1f} {cx - side:.1f} {top:.1f} Z"
+        )
+        return (
+            f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" '
+            f'stroke-width="{sw:.1f}" stroke-linejoin="round" />'
+        )
+    low = max(range(len(spine)), key=lambda k: spine[k][1])
+    outer, inner = spine[: low + 1], spine[low:]
+    (ax, ay), yp = spine[0], _bust_shape(sk, inset=_body_inset(sk, p)).peak[1]
+    left = " L ".join(f"{cx - x:.1f} {y:.1f}" for x, y in outer)
+    right = " L ".join(f"{cx + x:.1f} {y:.1f}" for x, y in reversed(outer))
+    d = f"M {left} L {right} Q {cx:.1f} {ay + (yp - ay) * 0.6:.1f} {cx - ax:.1f} {ay:.1f} Z"
+    cups = " ".join(
+        "M " + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in inner) for s in (-1, 1)
+    )
+    return (
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" '
+        f'stroke-width="{sw:.1f}" stroke-linejoin="round" />'
+        f'<path d="{cups}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{sw * 0.6:.1f}" stroke-linecap="round" />'
+    )
 
 
 def _torso(sk: Skeleton, p: CharacterParams) -> str:
@@ -7536,17 +7593,28 @@ def _trousers(
 # nothing for a per-character field to hold, the way there is for a tunic or a
 # skirt. A plain neutral cotton tone, the way OUTLINE is a plain neutral line
 # regardless of what it outlines.
-_UNDERWEAR_COLOR = "#e8e4dc"
+def _real_knee_y(sk: Skeleton) -> float:
+    """Where the knee really is: `sk.knee_y`, or mid-leg where that landmark is
+    above it. A body profile puts `knee_y` where its reference's default boot
+    top lands, and on `tall_chibi_long_torso` that is above the hip, which no
+    knee is. Read where a part needs the joint itself (`_boot`'s tall shaft,
+    `_underpants`' hem); everywhere else the landmark stands."""
+    return max(sk.knee_y, sk.hip_y + (sk.ankle_y - sk.hip_y) * 0.5)
 
 
-def _underpants(sk: Skeleton, gap: float, top_y: float, crotch_y: float, w_top: float) -> str:
+def _underpants(
+    sk: Skeleton, color: str, gap: float, top_y: float, crotch_y: float, w_top: float
+) -> str:
     """A modesty layer over the top of `_bare_seat`, not full-length: it never
     reaches the point the legs part, so it needs no notch of its own and is
     just a plain block with a shallow curved hem, the way a brief is cut higher
     than trousers rather than a shorter copy of them.
     """
     cx = sk.head_cx
-    hem_y = crotch_y + (sk.knee_y - crotch_y) * 0.22
+    # Off the real knee: on the long-torso profile the landmark is above the
+    # hip, and the hem came out above the top, the underpants gone entirely on
+    # every untucked figure (`docs/bare-body-status.md`, steps 1 and 3).
+    hem_y = crotch_y + (_real_knee_y(sk) - crotch_y) * 0.22
     w_waist = gap + w_top
     # A little narrower at the hem than the waist, which is what a hem gathered
     # by elastic looks like rather than a straight-sided box.
@@ -7558,7 +7626,7 @@ def _underpants(sk: Skeleton, gap: float, top_y: float, crotch_y: float, w_top: 
         f"Q {cx:.1f} {hem_y:.1f} {cx - w_hem:.1f} {hem_y - dip:.1f} Z"
     )
     return (
-        f'<path d="{d}" fill="{_UNDERWEAR_COLOR}" stroke="{OUTLINE}" '
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" '
         f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" stroke-linejoin="round" />'
     )
 
@@ -7581,7 +7649,15 @@ def _bare_seat(
     body with a hole cut in the middle of it.
     """
     cx = sk.head_cx
-    top_y = _leg_tuck_top_y(sk, p)
+    # With the tunic off there is no tuck to start inside, and the seat, and
+    # the underpants on it, start at the hip for everyone: tucked presets came
+    # out in shorts up to the belt line and untucked ones in briefs.
+    top_y = sk.hip_y if p.outfit.tunic_color is None else _leg_tuck_top_y(sk, p)
+    # The underpants start a third of the way up to the waist from there: at
+    # the hip itself they were a thin strip, and the torso's notch where the
+    # legs part showed above them on the long-torso profile, whose crotch sits
+    # above the hip (`docs/bare-body-status.md`, step 3).
+    brief_y = top_y - (sk.hip_y - sk.waist_y) * 0.35 if p.outfit.tunic_color is None else top_y
     crotch_y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
     d = _seat_notch_d(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle)
     # No tone down the leg, same as the old two-tube version: a stripe down a
@@ -7590,7 +7666,7 @@ def _bare_seat(
     return (
         f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
         f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" stroke-linejoin="round" />'
-        + _underpants(sk, gap, top_y, crotch_y, w_top)
+        + _underpants(sk, p.outfit.underwear_color, gap, brief_y, crotch_y, w_top)
     )
 
 
@@ -7671,7 +7747,7 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
     # landmark itself everywhere it was already below the hip (the shared chibi
     # and the realistic build), and the default shaft is untouched.
     base_top = sk.ankle_y - (sk.ankle_y - sk.knee_y) * 0.32
-    knee_y = max(sk.knee_y, sk.hip_y + (sk.ankle_y - sk.hip_y) * 0.5)
+    knee_y = _real_knee_y(sk)
     tall_top = sk.ankle_y - (sk.ankle_y - knee_y) * 0.92
     top_y = base_top + (tall_top - base_top) * max(0.0, min(1.0, p.outfit.boot_shaft))
     # Off the ankle it wraps, not off the knee above it, so the shaft cannot come
@@ -9762,6 +9838,9 @@ def render_character(
         # over it: a coat or a robe hangs over the bust and its own swelling
         # outline is the cue there (the owner, step 4). See the function.
         _bust_lines(sk, p),
+        # With the tunic off, the base layer's top over the bare breasts, and
+        # under everything else worn on the chest, as the tunic was.
+        _underwear_top(sk, p),
         # The crossed front, over the tunic it re-fronts and under the obi.
         _robe_front(sk, p),
         # Uniform trim, over the tunic it sits on and under the belt that

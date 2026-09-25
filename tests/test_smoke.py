@@ -2170,3 +2170,39 @@ def test_the_bare_breasts_are_their_own_shape_over_the_arms():
     realistic = character.skeleton_for(p, BUILDS["realistic"])
     assert character._bust_over_arms(realistic, p, breasts) == ""
     assert character._bust_lines(realistic, p)
+
+
+def test_the_underwear_top_is_drawn_bare_with_a_bust_or_when_asked():
+    """The base layer's top (`docs/bare-body-plan.md`, step 3): only with the
+    tunic off, so no clothed figure moves; with a bust by itself, and without
+    one only when `underwear_top` asks. In `underwear_color`, like the
+    underpants, so the two halves agree."""
+    krista = PRESETS["krista"]
+    sk = character.skeleton_for(krista)
+    assert character._underwear_top(sk, krista) == ""
+    bare = _tunic_off(krista)
+    top = character._underwear_top(sk, bare)
+    assert f'fill="{bare.outfit.underwear_color}"' in top
+    man = _tunic_off(PRESETS["satoshi"])
+    sk = character.skeleton_for(man)
+    assert character._underwear_top(sk, man) == ""
+    asked = replace(man, outfit=replace(man.outfit, underwear_top=True))
+    assert f'fill="{asked.outfit.underwear_color}"' in character._underwear_top(sk, asked)
+    recoloured = replace(bare, outfit=replace(bare.outfit, underwear_color="#123456"))
+    assert render_character(recoloured).count('fill="#123456"') >= 2
+
+
+@pytest.mark.parametrize("name", sorted(PRESETS))
+def test_the_underpants_have_height_on_every_preset(name):
+    """The hem reads the real knee (`_real_knee_y`): on the long-torso profile
+    the knee landmark is above the hip, and the underpants came out with the
+    hem above the top, gone entirely on every untucked figure. Trousers off
+    too: under them there are none to draw."""
+    p = _tunic_off(PRESETS[name])
+    p = replace(p, outfit=replace(p.outfit, trouser_color=None))
+    svg = render_character(p)
+    color = p.outfit.underwear_color
+    paths = re.findall(r'<path d="([^"]+)" fill="' + re.escape(color) + '"', svg)
+    assert paths
+    ys = [float(v) for v in re.findall(r"-?\d+\.?\d*", paths[-1])][1::2]
+    assert max(ys) - min(ys) > character.skeleton_for(p).head_r * 0.1

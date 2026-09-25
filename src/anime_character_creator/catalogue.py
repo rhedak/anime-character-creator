@@ -193,6 +193,16 @@ BOOTS = GarmentSlot(
     ranges=(_range("boot_shaft", "Boot height", 0.0, 1.0),),
 )
 
+# The base layer, likewise always worn: what shows with the tunic off, for
+# every character (`docs/bare-body-plan.md`, step 3). The top comes with a
+# bust by itself; the toggle adds one without.
+UNDERWEAR = GarmentSlot(
+    "underwear",
+    "Underwear",
+    _color("underwear_color", "Underwear", optional=False),
+    bools=(_bool("underwear_top", "Top without a bust"),),
+)
+
 # Optional layers. Each is off (draws nothing) until its color is set, which
 # is `Outfit`'s own presence rule and the reason none of these need a separate
 # on/off field.
@@ -385,6 +395,7 @@ COAT = GarmentSlot(
 GARMENTS: tuple[GarmentSlot, ...] = (
     TUNIC,
     BOOTS,
+    UNDERWEAR,
     UNDERSLEEVE,
     TROUSER,
     SKIRT,
