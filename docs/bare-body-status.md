@@ -5,10 +5,9 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** on hold at the owner's call (2026-09-25). Step 3 signed off
-  (`0f1097b`), `underwear_top` kept a plain bool for now. Next: the rest of
-  step 4, the boxy shoulder with the arm's slanted top (the bare arm still
-  follows the tunic's cap) and the crotch reading the knee landmark.
+- **Now:** step 4c (the bare shoulder) built, waiting for the owner's
+  sign-off. Step 3 signed off (`0f1097b`). Then 4d, the crotch reading the
+  knee landmark, and the owner's call on the armpit slot.
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -23,13 +22,47 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
 | 3 base layer | done, signed off | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
-| 4 close the body | 4a done; 4b built (the breast's own shape) | tests; `ref-out/` byte-identical |
+| 4 close the body | 4a, 4b done; 4c built (the shoulder) | tests; `ref-out/` byte-identical |
 | 5 bare feet | | |
 | 6 male torso minimum | | |
 | 7 web tool and skin tones | | |
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 4c: the bare shoulder (2026-09-25)
+
+**Cause:** with the tunic off the arm still takes the tunic's slanted cap as
+its top (`_sleeve_under_cap` does not ask whether there is a tunic), and its
+top edge is stroked, so a diagonal line crosses every bare arm from the cap's
+tip to the armpit. `_torso`'s shoulder rounds its tip by `k * 2`, and `k` is
+the inset, zero bare since 4a, so the tip is a square corner. Together: the
+epaulette.
+
+**Change**, all behind `tunic_color is None`: no cap without a tunic (the
+arm's top goes flat); a bare arm, no sleeve of any kind, stroked everywhere
+but across its top; `_torso`'s shoulder rounded by the arm's own width
+rather than the inset, and its underside dropped a stroke and a half inside
+the arm, where the arm's fill covers it, except in the gap at the armpit.
+
+**Predicted:** the shoulder one rounded line from the neck down the arm's
+outer edge, nothing across the arm's top, a short crease at the armpit on the
+men and the breast's outline on the women; `ref-out/` byte-identical.
+
+**First measurement:** the line across the arm gone, but two joins off at 6x
+on Gero: the shoulder's descent curved inward to its underside while the
+arm's outline started straight below it (a hook), and the underside rose on
+the diagonal to the arm's top, showing half its stroke as a nub at the
+armpit. Bare, the shoulder now runs straight down the arm's outer edge to its
+underside, and the underside runs level inside the arm to its inner edge, up
+it, and across the gap.
+
+**Measured:** as predicted at 6x on Gero and Krista (Krista's breast still
+joins the arm's corner, now at the flat top); 586 passed; `ref-out/` matches.
+Before and after: `out/bare/4c_mannequin.png`, `out/bare/4c_base_layer.png`.
+Left: the armpit on the men reads as a flat-topped slot, the sliver between
+arm and torso side (present since 4a) closed at the top; a question for the
+owner, not fixed here.
 
 ### Step 3: the base layer (2026-09-25)
 

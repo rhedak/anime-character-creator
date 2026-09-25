@@ -2206,3 +2206,23 @@ def test_the_underpants_have_height_on_every_preset(name):
     assert paths
     ys = [float(v) for v in re.findall(r"-?\d+\.?\d*", paths[-1])][1::2]
     assert max(ys) - min(ys) > character.skeleton_for(p).head_r * 0.1
+
+
+def test_the_bare_arm_has_no_cap_and_no_line_across_its_top():
+    """With the tunic off the arm takes no cap's slant and draws no line
+    across its top: the shoulder rounds over it (`docs/bare-body-plan.md`,
+    step 4c). A tunic keeps both."""
+    no_sleeves = replace(PRESETS["gero"].outfit, coat_color=None, undersleeve_color=None)
+    worn = replace(PRESETS["gero"], outfit=no_sleeves)
+    bare = _tunic_off(worn)
+    sk = character.skeleton_for(bare)
+    assert character._sleeve_under_cap(sk, worn)
+    assert not character._sleeve_under_cap(sk, bare)
+    arms = character._arms(sk, bare)
+    assert 'fill="none"' in arms and f'fill="{bare.skin_tone}" stroke="none"' in arms
+    torso = character._torso(sk, bare)
+    ys = [float(v) for v in re.findall(r"-?\d+\.?\d*", re.search(r'd="([^"]+)"', torso).group(1))][
+        1::2
+    ]
+    cuff_y = character._sleeve_hem_y(sk)
+    assert any(y > cuff_y + character._stroke_w(sk) for y in ys if y < sk.waist_y)

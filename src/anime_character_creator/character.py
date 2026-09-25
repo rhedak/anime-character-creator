@@ -2599,6 +2599,9 @@ def _sleeve_under_cap(sk: Skeleton, p: CharacterParams) -> bool:
     """
     return (
         p.outfit.sleeve_under_cap
+        # No cap without the tunic it belongs to: bare, the arm's top followed
+        # the cap's slant anyway (`docs/bare-body-plan.md`, step 4c).
+        and p.outfit.tunic_color is not None
         and p.outfit.coat_color is None
         and not _traced_coat(sk, p)
         and _worn_sleeve(sk, p) is None
@@ -3198,21 +3201,46 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     # covers below that line, does it step up an inset, under the tunic's sleeve.
     centre_top, _, _, _ = _arm_line(sk)
     arm_in = centre_top - sk.arm_half_w + k
-    if tac >= arm_in:
+    # Bare, the arm has no top edge to cover that line (`_arms`), and a stroke
+    # there showed its upper half across the top of the arm: the underside
+    # drops inside the arm instead, where the arm's fill covers it, and only
+    # the gap at the armpit stays on the line (`docs/bare-body-plan.md`, 4c).
+    bare = p.outfit.tunic_color is None
+    under_y = cuff_y + _stroke_w(sk) * 1.5 if bare else cuff_y
+    if bare:
+        # Level inside the arm to its inner edge, up that edge to the arm's
+        # top, and across the gap to the torso's side at the armpit. Rising
+        # on the diagonal it met the arm's top mid-stroke, and half the stroke
+        # showed as a nub there.
+        x_edge = "{x_in}" if tac < arm_in else "{x_tac}"
+        under_down = f"L {x_edge} {under_y:.1f} L {x_edge} {cuff_y:.1f} L {{x_tac}} {cuff_y:.1f} "
+        under_up = (
+            f"L {{x_tac}} {cuff_y:.1f} L {x_edge} {cuff_y:.1f} L {x_edge} {under_y:.1f} "
+            f"L {{x_rim}} {under_y:.1f} "
+        )
+    elif tac >= arm_in:
         under_down = f"L {{x_tac}} {cuff_y:.1f} "
-        under_up = f"L {{x_rim}} {cuff_y:.1f} "
+        under_up = f"L {{x_rim}} {under_y:.1f} "
     else:
         under_down = (
             f"L {{x_in}} {cuff_y:.1f} L {{x_in}} {cuff_y - k:.1f} L {{x_tac}} {cuff_y - k:.1f} "
         )
         under_up = (
             f"L {{x_tac}} {cuff_y - k:.1f} L {{x_in}} {cuff_y - k:.1f} L {{x_in}} {cuff_y:.1f} "
-            f"L {{x_rim}} {cuff_y:.1f} "
+            f"L {{x_rim}} {under_y:.1f} "
         )
     # The tip rounded, as the tunic's slanted sleeve rounds its own: the slope
     # arrives nearly level and the side leaves straight down, and met at a point
     # they read as a shoulder pad's corner.
-    round_r = min(k * 2.0, (cuff_y - (sy + slope)) * 0.4)
+    #
+    # Bare, the inset is zero and the corner was square: the shoulder rounds
+    # over the top of the arm instead, by most of the arm's width, the way a
+    # bare shoulder caps the arm below it.
+    round_r = (
+        min(sk.arm_half_w * 0.9, (cuff_y - (sy + slope)) * 0.6)
+        if bare
+        else min(k * 2.0, (cuff_y - (sy + slope)) * 0.4)
+    )
     tip_y = sy + slope
     # The torso narrows to the bare seat's width and runs down to the hip, a
     # stroke past it, under the seat drawn after it. Below that the body is the
@@ -3235,7 +3263,11 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
         f"M {cx - nw:.1f} {sy:.1f} "
         f"Q {cx - tip * 0.50:.1f} {sy + slope * 0.62:.1f} {cx - tip + round_r:.1f} {tip_y - round_r * 0.3:.1f} "
         f"Q {cx - tip:.1f} {tip_y:.1f} {cx - tip:.1f} {tip_y + round_r:.1f} "
-        f"Q {cx - tip:.1f} {cuff_y:.1f} {cx - rim:.1f} {cuff_y:.1f} "
+        + (
+            f"L {cx - tip:.1f} {under_y:.1f} L {cx - rim:.1f} {under_y:.1f} "
+            if bare
+            else f"Q {cx - tip:.1f} {under_y:.1f} {cx - rim:.1f} {under_y:.1f} "
+        )
         + under_down.format(x_tac=f"{cx - tac:.1f}", x_in=f"{cx - arm_in:.1f}")
         + _rib(sk, cx, -1, True, inset=k)
         + f"Q {cx - hw:.1f} {hip_ctrl_y:.1f} {cx - hw:.1f} {hy:.1f} "
@@ -3246,8 +3278,12 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
         + under_up.format(
             x_tac=f"{cx + tac:.1f}", x_in=f"{cx + arm_in:.1f}", x_rim=f"{cx + rim:.1f}"
         )
-        + f"Q {cx + tip:.1f} {cuff_y:.1f} {cx + tip:.1f} {tip_y + round_r:.1f} "
-        f"Q {cx + tip:.1f} {tip_y:.1f} {cx + tip - round_r:.1f} {tip_y - round_r * 0.3:.1f} "
+        + (
+            f"L {cx + tip:.1f} {under_y:.1f} L {cx + tip:.1f} {tip_y + round_r:.1f} "
+            if bare
+            else f"Q {cx + tip:.1f} {under_y:.1f} {cx + tip:.1f} {tip_y + round_r:.1f} "
+        )
+        + f"Q {cx + tip:.1f} {tip_y:.1f} {cx + tip - round_r:.1f} {tip_y - round_r * 0.3:.1f} "
         f"Q {cx + tip * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + nw:.1f} {sy:.1f} Z"
     )
     return (
@@ -7183,8 +7219,12 @@ def _arms(
                 for part in (cut.sleeve, cut.cuff)
             ]
             shapes = [f'<path d="{traced(part)}"' for part in (cut.sleeve, cut.cuff)]
-        elif p.outfit.coat_sleeves:
-            # Filled whole, stroked everywhere but across the top.
+        elif p.outfit.coat_sleeves or (
+            p.outfit.tunic_color is None and p.outfit.undersleeve_color is None and not long_sleeve
+        ):
+            # Filled whole, stroked everywhere but across the top. A bare arm
+            # too: the shoulder rounds over it, and a line across its top read
+            # as a sleeve's hem with no sleeve (`docs/bare-body-plan.md`, 4c).
             limb = [
                 f'<path d="{d}" fill="{sleeve_fill}" stroke="none" />',
                 f'<path d="M {x(centre_top + w_top):.1f} {top_out:.1f} {body}" fill="none" '
