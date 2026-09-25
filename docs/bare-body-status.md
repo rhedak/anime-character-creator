@@ -5,10 +5,10 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4d (the crotch) built, waiting for the owner's sign-off.
-  4c signed off (`868289d`); the armpit slot on the men left as it is for
-  now (read from the owner's plain "ok"; a small bare-only change if wanted
-  later). After 4d, step 4 is closed and step 5 (bare feet) is next.
+- **Now:** step 5 (bare feet) built, waiting for the owner's sign-off.
+  Step 4 closed (4d signed off, `9321853`); the armpit slot on the men left
+  as it is (a small bare-only change if wanted later). Next: step 6, the
+  minimum male torso, a proposal with renders before anything is built.
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -23,13 +23,33 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
 | 3 base layer | done, signed off | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
-| 4 close the body | 4a, 4b, 4c done; 4d built (the crotch) | tests; `ref-out/` byte-identical |
-| 5 bare feet | | |
+| 4 close the body | done (4a to 4d) | tests; `ref-out/` byte-identical |
+| 5 bare feet | built | 34 barefoot renders with no `None`; the audit clean; `ref-out/` byte-identical |
 | 6 male torso minimum | | |
 | 7 web tool and skin tones | | |
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 5: bare feet (2026-09-26)
+
+`Outfit.boot_color: str | None`; `None` draws `_bare_foot`, the boot's
+silhouette without the shaft: heel, sole, a rounder toe pointing a little
+outward in the same stance, 0.85 of the boot's width, skin, no toes. The
+catalogue's boots are optional. **Predicted:** every preset renders barefoot
+at both builds with no `None`, `ref-out/` byte-identical.
+
+Two joins fixed by looking at 2x on Satoko: the outline first started above
+the ankle at full weight and stepped out of the leg's, reading as a sock's
+top; then a full-width fill strip reaching above the ankle cut through the
+leg's side lines. Now the outline starts at the ankle at the leg's weight
+(0.85 of a stroke) and the fill covers only the leg's end line, reaching to
+the inner edge of its side lines.
+
+**Measured:** 621 passed (34 new); the audit has no failing line at either
+build for the first time, "all off" included; `ref-out/` matches; the cast
+barefoot in `out/bare/5_barefoot.png` (the third row of `base_layer.png`).
+The realistic build renders and is not judged.
 
 ### Step 4d: the crotch (2026-09-26)
 

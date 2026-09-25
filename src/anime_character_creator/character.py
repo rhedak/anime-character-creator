@@ -172,7 +172,9 @@ class Outfit:
     # None takes the tunic off, and its trim with it (the placket, the chest
     # pockets): the body shows (`bare-body-plan.md`).
     tunic_color: str | None = "#4f7a52"
-    boot_color: str = "#5b4632"
+    # None takes the boots off, and the foot is bare (`bare-body-plan.md`,
+    # step 5).
+    boot_color: str | None = "#5b4632"
     # Long sleeve worn under the tunic's short one. None leaves the arm bare.
     undersleeve_color: str | None = None
     belt_color: str | None = None
@@ -7755,6 +7757,57 @@ def _trouser_seams(
     return "".join(parts)
 
 
+def _bare_foot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int) -> str:
+    """One bare foot, where a boot would be (`docs/bare-body-plan.md`, step 5).
+
+    The boot's own silhouette with the shaft taken away, since it is the same
+    foot in the same duck stance: down from the ankle to the heel, along the
+    sole, round the toe pointing a little outward, and back up the instep. A
+    little slimmer than the boot, which adds leather, and rounder at the toe.
+    No toes drawn: at the chibi they would be grit, the way the boot's eyelets
+    were.
+
+    Its fill reaches just over the end of the leg, whose path ends in a
+    stroked edge across the ankle; its outline starts at the ankle, at the
+    leg's own weight, so the leg runs into it. Drawn from above the ankle at
+    full weight, the outline stepped out of the leg's there and read as the
+    top of a sock.
+    """
+    foot_w = sk.leg_half_w * (2.08 - 0.08 * sk.build) * 0.85
+    foot_h = sk.foot_y - sk.ankle_y
+    instep_y = sk.ankle_y + foot_h * 0.30
+    heel_w = max(foot_w * 0.42, w_ankle)
+    toe_x = heel_w + foot_w * 0.32
+    r = foot_w * 0.22
+
+    def x(offset: float) -> float:
+        """Offsets are for the right foot, toe toward +x; the left mirrors."""
+        return cx + side * offset
+
+    edge = (
+        f"M {x(w_ankle):.1f} {sk.ankle_y:.1f} "
+        f"Q {x(w_ankle * 1.06):.1f} {sk.ankle_y + foot_h * 0.16:.1f} {x(w_ankle * 1.30):.1f} {sk.ankle_y + foot_h * 0.26:.1f} "
+        f"Q {x(toe_x * 0.96):.1f} {sk.ankle_y + foot_h * 0.42:.1f} {x(toe_x):.1f} {sk.foot_y - r * 1.2:.1f} "
+        f"Q {x(toe_x):.1f} {sk.foot_y:.1f} {x(toe_x - r):.1f} {sk.foot_y:.1f} "
+        f"L {x(-heel_w + r):.1f} {sk.foot_y:.1f} "
+        f"Q {x(-heel_w):.1f} {sk.foot_y:.1f} {x(-heel_w):.1f} {sk.foot_y - r:.1f} "
+        f"Q {x(-heel_w):.1f} {instep_y:.1f} {x(-w_ankle):.1f} {sk.ankle_y:.1f} "
+    )
+    sw = _stroke_w(sk) * 0.85
+    # Up over the leg's end only a little, and inside its side lines, which a
+    # full-width strip reaching higher cut through.
+    inner, cover_y = w_ankle - sw * 0.5, sk.ankle_y - sw * 1.5
+    fill = (
+        f"{edge}L {x(-inner):.1f} {sk.ankle_y:.1f} L {x(-inner):.1f} {cover_y:.1f} "
+        f"L {x(inner):.1f} {cover_y:.1f} L {x(inner):.1f} {sk.ankle_y:.1f} Z"
+    )
+    return (
+        f'<path d="{fill}" fill="{p.skin_tone}" stroke="none" />'
+        f'<path d="{edge}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" '
+        f'stroke-linejoin="round" />'
+    )
+
+
 def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int) -> str:
     """One boot: a shaft over the ankle, an instep, and a toe pointing a
     little outward, the pair standing in the canon's slight duck stance. The
@@ -7763,8 +7816,10 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
 
     Cross-laces run down the instep. The canon keeps them at both builds, so
     the old rule that they do not survive chibification is gone with the old
-    reference that set it."""
+    reference that set it. With no boot colour, a bare foot (`_bare_foot`)."""
     color = p.outfit.boot_color
+    if color is None:
+        return _bare_foot(sk, p, cx, w_ankle, side)
     # A foot is a foot: measured off the leg rather than off the ankle, so it
     # keeps its size when the shin's width is retuned. As a multiple of the ankle
     # it doubled the moment the leg stopped tapering to a point. The multiplier

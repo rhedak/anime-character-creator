@@ -1,7 +1,8 @@
 """The base-layer view: what the tool shows with the tunic off
 (`docs/bare-body-plan.md`, from step 3 on). The whole cast, at the chibi, in
-two rows: the tunic off and everything else as the preset wears it; then
-every optional garment off too, the boots and the underwear kept.
+three rows: the tunic off and everything else as the preset wears it; then
+every optional garment off too, the boots and the underwear kept; then
+barefoot as well (from step 5).
 
 Every character, since every one wears the base layer; the fully bare
 mannequin is `mannequin.py`, adults only.
@@ -39,6 +40,10 @@ def main() -> None:
     for label, change in (
         ("tunic off", lambda o: replace(o, tunic_color=None)),
         ("everything off but boots and underwear", lambda o: replace(o, **dict.fromkeys(OPTIONAL))),
+        (
+            "barefoot, underwear only (step 5)",
+            lambda o: replace(o, boot_color=None, **dict.fromkeys(OPTIONAL)),
+        ),
     ):
         rows.append((label, [(n, figure(replace(p, outfit=change(p.outfit)))) for n, p in PRESETS.items()]))
     pad, head = 6, 16

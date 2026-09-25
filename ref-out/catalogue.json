@@ -259,7 +259,7 @@
       "color": {
         "field": "boot_color",
         "label": "Boots",
-        "optional": false
+        "optional": true
       },
       "ranges": [
         {

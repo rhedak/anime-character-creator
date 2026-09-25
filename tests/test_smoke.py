@@ -2238,3 +2238,17 @@ def test_the_bare_crotch_reads_the_real_knee():
     assert character._crotch_y(sk, worn) < sk.hip_y
     bare = _tunic_off(worn)
     assert character._crotch_y(sk, bare) > sk.hip_y + character._stroke_w(sk) * 4
+
+
+@pytest.mark.parametrize("build", ["chibi", "realistic"])
+@pytest.mark.parametrize("name", sorted(PRESETS))
+def test_every_preset_renders_barefoot(name, build):
+    """The boots are optional (`docs/bare-body-plan.md`, step 5): off, each
+    foot is bare, in the skin tone, and nothing reads a `None`."""
+    p = PRESETS[name]
+    p = replace(p, outfit=replace(p.outfit, boot_color=None))
+    sk = character.skeleton_for(p, BUILDS[build])
+    svg = render_character(p, sk)
+    assert '"None"' not in svg
+    foot = character._boot(sk, p, sk.head_cx, sk.leg_half_w, 1)
+    assert f'fill="{p.skin_tone}"' in foot and "laces" not in foot

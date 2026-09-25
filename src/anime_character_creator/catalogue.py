@@ -183,13 +183,14 @@ TUNIC = GarmentSlot(
         ),
     ),
 )
-# Always worn, likewise. `boot_shaft` is 0 (ankle) to 1 (knee) across the
+# Optional since `docs/bare-body-plan.md` step 5: off, the foot is bare.
+# `boot_shaft` is 0 (ankle) to 1 (knee) across the
 # whole cast, Tenno's 0.55 through the uniform's 1.0, so the full declared
 # range is one that has actually been looked at.
 BOOTS = GarmentSlot(
     "boots",
     "Boots",
-    _color("boot_color", "Boots", optional=False),
+    _color("boot_color", "Boots"),
     ranges=(_range("boot_shaft", "Boot height", 0.0, 1.0),),
 )
 
