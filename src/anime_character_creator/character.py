@@ -2868,22 +2868,32 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     The mask's id carries a hash of its shape, so figures sharing one document
     (a cast sheet) cannot pick up each other's.
 
-    With no tunic the body itself is what comes over the arms, drawn under
-    whatever else is worn on the chest, and the lobe is the body's: tucked, at
-    the body's inset, so the outline lands on the body's own edge. Redrawing
-    only the garments, a bare figure read flat (`docs/bare-body-plan.md`,
-    step 4a).
+    With no tunic the chest is masked to the breasts instead (`_bare_breasts`,
+    which the chest then holds in the tunic's line's place), outline and all:
+    they carry their own, so nothing is clipped to the arms.
     """
-    bare = p.outfit.tunic_color is None
-    inset = _body_inset(sk, p) if bare else 0.0
-    bust = _bust_shape(sk, inset=inset, drape=not bare)
+    bust = _bust_shape(sk, drape=True)
     if bust is None or sk.build >= 0.5:
         return ""
-    if bare:
-        chest = _torso(sk, p) + chest
     cx, sw = sk.head_cx, _stroke_w(sk)
+    if p.outfit.tunic_color is None:
+        d = " ".join(
+            "M "
+            + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in _bare_breast_spine(sk, p))
+            + " Z"
+            for s in (-1, 1)
+        )
+        mask_id = "breasts-" + hashlib.sha1(d.encode()).hexdigest()[:10]
+        # Stroked as well as filled, so the outline's outer half is inside it.
+        return (
+            f'<defs><mask id="{mask_id}" maskUnits="userSpaceOnUse" x="0" y="0" '
+            f'width="{sk.canvas_w:.0f}" height="{sk.canvas_h:.0f}">'
+            f'<path d="{d}" fill="white" stroke="white" stroke-width="{sw * 1.5:.1f}" '
+            f'stroke-linejoin="round" /></mask></defs>'
+            f'<g mask="url(#{mask_id})">{chest}</g>'
+        )
     b = bust
-    plain = (_torso_at_armpit(sk) - inset, b.armpit[1])
+    plain = (_torso_at_armpit(sk), b.armpit[1])
     lobe, outline = [], []
     for s in (-1, 1):
 
@@ -2938,12 +2948,12 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
 
     Drawn right after the tunic: an outer layer, a coat or a robe front, hangs
     over the bust and covers it, its own outline being the cue there. With no
-    tunic it is the body's line, starting on the body's own edge
-    (`docs/bare-body-plan.md`, step 4a).
+    tunic this is a fold with nothing to fold, and the breasts are drawn whole
+    in its place (`_bare_breasts`).
     """
-    bare = p.outfit.tunic_color is None
-    body = _bust_shape(sk, inset=_body_inset(sk, p)) if bare else _bust_shape(sk)
-    cloth = body if bare else _bust_shape(sk, drape=True)
+    if p.outfit.tunic_color is None:
+        return _bare_breasts(sk, p)
+    body, cloth = _bust_shape(sk), _bust_shape(sk, drape=True)
     if body is None or cloth is None:
         return ""
     cx, sw, reach = sk.head_cx, _stroke_w(sk), sk.bust_reach
@@ -2989,6 +2999,103 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
     for s in (-1, 1):
         d = "M " + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in ring) + " Z"
         parts.append(f'<path d="{d}" fill="{OUTLINE}" stroke="none" />')
+    return "".join(parts)
+
+
+# The bare breast (`docs/bare-body-plan.md`, step 4b; `harness/bare/breast.py`
+# is the study and its sweep). Its inner edge, as a fraction of the way from the
+# sternum to the body's plain side; its drop below the widest point, as a
+# multiple of the fold's (the owner's pick from 0.8 to 1.5); and where the
+# outline stops up the inner side, in degrees round the ellipse.
+_BREAST_GAP = 0.15
+_BREAST_DEPTH = 1.25
+_BREAST_STOP = 170.0
+
+
+def _bare_breast_spine(sk: Skeleton, p: CharacterParams) -> list[Point]:
+    """One breast's outline with nothing worn, as offsets from the centre line:
+    from the arm's inner top corner down and a little out to the widest point,
+    then round an ellipse's outside and bottom and up its inner side. Empty
+    without a bust.
+
+    Its own shape rather than the torso's side bent out and brought back in an
+    S (`_bust_shape`), which is right for cloth, the silhouette, but bare dented
+    where the S returned and left the armpit at a point: a breast is a round
+    form lying on the chest and over the side. Sized from the bust's anchors:
+    widest at the fullest point, reaching `bust_reach` past the plain side
+    there, dropping the fold's depth times `_BREAST_DEPTH`.
+
+    It starts at the arm's own top corner, as `_arms` draws it, so arm top,
+    armpit and breast are one line; the shared armpit point sat a few pixels
+    off it, and a line fading in below the armpit left two ends side by side.
+    It arrives at the widest point vertical: joined lower on the ellipse, the
+    ellipse there lay inside the armpit and the curve wiggled in and out.
+    """
+    body = _bust_shape(sk, inset=_body_inset(sk, p))
+    if body is None:
+        return []
+    reach = sk.bust_reach
+    x_out, yp = body.peak
+    x_in = (x_out - reach) * _BREAST_GAP
+    xc, rx = (x_out + x_in) / 2, (x_out - x_in) / 2
+    ry_down = (_under_bust_y(sk, yp) - yp) * _BREAST_DEPTH
+    centre_top, top_y, _, _ = _arm_line(sk)
+    ax = centre_top - sk.arm_half_w
+    ay = _cap_underside_y(sk, ax, _cap_tip_y(sk)) if _sleeve_under_cap(sk, p) else top_y
+    ctrl = (x_out, ay + (yp - ay) * 0.5)
+    spine = [
+        (
+            (1 - u) ** 2 * ax + 2 * (1 - u) * u * ctrl[0] + u * u * x_out,
+            (1 - u) ** 2 * ay + 2 * (1 - u) * u * ctrl[1] + u * u * yp,
+        )
+        for u in (k / 12 for k in range(12))
+    ]
+    stop, steps = math.radians(_BREAST_STOP), 48
+    for k in range(steps + 1):
+        th = stop * k / steps
+        spine.append((xc + rx * math.cos(th), yp + ry_down * math.sin(th)))
+    return spine
+
+
+def _bare_breasts(sk: Skeleton, p: CharacterParams) -> str:
+    """Both breasts with nothing worn over them: each filled in the skin tone,
+    closed by a chord across the chest, so the arm's inner edge and the torso's
+    side stop at the outline, the usual way one form is drawn over another; and
+    outlined at full weight from the armpit round the outside and the bottom,
+    tapering up the inner side toward the sternum. The weight fades in with the
+    bust up to 0.2, so a very small one is not a line appearing whole.
+
+    Drawn in the chest where the tunic's line under the bust goes, so a strap
+    or a belt worn over bare skin lies over it; at the chibi `_bust_over_arms`
+    draws it again over the arms.
+    """
+    spine = _bare_breast_spine(sk, p)
+    if not spine:
+        return ""
+    cx, sw = sk.head_cx, _stroke_w(sk)
+    heaviest = sw * min(1.0, sk.bust / 0.2)
+    n = len(spine) - 1
+    left: list[Point] = []
+    right: list[Point] = []
+    for k, (x, y) in enumerate(spine):
+        a0, a1 = spine[max(0, k - 1)], spine[min(n, k + 1)]
+        dx, dy = a1[0] - a0[0], a1[1] - a0[1]
+        norm = math.hypot(dx, dy) or 1.0
+        half = heaviest * 0.5 * min(1.0, (1.0 - k / n) / 0.3) ** 0.8
+        nx, ny = -dy / norm * half, dx / norm * half
+        left.append((x + nx, y + ny))
+        right.append((x - nx, y - ny))
+    ring = left + right[::-1]
+    parts = []
+    for s in (-1, 1):
+        fill = "M " + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in spine) + " Z"
+        line = "M " + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in ring) + " Z"
+        x0, y0 = spine[0]
+        parts.append(
+            f'<path d="{fill}" fill="{p.skin_tone}" stroke="none" />'
+            f'<path d="{line}" fill="{OUTLINE}" stroke="none" />'
+            f'<circle cx="{cx + s * x0:.1f}" cy="{y0:.1f}" r="{heaviest * 0.5:.2f}" fill="{OUTLINE}" />'
+        )
     return "".join(parts)
 
 

@@ -2146,21 +2146,27 @@ def test_the_tunic_s_own_parts_go_with_it():
     assert character._placket(sk, worn) and character._chest_pockets(sk, worn)
 
 
-def test_the_bare_bust_comes_over_the_arms_with_its_line():
-    """With nothing worn over it, the bust over the arms is the body's own
-    (`docs/bare-body-plan.md`, step 4a): at the chibi `_bust_over_arms`
-    redrew only garments, so a bare figure read flat. Its outline and the line
-    under it follow the body's edge, the tucked shape at the body's inset, not
-    a garment's."""
+def test_the_bare_breasts_are_their_own_shape_over_the_arms():
+    """With nothing worn over them the breasts are drawn whole, their own filled
+    shape and outline (`docs/bare-body-plan.md`, step 4b), in the tunic's
+    line's place, and at the chibi the chest is redrawn over the arms masked to
+    them: the bent side outline built for cloth dented bare. The outline starts
+    at the arm's own inner top corner, so arm, armpit and breast are one line."""
     p = _tunic_off(PRESETS["krista"])
     sk = character.skeleton_for(p)
-    over = character._bust_over_arms(sk, p, "")
-    assert f'fill="{p.skin_tone}"' in over
-    body = character._bust_shape(sk, inset=character._body_inset(sk, p))
-    peak_x = f"{sk.head_cx + body.peak[0]:.1f} {body.peak[1]:.1f}"
-    assert peak_x in over
-    assert character._bust_lines(sk, p)
+    breasts = character._bust_lines(sk, p)
+    assert breasts == character._bare_breasts(sk, p)
+    assert f'fill="{p.skin_tone}"' in breasts
+    centre_top, _, _, _ = character._arm_line(sk)
+    corner = centre_top - sk.arm_half_w
+    start = character._bare_breast_spine(sk, p)[0]
+    assert abs(start[0] - corner) < 1e-9
+    over = character._bust_over_arms(sk, p, breasts)
+    assert "<mask" in over and breasts in over
     flat = _tunic_off(PRESETS["satoshi"])
     sk = character.skeleton_for(flat)
     assert character._bust_over_arms(sk, flat, "") == ""
     assert character._bust_lines(sk, flat) == ""
+    realistic = character.skeleton_for(p, BUILDS["realistic"])
+    assert character._bust_over_arms(realistic, p, breasts) == ""
+    assert character._bust_lines(realistic, p)

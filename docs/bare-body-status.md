@@ -5,9 +5,8 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4b, the bare breast as its own shape: the depth sweep is
-  with the owner (`out/bare/breast.png`). 4a signed off (`7bc300e`). Then
-  step 3 (the base top).
+- **Now:** step 4b built, waiting for the owner's look; then step 3 (the
+  base top). 4a signed off (`7bc300e`).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -22,7 +21,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
 | 3 base top | | |
-| 4 close the body | 4a done; 4b the breast's shape, sweep shown | 4a: test; `ref-out/` byte-identical |
+| 4 close the body | 4a done; 4b built (the breast's own shape) | tests; `ref-out/` byte-identical |
 | 5 bare feet | | |
 | 6 male torso minimum | | |
 | 7 web tool and skin tones | | |
@@ -67,6 +66,19 @@ the ellipse's widest point, arriving vertical. Joined at -20 degrees instead,
 the ellipse there lay inside the armpit and the curve wiggled in and out.
 Result: arm top, armpit and breast side are one line with a clean corner at
 the armpit (`out/bare/breast_join.png`, Krista and Satoko, before and after).
+
+**Built** (the owner approved the join): `_bare_breast_spine` and
+`_bare_breasts`, the prototype's geometry at depth 1.25, gap 0.15, stop 170,
+plus a weight fade-in up to bust 0.2 for continuity near zero (no preset is
+below 0.2). With no tunic `_bust_lines` returns the breasts, so they sit in
+the chest where a strap or belt lies over them, and `_bust_over_arms` masks
+the chest to them at the chibi (fill and stroke). At the realistic build they
+stay under the arms, as the clothed bust does. The 4a lobe route for the bare
+body is gone. **Predicted:** the mannequin as the prototype; `ref-out/`
+byte-identical. **Measured:** as predicted; Krista with only the tunic off
+has her strap over the breast (`out/bare/krista_strap.png`); 567 passed; the
+audit clean at both builds but the boots. The test was written after the
+code this time, not failing first.
 
 ### Step 4a: the body's bust over the arms (2026-09-25)
 
