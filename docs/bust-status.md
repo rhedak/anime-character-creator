@@ -120,6 +120,11 @@ their outer layers covering the chest as agreed at step 4; Elara is a slight
 suggestion. Kyoko's parametric coat does not swell with the bust yet, the gap
 noted at 9b.
 
+**Revised at the owner's call:** Linnea 0.3 and Katherina 0.2, the rest
+unchanged. At tile size both are slight: Linnea's tunic takes a faint curve
+and the start of the line, and Katherina's traced jacket swells a little, her
+line lying under it.
+
 ### 2026-09-25: step 4, second round: the line reaches the side, tapers, and lies under outer layers
 
 **Owner's review of the first round:** the lines mostly work, but should match

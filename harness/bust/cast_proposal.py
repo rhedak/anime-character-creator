@@ -4,8 +4,8 @@ judge it by (`docs/bust-plan.md`, step 7).
 Best guesses, not measurements, for the owner to adjust. Kept here rather than
 in `presets.py` so `ref-out/` does not move until they are approved. Kyoko is
 Satoko before the cataclysm (`presets._before`), so she takes Satoko's value.
-Katherina (14) and Linnea (15) are children and stay at zero, as do the male
-presets.
+Katherina (14) and Linnea (15) were proposed at zero; the owner set them at
+0.2 and 0.3. The male presets stay at zero.
 
 Writes `out/bust/female_overview.png`: every female character at the chibi,
 the top row as they are now and the bottom row at the proposed value.
@@ -35,9 +35,9 @@ PROPOSED = {
     "kyoko": 0.5,
     # "Slender strong build", an officer.
     "elara": 0.4,
-    # Children.
-    "linnea": 0.0,
-    "katherina": 0.0,
+    # 15 and 14: the owner's values, 2026-09-25, raised from zero.
+    "linnea": 0.3,
+    "katherina": 0.2,
 }
 SCALE = 2
 TILE_H = 620
