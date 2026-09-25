@@ -2860,6 +2860,46 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     )
 
 
+def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
+    """The curve under each breast, the front-view cue a bust reads by.
+
+    Seen from the front, the side outline says little: at the chibi it is half
+    under the arm and on some characters under their hair. What reads is the
+    underside, so each side gets a short arc under the breast (the anatomy
+    review in `docs/bust-plan.md`, step 4). A stroke like the garments' fold lines, never a shaded tone
+    (`CLAUDE.md`). Its weight grows with `bust` up to 0.5, so the line fades in
+    rather than appearing whole at the first step off zero.
+    """
+    bust = _bust_shape(sk)
+    if bust is None:
+        return ""
+    cx, sw, reach = sk.head_cx, _stroke_w(sk), sk.bust_reach
+    weight = sw * 0.6 * min(1.0, sk.bust / 0.5)
+    peak, under = bust.peak, bust.outline[1][1]
+    # A short arc under the breast, centred on it, the usual convention: the
+    # breast's centre half way between the sternum and the plain side, and the
+    # arc's span and dip grown with the bust. A long sweep from the side toward
+    # the sternum read at small values as a crease across the ribs.
+    radius = (peak[0] - reach) * 0.5
+    grow = min(1.0, sk.bust / 0.75)
+    half = radius * (0.35 + 0.35 * grow)
+    sag = radius * 0.30 * grow
+    low = (radius, peak[1] + (under[1] - peak[1]) * 0.9)
+    outer = (radius + half * 1.1, low[1] - sag * 0.8)
+    inner = (radius - half * 0.9, low[1] - sag)
+    # A quadratic whose midpoint is `low`: its control is twice as far from the
+    # chord's midpoint.
+    q = (2 * low[0] - (outer[0] + inner[0]) / 2, 2 * low[1] - (outer[1] + inner[1]) / 2)
+    parts = []
+    for s in (-1, 1):
+        parts.append(
+            f'<path d="M {cx + s * outer[0]:.1f} {outer[1]:.1f} Q {cx + s * q[0]:.1f} {q[1]:.1f} '
+            f'{cx + s * inner[0]:.1f} {inner[1]:.1f}" fill="none" stroke="{OUTLINE}" '
+            f'stroke-width="{weight:.2f}" stroke-linecap="round" />'
+        )
+    return "".join(parts)
+
+
 def _torso(sk: Skeleton, p: CharacterParams) -> str:
     """The body from the shoulders to the hip, in the skin tone.
 
@@ -9479,6 +9519,11 @@ def render_character(
         # A traced coat whose cut asks to go under the arms, so the arm lies
         # over the body with its own outline; see the function.
         _traced_coat_and_belt(sk, p, after_arms=False),
+        # Last on the chest, after a traced coat worn under the arms as well, so
+        # it is drawn on whatever is worn on top there and comes over the arms
+        # with the bust; under that coat it showed only as ticks in its opening.
+        # See the function.
+        _bust_lines(sk, p),
     ]
     layers = [
         _hair_defs(sk, p),

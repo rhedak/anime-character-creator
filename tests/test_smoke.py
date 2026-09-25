@@ -2067,3 +2067,25 @@ def test_a_loose_garment_hangs_from_the_bust_where_the_body_tucks_under_it():
     assert x_at(cloth, tuck_y) > x_at(body, tuck_y) + 0.3 * sk.bust_reach
     assert cloth.peak == body.peak
     assert cloth.outline[-1][1] == body.outline[-1][1]
+
+
+def test_the_line_under_the_bust_sits_under_it_and_fades_in():
+    """No line without a bust; with one, a short arc on each side, inside the
+    torso and below the fullest point, whose weight grows with the bust up to
+    0.5 rather than appearing whole (`docs/bust-plan.md`, step 4)."""
+    p = PRESETS["satoko"]
+    assert character._bust_lines(character.skeleton_for(p), p) == ""
+    weights = []
+    for v in (0.1, 0.25, 0.5, 1.0):
+        q = replace(p, bust=v)
+        sk = character.skeleton_for(q)
+        lines = character._bust_lines(sk, q)
+        assert lines.count("<path") == 2
+        nums = [
+            float(n) for n in re.findall(r"-?\d+\.?\d*", re.search(r'd="([^"]+)"', lines).group(1))
+        ]
+        xs, ys = nums[0::2], nums[1::2]
+        assert all(sk.head_cx - character._bust_shape(sk).peak[0] < x < sk.head_cx for x in xs)
+        assert all(y > sk.bust_y for y in ys)
+        weights.append(float(re.search(r'stroke-width="([\d.]+)"', lines).group(1)))
+    assert weights[0] < weights[1] < weights[2] == weights[3]

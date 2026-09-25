@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 5c done, awaiting sign-off (`out/bust/step5c.png`). Then
-  step 4, whose line is what will carry Keiko's bust under her hair; then 7, 8.
+- **Now:** step 4 proposed, awaiting the owner's call on having the line at
+  all (`out/bust/lines.png`, `sweep.png`). Then 7 (cast values), 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -30,8 +30,8 @@ lessons live in `bust-strategy.md`.
 | 1 reach, not width | done, signed off | continuity and armpit tests green |
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
-| 4 line under the bust | not started | |
-| 5 bust over the arm | 5a signed off; 5b reversed; 5c done, awaiting sign-off | Keiko as before 5b; Katherina's hand fixed |
+| 4 line under the bust | proposed, awaiting the owner's call | zero case byte-identical; tested |
+| 5 bust over the arm | 5a, 5c signed off; 5b reversed | Keiko as before 5b; Katherina's hand fixed |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
 | 7 cast values | not started | |
@@ -98,6 +98,36 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 4, the line under the bust (proposed, for the owner)
+
+**Owner's call before it:** 5c signed off.
+
+**Change.** `_bust_lines`: a short arc under each breast, centred half way
+between the sternum and the plain side, just above the body's under-bust
+height; its span and dip grow with the bust up to 0.75 and its weight up to
+0.5, so it fades in rather than appearing whole. A stroke at 0.6 of the
+outline's weight, like the fold lines, never a tone. Drawn last on the chest,
+after a traced coat worn under the arms too, so it lies on whatever is worn
+on top and comes over the arms inside the bust's mask. Nothing at `bust = 0`;
+`ref-out/` byte-identical.
+
+**Looked at, two versions** (`out/bust/lines.png` at 1x and 2x,
+`sweep_keiko.png`):
+1. A long U from the bust's side toward the sternum: at 1.0 it read as
+   under-bust curves, but at 0.25 and 0.5 it ran nearly the torso's width and
+   read as a crease across the ribs, since only its weight shrank. Replaced.
+2. The short centred arc, the usual convention: reads as a bust from 0.5 at
+   2x and at tile size, faint at 0.25 as intended. On Keiko it was first under
+   her traced coat (only ticks in the opening showed); moved after that coat,
+   it lies on the coat and crosses the lapel into the dress. At the realistic
+   build it reads too.
+
+**Not done:** a separation cue at the neckline, which the plan allowed "where
+the neckline allows". Left for the owner to ask for.
+
+New test: no line without a bust, two arcs inside the torso and below the
+fullest point, weight growing to 0.5. Suite: 528 passed, 1 skipped.
 
 ### 2026-09-25: step 5c, the arm in front of the coat and behind the bust
 
