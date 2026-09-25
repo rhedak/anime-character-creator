@@ -3256,7 +3256,7 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     # the crotch: on the long-torso chibi the crotch sits above the hip anchor,
     # and a straight edge at the hip showed in the notch between the legs of
     # every figure whose legs part there.
-    crotch_y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
+    crotch_y = _crotch_y(sk, p)
     notch_w, notch_y = _stroke_w(sk) * 2.0, min(hy, crotch_y - _stroke_w(sk))
     hip_ctrl_y = hy - (hy - wy) * 0.45
     d = (
@@ -7494,6 +7494,16 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
 _CROTCH_AT = 0.28
 
 
+def _crotch_y(sk: Skeleton, p: CharacterParams) -> float:
+    """Where the bare legs part: `_CROTCH_AT` of the way from the hip to the
+    knee. With the tunic off, the real knee (`_real_knee_y`): the landmark is
+    above the hip on the long-torso profile, and bare the legs parted at the
+    hip itself (`docs/bare-body-plan.md`, step 4d). Clothed, the landmark, as
+    it always was; trousers keep their own."""
+    knee = _real_knee_y(sk) if p.outfit.tunic_color is None else sk.knee_y
+    return sk.hip_y + (knee - sk.hip_y) * _CROTCH_AT
+
+
 def _leg_tuck_top_y(sk: Skeleton, p: CharacterParams) -> float:
     """Where a garment covering both legs as one seat starts: inside the belt
     band when the tunic is tucked, the hip otherwise. Shared by `_trousers` and
@@ -7698,7 +7708,7 @@ def _bare_seat(
     # legs part showed above them on the long-torso profile, whose crotch sits
     # above the hip (`docs/bare-body-status.md`, step 3).
     brief_y = top_y - (sk.hip_y - sk.waist_y) * 0.35 if p.outfit.tunic_color is None else top_y
-    crotch_y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
+    crotch_y = _crotch_y(sk, p)
     d = _seat_notch_d(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle)
     # No tone down the leg, same as the old two-tube version: a stripe down a
     # leg reads the way one down a sleeve does, one flat surface with an outline

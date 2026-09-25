@@ -5,9 +5,10 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4c (the bare shoulder) built, waiting for the owner's
-  sign-off. Step 3 signed off (`0f1097b`). Then 4d, the crotch reading the
-  knee landmark, and the owner's call on the armpit slot.
+- **Now:** step 4d (the crotch) built, waiting for the owner's sign-off.
+  4c signed off (`868289d`); the armpit slot on the men left as it is for
+  now (read from the owner's plain "ok"; a small bare-only change if wanted
+  later). After 4d, step 4 is closed and step 5 (bare feet) is next.
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -22,13 +23,36 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
 | 3 base layer | done, signed off | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
-| 4 close the body | 4a, 4b done; 4c built (the shoulder) | tests; `ref-out/` byte-identical |
+| 4 close the body | 4a, 4b, 4c done; 4d built (the crotch) | tests; `ref-out/` byte-identical |
 | 5 bare feet | | |
 | 6 male torso minimum | | |
 | 7 web tool and skin tones | | |
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 4d: the crotch (2026-09-26)
+
+**Cause:** `_bare_seat` and `_torso`'s notch put the crotch `_CROTCH_AT`
+(0.28) of the way from the hip to `sk.knee_y`, a landmark above the hip on
+the long-torso profile, so the bare legs part at the hip itself (1.1 px above
+it on 15 presets). The underpants have hidden it since step 3.
+
+**Change:** `_crotch_y(sk, p)`, reading `_real_knee_y` with the tunic off and
+the landmark otherwise, for `_bare_seat` (the legs and the underpants' hem)
+and `_torso`'s notch. Trousers keep their own, clothed.
+
+**Predicted:** on the long-torso presets the crotch moves from 331.8 to about
+351 (hip 332.9, real knee about 397), the underpants' hem from about 346 to
+about 361, the notch in `_torso` flattens (it is `min(hip + sw, crotch - sw)`);
+on Katherina the crotch from 324.3 to about 337.9. `ref-out/` byte-identical.
+
+**Measured:** Satoko 331.8 to 350.8, hem 361.0; Katherina 324.3 to 337.8,
+hem 349.4; the legs now part below the briefs' hem, the briefs deeper
+(`out/bare/4d_base_layer.png`, Katherina, Gero, Satoko, Chiyo, Krista, before
+above after). 587 passed; `ref-out/` matches. Step 2's finding 2, the bare
+seat's stroked top edge across the hip, is now always under the briefs; it
+shows only in the mannequin, a harness view, and is left.
 
 ### Step 4c: the bare shoulder (2026-09-25)
 

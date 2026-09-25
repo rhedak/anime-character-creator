@@ -2226,3 +2226,15 @@ def test_the_bare_arm_has_no_cap_and_no_line_across_its_top():
     ]
     cuff_y = character._sleeve_hem_y(sk)
     assert any(y > cuff_y + character._stroke_w(sk) for y in ys if y < sk.waist_y)
+
+
+def test_the_bare_crotch_reads_the_real_knee():
+    """With the tunic off the legs part below the hip, off the real knee
+    (`docs/bare-body-plan.md`, step 4d): on the long-torso profile the knee
+    landmark is above the hip and the legs parted at the hip itself. Clothed,
+    the landmark as before."""
+    worn = PRESETS["satoko"]
+    sk = character.skeleton_for(worn)
+    assert character._crotch_y(sk, worn) < sk.hip_y
+    bare = _tunic_off(worn)
+    assert character._crotch_y(sk, bare) > sk.hip_y + character._stroke_w(sk) * 4
