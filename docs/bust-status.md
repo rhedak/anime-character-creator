@@ -100,6 +100,36 @@ expect the rendered sweep to look unchanged.
 
 ## Findings, newest first
 
+### 2026-09-25: the bust's height, checked on the bare body
+
+**The owner's question:** Krista at 1.0 looked "a bit too low". Measured,
+from the shoulder line to the waist: fullest point 59%, fold 71%, against the
+canon's nipple line at about 50% and fold at about 62%. Too low by about a
+tenth of the torso: `_BUST_ALONG = 0.30` is measured from the "armpit", which
+is the sleeve hem, already 42% of the way down.
+
+**Checked without clothes, at the owner's suggestion**
+(`harness/bust/bare_proportions.py`, `out/bust/bare_proportions.png`: every
+garment off, the arms at a third, canon lines in blue and ours in red; adults
+only):
+
+| | fullest | fold |
+| --- | --- | --- |
+| Krista 1.0 at 0.30 | 59% | 71% |
+| Krista 1.0 at 0.20 | 54% | 65% |
+| Krista 1.0 at 0.15 | 51% | 62% |
+| Satoko 0.5 at 0.15 | 51% | 57% |
+
+At 0.15 Krista's lines lie on the canon's. Recommended; the cost, seen at 5x
+only (`height_zoom.png`), is a tighter crease under the armpit.
+
+**Also seen, deferred:** the chibi's arm joins the torso 42% of the way down
+(at the sleeve hem), where a real armpit sits a quarter to a third of the
+way, so at the canon's height the bust sits right under the arm's top with a
+long flat upper chest above it. That is the chibi's construction, not the
+bust. The neck's lines running onto the chest and the gap between the torso
+and the legs are step 3c's, as before.
+
 ### 2026-09-25: step 7, the proposal (not yet applied)
 
 **Owner's calls before it:** step 4's second round signed off. Katherina is
