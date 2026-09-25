@@ -58,6 +58,16 @@ tapers up the inner side; the arm's inner edge stops at it. The start angle:
 clean (`out/bare/breast_top.png`). Depth sweep 0.8, 1.0, 1.25, 1.5 on the six
 adult women, for the owner to pick.
 
+**The owner picked 1.25**, and asked about the join at the top: the stub of
+the arm's inner edge and the outline's fade-in tail sat side by side at the
+armpit, unjoined. The outline now starts at the arm's own inner top corner (as
+`_arms` draws it; the shared armpit point sat a few pixels outside it and the
+arm's top edge overshot), at full weight, and curves down and a little out to
+the ellipse's widest point, arriving vertical. Joined at -20 degrees instead,
+the ellipse there lay inside the armpit and the curve wiggled in and out.
+Result: arm top, armpit and breast side are one line with a clean corner at
+the armpit (`out/bare/breast_join.png`, Krista and Satoko, before and after).
+
 ### Step 4a: the body's bust over the arms (2026-09-25)
 
 With no tunic, `_bust_over_arms` draws the body itself under whatever else is

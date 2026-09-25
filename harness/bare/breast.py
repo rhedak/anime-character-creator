@@ -53,9 +53,15 @@ GAP = 0.15
 TOP = -28.0
 STOP = 170.0
 DEPTHS = (0.8, 1.0, 1.25, 1.5)
+# When the outline starts at the armpit instead of fading in below it (the
+# owner, on the sweep: the stub of the arm's inner edge and the fade-in tail sat
+# side by side there, unjoined), it joins the ellipse at its widest point,
+# 0 degrees. Joined at -20 the ellipse there lay inside the armpit, and the
+# curve went in and back out: a wiggle under the armpit.
+JOIN = 0.0
 
 
-def breasts(depth_k: float, top: float = TOP):
+def breasts(depth_k: float, top: float = TOP, joined: bool = False):
     def draw(sk: c.Skeleton, p: c.CharacterParams, chest: str = "") -> str:
         body = c._bust_shape(sk, inset=c._body_inset(sk, p))
         if body is None:
@@ -67,9 +73,35 @@ def breasts(depth_k: float, top: float = TOP):
         xc, rx = (x_out + x_in) / 2, (x_out - x_in) / 2
         ry_down = (c._under_bust_y(sk, yp) - yp) * depth_k
         ry_up = yp - body.armpit[1]
-        a0, a1 = math.radians(top), math.radians(STOP)
+        a0, a1 = math.radians(JOIN if joined else top), math.radians(STOP)
         steps = 48
         spine = []
+        if joined:
+            # From the armpit, the corner every part meets at, straight down
+            # along the arm's inner edge and curving out onto the ellipse at
+            # `JOIN`, arriving on its tangent: one line from the arm's top edge
+            # round the breast.
+            #
+            # The start is the arm's own inner top corner, as `_arms` draws it:
+            # the shared armpit point sat a few pixels outside it, and the
+            # arm's top edge overshot the start there.
+            centre_top, top_y, _, _ = c._arm_line(sk)
+            ax = centre_top - sk.arm_half_w
+            ay = top_y
+            if c._sleeve_under_cap(sk, p):
+                ay = c._cap_underside_y(sk, ax, c._cap_tip_y(sk))
+            jx, jy = xc + rx * math.cos(a0), yp + ry_up * math.sin(a0)
+            # Arrives vertical at the widest point, leaving the armpit down and
+            # a little out.
+            ctrl = (jx, ay + (jy - ay) * 0.5)
+            for k in range(12):
+                u = k / 12
+                spine.append(
+                    (
+                        (1 - u) ** 2 * ax + 2 * (1 - u) * u * ctrl[0] + u * u * jx,
+                        (1 - u) ** 2 * ay + 2 * (1 - u) * u * ctrl[1] + u * u * jy,
+                    )
+                )
         for k in range(steps + 1):
             th = a0 + (a1 - a0) * k / steps
             ry = ry_down if math.sin(th) >= 0 else ry_up
@@ -83,7 +115,8 @@ def breasts(depth_k: float, top: float = TOP):
             t = k / n
             # Fades in where it leaves the chest, full round the outside and
             # the bottom, tapers out toward the sternum.
-            f = min(1.0, t / 0.22, (1.0 - t) / 0.3) ** 0.8
+            f = min(1.0, (1.0 - t) / 0.3) if joined else min(1.0, t / 0.22, (1.0 - t) / 0.3)
+            f **= 0.8
             half = sw * 0.5 * f
             nx, ny = -dy / norm * half, dx / norm * half
             left.append((x + nx, y + ny))
@@ -95,6 +128,9 @@ def breasts(depth_k: float, top: float = TOP):
             parts.append(f'<path d="{fill}" fill="{p.skin_tone}" stroke="none" />')
             line = "M " + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in ring) + " Z"
             parts.append(f'<path d="{line}" fill="{c.OUTLINE}" stroke="none" />')
+            if joined:
+                x, y = spine[0]
+                parts.append(f'<circle cx="{cx + s * x:.1f}" cy="{y:.1f}" r="{sw * 0.5:.2f}" fill="{c.OUTLINE}" />')
         return "".join(parts)
 
     return draw
