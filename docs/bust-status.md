@@ -110,8 +110,11 @@ lists the field. A catalogue test that the slider covers every preset's value.
 **Checked.** The page's own Python path (`params_from_dict`, then
 `render_character`) keeps `bust` through the URL round trip and renders the
 bust. The staged site (`./web-stage.sh`) serves the new catalogue entry and
-slider on the local server already running on port 8000; the slider itself was
-not driven, since the Chrome extension was not connected. Sheets, cover and
+slider on the local server already running on port 8000. Driven in Chrome once
+the extension was connected: Krista's page loads the Bust slider at 1 under
+"Belt line (up / down)"; set to 0 the preview redraws flat and the shareable
+URL carries `"bust":0`; clicked back to the end, the bust and its lines return
+and the URL carries `"bust":1`. Sheets, cover and
 bases were refreshed at step 7 (the cover did not move).
 
 **Not done:** `../valley_of_mist`, which waits for the owner's explicit say-so.
