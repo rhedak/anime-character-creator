@@ -5,8 +5,9 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4a done, waiting for the owner's sign-off; then step 3 (the
-  base top). Steps 1 and 2 signed off and committed (`fc14bfd`).
+- **Now:** step 4b, the bare breast as its own shape: the depth sweep is
+  with the owner (`out/bare/breast.png`). 4a signed off (`7bc300e`). Then
+  step 3 (the base top).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -21,13 +22,41 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
 | 3 base top | | |
-| 4 close the body | 4a done (bust over the arms) | test; `ref-out/` byte-identical |
+| 4 close the body | 4a done; 4b the breast's shape, sweep shown | 4a: test; `ref-out/` byte-identical |
 | 5 bare feet | | |
 | 6 male torso minimum | | |
 | 7 web tool and skin tones | | |
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 4b: the bare breast's shape (2026-09-25)
+
+The owner, on 4a: the breasts look made to read through the tunic, not bare.
+Agreed for the line under the bust (a cloth fold's hint: tapering at both
+ends, shallow, fading in with the bust); the side outline had been built for
+the body.
+
+**Line variants** (`harness/bare/bust_line.py`, `out/bare/bust_line.png`): a
+full-weight contour, rounder and deeper, stopping short of the sternum, and
+two continuing the side outline from its tuck. Each continuing variant read
+as one outline per breast, but kept a dent where the side's S returns to the
+torso before the line leaves it.
+
+**The owner's question: why dents, not a round shape?** Because the bust is
+the torso's side bent out and brought back in an S (`_bust_shape`), pinned at
+the armpit; right for a garment, which is the silhouette, not for a round
+form lying on the chest.
+
+**Own shape** (`harness/bare/breast.py`, `out/bare/breast.png`): each breast
+its own ellipse, over the torso and (chibi) the arms, sized from the existing
+anchors (widest at `bust_y`, reaching `bust_reach` past the plain side, the
+fold's drop times `depth`, inner edge 0.15 of the way out from the sternum).
+The outline fades in below the armpit, runs round the outside and bottom, and
+tapers up the inner side; the arm's inner edge stops at it. The start angle:
+-55 curled into a hook at the armpit's corner, -40 still touched it, -28 is
+clean (`out/bare/breast_top.png`). Depth sweep 0.8, 1.0, 1.25, 1.5 on the six
+adult women, for the owner to pick.
 
 ### Step 4a: the body's bust over the arms (2026-09-25)
 
