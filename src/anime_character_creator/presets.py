@@ -33,6 +33,8 @@ BOOTS = "#6d4c33"
 # left jaw and cheek, which is `scar_side=1`: that field counts from the
 # viewer's side and she faces us, so her left is the right of the picture.
 SATOKO = CharacterParams(
+    # Practical and guarded; Kyoko, built from her, takes the same (`docs/bust-plan.md`, step 7).
+    bust=0.5,
     skin_tone="#f6dbc2",
     hair_color=HAIR,
     hairstyle="long_traced",
@@ -338,6 +340,8 @@ SKIN_WORN = "#e0c0a4"
 SKIN = "#f2d4bb"
 
 CHIYO = CharacterParams(
+    # Late 40s to mid 50s, "strong capable build" (`docs/bust-plan.md`, step 7).
+    bust=0.6,
     skin_tone=SKIN_WORN,
     # Rust-copper rather than plain gray: the design document's "gray-streaked
     # dark hair" was one more instance of the reference-image drift toward a
@@ -445,6 +449,8 @@ DAIZEN = CharacterParams(
 )
 
 ELARA = CharacterParams(
+    # "Slender strong build", an officer (`docs/bust-plan.md`, step 7).
+    bust=0.4,
     skin_tone="#e8c8ab",
     # Deep wine-burgundy rather than the plain dark auburn a reference image
     # settled on: controlled and deep rather than bright, matching a
@@ -557,6 +563,8 @@ HARUTO = CharacterParams(
 DRESS = "#373833"
 
 KEIKO = CharacterParams(
+    # An adult; her hair and coat carry most of it (`docs/bust-plan.md`, step 7).
+    bust=0.6,
     skin_tone=SKIN,
     # Deep plum-violet rather than plain dark brown, with dusty rose-violet
     # eyes: a near-monochrome look for a researcher who reads as consumed by
@@ -613,6 +621,8 @@ KEIKO = CharacterParams(
 )
 
 KRISTA = CharacterParams(
+    # Her brief asks for "a noticeable bust" (`docs/bust-plan.md`, step 7).
+    bust=1.0,
     skin_tone="#f4d3b6",
     hair_color="#a9763f",
     hairstyle="long_traced",
@@ -666,6 +676,8 @@ KRISTA = CharacterParams(
 )
 
 REIKA = CharacterParams(
+    # An adult; her robe front covers the line under it (`docs/bust-plan.md`, step 7).
+    bust=0.6,
     skin_tone="#f6dcc6",
     # Indigo-violet-black rather than plain black, with pale cool lilac-grey
     # eyes in place of a merely "dark" iris: serene and ethereal rather than
@@ -914,6 +926,8 @@ VIKTOR = CharacterParams(
 # tried for the same purpose and rejected: it read as a sticker laid over the
 # drawing rather than part of it.
 KATHERINA = CharacterParams(
+    # Fourteen; the owner's value (`docs/bust-plan.md`, step 7).
+    bust=0.2,
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
     hairstyle="long_traced",
@@ -1043,6 +1057,8 @@ GERO = CharacterParams(
 # dress bright to catch the little light they have; on the road she has
 # to hood it and later loses the coat binding Gero's wound.
 LINNEA = CharacterParams(
+    # Fifteen; the owner's value (`docs/bust-plan.md`, step 7).
+    bust=0.3,
     skin_tone="#f3d6bd",
     hair_color="#e56a9c",
     hairstyle="long_traced",

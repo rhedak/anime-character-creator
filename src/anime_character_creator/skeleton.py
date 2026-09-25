@@ -230,7 +230,12 @@ def default_hair_margin(heads: float) -> float:
 # and an adult figure carries more. Both are first guesses for `harness/bust/`
 # to refine by eye, which is the only way this gets decided: no reference in
 # this project measures a bust (`docs/bust-plan.md`, B0).
-_BUST_ALONG = 0.30
+# 0.15 of the way from the armpit to the waist puts the fullest point at about
+# half way from the shoulder line to the waist and the fold under it near 62%,
+# the canon's proportions, checked on the bare body. 0.30, the first guess,
+# put them at 59% and 71%, which read as too low (the owner, 2026-09-25;
+# `harness/bust/bare_proportions.py`).
+_BUST_ALONG = 0.15
 _BUST_REACH = (0.10, 0.20)
 
 

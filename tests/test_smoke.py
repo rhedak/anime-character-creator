@@ -225,7 +225,10 @@ def test_a_body_profile_applies_only_at_the_chibi_build() -> None:
     assert abs((sk.foot_y - sk.head_cy) / sk.head_r - (2 * profile.heads - 1)) < 1e-6
     real = character.skeleton_for(p, BUILDS["realistic"])
     assert real == build_skeleton(
-        heads=BUILDS["realistic"], frame=p.frame, min_hair_margin=character.hat_hair_margin(p)
+        heads=BUILDS["realistic"],
+        frame=p.frame,
+        bust=p.bust,
+        min_hair_margin=character.hat_hair_margin(p),
     )
 
 
@@ -2018,7 +2021,7 @@ def test_the_bust_comes_over_the_arms_at_the_chibi_only():
     realistic build, whose arm hangs across the torso (`docs/bust-status.md`,
     step 5). The mask's id follows its shape, so a sheet of several figures
     cannot share one."""
-    p = PRESETS["satoko"]
+    p = replace(PRESETS["satoko"], bust=0.0)
     chibi = character.skeleton_for(p)
     assert character._bust_over_arms(chibi, p, "x") == ""
     small = character._bust_over_arms(character.skeleton_for(replace(p, bust=0.5)), p, "x")
@@ -2074,7 +2077,7 @@ def test_the_line_under_the_bust_sits_under_it_and_fades_in():
     reaches the tunic's side, stays inside the torso and below the fullest
     point, and whose thickness grows with the bust up to 0.5 rather than
     appearing whole (`docs/bust-plan.md`, step 4)."""
-    p = PRESETS["satoko"]
+    p = replace(PRESETS["satoko"], bust=0.0)
     assert character._bust_lines(character.skeleton_for(p), p) == ""
     thickness = []
     for v in (0.1, 0.25, 0.5, 1.0):

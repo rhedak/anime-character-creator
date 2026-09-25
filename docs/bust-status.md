@@ -35,7 +35,7 @@ lessons live in `bust-strategy.md`.
 | 5 bust over the arm | 5a, 5c signed off; 5b reversed | Keiko as before 5b; Katherina's hand fixed |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
-| 7 cast values | proposed in the harness, awaiting the owner | overview rendered |
+| 7 cast values | done, applied at the owner's call | cast sheet looked at |
 | 8 integration | not started | |
 
 ## Step 1 preparation
@@ -99,6 +99,26 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 7, the cast's values applied
+
+**Owner's call:** the bust raised to the canon's height and the proposed
+values applied.
+
+**Change.** `_BUST_ALONG` 0.30 to 0.15. In `presets.py`: Krista 1.0, Chiyo
+0.6, Reika 0.6, Keiko 0.6, Satoko 0.5 (so Kyoko 0.5), Elara 0.4, Linnea 0.3,
+Katherina 0.2; every male preset at zero. Two of this plan's tests assumed
+Satoko had no bust and now ask for zero explicitly; the profile test passes
+the preset's bust to the skeleton it compares with.
+
+**Measured.** `refresh-ref-out.sh`: 20 renders changed, the nine women at
+both builds and the two cast sheets; no male preset, not the cover, not the
+bases. Suite: 528 passed, 1 skipped.
+
+**Looked at** (`ref-out/sheet.png`, `out/bust/female_overview.png`): the cast
+reads together. Satoko, Chiyo and Krista show a clear, restrained bust at
+sheet size; Keiko, Reika and Kyoko are subtle under their outer layers; Elara
+slight; the men unchanged.
 
 ### 2026-09-25: the bust's height, checked on the bare body
 
