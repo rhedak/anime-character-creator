@@ -2133,17 +2133,34 @@ def test_every_preset_renders_with_its_tunic_off(name, build):
 
 
 def test_the_tunic_s_own_parts_go_with_it():
-    """The placket, the chest pockets and the line under the bust are the
-    tunic's: with it off they are not left on bare skin (the audit found
-    Tenno's placket and pockets floating on his chest)."""
+    """The placket and the chest pockets are the tunic's: with it off they are
+    not left on bare skin (the audit found Tenno's placket and pockets floating
+    on his chest)."""
     for name in ("tenno", "krista"):
         p = _tunic_off(PRESETS[name])
         sk = character.skeleton_for(p)
         for part in (character._tunic, character._placket, character._chest_pockets):
             assert part(sk, p) == ""
-        assert character._bust_lines(sk, p) == ""
     worn = PRESETS["tenno"]
     sk = character.skeleton_for(worn)
     assert character._placket(sk, worn) and character._chest_pockets(sk, worn)
-    krista = PRESETS["krista"]
-    assert character._bust_lines(character.skeleton_for(krista), krista)
+
+
+def test_the_bare_bust_comes_over_the_arms_with_its_line():
+    """With nothing worn over it, the bust over the arms is the body's own
+    (`docs/bare-body-plan.md`, step 4a): at the chibi `_bust_over_arms`
+    redrew only garments, so a bare figure read flat. Its outline and the line
+    under it follow the body's edge, the tucked shape at the body's inset, not
+    a garment's."""
+    p = _tunic_off(PRESETS["krista"])
+    sk = character.skeleton_for(p)
+    over = character._bust_over_arms(sk, p, "")
+    assert f'fill="{p.skin_tone}"' in over
+    body = character._bust_shape(sk, inset=character._body_inset(sk, p))
+    peak_x = f"{sk.head_cx + body.peak[0]:.1f} {body.peak[1]:.1f}"
+    assert peak_x in over
+    assert character._bust_lines(sk, p)
+    flat = _tunic_off(PRESETS["satoshi"])
+    sk = character.skeleton_for(flat)
+    assert character._bust_over_arms(sk, flat, "") == ""
+    assert character._bust_lines(sk, flat) == ""

@@ -5,8 +5,8 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 4a, the body's bust over the arms when bare (the owner put
-  it before step 3). Steps 1 and 2 signed off and committed.
+- **Now:** step 4a done, waiting for the owner's sign-off; then step 3 (the
+  base top). Steps 1 and 2 signed off and committed (`fc14bfd`).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -21,13 +21,33 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
 | 3 base top | | |
-| 4 close the body | | |
+| 4 close the body | 4a done (bust over the arms) | test; `ref-out/` byte-identical |
 | 5 bare feet | | |
 | 6 male torso minimum | | |
 | 7 web tool and skin tones | | |
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 4a: the body's bust over the arms (2026-09-25)
+
+With no tunic, `_bust_over_arms` draws the body itself under whatever else is
+worn on the chest, masked to the body's own tucked lobe, and `_bust_lines`
+draws the line under the bust from the body's edge instead of the tunic's.
+
+**First pass**, the body at its usual inset (1.5 strokes inside the tunic's
+outline): the line under the bust drew, but the lobe barely cleared the arm's
+inner edge, and the inset's small step showed at the armpit. The inset exists
+only to keep the body's edge off the tunic's; bare, it made the figure a
+stroke and a half narrower than the one it replaces.
+
+**Second pass**, one variable: `_body_inset(sk, p)`, zero with no tunic,
+read by `_torso`, `_neck`'s line ends and both bust parts. **Predicted:** the
+bust crosses the arm by about 1.5 strokes more, the armpit step goes, clothed
+output byte-identical. **Measured:** as predicted at 5x on Krista; 567
+passed; `ref-out/` matches. Left for later sub-steps: a small point where the
+bust's outline leaves the armpit, and the arm's inner edge running close
+beside the torso's side below the bust (two lines a sliver apart).
 
 ### Step 2: the tunic optional (2026-09-25)
 

@@ -170,7 +170,7 @@ class Outfit:
     """
 
     # None takes the tunic off, and its trim with it (the placket, the chest
-    # pockets, the line under the bust): the body shows (`bare-body-plan.md`).
+    # pockets): the body shows (`bare-body-plan.md`).
     tunic_color: str | None = "#4f7a52"
     boot_color: str = "#5b4632"
     # Long sleeve worn under the tunic's short one. None leaves the arm bare.
@@ -2540,7 +2540,7 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
     # not with the skin below it: run on to the skin's end, it drew two lines
     # down a bare chest (`docs/bust-plan.md`, step 3c). The tunic covers it
     # below the shoulder line either way.
-    end = sk.shoulder_y + 2 * _stroke_w(sk) * _BODY_INSET
+    end = sk.shoulder_y + 2 * _body_inset(sk, p)
     for side in (-1, 1):
         nx = sk.head_cx + side * sk.neck_half_w
         parts.append(
@@ -2867,13 +2867,23 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
 
     The mask's id carries a hash of its shape, so figures sharing one document
     (a cast sheet) cannot pick up each other's.
+
+    With no tunic the body itself is what comes over the arms, drawn under
+    whatever else is worn on the chest, and the lobe is the body's: tucked, at
+    the body's inset, so the outline lands on the body's own edge. Redrawing
+    only the garments, a bare figure read flat (`docs/bare-body-plan.md`,
+    step 4a).
     """
-    bust = _bust_shape(sk, drape=True)
+    bare = p.outfit.tunic_color is None
+    inset = _body_inset(sk, p) if bare else 0.0
+    bust = _bust_shape(sk, inset=inset, drape=not bare)
     if bust is None or sk.build >= 0.5:
         return ""
+    if bare:
+        chest = _torso(sk, p) + chest
     cx, sw = sk.head_cx, _stroke_w(sk)
     b = bust
-    plain = (_torso_at_armpit(sk), b.armpit[1])
+    plain = (_torso_at_armpit(sk) - inset, b.armpit[1])
     lobe, outline = [], []
     for s in (-1, 1):
 
@@ -2927,11 +2937,14 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
     than appearing whole.
 
     Drawn right after the tunic: an outer layer, a coat or a robe front, hangs
-    over the bust and covers it, its own outline being the cue there. It is the
-    tunic's line, its cloth's fold, so it goes when the tunic does.
+    over the bust and covers it, its own outline being the cue there. With no
+    tunic it is the body's line, starting on the body's own edge
+    (`docs/bare-body-plan.md`, step 4a).
     """
-    body, cloth = _bust_shape(sk), _bust_shape(sk, drape=True)
-    if body is None or cloth is None or p.outfit.tunic_color is None:
+    bare = p.outfit.tunic_color is None
+    body = _bust_shape(sk, inset=_body_inset(sk, p)) if bare else _bust_shape(sk)
+    cloth = body if bare else _bust_shape(sk, drape=True)
+    if body is None or cloth is None:
         return ""
     cx, sw, reach = sk.head_cx, _stroke_w(sk), sk.bust_reach
     heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5)
@@ -2992,14 +3005,14 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     the diagonal to the armpit that the arm's top edge follows. A shoulder out to
     the sleeve's width showed past the slanted cap at the adult build.
 
-    The whole outline sits `_BODY_INSET` strokes inside the garment's. A body
+    The whole outline sits `_body_inset` inside the garment's. A body
     edge on a garment's edge draws the outline twice, and the second pass
     darkens the antialiased rim of the first along every shared edge, so the
     body has to be under the garment's fill, not its stroke. Its top is closed
     straight across the neck, and drawn before the neck, whose skin runs down
     past the shoulder line and covers it, so no outline shows in a neckline.
     """
-    k = _stroke_w(sk) * _BODY_INSET
+    k = _body_inset(sk, p)
     cx, nw = sk.head_cx, sk.neck_half_w
     # Twice the inset along the shoulder: it slopes, and an inset measured
     # straight down is less than the same inset measured square to the line.
@@ -3083,6 +3096,17 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
 # a stroke to clear the garment's own outline, and a little more for the
 # antialiased rim either side of it (`_torso`).
 _BODY_INSET = 1.5
+
+
+def _body_inset(sk: Skeleton, p: CharacterParams) -> float:
+    """How far inside the tunic's outline the body is drawn: `_BODY_INSET`
+    strokes under a tunic, none without one. The inset exists only to keep the
+    body's edge off the tunic's; with the tunic off the body is the outermost
+    edge, and inset it came out a stroke and a half narrower than the figure
+    it replaces, the bust barely clearing the arm (`docs/bare-body-plan.md`,
+    step 4a).
+    """
+    return 0.0 if p.outfit.tunic_color is None else _stroke_w(sk) * _BODY_INSET
 
 
 def _tunic(sk: Skeleton, p: CharacterParams) -> str:
