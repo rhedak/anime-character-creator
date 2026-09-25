@@ -316,7 +316,7 @@ arms, masked to the lobe the bust adds, with its outline on top. Chibi-range
 only; at the realistic build the arm lies across the torso and the bust stays
 under it (anatomy review, 5).
 
-**5b, done 2026-09-25** (coat over the arms, hands after it, the belt to the coat's edge; the arm-edge anchor below turned out unnecessary, see `bust-status.md`). **As proposed:** anchor the over-arm lobe at the arm's inner
+**5b, done and reversed 2026-09-25** at the owner's call, replaced by 5c below. It was: (coat over the arms, hands after it, the belt to the coat's edge; the arm-edge anchor below turned out unnecessary, see `bust-status.md`). **As proposed:** anchor the over-arm lobe at the arm's inner
 edge rather than the torso's side. On a plain tunic at the chibi the two are
 within 0.01 head radii, so 5a does not move; on her coat, whose panel edge is
 the armhole seam at the arm's inner edge, the bust's edge becomes the panel's
@@ -324,7 +324,13 @@ edge bulging over the sleeve, which step 6 now makes it do. After step 9b,
 whose drape changes that edge below the fullest point. Then the rest of her
 coat, as follows.
 
-For Keiko the same step settles her coat. Observed in her reference: the
+**5c, done 2026-09-25:** the arm in front of the coat and behind the bust. The
+lab coat back under the arms (P5's order), and the bust's outline drawn only
+where it lies over an arm, so it leaves the arm's inner edge and joins it
+again. The hands and belt stay as P5 and P6 left them for Keiko.
+
+What follows is the plan 5b was written from, kept as the record. For Keiko
+the same step settles her coat. Observed in her reference: the
 coat's panel edge is the armhole seam, with the sleeve outside it, and the
 hand is drawn **over** the coat, which the hand-shaped notch bitten out of the
 coat's segment crop proves. So the order is sleeve, coat, hand:

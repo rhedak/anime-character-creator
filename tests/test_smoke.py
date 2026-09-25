@@ -710,36 +710,46 @@ def test_a_dress_belt_carries_a_keeper_either_side_of_the_buckle() -> None:
         assert character._belt_drawn(o_sk, q) == character._belt_drawn(o_sk, q)
 
 
-def test_keikos_coat_is_worn_over_her_arms_with_her_belt_over_it_and_her_hands_over_both() -> None:
-    """Her reference's order is sleeve, coat, hand: the coat's panel edge is the
-    armhole seam with the sleeve outside it, and the hand is drawn over the coat,
-    which the hand-shaped bite in the coat's traced crop shows. The belt is worn
-    over the coat and runs to the coat's own edge, which ends it as the arm's
-    outline used to.
-
-    Reverses P5, which put this coat under the arms so the arm's outline would
-    end the belt and the sleeve would lie over the body; the owner's bust plan
-    moved it back once there was a bust to show (`docs/bust-plan.md`, step 5b).
-    The cast's other open coats still wear their belts under them."""
+def test_keikos_belt_is_worn_over_her_coat_and_her_arms_over_both() -> None:
+    """The reference wears a belt over the lab coat, and the cast's other open
+    coats wear theirs under, so the order rides on the cut and never changes
+    globally. Her coat also goes *under* the arms, unlike Katherina's jacket,
+    whose armholes have to cover the tops of her sleeves: Keiko's sleeve is a
+    piece in its own right and has to lie over the body carrying its own
+    outline, or panel and sleeve merge into one undivided field and the belt
+    looks like it stops in the middle of nothing (P4, P5). The bust plan's step
+    5b put it over the arms and was reversed at the owner's call: the arm in
+    front of the coat and the bust in front of the arm (step 5c)."""
     p = PRESETS["keiko"]
     sk = character.skeleton_for(p)
     assert character._traced_coat(sk, p)
     assert character._belt(sk, p) == "", "the under-coat belt still draws as well"
-    assert character.COAT_CUTS["lab_coat"].over_arms
     svg = render_character(p, sk)
-    arms = character._arms(sk, p, hands=False)
-    hands = character._arms(sk, p, hands=True)
-    jacket = character._draw_cut(sk, character.COAT_CUTS["lab_coat"], p.outfit.coat_color)
+    coat = character._traced_coat_and_belt(sk, p, after_arms=False)
+    assert coat and svg.index(coat) < svg.index(character._arms(sk, p)), (
+        "the lab coat is not drawn under the arms"
+    )
     belt = character._belt_drawn(sk, p)
-    assert svg.index(arms) < svg.index(jacket), "the lab coat is not over the arms"
-    assert svg.index(jacket) < svg.index(belt), "the belt is not over the coat"
-    assert svg.index(belt) < svg.index(hands), "the hands are not over the coat"
-    assert character._arms(sk, p) not in svg, "the hands are drawn with the arms as well"
-    # The band stops half a stroke inside the coat's edge at its height.
-    y, h = character._belt_band(sk, p.outfit.belt_scale)
-    edge = character._cut_half_w_at(sk, character.COAT_CUTS["lab_coat"], y + h / 2)
-    ends = [float(v) for v in re.findall(r'<line x1="([\d.]+)"', belt)[:1]]
-    assert abs((sk.head_cx - ends[0]) - (edge - character._stroke_w(sk) / 2)) < 0.11
+    jacket = character._draw_cut(sk, character.COAT_CUTS["lab_coat"], p.outfit.coat_color)
+    assert svg.index(belt) > svg.index(jacket), "the belt is not over the coat"
+    # ...and it travels under the arms with the coat it is worn over, so the
+    # arm's outline is what ends the band. Her belt has no end caps, so
+    # something has to stop it: drawn over the arms its ends sat on the arm's
+    # own outline and read as a strap laid across the front rather than a belt
+    # going round the body.
+    assert svg.index(belt) < svg.index(character._arms(sk, p)), (
+        "the belt is drawn over the arms, so nothing ends the band"
+    )
+    # Katherina's jacket keeps the other order, and her cut is what says so.
+    assert character.COAT_CUTS["open_jacket"].over_arms
+    assert not character.COAT_CUTS["lab_coat"].over_arms
+    k = PRESETS["katherina"]
+    k_sk = character.skeleton_for(k)
+    k_svg = render_character(k, k_sk)
+    jacket = character._traced_coat_and_belt(k_sk, k)
+    assert k_svg.index(jacket) > k_svg.index(character._arms(k_sk, k, hands=False))
+    # Her hands are drawn after the jacket, which clipped one of them before.
+    assert k_svg.index(character._arms(k_sk, k, hands=True)) > k_svg.index(jacket)
 
 
 @pytest.mark.parametrize("build", ["chibi", "realistic"])
@@ -791,9 +801,11 @@ def test_a_mock_collar_is_worn_under_an_open_coat() -> None:
     p = PRESETS["keiko"]
     sk = character.skeleton_for(p)
     svg = render_character(p, sk)
-    # Her coat is traced, so it is `_traced_coat_and_belt` that draws it, over
-    # the arms since step 5b of the bust plan; the band still has to come first.
-    assert svg.index(character._collar(sk, p)) < svg.index(character._traced_coat_and_belt(sk, p))
+    # Her coat is traced, so it is `_traced_coat_and_belt` that draws it, before
+    # the arms; the band still has to come first.
+    assert svg.index(character._collar(sk, p)) < svg.index(
+        character._traced_coat_and_belt(sk, p, after_arms=False)
+    )
     other = PRESETS["katherina"]
     o_sk = character.skeleton_for(other)
     assert not other.outfit.collar_mock
@@ -2008,15 +2020,17 @@ def test_the_bust_comes_over_the_arms_at_the_chibi_only():
     cannot share one."""
     p = PRESETS["satoko"]
     chibi = character.skeleton_for(p)
-    assert character._bust_over_arms(chibi, "x") == ""
-    small = character._bust_over_arms(character.skeleton_for(replace(p, bust=0.5)), "x")
-    full = character._bust_over_arms(character.skeleton_for(replace(p, bust=1.0)), "x")
+    assert character._bust_over_arms(chibi, p, "x") == ""
+    small = character._bust_over_arms(character.skeleton_for(replace(p, bust=0.5)), p, "x")
+    full = character._bust_over_arms(character.skeleton_for(replace(p, bust=1.0)), p, "x")
     assert 'mask="url(#bust-' in full
+    # The outline is drawn only over the arms (step 5c).
+    assert 'clip-path="url(#bust-arms-' in full
     assert re.search(r'id="(bust-\w+)"', small).group(1) != re.search(
         r'id="(bust-\w+)"', full
     ).group(1)
     real = character.skeleton_for(replace(p, bust=1.0), BUILDS["realistic"])
-    assert character._bust_over_arms(real, "x") == ""
+    assert character._bust_over_arms(real, p, "x") == ""
 
 
 def test_a_traced_cut_widens_at_the_bust_and_nowhere_else():

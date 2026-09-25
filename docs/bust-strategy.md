@@ -61,6 +61,12 @@ this when a method lesson lands, not when a number changes.
 - **A new local name in a long part function.** `slope` was already read
   further down `_tunic`; reusing it gave every sleeve a horn. Grep a name in
   the whole function before introducing it.
+- **Judging a result by where its ends fall rather than by what it is.** At
+  5a Keiko's bust outline floated inside her coat like a bracket, and it was
+  put down to the coat's order, which 5b then reversed. The outline was the
+  right thing with the wrong ends: clipped to the arm (5c) it reads as the
+  bust over the sleeve. Ask what a wrong-looking shape would need to look
+  right before changing the layers around it.
 - **Reading an offset tuple in the wrong order** (Keiko's campaign): segment
   offsets came back `(y, x)` and were read as `(x, y)`, so three correct crops
   "failed". Ask delegates to name the order, and test both when a result is

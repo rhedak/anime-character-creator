@@ -6,7 +6,7 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 5b done, awaiting sign-off (`out/bust/keiko_5b.png`). Then
+- **Now:** step 5c done, awaiting sign-off (`out/bust/step5c.png`). Then
   step 4, whose line is what will carry Keiko's bust under her hair; then 7, 8.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
@@ -31,7 +31,7 @@ lessons live in `bust-strategy.md`.
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
 | 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
 | 4 line under the bust | not started | |
-| 5 bust over the arm | 5a signed off; 5b done, awaiting sign-off | Keiko and Katherina's hand moved, deliberately |
+| 5 bust over the arm | 5a signed off; 5b reversed; 5c done, awaiting sign-off | Keiko as before 5b; Katherina's hand fixed |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
 | 7 cast values | not started | |
@@ -98,6 +98,34 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 5c, the arm in front of the coat and behind the bust
+
+**The owner's call on 5b:** neither order alone; the arm over the coat and the
+bust over the arm, which is also what the anatomy says (the coat wraps round
+the body behind the hanging arm, and only the bust stands forward of the
+arm's inner edge). 5b's coat order is reversed.
+
+**Change.** `lab_coat` back under the arms, which also switches 5b's hand lift
+and belt-to-the-edge off for Keiko, since both key on a coat worn over the
+arms (Katherina, whose jacket is, keeps her hand fix). `_arms(silhouette=True)`
+gives each arm as bare shapes, rotation included, and `_bust_over_arms` clips
+the bust's outline to them, so it is drawn only where it lies over an arm: it
+leaves the arm's inner edge, crosses the sleeve and joins the edge again. On
+the torso side the garment's own outline is already there.
+
+**Measured.** Keiko at `bust = 0` is pixel-identical to her pre-5b render
+(`compare_pixels.py` against `47e22f9`), and against that commit `ref-out/`
+differs only in Katherina's hand. Satoko's signed-off look is unchanged.
+
+**Looked at** (`out/bust/step5c.png`, before and now at 1.0; `joins.png` at
+10x): Keiko's bust now overlaps her sleeve and meets the arm's edge at both
+ends, where before 5b its outline floated as a bracket in the white. At 10x
+the joins carry a soft grey edge where the outline is cut at the arm's
+boundary: under a pixel at normal size, accepted. Her hair still covers the
+top of it, so step 4 still matters for her.
+
+Suite: 527 passed, 1 skipped.
 
 ### 2026-09-25: step 5b, Keiko's coat over the arms
 

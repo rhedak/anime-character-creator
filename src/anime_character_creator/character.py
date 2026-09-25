@@ -2788,7 +2788,7 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
     )
 
 
-def _bust_over_arms(sk: Skeleton, chest: str) -> str:
+def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     """The bust in front of the arms: `chest`, the layers worn on the torso up
     to the arms, drawn again masked to the lobe a bust adds to the torso, then
     the bust's outline over it. Nothing without a bust.
@@ -2804,6 +2804,15 @@ def _bust_over_arms(sk: Skeleton, chest: str) -> str:
     The lobe also runs a stroke inside the plain side, so the arm's own
     outline, which lies along it at the chibi, is covered rather than left as a
     line through the bust.
+
+    The outline is drawn only where it lies over an arm, clipped to the arms'
+    own shapes, so it leaves the arm's inner edge, crosses the sleeve and joins
+    it again: the bust overlapping the arm. Everywhere else the garment's own
+    outline is already there. Drawn whole, on a coat the colour of its sleeve
+    it read as a bracket floating in the middle of the white; that and a coat
+    worn over the arms (step 5b, reversed) were two halves of what the owner
+    asked for, the arm in front of the coat and behind the bust
+    (`docs/bust-plan.md`, step 5c).
 
     Chibi-range figures only, on the same halfway point the traced cuts switch
     on. At the realistic build the arm hangs 0.45 head radii across the torso:
@@ -2838,13 +2847,16 @@ def _bust_over_arms(sk: Skeleton, chest: str) -> str:
     # so along its soft edge every layer under the top one bleeds through, and a
     # dark tunic under a white coat showed as a grey seam down the bust. A mask
     # cuts out the chest once it is composited.
+    arms = _arms(sk, p, silhouette=True)
+    clip_id = "bust-arms-" + hashlib.sha1((d + arms).encode()).hexdigest()[:10]
     return (
         f'<defs><mask id="{mask_id}" maskUnits="userSpaceOnUse" x="0" y="0" '
         f'width="{sk.canvas_w:.0f}" height="{sk.canvas_h:.0f}">'
-        f'<path d="{d}" fill="white" /></mask></defs>'
+        f'<path d="{d}" fill="white" /></mask>'
+        f'<clipPath id="{clip_id}">{arms}</clipPath></defs>'
         f'<g mask="url(#{mask_id})">{chest}</g>'
         f'<path d="{" ".join(outline)}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw:.1f}" stroke-linecap="round" />'
+        f'stroke-width="{sw:.1f}" stroke-linecap="round" clip-path="url(#{clip_id})" />'
     )
 
 
@@ -4190,7 +4202,7 @@ COAT_CUTS: dict[str, GarmentCut] = {
             _LAB_COAT_LAPEL_LEFT,
             _LAB_COAT_LAPEL_RIGHT,
         ),
-        over_arms=True,
+        over_arms=False,
     ),
 }
 
@@ -6673,7 +6685,9 @@ def _katana(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
-def _arms(sk: Skeleton, p: CharacterParams, hands: bool | None = None) -> str:
+def _arms(
+    sk: Skeleton, p: CharacterParams, hands: bool | None = None, silhouette: bool = False
+) -> str:
     """The arm from the sleeve hem down to the hand.
 
     The tunic draws its own sleeve now, so this starts where the sleeve ends. The
@@ -6701,6 +6715,10 @@ def _arms(sk: Skeleton, p: CharacterParams, hands: bool | None = None) -> str:
     and None, the default, both together. A coat worn over the arms covers them
     down to its hem, and the hand still has to come out over it
     (`_hands_after_coat`).
+
+    `silhouette` draws each arm as bare shapes with no paint, hand left off,
+    for use inside a `<clipPath>`: the bust's outline is drawn only where it
+    lies over an arm (`_bust_over_arms`).
     """
     cx = sk.head_cx
     # A coat's sleeve runs to the wrist by definition, so `coat_sleeves` is a
@@ -6780,6 +6798,8 @@ def _arms(sk: Skeleton, p: CharacterParams, hands: bool | None = None) -> str:
             (cut is not None and _traced_coat(sk, p)) or p.outfit.coat_sleeves
         )
         sleeve_fill = p.outfit.coat_color if wears_coat_sleeve else sleeve
+        # The arm's bare outline, for `silhouette`.
+        shapes = [f'<path d="{d}"']
         if cut is not None:
             place = _sleeve_placement(sk, cut, s)
 
@@ -6797,6 +6817,7 @@ def _arms(sk: Skeleton, p: CharacterParams, hands: bool | None = None) -> str:
                 f'<path d="{traced(part)}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
                 for part in (cut.sleeve, cut.cuff)
             ]
+            shapes = [f'<path d="{traced(part)}"' for part in (cut.sleeve, cut.cuff)]
         elif p.outfit.coat_sleeves:
             # Filled whole, stroked everywhere but across the top.
             limb = [
@@ -6825,6 +6846,13 @@ def _arms(sk: Skeleton, p: CharacterParams, hands: bool | None = None) -> str:
         # direction: the two sides are mirror images of each other, so the
         # same swing needs the opposite rotation to point the same way out.
         swing = p.right_arm_out if s == -1 else p.left_arm_out
+        if silhouette:
+            turn = ""
+            if swing:
+                pivot_x, pivot_y = _arm_pivot(sk, p, s)
+                turn = f' transform="rotate({-s * swing:.2f} {pivot_x:.1f} {pivot_y:.1f})"'
+            parts.extend(shape + turn + " />" for shape in shapes)
+            continue
         if swing:
             pivot_x, pivot_y = _arm_pivot(sk, p, s)
             angle = -s * swing
@@ -9488,7 +9516,7 @@ def render_character(
         # The bust in front of the arms: the chest drawn again, masked to the
         # lobe a bust adds, so the katana and the staff, held at the side, stay
         # under the arm. Nothing without a bust; see the function.
-        _bust_over_arms(sk, "".join(chest + under_arms)),
+        _bust_over_arms(sk, p, "".join(chest + under_arms)),
         # A traced jacket covers the tops of the sleeves; see the function.
         _traced_coat_and_belt(sk, p),
         # The hands over a coat worn over the arms; see the function.
