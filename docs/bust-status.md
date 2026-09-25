@@ -6,9 +6,9 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 7 proposed (`out/bust/female_overview.png`), awaiting the
-  owner's values. On approval: into `presets.py`, `ref-out/` and the sheets
-  refreshed, the cast sheet looked at. Then step 8.
+- **Now:** step 7 done. Next, step 8: the catalogue slider, `catalogue.json`,
+  the web tool, the sheets and cover; `../valley_of_mist` last and only on the
+  owner's explicit say-so.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
