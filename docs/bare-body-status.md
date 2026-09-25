@@ -5,10 +5,9 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 5 (bare feet) built, waiting for the owner's sign-off.
-  Step 4 closed (4d signed off, `9321853`); the armpit slot on the men left
-  as it is (a small bare-only change if wanted later). Next: step 6, the
-  minimum male torso, a proposal with renders before anything is built.
+- **Now:** step 6, the minimum male torso: the proposal is with the owner
+  (`out/bare/male_torso.png`). Step 5 signed off (`38509f6`). The armpit slot
+  on the men left as it is (a small bare-only change if wanted later).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -24,12 +23,31 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
 | 3 base layer | done, signed off | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
 | 4 close the body | done (4a to 4d) | tests; `ref-out/` byte-identical |
-| 5 bare feet | built | 34 barefoot renders with no `None`; the audit clean; `ref-out/` byte-identical |
-| 6 male torso minimum | | |
+| 5 bare feet | done, signed off | 34 barefoot renders with no `None`; the audit clean; `ref-out/` byte-identical |
+| 6 male torso minimum | proposal shown | |
 | 7 web tool and skin tones | | |
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 6: the minimum male torso, proposal (2026-09-26)
+
+**At the chibi a man's bare silhouette is the women's exactly.** `frame`
+separates the cast (+0.4 to +1.0 on the men, negative on most women) but
+rides the build (`f = frame * t`) and moves a width by well under a percent
+at 2.4 heads, and `tall_chibi_long_torso` sets the waist and hip widths
+itself. Widening the shoulders would move the arms, which the skeleton
+places. So the lever is line work, as it was for the bust at the chibi.
+
+**Proposal** (`harness/bare/male_torso.py`, `out/bare/male_torso.png`, the
+eight men in underwear): a `chest` knob, 0 to 1, a trait beside `bust`
+rather than a sex flag, drawn only bare and only with no bust: two soft
+arcs under the pectorals at the canon's half way from shoulder line to waist,
+tapering at both ends, a gap at the sternum, depth and weight scaling with
+the knob. Rows: none, 0.5, 1.0, 1.0 with a navel. Both strengths read as a
+male chest; 1.0 is the clearer at the chibi; the navel helps the torso read
+as skin rather than a block. Questions for the owner: the knob and the men's
+values, and whether the navel goes on every bare figure.
 
 ### Step 5: bare feet (2026-09-26)
 
