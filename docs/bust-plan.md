@@ -27,9 +27,10 @@ work and new design is judged by eye against the intent.
 
 The RESUME, scoreboard and findings are in `bust-status.md`; how to work and
 the mistakes to avoid are in `bust-strategy.md`. In short, as of 2026-09-25:
-steps 1, 2, 3a, 3b, 5a and 6 are done (6 awaiting sign-off), 3c is deferred,
-and an anatomy review (below) added step 9, fit and drape, ahead of 5b and 4.
-Keiko's clothes campaign waits on 5b.
+every step is done in this repo (1 to 9, 3c included; 9a tried and deferred
+to the realistic build's fix pass), the cast carries its values, and the web
+tool has the slider. Left: `../valley_of_mist`, on the owner's explicit
+say-so, and the deferred list below.
 
 ## Owner's decisions (2026-09-21)
 
@@ -267,7 +268,7 @@ sits beside it.
 Acceptance: it reports zero for an unchanged tree, and a nonzero count with a
 sensible box for a deliberate one-pixel edit made and reverted to test it.
 
-### Step 3. The body layer (3a, 3b done 2026-09-24; 3c deferred)
+### Step 3. The body layer (3a, 3b done 2026-09-24; 3c done 2026-09-25)
 
 **3a. A torso from anchors only.** `_torso(sk, p)` in the skin tone, built
 from `neck_half_w`, the shoulder, the armpit, `waist_half_w` and
