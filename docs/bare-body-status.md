@@ -5,8 +5,10 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 3 (the base layer) built, waiting for the owner's look.
-  4b signed off (`756a94e`). Next: the rest of step 4 (shoulder, crotch).
+- **Now:** on hold at the owner's call (2026-09-25). Step 3 signed off
+  (`0f1097b`), `underwear_top` kept a plain bool for now. Next: the rest of
+  step 4, the boxy shoulder with the arm's slanted top (the bare arm still
+  follows the tunic's cap) and the crotch reading the knee landmark.
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -20,7 +22,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | --- | --- | --- |
 | 1 audit | done | breakages listed, each with its step |
 | 2 tunic optional, mannequin | done | 34 renders with no `None`; trim test; `ref-out/` byte-identical |
-| 3 base layer | built | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
+| 3 base layer | done, signed off | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
 | 4 close the body | 4a done; 4b built (the breast's own shape) | tests; `ref-out/` byte-identical |
 | 5 bare feet | | |
 | 6 male torso minimum | | |

@@ -34,6 +34,13 @@ two campaigns share.
 5. The mannequin stays adults only; every character gets the base-layer
    view.
 
+## Owner's decisions (2026-09-25, after step 3)
+
+1. Step 3 signed off. `underwear_top` stays a plain bool for now (a top
+   always with a bust, and on request without one), not the tri-state first
+   recorded; revisit later if needed.
+2. The campaign holds here and resumes later with the rest of step 4.
+
 ## What already exists (read off the code at `611c50b`)
 
 - `_torso`: the body under every garment, from the neck to `hip_y + sw`, with
