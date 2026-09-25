@@ -11,7 +11,9 @@ third so the torso's side shows through them. Over it, across the torso:
 - red: where ours are, the fullest point (`bust_y`) and the fold the line under
   the bust is drawn at.
 
-Adults only (Satoko at 0.5, Krista at 1.0), at three values of `_BUST_ALONG`.
+Adults only (Satoko at 0.5, Krista at 1.0, Chiyo at 0.6). Each variant sets
+`_BUST_ALONG` and `_BUST_ARMPIT_FILL`: first the three heights tried for the
+height question, now the fix for the gap under the armpit, off and on.
 No anatomical detail is drawn: the project draws none, and the question is
 the silhouette's proportions.
 
@@ -49,20 +51,27 @@ GARMENTS = (
     "_staff",
     "_traced_coat_and_belt",
 )
-ALONGS = (0.30, 0.20, 0.15)
-CASES = (("satoko", 0.5), ("krista", 1.0))
+# (label, _BUST_ALONG, _BUST_ARMPIT_FILL). The height question compared
+# (0.30, 0.0), (0.20, 0.0) and (0.15, 0.0); the armpit question, these two.
+VARIANTS = (("armpit fill off", 0.15, 0.0), ("armpit fill 0.7", 0.15, 0.7))
+CASES = (("satoko", 0.5), ("krista", 1.0), ("chiyo", 0.6))
 SCALE = 3
 
 
-def render(name: str, bust: float, along: float) -> Image.Image:
+def render(name: str, bust: float, along: float, fill: float, tag: str) -> Image.Image:
     skeleton._BUST_ALONG = along
+    c._BUST_ARMPIT_FILL = fill
     p = replace(PRESETS[name], bust=bust)
     sk = c.skeleton_for(p)
-    saved = {n: getattr(c, n) for n in (*GARMENTS, "_arms")}
-    arms = c._arms
+    saved = {n: getattr(c, n) for n in (*GARMENTS, "_arms", "_bust_shape")}
+    arms, shape = c._arms, c._bust_shape
     try:
         for n in GARMENTS:
             setattr(c, n, lambda *a, **k: "")
+        # With nothing worn, what comes over the arms is the body's own bust,
+        # which tucks under, not a garment's, which hangs from the fullest point:
+        # left draped, the garment's outline ran down the arms as dark streaks.
+        c._bust_shape = lambda sk, inset=0.0, drape=False: shape(sk, inset)
         c._arms = lambda *a, **k: f'<g opacity="0.33">{arms(*a, **k)}</g>' if not k.get("silhouette") else arms(*a, **k)
         svg = c.render_character(p, sk, background="#ffffff")
     finally:
@@ -85,7 +94,7 @@ def render(name: str, bust: float, along: float) -> Image.Image:
     ):
         d.line((x0, y * SCALE, x1, y * SCALE), fill=colour, width=2)
     label = (
-        f"{name} {bust:g}, along {along:.2f}: fullest {(sk.bust_y - sk.shoulder_y) / run:.0%},"
+        f"{name} {bust:g}, {tag}: fullest {(sk.bust_y - sk.shoulder_y) / run:.0%},"
         f" fold {(fold - sk.shoulder_y) / run:.0%}"
     )
     im = im.crop((int(x0), int(sk.head_cy * SCALE - 1.3 * r), int(x1), int(sk.hip_y * SCALE + 0.4 * r)))
@@ -97,8 +106,8 @@ def render(name: str, bust: float, along: float) -> Image.Image:
 
 def main() -> None:
     os.makedirs("out/bust", exist_ok=True)
-    rows = [[render(n, v, a) for a in ALONGS] for n, v in CASES]
-    skeleton._BUST_ALONG = 0.30
+    rows = [[render(n, v, a, fl, tag) for tag, a, fl in VARIANTS] for n, v in CASES]
+    skeleton._BUST_ALONG, c._BUST_ARMPIT_FILL = 0.15, 0.7
     pad = 10
     w = max(sum(t.width for t in row) + pad * (len(row) + 1) for row in rows)
     h = sum(row[0].height + pad for row in rows) + pad
