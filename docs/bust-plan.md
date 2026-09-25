@@ -289,6 +289,10 @@ Acceptance: pixels still identical.
 **3c. Where the body shows.** Necklines, hems, sleeveless arms: the places no
 garment covers the body. Looked at on every preset with a neckline, at 4x.
 
+**Done 2026-09-25** at the owner's call: the neck's lines, the torso to the hip,
+the shoulder rounded over the arm, a smooth return under the bust
+(`bust-status.md`).
+
 ### Step 4. The line under the bust
 
 The front-view cues the anatomy review found missing: the curve under each
@@ -419,8 +423,8 @@ garment slot), `catalogue.json`, the web tool, the sheets, the cover, and last
 
 ## Deferred, with where each was found
 
-- **Step 3c**, where the body shows: waits until a garment exposes the body.
-  The list is in `bust-status.md`, step 3a.
+- ~~Step 3c~~, done 2026-09-25. What it left (the arm's slanted top on a bare
+  body) is the arm's garment logic, recorded in `bust-status.md`.
 - **The realistic build's own fix pass**: the arm across the torso (anatomy
   review, 5), and with it the bust over the arm there (5a).
 - **The fixed clip ids** (`eye-l`, `eye-r`, `hair-tips`, `hair-front`), found

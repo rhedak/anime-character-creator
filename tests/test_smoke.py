@@ -2068,7 +2068,7 @@ def test_a_loose_garment_hangs_from_the_bust_where_the_body_tucks_under_it():
             x for x in (character._quad_x_at(*pc, y) for pc in bust.pieces()) if x is not None
         )
 
-    tuck_y = body.outline[1][1][1]
+    tuck_y = body.outline[body.lobe_pieces - 1][1][1]
     assert x_at(cloth, tuck_y) > x_at(body, tuck_y) + 0.3 * sk.bust_reach
     assert cloth.peak == body.peak
     assert cloth.outline[-1][1] == body.outline[-1][1]
@@ -2099,3 +2099,20 @@ def test_the_line_under_the_bust_sits_under_it_and_fades_in():
         thickness.append(max(abs(ys[k] - ys[-1 - k]) for k in range(half)))
     assert thickness[0] < thickness[1] < thickness[2]
     assert abs(thickness[2] - thickness[3]) < 0.25
+
+
+@pytest.mark.parametrize("name", ["satoko", "satoshi"])
+def test_the_bare_body_is_closed_where_it_shows(name):
+    """Where nothing covers the body (`docs/bust-plan.md`, step 3c): the neck's
+    lines stop at the body's shoulder line instead of running down the chest,
+    and the torso runs down to the hip, meeting the legs, except for the small
+    notch where they part."""
+    p = PRESETS[name]
+    sk = character.skeleton_for(p)
+    neck = character._neck(sk, p)
+    ends = [float(v) for v in re.findall(r'y2="([\d.]+)"', neck)]
+    body_top = sk.shoulder_y + 2 * character._stroke_w(sk) * character._BODY_INSET
+    assert ends and all(abs(e - body_top) < 0.11 for e in ends)
+    d = re.search(r'd="([^"]+)"', character._torso(sk, p)).group(1)
+    ys = [float(v) for v in re.findall(r"-?\d+\.?\d*", d)][1::2]
+    assert max(ys) >= sk.hip_y

@@ -2534,11 +2534,15 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
     # shoulder and so carries full weight. Each line starts up inside the skull
     # and is covered by the head drawn over it, so the throat comes out from under
     # the jaw wherever the jaw happens to be at this build, without this having to
-    # know. The tunic covers the bottom end the same way.
+    # know. It ends where the body's shoulder line meets the neck (`_torso`),
+    # not with the skin below it: run on to the skin's end, it drew two lines
+    # down a bare chest (`docs/bust-plan.md`, step 3c). The tunic covers it
+    # below the shoulder line either way.
+    end = sk.shoulder_y + 2 * _stroke_w(sk) * _BODY_INSET
     for side in (-1, 1):
         nx = sk.head_cx + side * sk.neck_half_w
         parts.append(
-            f'<line x1="{nx:.1f}" y1="{sk.neck_y:.1f}" x2="{nx:.1f}" y2="{sk.neck_y + h:.1f}" '
+            f'<line x1="{nx:.1f}" y1="{sk.neck_y:.1f}" x2="{nx:.1f}" y2="{end:.1f}" '
             f'stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
         )
     return "".join(parts)
@@ -2664,6 +2668,15 @@ def _rib_ctrl_y(sk: Skeleton) -> float:
 _BUST_DROP = 2.0
 
 
+def _under_bust_y(sk: Skeleton, peak_y: float) -> float:
+    """The height of the fold under the bust: `_BUST_DROP` reaches below its
+    fullest point, and never lower than three quarters of the way to the waist.
+    The body's outline returns to its side there, and the line under the bust
+    is drawn from it; both read this, so reshaping the body's return cannot
+    move the line (`docs/bust-plan.md`, step 3c)."""
+    return min(peak_y + sk.bust_reach * _BUST_DROP, sk.waist_y - (sk.waist_y - peak_y) * 0.25)
+
+
 def _quad_crossing(p0: Point, p1: Point, p2: Point, y: float) -> float:
     """The parameter where a quadratic whose height only increases crosses `y`,
     kept inside the run so a height near either end still splits it."""
@@ -2782,7 +2795,7 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
             lobe_pieces=2,
             plain_up=rib_curve[1],
         )
-    under_y = min(peak[1] + reach * _BUST_DROP, wy - (wy - peak[1]) * 0.25)
+    under_y = _under_bust_y(sk, peak[1])
     plain_up, under, below = _quad_split(*rib_curve, _quad_crossing(*rib_curve, under_y))
     # The bust swells straight from the armpit. Starting it lower, below an
     # upper chest, was tried for step 9a and put back: at the chibi there are
@@ -2795,13 +2808,23 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
     # is where that tangent meets a 45 degree line up and out from the
     # under-bust point. Arriving level made a right-angled shelf against the
     # torso's near-vertical side, which showed as a step below the arm.
-    tuck_x = (peak[0] + lean * (under[1] + under[0] - peak[1])) / (1 + lean)
-    tuck = (tuck_x, min(under[1], max(peak[1], under[1] - (tuck_x - under[0]))))
+    # Back into the torso's side as an S of two quadratics, each control on its
+    # end's own tangent a third of the drop along it, meeting midway between the
+    # controls: smooth at the fullest point, smooth into the side, no crease.
+    # It first arrived at the under-bust point on the diagonal (a control where
+    # the fullest point's tangent met a 45 degree line from it), which creased
+    # into the side; on the bare body the bust read as a knob stuck on
+    # (`docs/bust-plan.md`, step 3c). Arriving level before that made a shelf.
+    drop = under[1] - peak[1]
+    lean_under = (below[0] - under[0]) / (below[1] - under[1])
+    c1 = (peak[0] + lean * drop * 0.35, peak[1] + drop * 0.35)
+    c2 = (under[0] - lean_under * drop * 0.35, under[1] - drop * 0.35)
+    mid = ((c1[0] + c2[0]) / 2, (c1[1] + c2[1]) / 2)
     return _Bust(
         armpit=(_armpit_x(sk, inset), cuff_y),
-        outline=((above, peak), (tuck, under), (below, (ww, wy))),
+        outline=((above, peak), (c1, mid), (c2, under), (below, (ww, wy))),
         peak=peak,
-        lobe_pieces=2,
+        lobe_pieces=3,
         plain_up=plain_up,
     )
 
@@ -2910,8 +2933,8 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
     cx, sw, reach = sk.head_cx, _stroke_w(sk), sk.bust_reach
     heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5)
     grow = min(1.0, sk.bust / 0.75)
-    peak, under = body.peak, body.outline[1][1]
-    low_y = peak[1] + (under[1] - peak[1]) * 0.85
+    peak = body.peak
+    low_y = peak[1] + (_under_bust_y(sk, peak[1]) - peak[1]) * 0.85
     centre = (peak[0] - reach) * 0.5
     # The bottom of the breast as the lower arc of an ellipse centred on it: its
     # outer rim on the tunic's side at the fullest point, its lowest point at
@@ -2982,26 +3005,69 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     tip = centre_top + sk.arm_half_w - k
     slope, cuff_y = _shoulder_slope(sk), _sleeve_hem_y(sk)
     tac, ww, wy = _armpit_x(sk, k), sk.waist_half_w - k, sk.waist_y
-    # The torso stops in the belt band, at the line a tucked tunic ends on and
-    # the seat starts from, and narrows there to the bare seat's width. Below
-    # that the body is the legs' (`_bare_seat`, `_seat_notch_d`): at the chibi
-    # they are a straight column at leg width, narrower than `hip_half_w`, and a
-    # torso carried down to the hip at that width showed beside the trousers of
-    # every figure that wears them.
-    belt_y, belt_h = _belt_band(sk)
+    # The shoulder rounds over the top of the arm and down to where the arm
+    # starts, a quarter round from its tip to half way back to the armpit,
+    # the way a flat sleeve's shoulder does. It first cut straight from the tip
+    # to the armpit along a slanted sleeve's underside, which bare left a wedge
+    # of page between shoulder and arm (`docs/bust-plan.md`, step 3c). Under a
+    # slanted sleeve the arm's own top covers what this adds.
+    rim = tip - (tip - tac) * 0.5
+    # The underside lies on the line the arm starts at, where the arm's own top
+    # edge covers it, so a bare arm shows one line there and not two. Only in
+    # the gap between the torso's side and the arm's inner edge, which nothing
+    # covers below that line, does it step up an inset, under the tunic's sleeve.
+    centre_top, _, _, _ = _arm_line(sk)
+    arm_in = centre_top - sk.arm_half_w + k
+    if tac >= arm_in:
+        under_down = f"L {{x_tac}} {cuff_y:.1f} "
+        under_up = f"L {{x_rim}} {cuff_y:.1f} "
+    else:
+        under_down = (
+            f"L {{x_in}} {cuff_y:.1f} L {{x_in}} {cuff_y - k:.1f} L {{x_tac}} {cuff_y - k:.1f} "
+        )
+        under_up = (
+            f"L {{x_tac}} {cuff_y - k:.1f} L {{x_in}} {cuff_y - k:.1f} L {{x_in}} {cuff_y:.1f} "
+            f"L {{x_rim}} {cuff_y:.1f} "
+        )
+    # The tip rounded, as the tunic's slanted sleeve rounds its own: the slope
+    # arrives nearly level and the side leaves straight down, and met at a point
+    # they read as a shoulder pad's corner.
+    round_r = min(k * 2.0, (cuff_y - (sy + slope)) * 0.4)
+    tip_y = sy + slope
+    # The torso narrows to the bare seat's width and runs down to the hip, a
+    # stroke past it, under the seat drawn after it. Below that the body is the
+    # legs' (`_bare_seat`, `_seat_notch_d`): at the chibi they are a straight
+    # column at leg width, narrower than `hip_half_w`, and a torso carried down
+    # at that width showed beside the trousers of every figure that wears them.
+    # It first stopped in the belt band, where a tucked tunic ends and the seat
+    # starts; but an untucked figure's seat starts at the hip, and the page
+    # showed between the two (`docs/bust-plan.md`, step 3c).
     gap, w_top = _leg_gap_and_top(sk, trousers=False)
-    hw, hy = min(ww, gap + w_top - k), belt_y + belt_h * 0.5 - k
+    hw, hy = min(ww, gap + w_top - k), sk.hip_y + _stroke_w(sk)
+    # Where the legs part, the bottom edge rises into a small V to a stroke above
+    # the crotch: on the long-torso chibi the crotch sits above the hip anchor,
+    # and a straight edge at the hip showed in the notch between the legs of
+    # every figure whose legs part there.
+    crotch_y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
+    notch_w, notch_y = _stroke_w(sk) * 2.0, min(hy, crotch_y - _stroke_w(sk))
     hip_ctrl_y = hy - (hy - wy) * 0.45
     d = (
         f"M {cx - nw:.1f} {sy:.1f} "
-        f"Q {cx - tip * 0.50:.1f} {sy + slope * 0.62:.1f} {cx - tip:.1f} {sy + slope:.1f} "
-        f"L {cx - tac:.1f} {cuff_y:.1f} "
+        f"Q {cx - tip * 0.50:.1f} {sy + slope * 0.62:.1f} {cx - tip + round_r:.1f} {tip_y - round_r * 0.3:.1f} "
+        f"Q {cx - tip:.1f} {tip_y:.1f} {cx - tip:.1f} {tip_y + round_r:.1f} "
+        f"Q {cx - tip:.1f} {cuff_y:.1f} {cx - rim:.1f} {cuff_y:.1f} "
+        + under_down.format(x_tac=f"{cx - tac:.1f}", x_in=f"{cx - arm_in:.1f}")
         + _rib(sk, cx, -1, True, inset=k)
         + f"Q {cx - hw:.1f} {hip_ctrl_y:.1f} {cx - hw:.1f} {hy:.1f} "
+        f"L {cx - notch_w:.1f} {hy:.1f} L {cx:.1f} {notch_y:.1f} L {cx + notch_w:.1f} {hy:.1f} "
         f"L {cx + hw:.1f} {hy:.1f} "
         f"Q {cx + hw:.1f} {hip_ctrl_y:.1f} {cx + ww:.1f} {wy:.1f} "
         + _rib(sk, cx, 1, False, inset=k)
-        + f"L {cx + tip:.1f} {sy + slope:.1f} "
+        + under_up.format(
+            x_tac=f"{cx + tac:.1f}", x_in=f"{cx + arm_in:.1f}", x_rim=f"{cx + rim:.1f}"
+        )
+        + f"Q {cx + tip:.1f} {cuff_y:.1f} {cx + tip:.1f} {tip_y + round_r:.1f} "
+        f"Q {cx + tip:.1f} {tip_y:.1f} {cx + tip - round_r:.1f} {tip_y - round_r * 0.3:.1f} "
         f"Q {cx + tip * 0.62:.1f} {sy + slope * 0.30:.1f} {cx + nw:.1f} {sy:.1f} Z"
     )
     return (

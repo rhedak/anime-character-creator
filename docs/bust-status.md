@@ -6,8 +6,8 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 8 done in this repo. Left: `../valley_of_mist`, only on the
-  owner's explicit say-so; the deferred list in `bust-plan.md`.
+- **Now:** all steps done in this repo, 3c included. Left: `../valley_of_mist`,
+  only on the owner's explicit say-so; the realistic build's own fix pass.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
   clip ids get fixed at the appropriate time.
@@ -29,7 +29,7 @@ lessons live in `bust-strategy.md`.
 | B1 parameter and anchor | done, `bust_half_w` to be replaced | plumbing only |
 | 1 reach, not width | done, signed off | continuity and armpit tests green |
 | 2 pixel check | done | 0 of 54 on a clean tree; catches a bust |
-| 3 body layer | 3a, 3b done; 3c deferred (owner) | 5 of 54 PNGs moved, a finding |
+| 3 body layer | done (3c at the owner's call, 2026-09-25) | clothed cast unmoved but the 3a finding |
 | 4 line under the bust | done, signed off | zero case byte-identical; tested |
 | 5 bust over the arm | 5a, 5c signed off; 5b reversed | Keiko as before 5b; Katherina's hand fixed |
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
@@ -98,6 +98,47 @@ expect the rendered sweep to look unchanged.
 - None. (`harness/run.sh`'s cairo path was fixed in `f61c3c1`.)
 
 ## Findings, newest first
+
+### 2026-09-25: step 3c, the bare body where it shows
+
+**Owner's call:** do 3c now, before `../valley_of_mist`, "for good measure".
+
+**Four changes, each pixel-checked on the clothed cast** (the acceptance: no
+garment may stop covering the body):
+1. **The neck's lines** end where the body's shoulder line meets the neck,
+   rather than running down the chest.
+2. **The torso runs to the hip** at the bare seat's width, under the seat,
+   closing the page that showed between an untucked figure's torso and its
+   legs. The white band under a tucked one is `_bare_seat`'s placeholder
+   underpants, by design. On the long-torso chibi the crotch sits 1.1 pixels
+   above the hip anchor, so a straight edge showed in the notch between the
+   legs of every figure (34 pixels each, 16 images): the bottom edge now rises
+   into a small V a stroke above the crotch.
+3. **The shoulder rounds over the arm** down to the line the arm starts at
+   (a quarter round from its tip, the tip itself rounded), instead of cutting
+   a slanted sleeve's diagonal and leaving a wedge of page. Its underside lies
+   on that line where the arm's top edge covers it, so a bare arm shows one
+   line; it first sat an inset above and showed as a double line, and on the
+   line throughout it showed in the gap between a flat sleeve's torso and the
+   arm (14 images). It steps up an inset only in that gap.
+4. **A smooth return under the bust**: the body's outline goes back into the
+   side as an S of two tangent-matched quadratics, where the diagonal tuck
+   creased and the bust read as a knob (`out/bust/bare_3c.png`, both looked
+   at side by side). The line under the bust no longer reads the body's tuck:
+   both take the fold's height from `_under_bust_y`, and the line was checked
+   identical to before.
+
+**Measured:** the clothed cast moves only at the stand-collar corners accepted
+at 3a (five realistic figures, up to 10 pixels at 2x) and one pixel on
+Katherina. Bases pixel-identical. Suite: 531 passed, 1 skipped (a new test
+that the neck's lines stop at the body and the torso reaches the hip).
+
+**Left, and why:** on the bare body the arms still rise to a point at the
+shoulder where their top follows a slanted cap sleeve's underside, which the
+tunic's cap covers when worn: that is the arm's garment logic, not the body.
+A two-pixel step at each armpit is the inset that keeps the clothed cast
+pixel-identical. The realistic build's straight torso stays with that build's
+own fix pass.
 
 ### 2026-09-25: the gap between the shoulder and the bust
 

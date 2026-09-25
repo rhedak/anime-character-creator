@@ -83,7 +83,7 @@ def render(name: str, bust: float, along: float, fill: float, tag: str) -> Image
     x0, x1 = cx - 1.2 * r, cx + 1.2 * r
     run = sk.waist_y - sk.shoulder_y
     body = c._bust_shape(sk)
-    fold = body.peak[1] + (body.outline[1][1][1] - body.peak[1]) * 0.85
+    fold = body.peak[1] + (c._under_bust_y(sk, body.peak[1]) - body.peak[1]) * 0.85
     for y, colour in (
         (sk.shoulder_y, (150, 150, 150)),
         (sk.waist_y, (150, 150, 150)),
