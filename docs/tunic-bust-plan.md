@@ -97,7 +97,10 @@ Kyoko's open coat and Reika's robe front answer the bust too, subtly, at the
 owner's request: the coat's front edges bow out by the tunic's drape
 (`_COAT_BUST_BOW`), and the robe carries the tunic's line under the breast
 it covers, the whole curve at 0.6 of its weight (`_bust_fold`,
-`_ROBE_BUST_LINE`). Bowing the robe's diagonal was tried and dropped.
+`_ROBE_BUST_LINE`). Bowing the robe's diagonal was tried and dropped. An open coat also carries the
+line on its panels at the same weight, masked to them, drawn under the lab
+coat's lapels and never in the opening (`_bust_panel_line`,
+`GarmentCut.bust_line_after`).
 
 ## Deferred
 

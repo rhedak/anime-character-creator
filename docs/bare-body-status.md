@@ -32,6 +32,29 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## Findings, newest first
 
+### Outer layers: the line across open coats (2026-09-26)
+
+The owner asked for Keiko's lab coat to be checked against her bust
+(`harness/bare/keiko_coat.py`, `out/bare/keiko_coat.png`): the traced coat
+widens at the bust only at its outer sides, under her hair and arms, and the
+lapels cover most of each breast, so the only cue left was the dress's line
+cut to two stray hooks in the opening (Kyoko's coat the same). The owner's
+conditions for carrying the line across: never on the lapel, and as subtle
+as the robe's.
+
+`_bust_panel_line`: `_bust_fold` at `_COAT_BUST_LINE` = 0.6 (the robe's),
+masked to the coat's panels; `GarmentCut.bust_line_after` draws it after the
+panels and before the lab coat's lapels (2, and 2 on Katherina's jacket,
+which has no separate lapels), and the parametric coat after its panels.
+**Predicted:** Keiko, Kyoko and Katherina move, clothed and tunic-off (their
+coats stay on), the men's coats (Gero, Tomohiro) byte-identical. **Measured**
+by `cmp`: exactly those six files; `ref-out/` the three at both builds and
+the sheets; 628 passed. At 4x (`out/bare/coat_line.png`, before above after,
+Reika's robe for comparison): Keiko's curve shows on the coat body from the
+side to the lapel and passes under it, the dress's inner part in the opening,
+about as light as Reika's; Kyoko's likewise; Katherina's very faint (her
+bust is 0.2 and the line fades in to 0.5).
+
 ### Outer layers over the bust: built (2026-09-26)
 
 The owner: the coat's bow as recommended, and the robe's line the tunic's

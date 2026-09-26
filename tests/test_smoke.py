@@ -2318,3 +2318,26 @@ def test_the_outer_layers_answer_the_bust():
     sk = character.skeleton_for(kyoko)
     flat = replace(kyoko, bust=0.0)
     assert character._coat(sk, kyoko) != character._coat(character.skeleton_for(flat), flat)
+
+
+def test_an_open_coat_carries_the_line_on_its_panels_only():
+    """An open coat over a bust carries the tunic's line, lighter, masked to
+    its panels (`docs/tunic-bust-plan.md`, outer layers): drawn before the
+    lab coat's lapels so they lie over it, and never in the opening. Without a
+    bust, nothing."""
+    keiko = PRESETS["keiko"]
+    sk = character.skeleton_for(keiko)
+    coat = character._draw_cut(sk, character.COAT_CUTS["lab_coat"], keiko.outfit.coat_color)
+    line = coat.index('mask="url(#coat-bust-')
+    paths = [
+        m.start()
+        for m in re.finditer(r'<path d="[^"]+" fill="' + re.escape(keiko.outfit.coat_color), coat)
+    ]
+    assert len(paths) == 4 and paths[1] < line < paths[2]
+    flat = replace(keiko, bust=0.0)
+    sk_flat = character.skeleton_for(flat)
+    assert "coat-bust-" not in character._draw_cut(
+        sk_flat, character.COAT_CUTS["lab_coat"], "#ffffff"
+    )
+    kyoko = PRESETS["kyoko"]
+    assert "coat-bust-" in character._coat(character.skeleton_for(kyoko), kyoko)

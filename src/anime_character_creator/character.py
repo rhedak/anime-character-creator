@@ -4132,6 +4132,28 @@ def _quad_point(p0: Point, p1: Point, p2: Point, u: float) -> Point:
 # under the breast it covers at this share of its weight.
 _COAT_BUST_BOW = 1.0
 _ROBE_BUST_LINE = 0.6
+# And an open coat carries the tunic's line on its panels, as lightly as the
+# robe does (`_bust_panel_line`); its own number so the two can be tuned apart.
+_COAT_BUST_LINE = 0.6
+
+
+def _bust_panel_line(sk: Skeleton, panels: list[str]) -> str:
+    """The tunic's line under the bust, lighter, on an open coat's panels only:
+    masked to `panels` (path data), so it is not drawn in the opening, where
+    the garment underneath shows its own, nor on a lapel drawn after it. The
+    owner's two conditions (2026-09-26): never on the lapel, and as subtle as
+    the robe's. Empty without a bust."""
+    line = _bust_fold(sk, _COAT_BUST_LINE)
+    if not line:
+        return ""
+    mask_d = " ".join(panels)
+    mask_id = "coat-bust-" + hashlib.sha1((mask_d + line).encode()).hexdigest()[:10]
+    return (
+        f'<defs><mask id="{mask_id}" maskUnits="userSpaceOnUse" x="0" y="0" '
+        f'width="{sk.canvas_w:.0f}" height="{sk.canvas_h:.0f}">'
+        + "".join(f'<path d="{pd}" fill="white" />' for pd in panels)
+        + f'</mask></defs><g mask="url(#{mask_id})">{line}</g>'
+    )
 
 
 def _quad_x_at(p0: Point, p1: Point, p2: Point, y: float) -> float | None:
@@ -4278,6 +4300,11 @@ class GarmentCut:
     # ending at the panel's edge, the belt above all, looks like it stops in
     # the middle of nothing (`docs/keiko-clothes-plan.md`, P4 and P5).
     over_arms: bool = True
+    # An open coat over a bust carries the tunic's line under it, lighter, on
+    # its panels (`_bust_panel_line`): drawn after this many of `fills`, the
+    # panels, and masked to them, so a lapel drawn after lies over it and the
+    # opening shows the garment underneath with its own line. None draws none.
+    bust_line_after: int | None = None
 
 
 def _wears_cuts(sk: Skeleton) -> bool:
@@ -4365,6 +4392,10 @@ def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> 
         f'<path d="{d(shape)}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
         for shape in cut.fills
     ]
+    if cut.bust_line_after is not None:
+        n = cut.bust_line_after
+        line = _bust_panel_line(sk, [d(shape) for shape in cut.fills[:n]])
+        parts.insert(n, line)
     parts.extend(
         f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
         f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
@@ -4689,6 +4720,7 @@ COAT_CUTS: dict[str, GarmentCut] = {
                 ],
             ),
         ),
+        bust_line_after=2,
     ),
     # Keiko's, from `ref-local/keiko-tall-chibi/`: two front panels with a
     # notched lapel on each. The panels are built from the measured profile and
@@ -4703,6 +4735,7 @@ COAT_CUTS: dict[str, GarmentCut] = {
             _LAB_COAT_LAPEL_RIGHT,
         ),
         over_arms=False,
+        bust_line_after=2,
     ),
 }
 
@@ -5101,6 +5134,7 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     lapel_y = sy - sk.neck_half_w * _COAT_LAPEL_UP
     shoulder_y = sy + (waist_y - sy) * 0.16
     parts = []
+    panels: list[str] = []
     for s in (-1, 1):
         # The front edge, hem to throat. Over a bust it bows out, pushed aside
         # by the breast, following the tunic's own drape (`_bust_bulge`) scaled
@@ -5132,6 +5166,8 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
             f"L {cx + s * gap_hem:.1f} {hem_y:.1f} " + front + "Z"
         )
         parts.append(f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
+        panels.append(d)
+    parts.append(_bust_panel_line(sk, panels))
     return "".join(parts)
 
 
