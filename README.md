@@ -15,9 +15,10 @@ possible later addition (they'd slot in as extra SVG layers).
 
 Fourteen named characters for *Valley of Mist*, plus guests from two other
 projects (Katherina from `../time_slider_katharina`; Gero and Linnea from
-`../short_stories`), all rendering at the chibi build. Build is a named
-mode, `--build chibi` (default) or `--build realistic`, with `--heads`
-open for anything in between.
+`../short_stories`), all rendering at the chibi build. They are all the tall chibi, the one figure since
+2026-09-26, when the realistic build and the old compressed chibi were
+retired; a `height` from 0.8 to 1.3 stretches it for a younger or a
+taller character.
 
 All are **first drafts**: each carries the colouring, frame and garments
 its design calls for, judged at the size a character is actually seen on a
@@ -63,15 +64,9 @@ happen to agree. That is deliberate: the resemblance is the point, and a
 copied face keeps it only until somebody tunes an eye. See
 `docs/character-roster-plan.md`.
 
-The table is the chibi, which is the build this project publishes. The
-realistic build still works on anything (`--build realistic`), and every
-character is checked in under `ref-out/real/` too, but they are not
-displayed here: the owner's call on 2026-08-08 was that the tall figures
-do not work well enough yet and the chibi is where the project is. Only
-Satoko and Satoshi's realistic renders have ever been measured against a
-reference (`ref/satoko-real.jpg`, `ref/satoshi-real.jpg`); the rest are
-unjudged previews, checked in on the owner's 2026-08-11 call so every
-character has one, not a claim that they hold up.
+The table is the tall chibi, the only figure since 2026-09-26: the
+realistic build, which never worked as well, was retired with its
+`ref-out/real/` renders (`docs/tall-chibi-plan.md`).
 
 `ref-out/cover.svg` is there too: a book cover composed around one of
 them by `cover.py`, which is the same drawing code with a backdrop, mist
@@ -114,9 +109,7 @@ the code no longer produces:
 ./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
 ```
 
-It renders every character in `PRESETS` at the chibi build, every name
-in `REALISTIC_REFS` (currently every preset) at the realistic build too,
-and both pages, so adding a character means adding it to `presets.py` and
+It renders every character in `PRESETS` and both pages, so adding a character means adding it to `presets.py` and
 nothing else.
 Everything else generated goes to `out/`, which is not checked in.
 
@@ -170,7 +163,6 @@ Homebrew's prefix.
   --outfit-color "#4f7a52" --skin-tone "#f2c9a1" --boot-color "#5b4632"
 
 ./render.sh --out out/satoko --preset satoko
-./render.sh --out out/satoko-tall --preset satoko --build realistic
 ./render.sh --out out/satoshi --preset satoshi
 ```
 
@@ -236,13 +228,10 @@ public surface is written up in [docs/api.md](docs/api.md).
 - `skeleton.py`: `Skeleton` dataclass: head center/radius, the
   neck/shoulder/waist/hip/hem/limb widths, and the y-coordinates (neck,
   shoulder, waist, hip, hem, knee, ankle, foot) every shape positions
-  itself against. The whole thing derives from `heads`, how many
-  head-heights tall the figure stands, which `BUILDS` names as `chibi`
-  (2.4) and `realistic` (6.0). Both the widths and where the landmarks
-  sit along the body interpolate between the two: a chibi is nearly
-  neckless with high hips in a short body, an adult is not. `frame`
-  scales shoulder against hip on top of that, and `Skeleton.build` hands
-  parts the position along the range so they don't recompute it.
+  itself against. Every character's comes from `skeleton_for(p)`: its body profile
+  (`BODY_TYPES`, measured tall-chibi proportions) laid over the chibi
+  build, stretched by `height` when that is not 1.0. `Skeleton.build` is
+  the chibi's, the same for every figure.
   `hair_margin` is the headroom above the skull, in head radii, so hair
   has somewhere to go at a build where the head fills a third of the
   frame.

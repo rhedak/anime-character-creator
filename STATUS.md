@@ -1698,6 +1698,21 @@ for proportion work (`harness/bare/mannequin.py`), adults only, never a web
 tool option (the owner's decision). The realistic build renders bare and is
 not judged: it waits for its own fix pass.
 
+## Tall chibi, 2026-09-26
+
+The tall chibi is the one figure (`docs/tall-chibi-plan.md`, record in
+`docs/tall-chibi-status.md`). The realistic build, its `ref-out/real/`
+renders, `REALISTIC_REFS`, the build slider, `--build`/`--heads`, the
+compressed chibi (`body=None`), the realistic-only code (the adult nose,
+hand creases, eyelets, the traced-cut switch) and `long_traced_real` are
+gone; the tall chibi stayed byte-identical through all of it, checked on a
+108-render snapshot. Old links load as the default tall chibi. Then two
+visible changes on purpose: a real knee (half way down the leg; the boot
+keeps its old landmark as `boot_y`), which reshaped the trousers' inseam,
+and `height`, 0.8 to 1.3, stretching the figure below the shoulders with
+two thirds in the legs. Heights in sheets, covers and the book's inserts
+(one head size, feet on one line) are deferred.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

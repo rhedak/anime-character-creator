@@ -172,5 +172,5 @@ outline still reads on dark skin. Checked in the browser.
 
 ## Deferred
 
-- The realistic build: judged after its own fix pass.
+- ~~The realistic build: judged after its own fix pass.~~ (Gone: the realistic build was retired on 2026-09-26, `tall-chibi-plan.md`.)
 - Anything beyond the minimum male torso (musculature, the chest in detail).

@@ -426,7 +426,7 @@ garment slot), `catalogue.json`, the web tool, the sheets, the cover, and last
 
 - ~~Step 3c~~, done 2026-09-25. What it left (the arm's slanted top on a bare
   body) is the arm's garment logic, recorded in `bust-status.md`.
-- **The realistic build's own fix pass**: the arm across the torso (anatomy
+- (Gone: the realistic build was retired on 2026-09-26, `tall-chibi-plan.md`.) **The realistic build's own fix pass**: the arm across the torso (anatomy
   review, 5), and with it the bust over the arm there (5a).
 - **The fixed clip ids** (`eye-l`, `eye-r`, `hair-tips`, `hair-front`), found
   at 5a; fixed at the appropriate time.

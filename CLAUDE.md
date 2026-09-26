@@ -14,9 +14,10 @@ layers.
 
 Fourteen named characters for *Valley of Mist* plus a few guests from
 other projects (`presets.py`), each a first draft, all
-rendering at the chibi (big head, short body) front-facing build by
-default; `--build realistic` (or `--heads` for anything in between)
-renders the same character taller. Multiple hairstyles and a full
+drawn as the tall chibi (big head, short body), front-facing: the one
+figure since 2026-09-26, when the realistic build and the old compressed
+chibi were retired (`docs/tall-chibi-plan.md`); `height` stretches it for a
+younger or a taller character. Multiple hairstyles and a full
 garment system (`Outfit`) exist; poses do not. See `README.md`'s Status
 section and `STATUS.md` for what is current.
 
@@ -28,10 +29,10 @@ now goes to three things: more GUI customization (hair/outfit/prop
 options beyond what the fourteen presets already use), a bigger roster
 (new characters, including ones from other games/stories, which have
 no AI reference at all and are designed directly in `presets.py`), and
-polish on what exists. The one place references still earn their keep
-is closing known, already-measured gaps in the **realistic** build
-(see "Direction" in `STATUS.md` and the `gap-analysis` skill); they are
-not consulted for chibi work or for new characters.
+polish on what exists. The one place they still earned their keep,
+closing measured gaps in the realistic build, went with that build on
+2026-09-26; they are not consulted any more (`docs/gap-analysis.md` and
+`harness/gap_analysis_skill/` stay as records).
 
 Since 2026-08-10, `../valley_of_mist` (the novel this cast is written
 for) consumes this repo's output directly: `render.sh`/`cover.sh`/`sheet.sh`
@@ -91,8 +92,9 @@ wrong, and reformatting them would be editing the evidence.
 
 - `src/anime_character_creator/skeleton.py`: proportion anchors (`Skeleton` dataclass +
   `build_skeleton()`). Change here to adjust overall proportions.
-  Everything derives from `heads`; `BUILDS` names the chibi and
-  realistic ends. A part that needs a measurement below the neck
+  `BUILDS` names the chibi, the one build; every character's skeleton
+  is its body profile (`BODY_TYPES`) laid over it (`skeleton_for`), and
+  `height` stretches that (`stretched`). A part that needs a measurement below the neck
   should read an anchor, not multiply `head_r` by a number that only
   happens to work on a chibi.
 - `src/anime_character_creator/colorutil.py`: `shade()` derives shadow tones from a base
@@ -120,16 +122,10 @@ wrong, and reformatting them would be editing the evidence.
   (`./render.sh --out out/tmp --preset satoko`) and view the PNG before
   calling it done, coordinates that look right in the math are
   routinely wrong visually; this is an iterate-by-looking project.
-- The `gap-analysis` skill (`.claude/skills/gap-analysis/`) compares a
-  render against `ref/`. Its scope is the **realistic build only** now
-  that the chibi is locked in and the roster is growing past the
-  fourteen the references cover; do not reach for it, or for `ref/`, to
-  judge a chibi render or a new character with no reference of its own,
-  that is by eye against the design intent instead. When it does apply,
-  its `probe.sh` builds the normalized side-by-side strips and takes the
-  measurements rather than writing measuring code from scratch, and its
-  `PITFALLS.md` records the ways naive pixel measurement gave wrong
-  answers here. The standing result is `docs/gap-analysis.md`.
+- The `gap-analysis` skill is retired with the realistic build it
+  measured (moved to `harness/gap_analysis_skill/` as a record on
+  2026-09-26; its standing result is `docs/gap-analysis.md`). Chibi work
+  and new characters are judged by eye against the design intent.
 - Keep the tooling green in the same change: `uv run ruff check .`,
   `uv run ruff format .`, `uv run pytest`. The test suite is a smoke
   check, it renders every preset and compares `ref-out/`, so a failure

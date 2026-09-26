@@ -4,8 +4,9 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R4b built; R5 (docs, then `../valley_of_mist` on the owner's
-  say-so) next. The range and the stretch await the owner's look. The owner picked distribution C and the range
+- **Now:** R5 docs done; `../valley_of_mist` waits for the owner's say-so
+  (the real knee moved every trousered figure). R4b's range awaits the
+  owner's look. The owner picked distribution C and the range
   0.8 to 1.3, asked for the knee planned properly and shown on the bare
   render, and deferred heights in compositions (R4c). Autonomous, per the
   owner; R4's study is the next stop for input.
@@ -26,9 +27,19 @@ The record for `tall-chibi-plan.md`, newest first.
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
 | R4 the height slider | R4a, R4b done; R4c deferred | 1.0 byte-identical; 483 passed; browser checked |
-| R5 docs and the downstream | | |
+| R5 docs and the downstream | docs done; valley_of_mist pending | |
 
 ## Findings, newest first
+
+### R5: the docs (2026-09-26)
+
+`CLAUDE.md` (the overview, the direction's paragraph on references, the
+`skeleton.py` bullet, the gap-analysis bullet), `README.md` (the status, the
+note on `ref-out/real/`, the refresh description, the realistic example, the
+architecture's skeleton paragraph), `docs/api.md` (`build_skeleton`, a `body`
+row in place of `heads`, the `REALISTIC_REFS` section removed), a dated
+section in `STATUS.md`, and the three earlier plans' deferred "realistic fix
+pass" struck through with a note. History in `STATUS.md` left as it was.
 
 ### R4b: the height slider (2026-09-26)
 

@@ -83,7 +83,7 @@ angry_satoko = replace(SATOKO, face=replace(SATOKO.face, brow_tilt=0.8))
 | `eye_color` | `#4a9c6d` | Hex colour. |
 | `outfit` | `Outfit()` | The garments, below. |
 | `face` | `FaceStyle()` | The expression, below. |
-| `heads` | `2.4` | Head-heights tall. Ignored when a skeleton is passed. |
+| `body` | `"tall_chibi_long_torso"` | The tall chibi body profile, from `BODY_TYPES`: `tall_chibi` (Katherina's, measured) or the long torso. |
 | `frame` | `0.0` | Shoulder against hip, -1 to 1. Ignored when a skeleton is passed. |
 | `bust` | `0.0` | How much bust the figure carries, 0 to 1; 0 draws the figure as it was before the bust existed. Ignored when a skeleton is passed: build it with `build_skeleton(bust=...)`. See `docs/bust-plan.md`. |
 | `height` | `1.0` | How tall the figure stands against its head, 0.8 to 1.3 in the web tool: below the shoulder line the figure is this many times as long, two thirds of the difference in the legs. See `docs/tall-chibi-plan.md`, R4b. |
@@ -150,8 +150,11 @@ build_skeleton(canvas_w=400, canvas_h=500, heads=2.4, frame=0.0,
 
 Every proportion the shapes position themselves against, derived from one
 number: `heads`, how many head-heights tall the figure stands. `BUILDS`
-names the two ends, `chibi` (2.4, the default) and `realistic` (6.0), and
-anything in between is a number.
+names the chibi (2.4), the one build since the realistic build was retired
+(`docs/tall-chibi-plan.md`); `build_skeleton` still takes any `heads`,
+since a body profile builds its base skeleton at its own height. A
+character's skeleton comes from `skeleton_for(p)`: its `body` profile over
+the chibi build, stretched by its `height`.
 
 The returned frozen `Skeleton` carries the canvas size, `heads`, the
 head centre and radius, the y of every landmark from neck to foot, the
@@ -213,27 +216,6 @@ same reasoning as `Expression` below: the shared face is a property the
 story depends on, and a copy holds it only until somebody tunes an eye on
 one of the four. Derive a character from another whenever they are
 supposed to stay the same underneath.
-
-## REALISTIC_REFS
-
-Which characters get a realistic-build render checked into
-`ref-out/real/`. A tuple of preset names, `tuple(PRESETS)`, so every
-character named there gets one automatically.
-
-The chibi is the build this project publishes; the tall figures were
-deferred from the README on 2026-08-08 because they did not work well
-enough yet, and `REALISTIC_REFS` shrank to just Satoko and Satoshi, the
-two ever measured against a reference. Reopened 2026-08-11: the owner
-asked for every character's realistic render checked in, not only the
-pair with a reference to judge against, so the tuple grew back to match
-`PRESETS`. Neither change touches the README, which still shows the
-chibi only; a checked-in `real/` render and a displayed one are separate
-decisions. This is still a **publishing** decision, so it lives on its
-own rather than as a field on `CharacterParams`, which is about who a
-character is. `BUILDS` is untouched and `--build realistic` still works
-on anything; what moved is the set of committed artifacts.
-`refresh-ref-out.sh` reads this name out of the package, the way it
-reads `PRESETS` and `BUILDS`.
 
 ## EXPRESSIONS and Expression
 

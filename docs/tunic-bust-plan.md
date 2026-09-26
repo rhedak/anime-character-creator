@@ -104,6 +104,6 @@ coat's lapels and never in the opening (`_bust_panel_line`,
 
 ## Deferred
 
-- The realistic build's own fix pass.
+- ~~The realistic build's own fix pass.~~ (Gone: the realistic build was retired on 2026-09-26, `tall-chibi-plan.md`.)
 
 
