@@ -12,7 +12,6 @@ from pathlib import Path
 import pytest
 
 from anime_character_creator.generate import main
-from anime_character_creator.skeleton import BUILDS
 
 
 def _run(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *args: str) -> str:
@@ -44,19 +43,15 @@ def test_preset_and_overrides_merge(monkeypatch: pytest.MonkeyPatch, tmp_path: P
     assert "#123456" in svg
 
 
-def test_build_sets_heads_and_heads_overrides_build(
+def test_the_retired_build_options_are_gone(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    chibi = _run(monkeypatch, tmp_path, "--build", "chibi")
-    realistic = _run(monkeypatch, tmp_path, "--build", "realistic")
-    assert _heads(chibi) == BUILDS["chibi"]
-    assert _heads(realistic) == BUILDS["realistic"]
-
-    # --heads is parsed after --build in COLOR_ARGS/extras merging (generate.py
-    # main()); since it is applied to the same `colors` dict as a later key, it
-    # must win over the preceding --build entry rather than being dropped.
-    explicit = _run(monkeypatch, tmp_path, "--build", "chibi", "--heads", str(BUILDS["realistic"]))
-    assert _heads(explicit) == BUILDS["realistic"]
+    """`--build` and `--heads` went with the realistic build
+    (`docs/tall-chibi-plan.md`, R2): the CLI renders the tall chibi only."""
+    for retired in (["--build", "chibi"], ["--heads", "6"]):
+        with pytest.raises(SystemExit):
+            _run(monkeypatch, tmp_path, *retired)
+    assert _heads(_run(monkeypatch, tmp_path)) == 2.4
 
 
 def test_explicit_face_knob_wins_over_expression(

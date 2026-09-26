@@ -4,8 +4,8 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R1 done, waiting for the owner's sign-off; then R2 (which now
-  also takes the CLI's `--build`/`--heads`).
+- **Now:** R2 done; R3 next (the owner said to keep going autonomously,
+  stopping only for input; R4's study is the next stop).
 - **Tree:** clean at `2e549d2` when the plan was written.
 - **Invariant:** every tall-chibi render byte-identical through R1 to R3
   (`./refresh-ref-out.sh --check`); only R4 may move a figure.
@@ -16,13 +16,32 @@ The record for `tall-chibi-plan.md`, newest first.
 | step | state | acceptance met |
 | --- | --- | --- |
 | R0 inventory | done, signed off | inventory below, each item classed and stepped |
-| R1 remove the choices | done | `ref-out/` and bases byte-identical; old link test; browser checked |
-| R2 retire the realistic outputs | | |
+| R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
+| R2 retire the realistic outputs | done | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | | |
 | R4 the height slider | | |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R2: the realistic outputs retired (2026-09-26)
+
+`ref-out/real/` removed (34 files); `presets.REALISTIC_REFS` and its export
+removed; `refresh-ref-out.sh` renders the one build (`builds=chibi`), drops
+the realistic list and its checks, no longer passes `--build`, and reports
+anything left under `ref-out/real/` as an orphan. The CLI's `--build` and
+`--heads` removed from `generate.py`, and `--build` and the `build` field
+from `sheet.py` and `cover.py`, which now call `skeleton_for(character)`: the
+character's own `heads` is the same 2.4. The `gap-analysis` skill moved to
+`harness/gap_analysis_skill/` as a record (`docs/gap-analysis.md` kept).
+Tests: the snapshot set is the chibi only; the leftover check covers
+`real/`; the cover test is no longer parametrized; the CLI test asserts the
+retired options fail. The tests parametrized over `BUILDS` still run both
+builds, since the realistic code exists until R3.
+
+**Predicted:** every chibi render, the cover, the sheets, the bases and the
+catalogue unchanged. **Measured:** so (`--check` matches, bases and catalogue
+unchanged); 606 passed.
 
 ### R1: the choices removed (2026-09-26)
 

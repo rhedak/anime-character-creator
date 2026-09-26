@@ -37,7 +37,6 @@ from pathlib import Path
 
 from .character import OUTLINE, render_character, skeleton_for
 from .presets import DISPLAY_NAMES, PRESETS, ROSTERS
-from .skeleton import BUILDS
 
 CHARACTER_DESCRIPTIONS: dict[str, str] = {
     "satoko": "Innkeeper's girl, local expedition guide",
@@ -81,7 +80,6 @@ class SheetParams:
     # An explicit list of preset names, overriding `roster`. This is how a
     # harness draws a set that is not a named roster without inventing one.
     members: tuple[str, ...] | None = None
-    build: str = "chibi"
     # Four across, which is what both reference sheets use and what keeps a tile
     # wide enough to read at page width. The number of rows follows from the
     # roster, so a sheet never has to be re-laid-out as the cast fills in.
@@ -210,7 +208,7 @@ def _tile(p: SheetParams, preset: str, x: float, y: float) -> str:
     # The hat is taken off for this alone, because its headroom shrinks the figure
     # on the canvas and every tile has to stand at the same body scale.
     bare = replace(character, outfit=replace(character.outfit, hat_color=None))
-    sk = skeleton_for(bare, BUILDS[p.build])
+    sk = skeleton_for(bare)
     k = (p.tile_h * p.figure_height) / sk.canvas_h
     fx = x + p.tile_w / 2 - sk.canvas_w * k / 2
     fy = top + p.tile_h * p.figure_feet_y - sk.foot_y * k
@@ -264,7 +262,6 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Render the cast as a labelled grid.")
     ap.add_argument("--out", default="out/sheet/sheet", help="output path prefix (no extension)")
     ap.add_argument("--roster", default="cast", choices=sorted(ROSTERS))
-    ap.add_argument("--build", default="chibi", choices=sorted(BUILDS))
     ap.add_argument("--columns", type=int, default=4)
     ap.add_argument(
         "--members",
@@ -281,9 +278,7 @@ def main() -> None:
     args = ap.parse_args()
 
     members = tuple(m.strip() for m in args.members.split(",")) if args.members else None
-    p = replace(
-        SheetParams(), roster=args.roster, build=args.build, columns=args.columns, members=members
-    )
+    p = replace(SheetParams(), roster=args.roster, columns=args.columns, members=members)
     svg = render_sheet(p, metadata=args.metadata)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)

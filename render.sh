@@ -12,7 +12,6 @@
 #
 # Usage is the CLI's, from anywhere:
 #     ./render.sh --out out/satoko --preset satoko
-#     ./render.sh --out out/satoko_real --preset satoko --build realistic
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

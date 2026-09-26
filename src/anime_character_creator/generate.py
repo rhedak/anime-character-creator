@@ -22,7 +22,6 @@ from pathlib import Path
 
 from .character import BODY_TYPES, HAIRSTYLES, CharacterParams, render_character
 from .presets import EXPRESSIONS, PRESETS
-from .skeleton import BUILDS
 
 COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color")
 
@@ -82,16 +81,14 @@ def main() -> None:
         )
     for name, kind in FACE_ARGS.items():
         ap.add_argument(_flag(name), type=kind, help="expression knob, overrides the preset")
-    ap.add_argument("--build", choices=sorted(BUILDS), help="named proportions (default chibi)")
     ap.add_argument("--hairstyle", choices=sorted(HAIRSTYLES), help="which haircut")
     ap.add_argument(
         "--body",
         choices=sorted(BODY_TYPES),
-        help="a named body type at the chibi build (default: the shared chibi)",
+        help="a named tall chibi body type (default: the preset's, else the long torso)",
     )
     ap.add_argument("--hair-length", type=float, help="hair end, chin 0 to hip 1")
-    ap.add_argument("--heads", type=float, help="head-heights tall, overrides --build")
-    ap.add_argument("--frame", type=float, help="shoulder against hip, -1 to 1, taller builds only")
+    ap.add_argument("--frame", type=float, help="shoulder against hip, -1 to 1")
     ap.add_argument(
         "--waist-shift",
         type=float,
@@ -130,10 +127,7 @@ def main() -> None:
     colors = {name: getattr(args, name) for name in COLOR_ARGS if getattr(args, name) is not None}
     outfit = {name: getattr(args, name) for name in OUTFIT_ARGS if getattr(args, name) is not None}
     face = {name: getattr(args, name) for name in FACE_ARGS if getattr(args, name) is not None}
-    if args.build is not None:
-        colors["heads"] = BUILDS[args.build]
     for extra in (
-        "heads",
         "hair_length",
         "hairstyle",
         "body",

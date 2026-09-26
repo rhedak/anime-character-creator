@@ -1137,8 +1137,7 @@ PRESETS: dict[str, CharacterParams] = {
 # key stays short enough to type at a CLI.
 #
 # A plain mapping rather than a field on `CharacterParams`, because this is
-# presentation metadata in the same category as `REALISTIC_REFS` and not part of
-# who a character is. It also keeps a name out of every preset constructor.
+# presentation metadata and not part of who a character is. It also keeps a name out of every preset constructor.
 DISPLAY_NAMES: dict[str, str] = {
     "katherina": "Katherina Beaumont",
     "gero": "Gero",
@@ -1204,30 +1203,6 @@ ROSTERS["katherina"] = ("katherina",)
 # "The Hunt for the Everglow Crystals"), same as Katherina: a separate work,
 # no overlap with the Valley of Mist cast, its own roster.
 ROSTERS["everglow"] = ("gero", "linnea")
-
-# Which characters get a realistic-build render checked into `ref-out/real/`.
-#
-# The owner's call on 2026-08-08 was to defer the build entirely: "the real
-# ones don't work so well so I suggest we defer them, the chibis are where the
-# music is at." So the chibi became the build this project publishes, and the
-# tall figures moved to a subdirectory that says what they are, down to just
-# Satoko and Satoshi, the two ever measured against a reference
-# (`ref/satoko-real.jpg`, `ref/satoshi-real.jpg`).
-#
-# Reopened on 2026-08-11: the owner asked for every named character's
-# realistic render in `ref-out/real/`, not only the pair with a reference to
-# judge against. `tuple(PRESETS)` rather than a second hand-written list, the
-# same reasoning `ROSTERS["satoshi"]` already uses for not repeating `cast`:
-# a name typed twice is a name that drifts, and a new preset already lands in
-# `ref-out/` at chibi with no second step, so the realistic build should not
-# need one either.
-#
-# This is still a **publishing** decision and lives on its own rather than as
-# a field on `CharacterParams`, which is about who a character is. Nothing
-# stops `--build realistic` on any preset, and `BUILDS` is untouched: the
-# build itself was never deferred, only which renders of it were checked in.
-REALISTIC_REFS: tuple[str, ...] = tuple(PRESETS)
-
 
 # ---------------------------------------------------------------------------
 # Neutral bases, for the web tool rather than the novel.

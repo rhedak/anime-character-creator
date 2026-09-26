@@ -15,10 +15,9 @@ picked: that reference is a painterly AI image and is not the target, but its
 colour is a fair guide to the mood, and its bands run from a near-black sky
 through blue-greens to a pale horizon.
 
-**The chibi build is the design.** The owner's call on 2026-08-08, after seeing
-both: `realistic` renders and is kept as a fallback, but the cover is composed
-for the chibi and that is what `build` defaults to. Anything tuned here should
-be judged at the chibi first.
+**The tall chibi is the design**, and since 2026-09-26 the only figure (the
+realistic build and the compressed chibi were retired,
+`docs/tall-chibi-plan.md`).
 
 **Simple is the design, not a stage on the way to something denser.** A ridge
 and two clusters of ruined towers were built on top of this and then dropped, on
@@ -44,7 +43,7 @@ from pathlib import Path
 
 from .character import OUTLINE, CharacterParams, render_character, skeleton_for
 from .presets import EXPRESSIONS, PRESETS
-from .skeleton import BUILDS, Skeleton
+from .skeleton import Skeleton
 
 
 @dataclass(frozen=True)
@@ -100,9 +99,6 @@ class CoverParams:
     # one that both survives being shrunk and says what the title says. None
     # leaves the character's own resting face.
     expression: str | None = "hollow"
-    # `realistic` still renders and is the backup; the composition is tuned for
-    # this one.
-    build: str = "chibi"
     width: float = 1000.0
     height: float = 1500.0
     palette: CoverPalette = field(default_factory=CoverPalette)
@@ -212,7 +208,7 @@ def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float,
     character = p.character or PRESETS[p.preset]
     if p.expression:
         character = EXPRESSIONS[p.expression].applied_to(character)
-    sk = skeleton_for(character, BUILDS[p.build])
+    sk = skeleton_for(character)
     k = (p.height * p.figure_height) / sk.canvas_h
     x = p.width / 2 - sk.canvas_w * k / 2
     y = p.height * p.figure_feet_y - sk.foot_y * k
@@ -348,7 +344,6 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Render a book cover around one character.")
     ap.add_argument("--out", default="out/cover/cover", help="output path prefix (no extension)")
     ap.add_argument("--preset", default="satoshi", choices=sorted(PRESETS))
-    ap.add_argument("--build", default="chibi", choices=sorted(BUILDS))
     ap.add_argument(
         "--title",
         action="append",
@@ -375,7 +370,7 @@ def main() -> None:
     )
     args = ap.parse_args()
 
-    p = CoverParams(preset=args.preset, build=args.build, width=args.width, height=args.height)
+    p = CoverParams(preset=args.preset, width=args.width, height=args.height)
     if args.title:
         p = replace(p, title=tuple(args.title))
     p = replace(p, subtitle=args.subtitle)

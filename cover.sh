@@ -6,7 +6,6 @@
 # has to be set before the process starts so it cannot live in the CLI.
 #
 #     ./cover.sh
-#     ./cover.sh --preset satoshi --build realistic --out out/cover/tall
 #     ./cover.sh --title "THE HERO" --title "OF THE MIST" --title "TRAGEDY"
 set -euo pipefail
 

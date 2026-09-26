@@ -63,5 +63,13 @@ fine.** Picking a garment out by its colour fails on both sheets. Summed colour
 distance lets a surplus in one channel pay for a deficit in another. A chibi's
 hand sits at very nearly its hip's width, so the widest run below the belt is a
 hand rather than a leg. The fixes are written into the scripts at the point
-where they matter. `.claude/skills/gap-analysis/PITFALLS.md` is the same
-material for the strip comparisons.
+where they matter. `gap_analysis_skill/PITFALLS.md` is the same material for
+the strip comparisons.
+
+## `gap_analysis_skill/`
+
+The `gap-analysis` skill, moved here from `.claude/skills/` on 2026-09-26 when
+the realistic build it compared against `ref/` was retired
+(`docs/tall-chibi-plan.md`, R2). Kept as a record, like everything else here;
+its standing result is `docs/gap-analysis.md`. Its paths still name its old
+location.

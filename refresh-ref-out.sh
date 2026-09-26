@@ -24,7 +24,7 @@
 #
 #   ref-out/<name>.svg|png           the chibi, every character, transparent
 #   ref-out/on-white/<name>.png      the same, on white, for the README only
-#   ref-out/real/<name>.svg|png      the realistic build, every character, not displayed
+#   (ref-out/real/ held the realistic build until it was retired, 2026-09-26)
 #
 # The files at the top are the art itself and are transparent, which is what
 # makes them usable as they are. The copies under on-white/ exist only because
@@ -35,19 +35,11 @@
 # drawing, one paint behind it, and nothing outside the README should reach for
 # the on-white copies.
 #
-# real/ is not what the README shows. The owner's call on 2026-08-08 was that
-# the tall figures did not work well enough to publish and the chibi is where
-# the project is, so they moved out of the top level and lost their on-white
-# copies, which existed only to be displayed; `presets.REALISTIC_REFS` was a
-# short list of two while that held. Reopened 2026-08-11: every named
-# character gets one now, `REALISTIC_REFS` is `tuple(PRESETS)`, so a new
-# preset lands here with no second step, the same as it already does at
-# chibi. What has not changed is the README table, still chibi-only; getting
-# a checked-in render is not the same decision as getting displayed.
+# real/ held a realistic render of every character from 2026-08-11 until the
+# realistic build and the compressed chibi were retired and the tall chibi
+# became the one figure (`docs/tall-chibi-plan.md`, R2, 2026-09-26).
 #
-# Characters come from `presets.PRESETS`, the realistic list from
-# `presets.REALISTIC_REFS` and builds from `skeleton.BUILDS`, all read out of the
-# installed package, so adding a character here is adding it there. Nothing about
+# Characters come from `presets.PRESETS`, read out of the installed package, so adding a character here is adding it there. Nothing about
 # the names below is baked in.
 set -euo pipefail
 
@@ -68,9 +60,8 @@ case "${1-}" in
 esac
 
 # Where a build's renders go, relative to ref-out/, as a directory prefix. The
-# default build sits at the top level with a bare character name, which is what
-# the committed files and the README's links use; the realistic build goes under
-# real/, which is the deferral described above.
+# one build, the tall chibi, sits at the top level with a bare character name,
+# which is what the committed files and the README's links use.
 #
 # A build with no entry here is a hard error rather than a guess. These paths are
 # committed and linked from the README, so inventing one silently would leave a
@@ -79,7 +70,6 @@ esac
 prefix_for() {
     case "$1" in
         chibi) printf '' ;;
-        realistic) printf 'real/' ;;
         *) return 1 ;;
     esac
 }
@@ -115,23 +105,14 @@ print(" ".join(sorted(getattr(mod, os.environ["NAME"]))))
 ' 2>/dev/null || return 1
 }
 presets=$(listing presets PRESETS) || { echo "could not read PRESETS; is the package installed?  uv sync" >&2; exit 1; }
-builds=$(listing skeleton BUILDS) || { echo "could not read BUILDS; is the package installed?  uv sync" >&2; exit 1; }
-realistic=$(listing presets REALISTIC_REFS) || { echo "could not read REALISTIC_REFS; is the package installed?  uv sync" >&2; exit 1; }
+# One build since the realistic build was retired (`docs/tall-chibi-plan.md`).
+builds=chibi
 
 for build in $builds; do
     if ! prefix_for "$build" >/dev/null; then
         echo "build '$build' has no ref-out/ prefix in $(basename "$0"); add one" >&2
         exit 1
     fi
-done
-
-# Every name in the realistic list has to be a character, or a typo there
-# silently drops a realistic render instead of failing.
-for preset in $realistic; do
-    case " $presets " in
-        *" $preset "*) ;;
-        *) echo "REALISTIC_REFS names '$preset', which is not in PRESETS" >&2; exit 1 ;;
-    esac
 done
 
 # Render into a staging directory and only copy over ref-out/ once every file has
@@ -160,15 +141,6 @@ build_of=()
 rel_of=()
 for preset in $presets; do
     for build in $builds; do
-        # The chibi is published for everyone; the realistic build only for
-        # `REALISTIC_REFS`, currently everyone too, but the check stays in
-        # case a future preset is ever left off it on purpose.
-        if [ "$build" != chibi ]; then
-            case " $realistic " in
-                *" $preset "*) ;;
-                *) continue ;;
-            esac
-        fi
         preset_of+=("$preset")
         build_of+=("$build")
         rel_of+=("$(prefix_for "$build")${preset}")
@@ -200,7 +172,7 @@ while [ "$i" -lt "$characters" ]; do
     # would also touch every committed file at once on a wording change to
     # attribution.py's TOOL_URL or LICENSE_STATEMENT, the exact churn this
     # comparison exists to avoid.
-    "$root/render.sh" --out "$stage/$rel" --preset "${preset_of[$i]}" --build "${build_of[$i]}" \
+    "$root/render.sh" --out "$stage/$rel" --preset "${preset_of[$i]}" \
         --no-metadata >/dev/null
     for ext in svg png; do
         if [ ! -s "$stage/$rel.$ext" ]; then
@@ -215,7 +187,7 @@ while [ "$i" -lt "$characters" ]; do
         # The README's copy. Rendered rather than composited afterwards, so it
         # goes through exactly the same path as the art and cannot drift from it.
         "$root/render.sh" --out "$stage/on-white/$rel" --preset "${preset_of[$i]}" \
-            --build "${build_of[$i]}" --background white --no-metadata >/dev/null
+            --background white --no-metadata >/dev/null
         if [ ! -s "$stage/on-white/$rel.png" ]; then
             echo "render produced no on-white/$rel.png, leaving ref-out/ alone" >&2
             exit 1
@@ -293,9 +265,9 @@ done
 # and a script that removes tracked files without being asked is worse than a
 # stale one.
 for orphan in "$root"/ref-out/*_real.svg "$root"/ref-out/*_real.png \
-    "$root"/ref-out/on-white/*_real.png; do
+    "$root"/ref-out/on-white/*_real.png "$root"/ref-out/real/*; do
     [ -e "$orphan" ] || continue
-    echo "  ORPHAN     ${orphan#"$root"/ref-out/}  (realistic renders live in real/ now; git rm it)" >&2
+    echo "  ORPHAN     ${orphan#"$root"/ref-out/}  (the realistic build is retired; git rm it)" >&2
     changed=$((changed + 1))
 done
 

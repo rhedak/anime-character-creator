@@ -25,7 +25,6 @@ from anime_character_creator import (
     HAIRSTYLES,
     NEUTRAL_BASES,
     PRESETS,
-    REALISTIC_REFS,
     ROSTERS,
     CharacterParams,
     FaceStyle,
@@ -37,9 +36,9 @@ from anime_character_creator import (
 )
 
 REF_OUT = Path(__file__).resolve().parent.parent / "ref-out"
-# Where each build's renders live under ref-out/, matching `prefix_for` in
-# refresh-ref-out.sh. The chibi is the published build and sits at the top level.
-PREFIX = {"chibi": "", "realistic": "real/"}
+# Where the renders live under ref-out/, matching `prefix_for` in
+# refresh-ref-out.sh: the tall chibi, the one published build, at the top level.
+PREFIX = {"chibi": ""}
 
 
 @pytest.mark.parametrize("preset", sorted(PRESETS))
@@ -280,20 +279,10 @@ def test_the_figure_is_drawn_on_transparency(preset: str) -> None:
 
 
 def _published() -> list[tuple[str, str, str]]:
-    """Every (preset, build, path) `ref-out/` is supposed to hold, minus the cover.
-
-    The chibi is published for every character; the realistic build only for
-    `REALISTIC_REFS`, and under `real/`. Derived here rather than listed so the
-    tests and `refresh-ref-out.sh` cannot disagree about what should exist: they
-    read the same two names out of the package.
-    """
-    out = []
-    for preset in sorted(PRESETS):
-        for build in sorted(BUILDS):
-            if build != "chibi" and preset not in REALISTIC_REFS:
-                continue
-            out.append((preset, build, f"{PREFIX[build]}{preset}"))
-    return out
+    """Every (preset, build, path) `ref-out/` is supposed to hold, minus the cover:
+    the tall chibi, every character. The realistic renders under `real/` went
+    with the realistic build (`docs/tall-chibi-plan.md`, R2)."""
+    return [(preset, "chibi", f"{PREFIX['chibi']}{preset}") for preset in sorted(PRESETS)]
 
 
 @pytest.mark.parametrize(("preset", "build", "rel"), _published())
@@ -310,17 +299,16 @@ def test_ref_out_matches_the_code(preset: str, build: str, rel: str) -> None:
     assert committed.read_text() == expected, f"{rel}.svg is stale: ./refresh-ref-out.sh"
 
 
-def test_the_deferred_builds_left_nothing_behind() -> None:
-    """No `*_real` files at the old top-level paths.
-
-    The realistic renders moved under `real/` on 2026-08-08 when they were
-    deferred. A leftover at the old path is the worst kind of stale: nothing
-    renders to it any more, so no comparison ever looks at it again, and it sits
-    in the repository looking like current art forever. The script reports these
-    rather than deleting them, since `ref-out/` is committed.
-    """
+def test_the_retired_builds_left_nothing_behind() -> None:
+    """No realistic renders anywhere under `ref-out/`: not the old top-level
+    `*_real` files, nor `real/`, which went with the realistic build
+    (`docs/tall-chibi-plan.md`, R2). A leftover is the worst kind of stale:
+    nothing renders to it any more, so no comparison ever looks at it again. The
+    script reports these rather than deleting them, since `ref-out/` is
+    committed."""
     left = sorted(p.name for p in REF_OUT.rglob("*_real.*"))
-    assert not left, f"realistic renders live in ref-out/real/ now; git rm {left}"
+    left += sorted(p.name for p in (REF_OUT / "real").glob("*"))
+    assert not left, f"the realistic build is retired; git rm {left}"
 
 
 @pytest.mark.parametrize("build", sorted(BUILDS))
@@ -1126,8 +1114,7 @@ def test_the_byline_is_not_the_subtitle() -> None:
     assert ys["BOOK ONE"] < p.height * 0.5, "a subtitle belongs under the title, not at the foot"
 
 
-@pytest.mark.parametrize("build", sorted(BUILDS))
-def test_the_cover_renders_and_stays_deterministic(build: str) -> None:
+def test_the_cover_renders_and_stays_deterministic() -> None:
     """Same params, same bytes, the same contract `render_character` holds.
 
     The mist banks are the reason this is worth pinning: their skyline comes
@@ -1135,7 +1122,7 @@ def test_the_cover_renders_and_stays_deterministic(build: str) -> None:
     cover can be compared rather than eyeballed. An RNG would pass every other
     check here and fail only this one.
     """
-    p = cover.CoverParams(build=build, subtitle="BOOK ONE")
+    p = cover.CoverParams(subtitle="BOOK ONE")
     svg = cover.render_cover(p)
     assert svg == cover.render_cover(p)
     assert svg.startswith("<svg") and svg.rstrip().endswith("</svg>")
