@@ -1235,7 +1235,8 @@ def _long_scaled(fall: float) -> tuple[Point, list[Segment]]:
     body-relative branch of `_hair_fall` exists for.
 
     The realistic build used to switch this to a separate trace off
-    `ref/satoko-real.jpg` (`_LONG_REAL_*`, `harness/trace/real/satoko_real.py`),
+    `ref/satoko-real.jpg` (`harness/trace/real/satoko_real.py`; later the
+    `long_traced_real` cut, retired with that build),
     used only at the exact `fall` it was measured at. The owner's call on
     2026-08-12 was to remove that override: once the build slider made every
     value in between reachable, the chibi contour stretched past where it was
@@ -1393,181 +1394,6 @@ def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
                 [((side * 1.10 * v, 0.70 * v), (side * 1.06 * v, 1.30 * v))],
             )
         )
-    return out
-
-
-# Satoko's realistic-build hair, traced off `ref/satoko-real.jpg`
-# (`harness/trace/real/satoko_real.py`). Used to be an invisible override on
-# `long_traced` at one exact `fall`; the owner's call on 2026-08-12 was that
-# the chibi stretch of `long_traced` reads better as the default, and that
-# this measured adult silhouette should live as its own pickable cut instead
-# (`long_traced_real`). The crown is the adult one; the falls stretch with
-# `fall` the same way `_long_scaled` stretches the chibi contour, so the cut
-# works at any build/length even though it was only measured once. At the
-# chibi end it will look tight: that is accepted, the GUI is for trying
-# things.
-_LONG_REAL_EDGE_START: Point = (-0.609, 1.875)
-_LONG_REAL_EDGE: list[Segment] = [
-    ((-0.654, 1.953), (-0.699, 2.031)),
-    ((-0.832, 1.572), (-0.859, 1.273)),
-    ((-0.976, 1.374), (-1.050, 1.393)),
-    ((-1.055, 1.376), (-1.061, 1.359)),
-    ((-0.978, 0.829), (-0.933, 0.606)),
-    ((-0.928, 0.053), (-0.870, -0.334)),
-    ((-0.837, -0.460), (-0.783, -0.590)),
-    ((-0.702, -0.733), (-0.579, -0.859)),
-    ((-0.471, -0.941), (-0.346, -1.006)),
-    ((-0.152, -1.078), (0.056, -1.071)),
-    ((0.329, -0.999), (0.571, -0.879)),
-    ((0.698, -0.755), (0.785, -0.613)),
-    ((0.840, -0.471), (0.881, -0.338)),
-    ((0.935, 0.061), (0.955, 0.694)),
-    ((1.015, 0.927), (1.074, 1.374)),
-    ((1.015, 1.402), (0.870, 1.290)),
-    ((0.832, 1.570), (0.710, 2.061)),
-]
-_LONG_REAL_LINE_START: Point = (-0.566, 1.599)
-_LONG_REAL_LINE: list[Segment] = [
-    ((-0.634, 1.105), (-0.695, 0.571)),
-    ((-0.695, 0.264), (-0.679, -0.036)),
-    ((-0.622, -0.036), (-0.574, -0.050)),
-    ((-0.396, -0.163), (-0.253, -0.262)),
-    ((-0.219, -0.230), (-0.186, -0.199)),
-    ((-0.113, -0.232), (-0.060, -0.261)),
-    ((0.027, -0.343), (0.130, -0.454)),
-    ((0.183, -0.532), (0.224, -0.616)),
-    ((0.256, -0.518), (0.308, -0.424)),
-    ((0.434, -0.274), (0.583, -0.124)),
-    ((0.624, -0.080), (0.680, -0.071)),
-    ((0.689, -0.021), (0.704, 0.025)),
-    ((0.715, 0.317), (0.705, 0.613)),
-    ((0.637, 1.116), (0.588, 1.597)),
-]
-# House-weight blow-up from the head centre. Same number the override used:
-# 1.2 keeps the measured shape under the realistic hair ceiling (apex 1.078
-# * 1.2 < 1.36) while matching the chibi cut's generous volume better than
-# a 1.0 silhouette sized exactly to the photo.
-_LONG_REAL_SCALE = 1.2
-# Deeper tip of the two falls, after scale. The stretch maps this onto
-# `fall` the way `_LONG_BASE_TIP` maps the chibi contour.
-_LONG_REAL_BASE_TIP = max(
-    _scale_point(_LONG_REAL_EDGE_START, _LONG_REAL_SCALE)[1],
-    max(_scale_point(e, _LONG_REAL_SCALE)[1] for _, e in _LONG_REAL_EDGE),
-)
-# Pale-tip lift on the adult contour. 0 was the only value that did not poke
-# a gold wedge through either fall at the measured silhouette; other falls
-# may look odd, which is the trade the GUI accepts.
-_LONG_REAL_TONE_LIFT = 0.0
-# Same crown split index as the chibi long trace: both put nine segments
-# between a fall tip and the crown apex.
-_LONG_REAL_CROWN_AT = 9
-
-
-def _long_real_q(fall: float) -> Callable[[Point], Point]:
-    """Map a house-scaled real-trace point so the falls land at `fall`."""
-    span = _LONG_REAL_BASE_TIP - _HAIR_CHEEK_Y
-    k = (fall - _HAIR_CHEEK_Y) / span if span else 1.0
-
-    def q(pt: Point) -> Point:
-        y = pt[1]
-        return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
-
-    return q
-
-
-def _long_real_scaled(fall: float) -> tuple[Point, list[Segment]]:
-    """The adult mass contour, scaled to house weight, falls stretched to `fall`."""
-    q = _long_real_q(fall)
-    start = q(_scale_point(_LONG_REAL_EDGE_START, _LONG_REAL_SCALE))
-    edge = [
-        (q(_scale_point(c, _LONG_REAL_SCALE)), q(_scale_point(e, _LONG_REAL_SCALE)))
-        for c, e in _LONG_REAL_EDGE
-    ]
-    return start, edge
-
-
-def _long_real_line(fall: float) -> tuple[Point, list[Segment]]:
-    """The adult hairline, same fall stretch as the mass."""
-    q = _long_real_q(fall)
-    line = [
-        (q(_scale_point(c, _LONG_REAL_SCALE)), q(_scale_point(e, _LONG_REAL_SCALE)))
-        for c, e in _LONG_REAL_LINE
-    ]
-    hs0 = q(_scale_point(_LONG_REAL_LINE_START, _LONG_REAL_SCALE))
-    start = (hs0[0] + _LONG_LINE_TUCK, hs0[1])
-    ctrl, end = line[-1]
-    line[-1] = (ctrl, (end[0] - _LONG_LINE_TUCK, end[1]))
-    return start, line
-
-
-def _long_real_mass(fall: float) -> tuple[Point, list[Segment]]:
-    start, edge = _long_real_scaled(fall)
-    end = edge[-1][1]
-    return start, [*edge, (((end[0] + start[0]) / 2, max(end[1], start[1]) + 0.16), start)]
-
-
-def _long_real_fall_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
-    start, edge = _long_real_scaled(fall)
-    return [
-        _reverse(edge[_LONG_REAL_CROWN_AT][1], edge[_LONG_REAL_CROWN_AT + 1 :]),
-        (start, edge[: _LONG_REAL_CROWN_AT + 1]),
-    ]
-
-
-def _long_real_hairline(fall: float) -> tuple[Point, list[Segment], list[Segment]]:
-    """Same close as `_long_traced_hairline`: both mass tips as path ends, no
-    radial inset, straight chords on the silhouette."""
-    start, edge = _long_real_scaled(fall)
-    hs, hg = _long_real_line(fall)
-    end = hg[-1][1]
-    mass_start, mass_back = _reverse(start, edge)
-    back: list[Segment] = [
-        (((end[0] + mass_start[0]) / 2, (end[1] + mass_start[1]) / 2), mass_start),
-        *mass_back,
-        (((start[0] + hs[0]) / 2, (start[1] + hs[1]) / 2), hs),
-    ]
-    return hs, hg, back
-
-
-def _long_real_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
-    start, edge = _long_real_scaled(fall)
-    lift = _LONG_REAL_TONE_LIFT
-    top = min(e[1] for _, e in edge)
-    bottom = max(e[1] for _, e in edge)
-    fade = _fade_y(top, bottom)
-    floor = bottom + 1.0
-    wide = max(abs(e[0]) for _, e in edge) + 0.25
-    pts: list[Point] = []
-    prev = start
-    for ctrl, end in edge:
-        for i in range(1, 7):
-            t = i / 6
-            x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * ctrl[0] + t**2 * end[0]
-            y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * ctrl[1] + t**2 * end[1]
-            pts.append((x, max(y - lift, fade)))
-        prev = end
-    chain: list[Segment] = []
-    here: Point = (-wide, fade)
-    for q in [*pts, (wide, fade), (wide, floor), (-wide, floor), (-wide, fade)]:
-        chain.append((((here[0] + q[0]) / 2, (here[1] + q[1]) / 2), q))
-        here = q
-    return [((-wide, fade), chain)]
-
-
-def _long_real_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
-    """Adult crown sweeps (fixed) and fall lines (stretched with the mass)."""
-    q = _long_real_q(fall)
-    out: list[tuple[Point, list[Segment]]] = []
-    for start, c, e in (
-        ((-0.16, -0.92), (-0.42, -0.68), (-0.62, -0.32)),
-        ((0.20, -0.94), (0.46, -0.70), (0.66, -0.34)),
-        ((-0.92, 0.10), (-0.98, 0.75), (-0.94, 1.35)),
-        ((0.94, 0.10), (1.00, 0.75), (0.96, 1.35)),
-    ):
-        s = q(_scale_point(start, _LONG_REAL_SCALE))
-        cc = q(_scale_point(c, _LONG_REAL_SCALE))
-        ee = q(_scale_point(e, _LONG_REAL_SCALE))
-        out.append((s, [(cc, ee)]))
     return out
 
 
@@ -2426,15 +2252,6 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # is what keeps a long haircut the same haircut when the build changes;
         # a head-relative range would freeze her hair at one length and it would
         # ride up the adult's back.
-    ),
-    "long_traced_real": Hairstyle(
-        _long_real_mass,
-        _long_real_hairline,
-        _long_real_fall_edge,
-        _long_real_tip_edge,
-        strands=_long_real_strands,
-        # Same body-relative length as `long_traced`. The silhouette is the
-        # adult photo trace; the falls still stretch with `fall`.
     ),
     "short_crop": Hairstyle(
         _crop_mass_shape,

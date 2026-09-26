@@ -137,10 +137,6 @@
       "label": "Long"
     },
     {
-      "id": "long_traced_real",
-      "label": "Long, realistic"
-    },
-    {
       "id": "short_crop",
       "label": "Short crop"
     },

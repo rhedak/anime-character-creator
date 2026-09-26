@@ -495,7 +495,6 @@ HAIRSTYLE_LABELS: dict[str, str] = {
     "long_blunt": "Long, blunt",
     "short_layered": "Short, layered",
     "long_traced": "Long",
-    "long_traced_real": "Long, realistic",
     "short_crop": "Short crop",
     "short_tousled": "Short, tousled",
     "long_center_part": "Long, center part",

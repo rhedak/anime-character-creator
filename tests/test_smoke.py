@@ -2300,5 +2300,9 @@ def test_an_old_link_loads_as_the_tall_chibi():
     old["heads"] = 6.0
     old["body"] = None
     p = params_from_dict(old)
+    real_hair = params_from_dict(
+        {**params_to_dict(PRESETS["satoko"]), "hairstyle": "long_traced_real"}
+    )
+    assert real_hair.hairstyle == "long_traced"
     assert p.body == CharacterParams().body
     assert render_character(p) == render_character(PRESETS["satoko"])

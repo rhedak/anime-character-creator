@@ -51,6 +51,10 @@ def params_from_dict(data: dict) -> CharacterParams:
     data.pop("heads", None)
     if "body" in data and data["body"] is None:
         del data["body"]
+    # `long_traced_real` was that build's own haircut and went with it; its
+    # chibi counterpart is the same cut.
+    if data.get("hairstyle") == "long_traced_real":
+        data["hairstyle"] = "long_traced"
     try:
         outfit = Outfit(**data.pop("outfit", {}))
         face = FaceStyle(**data.pop("face", {}))

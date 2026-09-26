@@ -4,7 +4,8 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R3a, R3b done; R3c (`long_traced_real`) next. Autonomous, per the
+- **Now:** R3 done; R4, the height slider's study, next: a stop for the
+  owner's pick. Autonomous, per the
   owner; R4's study is the next stop for input.
 - **Byte guard for R3:** `./harness/run.sh harness/tall_chibi/snapshot.py
   out/tall_chibi/after`, then `cmp` against `out/tall_chibi/before` (108
@@ -21,11 +22,22 @@ The record for `tall-chibi-plan.md`, newest first.
 | R0 inventory | done, signed off | inventory below, each item classed and stepped |
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
-| R3 delete the dead code | R3a, R3b done | snapshot 108/108 byte-identical; 484 passed |
+| R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
 | R4 the height slider | | |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R3c: `long_traced_real` (2026-09-26)
+
+The owner's call: removed, the realistic build's own cut. Its trace
+(`_LONG_REAL_*`, the `_long_real_*` functions, 170 lines), its `HAIRSTYLES`
+entry and its catalogue label. `urlstate` maps an old link's
+`long_traced_real` to `long_traced`, the chibi cut it was split from, so the
+link still renders. **Measured:** 107 of the snapshot's 108 renders
+byte-identical, the one gone being that hairstyle's; 480 passed (the
+hairstyle parametrizations one fewer); `ref-out/` matches; the catalogue
+refreshed.
 
 ### R3b: the build-gated branches (2026-09-26)
 
