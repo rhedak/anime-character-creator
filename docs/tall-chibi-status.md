@@ -4,8 +4,7 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R4a K0, the knee study shown (`out/tall_chibi/knee_study.png`),
-  waiting for the owner's pick. The owner picked distribution C and the range
+- **Now:** R4a done (the owner picked 0.5); R4b, the stretch, next. The owner picked distribution C and the range
   0.8 to 1.3, asked for the knee planned properly and shown on the bare
   render, and deferred heights in compositions (R4c). Autonomous, per the
   owner; R4's study is the next stop for input.
@@ -25,10 +24,32 @@ The record for `tall-chibi-plan.md`, newest first.
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
-| R4 the height slider | C, 0.8 to 1.3 picked; knee study shown | |
+| R4 the height slider | R4a done (a real knee) | boots byte-identical; 480 passed |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R4a K1: the real knee (2026-09-26)
+
+The owner picked 0.5. The profile's landmark is renamed for what it is,
+`boot_y` (`Skeleton`, `BodyProfile`, the `tall_chibi` profile's 3.39), and
+the boot's default shaft still measures off it. `Skeleton.knee_y` is the real
+knee, half way from the hip to the ankle, set in `BodyProfile.applied` and
+left alone by the belt line (the waist-shift test holds the knees and soles
+still). `_real_knee_y` removed, its readers on `sk.knee_y`, which is the same
+value; `_crotch_y` one rule, dressed or bare; the trousers' crotch reads the
+real knee too.
+
+**Predicted:** every boot byte-identical; the legs move where they show,
+most on trousers, little under skirts. **Measured:** all 68 boots (17
+characters, dressed and tunic-off, both feet) found character for character
+in the renders from before; `--pixels`: trousers 6,200 to 7,500 pixels at 2x
+(the thigh taper and the inseam), skirts 10 (Satoko), 64 (Reika), 676
+(Keiko), the cover, the sheets and both bases. Before and after:
+`out/tall_chibi/k1_cast.png` (on trousers the inseam now runs to a narrow
+pointed arch and the thighs converge a little; skirts and coats unchanged to
+the eye). 480 passed; `ref-out/` refreshed. `../valley_of_mist` now stale,
+regenerated at R5 on the owner's say-so.
 
 ### R4a K0: the knee study (2026-09-26)
 

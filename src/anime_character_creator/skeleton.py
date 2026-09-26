@@ -59,7 +59,15 @@ class Skeleton:
     # sit outside the shoulder to read as limbs; a longer figure's tuck in.
     arm_x: float
     leg_half_w: float
+    # The knee: half way from the hip to the ankle, set when a body profile is
+    # applied and left where it is by the belt line (`waist_shift`), which moves
+    # the waist and hip only (`docs/tall-chibi-plan.md`, R4a).
     knee_y: float
+    # Where a default boot's shaft is measured off: the landmark a body profile
+    # measured as its reference's boot top. It used to be called the knee and
+    # was read as one by the legs, which it is not: above the hip on the
+    # long-torso profile.
+    boot_y: float
     ankle_y: float
     foot_y: float
     # How much bust the figure carries, 0 for none. Only the knob is stored:
@@ -120,7 +128,8 @@ class BodyProfile:
     waist_y: float | None = None
     hip_y: float | None = None
     hem_y: float | None = None
-    knee_y: float | None = None
+    # The reference's boot top (see `Skeleton.boot_y`); the knee is derived.
+    boot_y: float | None = None
     ankle_y: float | None = None
     shoulder_half_w: float | None = None
     waist_half_w: float | None = None
@@ -154,7 +163,7 @@ class BodyProfile:
             waist_y=y(self.waist_y),
             hip_y=y(self.hip_y),
             hem_y=y(self.hem_y),
-            knee_y=y(self.knee_y),
+            boot_y=y(self.boot_y),
             ankle_y=y(self.ankle_y),
             shoulder_half_w=w(self.shoulder_half_w),
             waist_half_w=w(self.waist_half_w),
@@ -166,7 +175,7 @@ class BodyProfile:
         )
 
     def applied(self, sk: Skeleton, build: float) -> Skeleton:
-        ys = ("shoulder_y", "waist_y", "hip_y", "hem_y", "knee_y", "ankle_y")
+        ys = ("shoulder_y", "waist_y", "hip_y", "hem_y", "boot_y", "ankle_y")
         ws = (
             "shoulder_half_w",
             "waist_half_w",
@@ -185,6 +194,9 @@ class BodyProfile:
             v = getattr(self, name)
             if v is not None:
                 changes[name] = v * sk.head_r
+        # The real knee, half way down the leg this profile gives the figure.
+        hip, ankle = changes.get("hip_y", sk.hip_y), changes.get("ankle_y", sk.ankle_y)
+        changes["knee_y"] = hip + (ankle - hip) * 0.5
         return replace(sk, **changes)
 
 
@@ -329,6 +341,7 @@ def build_skeleton(
         arm_x=head_r * _lerp(0.85, 1.20, t) * (1.0 + 0.09 * f),
         leg_half_w=head_r * _lerp(0.22, 0.42, t),
         knee_y=chin_y + body * _lerp(0.81, 0.708, t),
+        boot_y=chin_y + body * _lerp(0.81, 0.708, t),
         ankle_y=chin_y + body * _lerp(0.93, 0.95, t),
         foot_y=chin_y + body,
         bust=bust,

@@ -3854,7 +3854,7 @@ BODY_TYPES: dict[str, BodyProfile] = {
         waist_y=2.384,
         hip_y=2.955,
         hem_y=4.26,
-        knee_y=3.39,
+        boot_y=3.39,
         ankle_y=5.55,
         waist_half_w=0.563,
         hip_half_w=0.83,
@@ -7438,13 +7438,12 @@ _CROTCH_AT = 0.28
 
 
 def _crotch_y(sk: Skeleton, p: CharacterParams) -> float:
-    """Where the bare legs part: `_CROTCH_AT` of the way from the hip to the
-    knee. With the tunic off, the real knee (`_real_knee_y`): the landmark is
-    above the hip on the long-torso profile, and bare the legs parted at the
-    hip itself (`docs/bare-body-plan.md`, step 4d). Clothed, the landmark, as
-    it always was; trousers keep their own."""
-    knee = _real_knee_y(sk) if p.outfit.tunic_color is None else sk.knee_y
-    return sk.hip_y + (knee - sk.hip_y) * _CROTCH_AT
+    """Where the legs part: `_CROTCH_AT` of the way from the hip to the knee,
+    the real one (`Skeleton.knee_y`, `docs/tall-chibi-plan.md`, R4a). Bare it
+    read a real knee from step 4d of `bare-body-plan.md`; clothed it read the
+    boot landmark, above the hip on the long-torso profile, until the knee was
+    made real for everyone."""
+    return sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
 
 
 def _leg_tuck_top_y(sk: Skeleton, p: CharacterParams) -> float:
@@ -7586,15 +7585,6 @@ def _trousers(
 # nothing for a per-character field to hold, the way there is for a tunic or a
 # skirt. A plain neutral cotton tone, the way OUTLINE is a plain neutral line
 # regardless of what it outlines.
-def _real_knee_y(sk: Skeleton) -> float:
-    """Where the knee really is: `sk.knee_y`, or mid-leg where that landmark is
-    above it. A body profile puts `knee_y` where its reference's default boot
-    top lands, and on `tall_chibi_long_torso` that is above the hip, which no
-    knee is. Read where a part needs the joint itself (`_boot`'s tall shaft,
-    `_underpants`' hem); everywhere else the landmark stands."""
-    return max(sk.knee_y, sk.hip_y + (sk.ankle_y - sk.hip_y) * 0.5)
-
-
 def _underpants(
     sk: Skeleton, color: str, gap: float, top_y: float, crotch_y: float, w_top: float
 ) -> str:
@@ -7607,7 +7597,7 @@ def _underpants(
     # Off the real knee: on the long-torso profile the landmark is above the
     # hip, and the hem came out above the top, the underpants gone entirely on
     # every untucked figure (`docs/bare-body-status.md`, steps 1 and 3).
-    hem_y = crotch_y + (_real_knee_y(sk) - crotch_y) * 0.22
+    hem_y = crotch_y + (sk.knee_y - crotch_y) * 0.22
     w_waist = gap + w_top
     # A little narrower at the hem than the waist, which is what a hem gathered
     # by elastic looks like rather than a straight-sided box.
@@ -7785,15 +7775,13 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
     # stops a little short of the knee itself, because a shaft that reaches the
     # joint reads as a legging rather than as a boot pulled on.
     #
-    # `sk.knee_y` is where a body profile put it to make the default shaft land
-    # on its reference's boot top, and under Katherina's skirt it can sit above
-    # the hip, which no knee does: on `tall_chibi_long_torso` it is above the belt,
-    # so a shaft sent "to the knee" came up to the waist. The extension aims at the
-    # real knee instead, the lower of that landmark and mid-leg, which is the
-    # landmark itself everywhere it was already below the hip (the shared chibi
-    # and the realistic build), and the default shaft is untouched.
-    base_top = sk.ankle_y - (sk.ankle_y - sk.knee_y) * 0.32
-    knee_y = _real_knee_y(sk)
+    # `sk.boot_y` is where a body profile put the default shaft's reference, its
+    # own reference's boot top; the tall shaft aims at the real knee,
+    # `sk.knee_y`, which on `tall_chibi_long_torso` is well below that landmark
+    # (the landmark is above the hip there: a shaft sent to it came up to the
+    # belt). The two were one field until R4a of `docs/tall-chibi-plan.md`.
+    base_top = sk.ankle_y - (sk.ankle_y - sk.boot_y) * 0.32
+    knee_y = sk.knee_y
     tall_top = sk.ankle_y - (sk.ankle_y - knee_y) * 0.92
     top_y = base_top + (tall_top - base_top) * max(0.0, min(1.0, p.outfit.boot_shaft))
     # Off the ankle it wraps, not off the knee above it, so the shaft cannot come

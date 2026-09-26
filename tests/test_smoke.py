@@ -557,7 +557,7 @@ def test_a_tall_boot_stops_below_the_knee_not_at_the_belt(body: str) -> None:
     sk = character.skeleton_for(p)
     boot = character._boot(sk, p, sk.head_cx, sk.leg_half_w, 1)
     top = min(float(v) for v in re.findall(r"[\d.]+ ([\d.]+)", boot))
-    knee = max(sk.knee_y, sk.hip_y + (sk.ankle_y - sk.hip_y) * 0.5)
+    knee = sk.knee_y
     assert top >= knee - 0.01 * sk.head_r, (
         f"{body}: the tall shaft tops out at {top:.1f}, above the real knee at {knee:.1f}"
     )
@@ -2142,7 +2142,7 @@ def test_the_underwear_top_is_drawn_bare_with_a_bust_or_when_asked():
 
 @pytest.mark.parametrize("name", sorted(PRESETS))
 def test_the_underpants_have_height_on_every_preset(name):
-    """The hem reads the real knee (`_real_knee_y`): on the long-torso profile
+    """The hem reads the real knee (`Skeleton.knee_y`): on the long-torso profile
     the knee landmark is above the hip, and the underpants came out with the
     hem above the top, gone entirely on every untucked figure. Trousers off
     too: under them there are none to draw."""
@@ -2176,16 +2176,17 @@ def test_the_bare_arm_has_no_cap_and_no_line_across_its_top():
     assert any(y > cuff_y + character._stroke_w(sk) for y in ys if y < sk.waist_y)
 
 
-def test_the_bare_crotch_reads_the_real_knee():
-    """With the tunic off the legs part below the hip, off the real knee
-    (`docs/bare-body-plan.md`, step 4d): on the long-torso profile the knee
-    landmark is above the hip and the legs parted at the hip itself. Clothed,
-    the landmark as before."""
-    worn = PRESETS["satoko"]
-    sk = character.skeleton_for(worn)
-    assert character._crotch_y(sk, worn) < sk.hip_y
-    bare = _tunic_off(worn)
-    assert character._crotch_y(sk, bare) > sk.hip_y + character._stroke_w(sk) * 4
+def test_the_crotch_reads_the_real_knee():
+    """The legs part below the hip, off the real knee (`Skeleton.knee_y`, half
+    way from the hip to the ankle; `docs/tall-chibi-plan.md`, R4a), dressed or
+    bare alike. The long-torso profile's old knee landmark, which the boots
+    still measure off as `boot_y`, sits above the hip, and the legs used to
+    part at the hip itself."""
+    for p in (PRESETS["satoko"], _tunic_off(PRESETS["satoko"])):
+        sk = character.skeleton_for(p)
+        assert sk.boot_y < sk.hip_y < sk.knee_y
+        assert sk.knee_y == pytest.approx(sk.hip_y + (sk.ankle_y - sk.hip_y) * 0.5)
+        assert character._crotch_y(sk, p) > sk.hip_y + character._stroke_w(sk) * 4
 
 
 @pytest.mark.parametrize("name", sorted(PRESETS))
