@@ -4,9 +4,9 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R5 docs done; `../valley_of_mist` waits for the owner's say-so
-  (the real knee moved every trousered figure). R4b's range awaits the
-  owner's look. The owner picked distribution C and the range
+- **Now:** the plan is done but R4c (heights in compositions), deferred at
+  the owner's call. The owner signed off the knee and the slider ("all
+  values look good") and `../valley_of_mist` is regenerated. The owner picked distribution C and the range
   0.8 to 1.3, asked for the knee planned properly and shown on the bare
   render, and deferred heights in compositions (R4c). Autonomous, per the
   owner; R4's study is the next stop for input.
@@ -26,10 +26,19 @@ The record for `tall-chibi-plan.md`, newest first.
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
-| R4 the height slider | R4a, R4b done; R4c deferred | 1.0 byte-identical; 483 passed; browser checked |
-| R5 docs and the downstream | docs done; valley_of_mist pending | |
+| R4 the height slider | R4a, R4b done, signed off; R4c deferred | 1.0 byte-identical; 483 passed; browser checked |
+| R5 docs and the downstream | done | valley_of_mist regenerated |
 
 ## Findings, newest first
+
+### R5: `../valley_of_mist` regenerated (2026-09-26)
+
+At the owner's say-so: 52 images, 51 with pixels moved (Satoko 10, Reika
+64, the trousered figures and the inserts they stand in up to 29,328), and
+Chiyo's reference metadata only (its embedded link now has `height` and no
+`heads`; her skirt hides the legs). Only the PNGs committed there: two prose
+edits already in that tree (`ch01_kiriguchi.md`, `.thesaurus-ignore`) were
+someone else's and were left as found.
 
 ### R5: the docs (2026-09-26)
 
