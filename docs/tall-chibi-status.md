@@ -4,7 +4,8 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R4a done (the owner picked 0.5); R4b, the stretch, next. The owner picked distribution C and the range
+- **Now:** R4b built; R5 (docs, then `../valley_of_mist` on the owner's
+  say-so) next. The range and the stretch await the owner's look. The owner picked distribution C and the range
   0.8 to 1.3, asked for the knee planned properly and shown on the bare
   render, and deferred heights in compositions (R4c). Autonomous, per the
   owner; R4's study is the next stop for input.
@@ -24,10 +25,37 @@ The record for `tall-chibi-plan.md`, newest first.
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
-| R4 the height slider | R4a done (a real knee) | boots byte-identical; 480 passed |
+| R4 the height slider | R4a, R4b done; R4c deferred | 1.0 byte-identical; 483 passed; browser checked |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R4b: the height slider (2026-09-26)
+
+`CharacterParams.height` (1.0), `skeleton.stretched(sk, h, refit)`:
+distribution C in head radii (a third of the extra length to the torso,
+shoulder to hip; two thirds to the legs, hip to sole), then refitted to the
+canvas by a skeleton built at the new height for its canvas geometry alone.
+Not applied at exactly 1.0. Catalogue `height` 0.8 to 1.3, a web row, an
+`api.md` row.
+
+**First version, wrong:** stretching the profile and rebuilding. The widths a
+profile does not measure (the shoulders, the arms) come from the lerp over
+`heads`, so a taller figure's shoulders narrowed (0.94 to 0.85 head radii at
+1.3); the new test caught it. Stretching the built skeleton keeps every
+width.
+
+**Predicted and measured:** at 1.0 the 107 snapshot renders byte-identical
+to the commit before (taken properly by stashing: a first comparison was
+against a snapshot taken after the edit, and proved nothing); 483 passed;
+across 0.8 to 1.3 (`harness/tall_chibi/height_range.py`,
+`out/tall_chibi/height_range.png`: Satoko, Satoshi, Krista, Keiko, Kyoko,
+Reika, Katherina, Krista in the base layer) hems, aprons, the hakama, both
+coats, the traced lab coat and jacket, the katana, boots, bust and bare body
+all follow, and no figure is clipped by its canvas at either end. Satoshi's
+ink touches his canvas edge at every height, 1.0 included: already so, not
+the stretch. Browser: the slider is in the Build section, and at 1.3 Krista
+renders taller and the link carries `height`.
 
 ### R4a K1: the real knee (2026-09-26)
 

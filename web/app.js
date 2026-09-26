@@ -263,6 +263,14 @@ function buildBuildControls() {
   row.append(lbl, select);
   buildControls.appendChild(row);
 
+  // `catalogue.height`: how tall the figure stands against its head, the
+  // tall chibi stretched below the shoulders (`docs/tall-chibi-plan.md`, R4b).
+  const height = catalogue.height;
+  rangeRow(buildControls, height.field, height.label, height.min, height.max, fieldValue(height.field), (v) => {
+    setField(height.field, v);
+    scheduleRender();
+  });
+
   // `catalogue.waist_shift`: where the belt sits, up or down from the build's
   // own. A plain CharacterParams range like `hair_tail`, so no bridge change.
   const ws = catalogue.waist_shift;

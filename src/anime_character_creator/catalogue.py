@@ -479,6 +479,10 @@ SKIN_SWATCHES: tuple[tuple[str, str], ...] = (
     ("Very dark", "#633a24"),
     ("Deepest", "#442617"),
 )
+# How tall the figure stands against its head (`docs/tall-chibi-plan.md`, R4b):
+# the range the owner picked from the study, young at 0.8 to adult at 1.3.
+HEIGHT = RangeField("height", "Height", 0.8, 1.3)
+assert HEIGHT.field in _CHARACTER_FIELDS
 BUST = RangeField("bust", "Bust", 0.0, 1.0)
 assert BUST.field in _CHARACTER_FIELDS
 # Chest definition bare, 0 for none (`docs/bare-body-plan.md`, step 6): the
@@ -644,6 +648,7 @@ def build_catalogue() -> dict[str, object]:
             "bases": [{"id": s.id, "label": s.label} for s in _base_points()],
         },
         "bodies": [{"id": name, "label": BODY_LABELS[name]} for name in sorted(BODY_TYPES)],
+        "height": _range_json(HEIGHT),
         "colors": [_color_json(c) for c in COLORS],
         "hairstyles": [
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)

@@ -2307,3 +2307,29 @@ def test_an_old_link_loads_as_the_tall_chibi():
     assert real_hair.hairstyle == "long_traced"
     assert p.body == CharacterParams().body
     assert render_character(p) == render_character(PRESETS["satoko"])
+
+
+@pytest.mark.parametrize("h", [0.8, 1.3])
+def test_the_height_stretches_below_the_shoulders_only(h):
+    """`height` stretches the tall chibi below the shoulder line, two thirds of
+    the difference in the legs (`docs/tall-chibi-plan.md`, R4b): against the
+    head, the shoulders and every width stay, the torso changes by a third of
+    what the legs do, and the knee stays half way down the leg. 1.0 is the
+    tall chibi exactly."""
+    p = PRESETS["satoko"]
+    base, tall = character.skeleton_for(p), character.skeleton_for(replace(p, height=h))
+    assert character.skeleton_for(replace(p, height=1.0)) == base
+
+    def hr(sk, name):
+        return (getattr(sk, name) - sk.head_cy) / sk.head_r
+
+    assert hr(tall, "shoulder_y") == pytest.approx(hr(base, "shoulder_y"))
+    for w in ("shoulder_half_w", "waist_half_w", "hip_half_w", "arm_half_w", "leg_half_w"):
+        assert getattr(tall, w) / tall.head_r == pytest.approx(getattr(base, w) / base.head_r)
+    run = lambda sk: hr(sk, "foot_y") - hr(sk, "shoulder_y")  # noqa: E731
+    assert run(tall) == pytest.approx(run(base) * h)
+    torso = lambda sk: hr(sk, "hip_y") - hr(sk, "shoulder_y")  # noqa: E731
+    legs = lambda sk: hr(sk, "foot_y") - hr(sk, "hip_y")  # noqa: E731
+    assert (legs(tall) - legs(base)) == pytest.approx(2 * (torso(tall) - torso(base)))
+    assert tall.knee_y == pytest.approx(tall.hip_y + (tall.ankle_y - tall.hip_y) * 0.5)
+    ET.fromstring(render_character(replace(p, height=h)))

@@ -13,6 +13,7 @@ in a way an adult figure is not.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 
 # The one named build: the chibi, which every body profile is laid over and
@@ -198,6 +199,65 @@ class BodyProfile:
         hip, ankle = changes.get("hip_y", sk.hip_y), changes.get("ankle_y", sk.ankle_y)
         changes["knee_y"] = hip + (ankle - hip) * 0.5
         return replace(sk, **changes)
+
+
+# The landmarks a height stretch moves, and the widths it keeps, as `Skeleton`
+# field names. Everything else is canvas geometry or the head's.
+_STRETCH_YS = ("waist_y", "hip_y", "hem_y", "knee_y", "boot_y", "ankle_y", "foot_y")
+_KEEP_YS = ("neck_y", "shoulder_y")
+_KEEP_WS = (
+    "neck_half_w",
+    "shoulder_half_w",
+    "waist_half_w",
+    "hip_half_w",
+    "hem_half_w",
+    "arm_half_w",
+    "arm_x",
+    "leg_half_w",
+)
+
+
+def stretched(
+    sk: Skeleton, h: float, refit: Callable[[float], Skeleton], legs_share: float = 2 / 3
+) -> Skeleton:
+    """`sk` standing `h` times as tall from the shoulder line to the sole, with
+    the head, the shoulders and every width kept: the height slider
+    (`docs/tall-chibi-plan.md`, R4b). Of the extra (or missing) length,
+    `legs_share` goes to the legs, hip to sole, the rest to the torso, shoulder
+    to hip: the owner's pick, two thirds, from a study of evenly, legs only and
+    this (`harness/tall_chibi/height_study.py`).
+
+    Stretched in head radii and refitted to the canvas by `refit(heads)`, which
+    builds a skeleton at the new height for its canvas geometry alone: every
+    landmark and width comes from `sk`. Stretching the profile and rebuilding
+    was tried first, and the widths a profile does not measure (the shoulders,
+    the arms) came out of the lerp at the new height, narrower on a taller
+    figure. The knee stays half way down the leg, since the legs scale
+    linearly.
+    """
+
+    def hr(v: float) -> float:
+        return (v - sk.head_cy) / sk.head_r
+
+    sh, hip, foot = hr(sk.shoulder_y), hr(sk.hip_y), hr(sk.foot_y)
+    extra = (foot - sh) * (h - 1.0)
+    torso = 1 + extra * (1 - legs_share) / (hip - sh)
+    legs = 1 + extra * legs_share / (foot - hip)
+
+    def y(v: float) -> float:
+        if v <= hip:
+            return sh + (v - sh) * torso
+        return sh + (hip - sh) * torso + (v - hip) * legs
+
+    fit = refit((y(foot) + 1) / 2)
+    changes: dict[str, float] = {"build": sk.build}
+    for name in _STRETCH_YS:
+        changes[name] = fit.head_cy + y(hr(getattr(sk, name))) * fit.head_r
+    for name in _KEEP_YS:
+        changes[name] = fit.head_cy + hr(getattr(sk, name)) * fit.head_r
+    for name in _KEEP_WS:
+        changes[name] = getattr(sk, name) / sk.head_r * fit.head_r
+    return replace(fit, **changes)
 
 
 def default_hair_margin(heads: float) -> float:

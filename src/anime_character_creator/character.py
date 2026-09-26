@@ -19,6 +19,7 @@ from .skeleton import (
     Skeleton,
     build_skeleton,
     default_hair_margin,
+    stretched,
 )
 
 # Every line on the figure. Near black rather than the dark grey this was: the
@@ -472,6 +473,13 @@ class CharacterParams:
     # set of fields. `heads` and the compressed chibi (`body=None`) are retired;
     # an old link carrying either loads as the default (`urlstate`).
     body: str = "tall_chibi_long_torso"
+    # How tall the figure stands against its head, 1.0 the body as measured:
+    # below the shoulder line the figure is this many times as long, two thirds
+    # of the difference in the legs (`BodyProfile.stretched`,
+    # `docs/tall-chibi-plan.md`, R4b). The web tool offers 0.8 to 1.3, young
+    # to adult inside the one style; on its own canvas a taller figure has a
+    # smaller head, the canvas being a fixed size.
+    height: float = 1.0
     # A bat familiar in flight beside the figure's left shoulder: his fur (and
     # membranes, which the reference draws in the same tone) and his eyes.
     # `None` draws nothing. Two fields rather than one because the book's two
@@ -3917,7 +3925,16 @@ def _skeleton_at(p: CharacterParams) -> Skeleton:
     # `sk.build` is this value, (2.4 - 2.0) / 4.0 in floating point, and
     # the parts' lerps are evaluated at it exactly.
     chibi = build_skeleton(heads=heads, frame=p.frame, bust=p.bust).build
-    return profile.applied(sk, chibi)
+    sk = profile.applied(sk, chibi)
+    # Not stretched at all at 1.0, rather than stretched by one: the identity in
+    # floating point is not exact, and the tall chibi as it is must not move.
+    if p.height != 1.0:
+        sk = stretched(
+            sk,
+            p.height,
+            lambda h: build_skeleton(heads=h, frame=p.frame, bust=p.bust, min_hair_margin=margin),
+        )
+    return sk
 
 
 # Traced garments ("cuts", `katherina-clothes-plan.md`) are drawn in the head

@@ -233,3 +233,17 @@ def test_the_skin_swatches_include_the_default_and_render() -> None:
     assert CharacterParams().skin_tone in values
     for v in values:
         assert f'fill="{v}"' in render_character(CharacterParams(skin_tone=v))
+
+
+def test_the_height_slider_covers_every_preset_and_its_ends_render() -> None:
+    """`height` is offered from 0.8 to 1.3 (`docs/tall-chibi-plan.md`, R4b); the
+    cast stands at 1.0, and both ends render for every preset."""
+    from anime_character_creator import PRESETS
+    from anime_character_creator.catalogue import build_catalogue
+
+    height = build_catalogue()["height"]
+    assert height["field"] == "height" and height["min"] == 0.8 and height["max"] == 1.3
+    for p in PRESETS.values():
+        assert height["min"] <= p.height <= height["max"]
+        for h in (height["min"], height["max"]):
+            ET.fromstring(render_character(replace(p, height=h)))
