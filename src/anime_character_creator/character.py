@@ -2808,8 +2808,22 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
     above, peak, fall = _quad_split(*rib_curve, _quad_crossing(*rib_curve, sk.bust_y))
     above, peak = (above[0] + reach, above[1]), (peak[0] + reach, peak[1])
     if drape:
+        # From the armpit to the fullest point on the bare breast's curve, the
+        # one `_bare_breast_spine` draws, arriving vertical at the widest point:
+        # so the tunic's side and the bare outline agree
+        # (`docs/tunic-bust-plan.md`, T3). It was the plain curve moved out by
+        # the reach, which left the armpit at the torso's angle and dented above
+        # the fullest point. Blended in up to a bust of 0.2, the smallest the
+        # cast carries, so a tiny bust still moves the outline a tiny amount.
+        armpit = (_armpit_x(sk, inset), cuff_y)
+        bare_ctrl = (peak[0], armpit[1] + (peak[1] - armpit[1]) * 0.5)
+        blend = min(1.0, sk.bust / 0.2)
+        above = (
+            above[0] + (bare_ctrl[0] - above[0]) * blend,
+            above[1] + (bare_ctrl[1] - above[1]) * blend,
+        )
         return _Bust(
-            armpit=(_armpit_x(sk, inset), cuff_y),
+            armpit=armpit,
             outline=((above, peak), ((fall[0] + reach, fall[1]), (ww, wy))),
             peak=peak,
             lobe_pieces=2,

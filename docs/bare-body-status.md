@@ -8,8 +8,9 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 - **Now:** the plan is done and signed off (2026-09-26). Open: the men's
   armpit slot (a small bare-only change if wanted) and the realistic build's
   own fix pass. Follow-on: `tunic-bust-plan.md`, making the clothed bust
-  agree with the bare one: the owner picked d; T2 (the line) built, waiting
-  for the owner's look; then T3 (the side).
+  agree with the bare one: T2 signed off (`cc0a2ce`); T3 (the side) built,
+  waiting for the owner's look; then T4 (the cast, docs, valley_of_mist on
+  the owner's say-so).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -31,6 +32,29 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 8 documentation | done | `api.md`, README, STATUS, the plan's summary |
 
 ## Findings, newest first
+
+### Tunic bust plan, T3: the side (2026-09-26)
+
+`_bust_shape(drape=True)`: the piece from the armpit to the fullest point on
+the bare breast's curve (control at the widest point's x, half way down),
+arriving vertical there, blended in up to a bust of 0.2 so the continuity
+test holds (the old and new curves differ even as the reach goes to zero).
+Everything reading the drape follows: the tunic, the lobe over the arm at
+the chibi, the traced cuts.
+
+**Predicted:** the nine clothed presets with a bust change, bare and men
+byte-identical, the continuity test green, Keiko's coat and Katherina's
+jacket moving slightly. **Measured:** exactly the nine clothed files by
+`cmp`, every bare render and every man byte-identical; 626 pass once
+`ref-out/` is refreshed, the continuity test among them. `ref-out/`: the nine
+at the chibi (Katherina's SVG only, her PNG pixel-identical under the jacket)
+and the sheets. **Not predicted:** at the realistic build only Reika's SVG
+changed, and not its pixels: there the tunic's side does not reach the
+piece changed (not judged in this plan, cause not traced). At 4x
+(`out/bare/t3_sides.png`, before above after): Krista's and Satoko's side
+now rounds out of the armpit into the fullest point instead of leaving it
+at the torso's angle; Keiko's lab coat and Reika's robe front unchanged to
+the eye. Tile size: `out/bare/t3_cast.png`.
 
 ### Tunic bust plan, T2: the line (2026-09-26)
 
