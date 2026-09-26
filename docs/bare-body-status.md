@@ -32,6 +32,13 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## Findings, newest first
 
+### Outer layers: valley_of_mist regenerated (2026-09-26)
+
+At the owner's say-so, after the coat line: 32 files, every one with pixels
+moved and each one Keiko, Kyoko or Reika (their references 254, 4164 and
+320 pixels; the inserts they appear in 146 to 327). Katherina is not in the
+book; the men and the cover did not move. Committed there.
+
 ### Outer layers: the line across open coats (2026-09-26)
 
 The owner asked for Keiko's lab coat to be checked against her bust
