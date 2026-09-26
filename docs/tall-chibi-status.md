@@ -31,7 +31,17 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## Findings, newest first
 
-### Next: the two other covers (2026-09-26, not started)
+### The two other covers: done (2026-09-26)
+
+`../time_slider_katherina` `362d98d`: `tools/generate_cover.py` rerun
+unchanged, `style-anchors/katherina.svg/png` refreshed from `ref-out/` (same
+format). `../short_stories` `19245e3`: `scripts/build_cover_dual.py` on
+`skeleton_for` (it drew the compressed chibi) with its `build` field
+removed, and the layout retuned from a sweep (figure height 0.63 to 0.70,
+gap 0.34 to 0.32; 0.74 and up ran into the title, a closer gap overlapped
+the pair); Linnea's `right_scale` 0.88 kept.
+
+#### What was found before starting
 
 The owner asked for `../time_slider_katherina`'s and
 `../short_stories/stories/everglow_crystals`'s covers updated. Found:
