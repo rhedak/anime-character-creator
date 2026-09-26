@@ -2283,3 +2283,20 @@ def test_the_blush_warms_on_dark_skin_and_holds_on_the_cast():
     mid, opacity = character._blush("#a8704a")
     assert mid not in (character._BLUSH, character._BLUSH_DARK)
     assert character._BLUSH_OPACITY < opacity < character._BLUSH_DARK_OPACITY
+
+
+def test_the_tunic_s_line_follows_the_bare_breast():
+    """The tunic's line under the bust is drawn on the bare breast's own
+    ellipse (`docs/tunic-bust-plan.md`, T2), so the bust reads the same with
+    the tunic on or off: its lowest point is the ellipse's, and its outer end
+    starts at the fullest point, where the bare outline is widest."""
+    p = PRESETS["krista"]
+    sk = character.skeleton_for(p)
+    _, _, yp, ry = character._breast_ellipse(sk, 0.0)
+    line = character._bust_lines(sk, p)
+    ys = [float(v) for v in re.findall(r"-?\d+\.?\d*", re.search(r'd="([^"]+)"', line).group(1))][
+        1::2
+    ]
+    sw = character._stroke_w(sk)
+    assert abs(max(ys) - (yp + ry)) < sw
+    assert abs(min(ys) - yp) < sw

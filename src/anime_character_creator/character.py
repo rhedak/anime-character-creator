@@ -2952,17 +2952,17 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
     Seen from the front, the side outline says little: at the chibi it is half
     under the arm and on some characters under their hair. What reads is the
     underside (the anatomy review in `docs/bust-plan.md`, step 4). Each side's
-    curve starts on the tunic's own side outline, where the bust's lower curve
-    turns in, dips to its lowest point under the breast's centre, and rises
-    toward the sternum. Starting on the outline is the owner's "matching the
-    width": a short arc centred under the breast floated inside the silhouette.
+    curve starts on the tunic's own side outline at the fullest point, runs
+    round the bottom of the breast and up its inner side toward the sternum,
+    on the bare breast's own ellipse (`_breast_ellipse`). Starting on the
+    outline is the owner's "matching the width": a short arc centred under the
+    breast floated inside the silhouette.
 
-    Drawn as a thin filled shape rather than a stroke, thickest in the middle
-    and tapering to nothing at both ends, so it varies in weight the way a drawn
-    line does and melts into the outline it leaves. Flat and hard-edged: line
-    work, not a tone (`CLAUDE.md`). Its reach toward the sternum and its dip grow
-    with the bust, and its weight with the bust up to 0.5, so it fades in rather
-    than appearing whole.
+    Drawn as a thin filled shape rather than a stroke, tapering at both ends,
+    so it varies in weight the way a drawn line does and melts into the
+    outline it leaves. Flat and hard-edged: line work, not a tone
+    (`CLAUDE.md`). Its weight grows with the bust up to 0.5, so it fades in
+    rather than appearing whole.
 
     Drawn right after the tunic: an outer layer, a coat or a robe front, hangs
     over the bust and covers it, its own outline being the cue there. With no
@@ -2971,36 +2971,23 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
     """
     if p.outfit.tunic_color is None:
         return _bare_breasts(sk, p)
-    body, cloth = _bust_shape(sk), _bust_shape(sk, drape=True)
-    if body is None or cloth is None:
+    ellipse = _breast_ellipse(sk, 0.0)
+    if ellipse is None:
         return ""
-    cx, sw, reach = sk.head_cx, _stroke_w(sk), sk.bust_reach
+    cx, sw = sk.head_cx, _stroke_w(sk)
     heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5)
-    grow = min(1.0, sk.bust / 0.75)
-    peak = body.peak
-    low_y = peak[1] + (_under_bust_y(sk, peak[1]) - peak[1]) * 0.85
-    centre = (peak[0] - reach) * 0.5
-    # The bottom of the breast as the lower arc of an ellipse centred on it: its
-    # outer rim on the tunic's side at the fullest point, its lowest point at
-    # the under-bust height under the breast's centre, and its inner rim toward
-    # the sternum. The arc starts a little below the side, where it merges into
-    # the silhouette, and runs round the bottom and half way up the inner side.
-    # Two quadratics were tried first and fought the shape: one left the side
-    # flat and hooked up at the sternum like a smirk.
-    side = next(
-        (x for x in (_quad_x_at(*pc, peak[1]) for pc in cloth.pieces()) if x is not None),
-        peak[0],
-    )
-    out_r = side - centre
-    in_r = centre * 0.6 * grow + sw
-    depth = low_y - peak[1]
-    start, stop = math.radians(20), math.radians(150)
-    steps = 28
-    spine: list[Point] = []
-    for k in range(steps + 1):
-        th = start + (stop - start) * k / steps
-        r_x = out_r if math.cos(th) >= 0 else in_r
-        spine.append((centre + r_x * math.cos(th), peak[1] + depth * math.sin(th)))
+    # The bare breast's own ellipse (`_breast_ellipse`), from the tunic's side
+    # at the fullest point round the bottom and up the inner side, so a
+    # figure's bust reads the same with the tunic on or off
+    # (`docs/tunic-bust-plan.md`, T2). It was a shallower ellipse of its own,
+    # tuned for cloth before the bare breast existed, and drawn over the tunic
+    # the bare outline ran lower and rounder on every woman.
+    xc, rx, yp, ry = ellipse
+    stop, steps = math.radians(_BREAST_STOP), 40
+    spine: list[Point] = [
+        (xc + rx * math.cos(th), yp + ry * math.sin(th))
+        for th in (stop * k / steps for k in range(steps + 1))
+    ]
     n = len(spine) - 1
     left: list[Point] = []
     right: list[Point] = []
@@ -3008,7 +2995,9 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
         a0, a1 = spine[max(0, k - 1)], spine[min(n, k + 1)]
         dx, dy = a1[0] - a0[0], a1[1] - a0[1]
         norm = math.hypot(dx, dy) or 1.0
-        half = heaviest * 0.5 * math.sin(math.pi * k / n) ** 0.7
+        # Tapered at both ends, as a fold in cloth is: the silhouette carries
+        # the outer edge, and the line leaves it and fades toward the sternum.
+        half = heaviest * 0.5 * min(1.0, (k / n) / 0.18, (1.0 - k / n) / 0.3) ** 0.8
         nx, ny = -dy / norm * half, dx / norm * half
         left.append((x + nx, y + ny))
         right.append((x - nx, y - ny))
@@ -3030,6 +3019,23 @@ _BREAST_DEPTH = 1.25
 _BREAST_STOP = 170.0
 
 
+def _breast_ellipse(sk: Skeleton, inset: float) -> tuple[float, float, float, float] | None:
+    """`(xc, rx, yp, ry)`: the breast's ellipse, one side, as offsets from the
+    centre line, or None without a bust. Widest at the fullest point, reaching
+    `bust_reach` past the plain side there; its inner edge `_BREAST_GAP` of the
+    way out from the sternum; dropping the fold's depth times `_BREAST_DEPTH`
+    below. The bare breast is drawn on it (`_bare_breast_spine`) and the
+    tunic's line under the bust follows it (`_bust_lines`), so the two agree
+    (`docs/tunic-bust-plan.md`)."""
+    body = _bust_shape(sk, inset=inset)
+    if body is None:
+        return None
+    x_out, yp = body.peak
+    x_in = (x_out - sk.bust_reach) * _BREAST_GAP
+    xc, rx = (x_out + x_in) / 2, (x_out - x_in) / 2
+    return xc, rx, yp, (_under_bust_y(sk, yp) - yp) * _BREAST_DEPTH
+
+
 def _bare_breast_spine(sk: Skeleton, p: CharacterParams) -> list[Point]:
     """One breast's outline with nothing worn, as offsets from the centre line:
     from the arm's inner top corner down and a little out to the widest point,
@@ -3049,14 +3055,11 @@ def _bare_breast_spine(sk: Skeleton, p: CharacterParams) -> list[Point]:
     It arrives at the widest point vertical: joined lower on the ellipse, the
     ellipse there lay inside the armpit and the curve wiggled in and out.
     """
-    body = _bust_shape(sk, inset=_body_inset(sk, p))
-    if body is None:
+    ellipse = _breast_ellipse(sk, _body_inset(sk, p))
+    if ellipse is None:
         return []
-    reach = sk.bust_reach
-    x_out, yp = body.peak
-    x_in = (x_out - reach) * _BREAST_GAP
-    xc, rx = (x_out + x_in) / 2, (x_out - x_in) / 2
-    ry_down = (_under_bust_y(sk, yp) - yp) * _BREAST_DEPTH
+    xc, rx, yp, ry_down = ellipse
+    x_out = xc + rx
     centre_top, top_y, _, _ = _arm_line(sk)
     ax = centre_top - sk.arm_half_w
     ay = _cap_underside_y(sk, ax, _cap_tip_y(sk)) if _sleeve_under_cap(sk, p) else top_y

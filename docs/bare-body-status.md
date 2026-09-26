@@ -8,7 +8,8 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 - **Now:** the plan is done and signed off (2026-09-26). Open: the men's
   armpit slot (a small bare-only change if wanted) and the realistic build's
   own fix pass. Follow-on: `tunic-bust-plan.md`, making the clothed bust
-  agree with the bare one: T1 (the study) shown, waiting for the owner's pick.
+  agree with the bare one: the owner picked d; T2 (the line) built, waiting
+  for the owner's look; then T3 (the side).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -30,6 +31,27 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 8 documentation | done | `api.md`, README, STATUS, the plan's summary |
 
 ## Findings, newest first
+
+### Tunic bust plan, T2: the line (2026-09-26)
+
+The owner picked d. `_breast_ellipse(sk, inset)`, the bare breast's ellipse
+lifted out of `_bare_breast_spine`, which now reads it; `_bust_lines`' clothed
+branch draws on it from the tunic's side at the fullest point round the
+bottom and up to `_BREAST_STOP`, tapered at both ends as a fold. Its weight
+still fades in with the bust up to 0.5 (the fade-in test, and what keeps
+Katherina's and Linnea's light), so Elara's is a little lighter than in the
+study's full-weight row.
+
+**Predicted:** the clothed SVGs of the nine presets with a bust change, the
+bare ones and the men byte-identical, `ref-out/` moving only for those nine
+at both builds and the sheets. **Measured** (every preset rendered clothed and
+bare before and after, compared with `cmp`): exactly the nine clothed files;
+every bare render byte-identical, so the refactor moved nothing bare;
+`refresh-ref-out.sh` updated the nine at both builds and the two sheets, the
+cover and the bases unchanged. 626 passed. Before and after as worn:
+`out/bare/t2_cast.png` (rounder on Satoko, Chiyo, Krista, Linnea; covered, as
+before, under Kyoko's and Keiko's coats, Katherina's jacket, Reika's robe
+front).
 
 ### Tunic bust plan, T1: the study (2026-09-26)
 
