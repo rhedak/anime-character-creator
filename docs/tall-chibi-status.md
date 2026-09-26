@@ -4,9 +4,10 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R4a K0, the knee study. The owner picked distribution C and the
-  range 0.8 to 1.3, asked for the knee planned properly and shown on the
-  bare render, and deferred heights in compositions (R4c). Autonomous, per the
+- **Now:** R4a K0, the knee study shown (`out/tall_chibi/knee_study.png`),
+  waiting for the owner's pick. The owner picked distribution C and the range
+  0.8 to 1.3, asked for the knee planned properly and shown on the bare
+  render, and deferred heights in compositions (R4c). Autonomous, per the
   owner; R4's study is the next stop for input.
 - **Byte guard for R3:** `./harness/run.sh harness/tall_chibi/snapshot.py
   out/tall_chibi/after`, then `cmp` against `out/tall_chibi/before` (108
@@ -24,10 +25,26 @@ The record for `tall-chibi-plan.md`, newest first.
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
-| R4 the height slider | study shown | |
+| R4 the height slider | C, 0.8 to 1.3 picked; knee study shown | |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R4a K0: the knee study (2026-09-26)
+
+`harness/tall_chibi/knee_study.py`: the legs' knee moved to a fraction of
+hip to ankle for the legs only, the boots kept on the old landmark (they do
+not move in any row). Krista and Gero bare (underwear stubbed, the knee
+marked), Satoshi and Tenno in trousers, Satoko in a skirt.
+
+**Now:** the knee line sits at the hip; the legs are straight columns, and
+the bare crotch shows a small double bump, the inseam rising and dipping on
+its way up (the inseam's control points at the landmark). **At 0.45, 0.5,
+0.55:** the crotch is a clean arch and the legs taper gently from thigh to
+knee; the trousers' inseam changes a little; under a skirt nothing visible
+moves. The three candidates differ subtly. **Recommendation: 0.5**, the rule
+`_real_knee_y` already gives the underpants, the bare crotch and the tall
+boot shaft, so every part would read one knee.
 
 ### R4: the height study (2026-09-26)
 
