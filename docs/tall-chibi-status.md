@@ -26,10 +26,26 @@ The record for `tall-chibi-plan.md`, newest first.
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
-| R4 the height slider | R4a, R4b done, signed off; R4c deferred | 1.0 byte-identical; 483 passed; browser checked |
+| R4 the height slider | R4a, R4b done, signed off; R4c dropped (the owner: heights do not matter for the story) | 1.0 byte-identical; 483 passed; browser checked |
 | R5 docs and the downstream | done | valley_of_mist regenerated |
 
 ## Findings, newest first
+
+### Next: the two other covers (2026-09-26, not started)
+
+The owner asked for `../time_slider_katherina`'s and
+`../short_stories/stories/everglow_crystals`'s covers updated. Found:
+`time_slider_katherina/tools/generate_cover.py` uses only `render_cover` and
+needs a rerun, plus a re-render of `style-anchors/katherina.svg/png` (no
+metadata in the current one). `short_stories/scripts/build_cover_dual.py`
+builds each figure's skeleton with `build_skeleton(heads=BUILDS[build])`,
+the retired compressed chibi without a body profile: it should use
+`skeleton_for(character)` and drop its `build` field, which changes Gero's
+and Linnea's proportions on that cover to the tall chibi's, and its
+`right_scale` (Linnea drawn 0.88 of Gero) may want revisiting now that
+`height` exists. Both trees were clean; both repos say commit only when
+asked, no trailer. Also fixed on the way: `skeleton_for` was not exported
+from the package although its docstring imported it.
 
 ### R5: `../valley_of_mist` regenerated (2026-09-26)
 

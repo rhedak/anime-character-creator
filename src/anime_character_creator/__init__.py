@@ -28,6 +28,7 @@ from .character import (
     Hairstyle,
     Outfit,
     render_character,
+    skeleton_for,
 )
 from .colorutil import shade
 from .presets import DISPLAY_NAMES, EXPRESSIONS, NEUTRAL_BASES, PRESETS, ROSTERS
@@ -52,6 +53,7 @@ __all__ = [
     "Skeleton",
     "build_skeleton",
     "render_character",
+    "skeleton_for",
     "shade",
 ]
 
