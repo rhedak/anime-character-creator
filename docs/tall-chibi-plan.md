@@ -77,12 +77,45 @@ byte-identical, the suite green.
 
 ### R4. The height slider
 
-A study first: what stretches (the legs, the torso, both, in what share),
-over what range, and how the canvas and head size answer so a taller figure
-still fits. The owner picks from a sweep; then `CharacterParams.height`
-(1.0 the tall chibi as it is), the web slider, the tests, and every part
-looked at across the range (garments, hems, coats, the bare body, bust,
-feet). **Acceptance:** default height byte-identical; the range signed off.
+**The owner's calls on the study (2026-09-26):** distribution C (two thirds
+of the extra length to the legs, a third to the torso); range 0.8 to 1.3;
+the knee planned properly first and shown on the bare render; sheets,
+covers and the book's inserts at one head size deferred until the rest is
+in place.
+
+#### R4a. A real knee
+
+The profile's `knee_y` is not a knee: it is where the reference's default
+boot top lands (`_boot`'s shaft is measured off it), above the hip on
+`tall_chibi_long_torso` and well above mid-leg on `tall_chibi`. Read as a
+knee by the legs' outline (`_seat_notch_d`, shared by the bare legs and the
+trousers: the thigh taper, the calf, the inseam's control points) and the
+trousers' crotch; the bare crotch, the underpants and the tall boot shaft
+already read `_real_knee_y` (mid-leg where the landmark is above it).
+
+- **K0, study:** where the knee sits (candidates along hip to ankle), drawn on
+  the adults' mannequin and the base layer with the knee marked, and
+  clothed on figures in trousers and in skirts, before and after. The owner
+  picks.
+- **K1, the split:** the boot's reference keeps its value under its own name
+  (`boot_top_y` or like), so a default boot cannot move; `Skeleton.knee_y`
+  becomes the real knee, read by every leg; `_real_knee_y` and the clothed
+  and bare crotch rules collapse into one.
+- **K2:** the cast looked at, `ref-out/` refreshed (every figure's legs
+  move, on purpose); the boots byte-identical within their SVGs.
+
+#### R4b. The stretch
+
+`CharacterParams.height` (1.0 the tall chibi as it is, 0.8 to 1.3), the
+profile's landmarks below the shoulder moved by distribution C, the real
+knee with them; the web slider; tests; every part looked at across the range
+(garments, hems, coats, the bare body, the bust, feet, props, the hair).
+**Acceptance:** at 1.0 byte-identical to after R4a; the range signed off.
+
+#### R4c. Heights in compositions (deferred)
+
+Sheets, covers and the book's inserts at one head size with the feet on one
+line, so a height shows; until then each figure fills its tile as now.
 
 ### R5. Docs and the downstream
 

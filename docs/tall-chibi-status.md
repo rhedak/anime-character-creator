@@ -4,9 +4,9 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R4's study shown (`out/tall_chibi/height_study.png`), waiting
-  for the owner's pick: the distribution, the range, the knee, and how
-  sheets and covers show height. Autonomous, per the
+- **Now:** R4a K0, the knee study. The owner picked distribution C and the
+  range 0.8 to 1.3, asked for the knee planned properly and shown on the
+  bare render, and deferred heights in compositions (R4c). Autonomous, per the
   owner; R4's study is the next stop for input.
 - **Byte guard for R3:** `./harness/run.sh harness/tall_chibi/snapshot.py
   out/tall_chibi/after`, then `cmp` against `out/tall_chibi/before` (108
