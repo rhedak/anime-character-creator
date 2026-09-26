@@ -5,11 +5,10 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** the plan is done (step 8, the documentation, 2026-09-26), waiting
-  for the owner's sign-off. Open: the men's armpit slot (a small bare-only
-  change if wanted) and the realistic build's own fix pass.
-  The armpit slot on the men left as it is (a small bare-only change if
-  wanted later).
+- **Now:** the plan is done and signed off (2026-09-26). Open: the men's
+  armpit slot (a small bare-only change if wanted) and the realistic build's
+  own fix pass. Follow-on: `tunic-bust-plan.md`, making the clothed bust
+  agree with the bare one, at T1 (the study).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.

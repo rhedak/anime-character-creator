@@ -56,6 +56,13 @@ valley_of_mist-specific.
   `Skeleton`'s anchor points (`head_r`, `shoulder_y`, `hem_y`, etc.),
   never hardcoded pixel coordinates, that's what lets proportions
   change globally later without rewriting every part.
+- **The body is drawn bare only in a base layer.** With the tunic off a
+  figure wears underwear (`Outfit.underwear_color`, always worn; the top
+  always drawn with a bust), and no anatomical detail is drawn. A fully bare
+  figure exists only as a harness view for proportion work
+  (`harness/bare/mannequin.py`), adults only, never a web tool option; no
+  bare render of Katherina, Linnea or any preset whose age is not an adult's
+  (the owner's decision, `docs/bare-body-plan.md`).
 - **Flat color, hard-edged, and no shading plane across a garment.**
   Matches the target cel-shaded anime look. Don't add gradients/blur,
   they'd break the flat-vector aesthetic that's the whole point. A
