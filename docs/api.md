@@ -86,6 +86,7 @@ angry_satoko = replace(SATOKO, face=replace(SATOKO.face, brow_tilt=0.8))
 | `heads` | `2.4` | Head-heights tall. Ignored when a skeleton is passed. |
 | `frame` | `0.0` | Shoulder against hip, -1 to 1. Ignored when a skeleton is passed. |
 | `bust` | `0.0` | How much bust the figure carries, 0 to 1; 0 draws the figure as it was before the bust existed. Ignored when a skeleton is passed: build it with `build_skeleton(bust=...)`. See `docs/bust-plan.md`. |
+| `chest` | `0.0` | Chest definition shown bare, 0 to 1: two soft arcs under the pectorals, drawn only with the tunic off and no bust. See `docs/bare-body-plan.md`, step 6. |
 | `waist_shift` | `0.0` | Moves the waist and hip lines together, in head radii: negative up, positive down. Ignored when a skeleton is passed. |
 | `shaded` | `True` | `False` drops every shadow shape, leaving flat silhouettes. |
 

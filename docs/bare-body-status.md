@@ -5,9 +5,10 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 6, the minimum male torso: the proposal is with the owner
-  (`out/bare/male_torso.png`). Step 5 signed off (`38509f6`). The armpit slot
-  on the men left as it is (a small bare-only change if wanted later).
+- **Now:** step 6 (the minimum male torso) built, waiting for the owner's
+  look. Next: step 7, the web tool and skin tones, checked in the browser.
+  The armpit slot on the men left as it is (a small bare-only change if
+  wanted later).
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -24,7 +25,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 3 base layer | done, signed off | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
 | 4 close the body | done (4a to 4d) | tests; `ref-out/` byte-identical |
 | 5 bare feet | done, signed off | 34 barefoot renders with no `None`; the audit clean; `ref-out/` byte-identical |
-| 6 male torso minimum | proposal shown | |
+| 6 male torso minimum | built, as the owner chose | tests; catalogue slider; `ref-out/` byte-identical |
 | 7 web tool and skin tones | | |
 | 8 documentation | | |
 
@@ -48,6 +49,14 @@ the knob. Rows: none, 0.5, 1.0, 1.0 with a navel. Both strengths read as a
 male chest; 1.0 is the clearer at the chibi; the navel helps the torso read
 as skin rather than a block. Questions for the owner: the knob and the men's
 values, and whether the navel goes on every bare figure.
+
+**The owner's call:** as recommended. `CharacterParams.chest` (0 to 1),
+1.0 on the eight men (Tomohiro through `_before`) and on `BASE_MALE`;
+`_chest_lines` (only bare, only with no bust) and `_navel` (every bare
+figure) in the chest after the underwear top; a catalogue range beside the
+bust, a web row, an `api.md` row. **Predicted:** `ref-out/` byte-identical,
+since both are bare-only and no clothed SVG carries a chest. **Measured:**
+623 passed; `ref-out/` matches; the cast in `out/bare/6_cast.png`.
 
 ### Step 5: bare feet (2026-09-26)
 

@@ -493,6 +493,11 @@ class CharacterParams:
     # there is. Male characters stay at 0 and render byte-identically to before
     # the anchor existed (`docs/bust-plan.md`).
     bust: float = 0.0
+    # How much chest definition shows bare, 0 none: two soft arcs under the
+    # pectorals, drawn only with the tunic off and no bust, which replaces them.
+    # A trait beside `bust` rather than a sex flag; the men carry 1.0
+    # (`docs/bare-body-plan.md`, step 6). No clothed figure reads it.
+    chest: float = 0.0
     # Where the upper body ends and the lower begins, in head radii: shifts the
     # waist and hip lines together, so the belt (and everything hung from it)
     # rides up (negative) or down (positive) while the shoulders, knees and
@@ -3158,6 +3163,69 @@ def _underwear_top(sk: Skeleton, p: CharacterParams) -> str:
         f'stroke-width="{sw:.1f}" stroke-linejoin="round" />'
         f'<path d="{cups}" fill="none" stroke="{OUTLINE}" '
         f'stroke-width="{sw * 0.6:.1f}" stroke-linecap="round" />'
+    )
+
+
+def _chest_lines(sk: Skeleton, p: CharacterParams) -> str:
+    """Two soft arcs under the pectorals, with the tunic off and no bust
+    (`docs/bare-body-plan.md`, step 6; `harness/bare/male_torso.py` is the
+    study). At the chibi a man's bare silhouette is the women's exactly:
+    `frame` rides the build and moves a width by well under a percent there,
+    and the body profile sets the waist and hip itself. So the chest is line
+    work, as the bust was at the chibi.
+
+    At the canon's half way from the shoulder line to the waist, each from
+    near the torso's side to a gap at the sternum, tapering at both ends, the
+    way a muscle's border is drawn rather than an edge; `chest` scales the
+    depth and the weight.
+    """
+    if p.outfit.tunic_color is not None or sk.bust > 0 or p.chest <= 0:
+        return ""
+    amount = min(1.0, p.chest)
+    cx, sw = sk.head_cx, _stroke_w(sk)
+    side = _torso_at_armpit(sk)
+    run = sk.waist_y - sk.shoulder_y
+    depth = run * 0.07 * (0.6 + 0.4 * amount)
+    x_out, x_in = side * 0.92, side * 0.10
+    xc, rx = (x_out + x_in) / 2, (x_out - x_in) / 2
+    yc = sk.shoulder_y + run * 0.50 - depth
+    heaviest = sw * 0.8 * (0.5 + 0.5 * amount)
+    a0, a1, steps = math.radians(15), math.radians(165), 28
+    spine = [
+        (xc + rx * math.cos(th), yc + depth * math.sin(th))
+        for th in (a0 + (a1 - a0) * k / steps for k in range(steps + 1))
+    ]
+    n = len(spine) - 1
+    left: list[Point] = []
+    right: list[Point] = []
+    for k, (x, y) in enumerate(spine):
+        q0, q1 = spine[max(0, k - 1)], spine[min(n, k + 1)]
+        dx, dy = q1[0] - q0[0], q1[1] - q0[1]
+        norm = math.hypot(dx, dy) or 1.0
+        half = heaviest * 0.5 * math.sin(math.pi * k / n) ** 0.7
+        nx, ny = -dy / norm * half, dx / norm * half
+        left.append((x + nx, y + ny))
+        right.append((x - nx, y - ny))
+    ring = left + right[::-1]
+    return "".join(
+        '<path d="M '
+        + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in ring)
+        + f' Z" fill="{OUTLINE}" stroke="none" />'
+        for s in (-1, 1)
+    )
+
+
+def _navel(sk: Skeleton, p: CharacterParams) -> str:
+    """A small upright dot on every bare figure, a little below the waist:
+    without it a bare torso read as a blank block rather than skin
+    (`docs/bare-body-plan.md`, step 6). Only with the tunic off."""
+    if p.outfit.tunic_color is not None:
+        return ""
+    sw = _stroke_w(sk)
+    y = sk.waist_y + (sk.hip_y - sk.waist_y) * 0.15
+    return (
+        f'<ellipse cx="{sk.head_cx:.1f}" cy="{y:.1f}" rx="{sw * 0.45:.2f}" ry="{sw * 0.7:.2f}" '
+        f'fill="{OUTLINE}" />'
     )
 
 
@@ -9946,6 +10014,9 @@ def render_character(
         # With the tunic off, the base layer's top over the bare breasts, and
         # under everything else worn on the chest, as the tunic was.
         _underwear_top(sk, p),
+        # Bare body line work, under whatever else is worn on the chest.
+        _navel(sk, p),
+        _chest_lines(sk, p),
         # The crossed front, over the tunic it re-fronts and under the obi.
         _robe_front(sk, p),
         # Uniform trim, over the tunic it sits on and under the belt that

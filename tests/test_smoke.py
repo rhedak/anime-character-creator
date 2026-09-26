@@ -2252,3 +2252,22 @@ def test_every_preset_renders_barefoot(name, build):
     assert '"None"' not in svg
     foot = character._boot(sk, p, sk.head_cx, sk.leg_half_w, 1)
     assert f'fill="{p.skin_tone}"' in foot and "laces" not in foot
+
+
+def test_the_chest_lines_and_the_navel_are_bare_only():
+    """The chest's line work and the navel (`docs/bare-body-plan.md`, step 6):
+    both only with the tunic off; the chest lines only with no bust, which
+    replaces them, and only with a chest to draw; the navel on every bare
+    figure."""
+    man = PRESETS["gero"]
+    sk = character.skeleton_for(man)
+    assert man.chest > 0
+    assert character._chest_lines(sk, man) == "" and character._navel(sk, man) == ""
+    bare = _tunic_off(man)
+    assert character._chest_lines(sk, bare) and character._navel(sk, bare)
+    flat = replace(bare, chest=0.0)
+    assert character._chest_lines(sk, flat) == ""
+    woman = _tunic_off(PRESETS["krista"])
+    sk = character.skeleton_for(woman)
+    assert character._chest_lines(sk, replace(woman, chest=1.0)) == ""
+    assert character._navel(sk, woman)

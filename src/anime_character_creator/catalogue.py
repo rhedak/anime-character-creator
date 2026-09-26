@@ -503,6 +503,10 @@ assert WAIST_SHIFT.field in _CHARACTER_FIELDS
 # at the top, the men at zero.
 BUST = RangeField("bust", "Bust", 0.0, 1.0)
 assert BUST.field in _CHARACTER_FIELDS
+# Chest definition bare, 0 for none (`docs/bare-body-plan.md`, step 6): the
+# men at the top, everyone else at zero. Shows only with the tunic off.
+CHEST = RangeField("chest", "Chest", 0.0, 1.0)
+assert CHEST.field in _CHARACTER_FIELDS
 assert HAIR_TAIL.field in _CHARACTER_FIELDS
 HAIR_KNOT = BoolField("hair_knot", "Top-knot")
 assert HAIR_KNOT.field in _CHARACTER_FIELDS
@@ -682,6 +686,7 @@ def build_catalogue() -> dict[str, object]:
         "hair_tail": _range_json(HAIR_TAIL),
         "waist_shift": _range_json(WAIST_SHIFT),
         "bust": _range_json(BUST),
+        "chest": _range_json(CHEST),
         "hair_knot": _bool_json(HAIR_KNOT),
         "garments": [_garment_json(g) for g in GARMENTS],
         "face": {

@@ -135,6 +135,9 @@ SATOSHI = CharacterParams(
     # Broader across the shoulder and narrow in the hip, which is the whole of
     # what tells him from Satoko below the neck once the clothes match.
     frame=1.0,
+    # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
+    # start at the top of the range, to be tuned per character later.
+    chest=1.0,
     face=FaceStyle(
         eye_size=0.92,
         eye_width=1.08,
@@ -431,6 +434,9 @@ DAIZEN = CharacterParams(
         katana_length=1.25,
     ),
     frame=1.0,
+    # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
+    # start at the top of the range, to be tuned per character later.
+    chest=1.0,
     # Shrewd and severe, and the oldest-looking man in the cast next to Tenno.
     face=aged(
         FaceStyle(
@@ -542,6 +548,9 @@ HARUTO = CharacterParams(
         katana_length=1.25,
     ),
     frame=0.7,
+    # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
+    # start at the top of the range, to be tuned per character later.
+    chest=1.0,
     face=FaceStyle(
         eye_size=0.88,
         eye_width=1.10,
@@ -762,6 +771,9 @@ REINHARD = CharacterParams(
         crystal_color_4=CRYSTAL_KIT[3],
     ),
     frame=1.0,
+    # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
+    # start at the top of the range, to be tuned per character later.
+    chest=1.0,
     face=FaceStyle(
         eye_size=0.86,
         eye_width=1.08,
@@ -804,6 +816,9 @@ TENNO = CharacterParams(
         boot_shaft=0.55,
     ),
     frame=0.5,
+    # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
+    # start at the top of the range, to be tuned per character later.
+    chest=1.0,
     face=aged(
         FaceStyle(
             eye_size=0.88,
@@ -855,6 +870,9 @@ VIKTOR = CharacterParams(
         crystal_color_4=CRYSTAL_KIT[3],
     ),
     frame=0.8,
+    # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
+    # start at the top of the range, to be tuned per character later.
+    chest=1.0,
     face=FaceStyle(
         eye_size=0.88,
         eye_width=1.10,
@@ -1022,6 +1040,9 @@ GERO = CharacterParams(
     # 1.0): thirty years of walking rather than a soldier's or a
     # merchant's build.
     frame=0.4,
+    # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
+    # start at the top of the range, to be tuned per character later.
+    chest=1.0,
     # Middle-aged rather than the cast's oldest (Daizen and Tenno take
     # `years=1.0`): the aperture narrows partway, not all the way.
     face=aged(
@@ -1235,6 +1256,7 @@ BASE_FEMALE = CharacterParams()
 BASE_MALE = CharacterParams(
     hairstyle="short_crop",
     hair_length=0.65,
+    chest=1.0,
     outfit=Outfit(
         skirt_color=None,
         trouser_color="#4f7a52",

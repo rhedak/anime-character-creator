@@ -225,3 +225,15 @@ def test_the_bust_slider_covers_every_preset_s_value() -> None:
     assert bust["field"] == "bust" and bust["min"] == 0.0 and bust["max"] == 1.0
     for p in PRESETS.values():
         assert bust["min"] <= p.bust <= bust["max"]
+
+
+def test_the_chest_slider_covers_every_preset_s_value() -> None:
+    """`chest` is offered as a plain range beside the bust, and the cast's own
+    values sit inside it (`docs/bare-body-plan.md`, step 6)."""
+    from anime_character_creator import PRESETS
+    from anime_character_creator.catalogue import build_catalogue
+
+    chest = build_catalogue()["chest"]
+    assert chest["field"] == "chest" and chest["min"] == 0.0 and chest["max"] == 1.0
+    for p in PRESETS.values():
+        assert chest["min"] <= p.chest <= chest["max"]

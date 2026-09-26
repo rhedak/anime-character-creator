@@ -303,6 +303,14 @@ function buildBuildControls() {
     setField(bust.field, v);
     scheduleRender();
   });
+
+  // `catalogue.chest`: line work under the pectorals, shown only bare (the
+  // tunic off) and only with no bust.
+  const chest = catalogue.chest;
+  rangeRow(buildControls, chest.field, chest.label, chest.min, chest.max, fieldValue(chest.field), (v) => {
+    setField(chest.field, v);
+    scheduleRender();
+  });
 }
 
 function buildColorControls() {

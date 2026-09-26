@@ -197,6 +197,12 @@
     "min": 0.0,
     "max": 1.0
   },
+  "chest": {
+    "field": "chest",
+    "label": "Chest",
+    "min": 0.0,
+    "max": 1.0
+  },
   "hair_knot": {
     "field": "hair_knot",
     "label": "Top-knot"
