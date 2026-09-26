@@ -4,8 +4,8 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R0 done, waiting for the owner's sign-off and three calls
-  (old links, `long_traced_real`, the eye block); then R1.
+- **Now:** R1 done, waiting for the owner's sign-off; then R2 (which now
+  also takes the CLI's `--build`/`--heads`).
 - **Tree:** clean at `2e549d2` when the plan was written.
 - **Invariant:** every tall-chibi render byte-identical through R1 to R3
   (`./refresh-ref-out.sh --check`); only R4 may move a figure.
@@ -15,14 +15,36 @@ The record for `tall-chibi-plan.md`, newest first.
 
 | step | state | acceptance met |
 | --- | --- | --- |
-| R0 inventory | done | inventory below, each item classed and stepped |
-| R1 remove the choices | | |
+| R0 inventory | done, signed off | inventory below, each item classed and stepped |
+| R1 remove the choices | done | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | | |
 | R3 delete the dead code | | |
 | R4 the height slider | | |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R1: the choices removed (2026-09-26)
+
+The owner's calls on R0: old links load as the default tall chibi;
+`long_traced_real` goes (R3); the eye block is frozen as it renders today
+(R3).
+
+Removed: `catalogue.BUILD`, `BuildField`, `_build_json` and the catalogue's
+`build` key; the `None` ("Chibi") entry in `bodies`; the web tool's build
+slider and snaps, the body select's `""`-to-`null` handling. Old links:
+`urlstate.params_from_dict` drops `heads` and a `body` of `None`, so they
+load as the default tall chibi. **Moved to R2:** the CLI's `--build` and
+`--heads`, since `refresh-ref-out.sh` renders `ref-out/real/` through
+`render.sh --build`; they retire with those renders.
+
+**Predicted:** `ref-out/` and the bases byte-identical, the catalogue JSON
+the only committed output to change. **Measured:** so; 624 passed. One test
+read `heads` back through `decode_params`, which now maps it away; it reads
+the link's raw JSON instead, what `main()` resolved. Browser: an old link
+(Krista at `heads=6`, `body=null`) loads as the tall chibi, the Build
+section shows the body select and the belt, bust and chest sliders, no build
+slider.
 
 ### R0: the inventory (2026-09-26, at `6c1b275`)
 

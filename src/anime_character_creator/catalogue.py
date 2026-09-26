@@ -6,11 +6,10 @@ exist", deliberately short of a full parameter editor. `CharacterParams` alone
 cannot answer that: it is `dataclasses.fields()` away from FaceStyle's fourteen
 floats and `shaded`, a killed behaviour with a live field still attached to
 it, neither of which belong on a page for someone who has never opened a
-terminal (see "Knobs that are traps" in that document). `heads` used to be in
-that list too, as "a continuous slider over builds nobody has looked at", and
-even now it is only `BUILD`'s slider with the named `BUILDS` carried as snaps
-to jump back to (the owner's 2026-08-12 call, recorded next to `BUILD`), not
-a raw field with no way home.
+terminal (see "Knobs that are traps" in that document). `heads` was a
+slider over the builds with the named ones as snaps from 2026-08-12, and is
+off the page altogether since the realistic build and the compressed chibi
+were retired (`docs/tall-chibi-plan.md`).
 
 So this module is the curated middle: a small, explicit list of which fields
 are public, in which order, with which labels and ranges, built once here
@@ -46,7 +45,6 @@ from .character import (
     Outfit,
 )
 from .presets import DISPLAY_NAMES, NEUTRAL_BASES, PRESETS
-from .skeleton import BUILDS
 
 
 @dataclass(frozen=True)
@@ -83,20 +81,6 @@ class SelectField:
     # bridge never has to translate a selection back into the model's own
     # type.
     options: tuple[tuple[object, str], ...]
-
-
-@dataclass(frozen=True)
-class BuildField:
-    """The one control `heads` is allowed to be: a slider over the build
-    range, with the named `BUILDS` carried as snaps a visitor can jump back
-    to. The slider's own ends are the range that has been chosen to stay
-    open, not `BUILDS`'s min and max, so the two stay distinguishable."""
-
-    field: str
-    label: str
-    lo: float
-    hi: float
-    snaps: tuple[tuple[float, str], ...]
 
 
 @dataclass(frozen=True)
@@ -445,26 +429,6 @@ assert _outfit_fields_named() == _OUTFIT_FIELDS, (
     f"extra {_outfit_fields_named() - _OUTFIT_FIELDS}"
 )
 
-# The build, `heads` under the hood. It used to be offered only as the two
-# named `BUILDS`, never the continuous slider `docs/web-gui-plan.md`'s
-# "Knobs that are traps" warned against, on the ground that nothing between
-# the two had been rendered and judged. The owner's call on 2026-08-12 was
-# to open the middle anyway and carry the named builds as snaps instead,
-# since the skeleton holds across the whole range by construction (`sk.build`
-# lerps on it) and the snaps guarantee a visitor can always get back to the
-# two states that have actually been judged. The slider runs 2..7, wider
-# than the 2.4..6.0 the named builds span, so the ends stay the chosen open
-# range rather than masquerading as the judgements; above 6 the widths
-# clamp and the figure just gets longer (see skeleton.py), which is the
-# documented trade-off for the low end.
-BUILD = BuildField(
-    "heads",
-    "Body build",
-    2.0,
-    7.0,
-    tuple((v, name.capitalize()) for name, v in BUILDS.items()),
-)
-
 # Character-level colors, the ones every figure has regardless of what it
 # wears. `hair_tip_color` is optional the same way a garment is: unset means
 # single-tone hair.
@@ -542,8 +506,9 @@ assert set(HAIRSTYLE_LABELS) == set(HAIRSTYLES), (
 )
 
 # `BODY_TYPES` is the registry; these label it, the same arrangement as the
-# hairstyles above. `None` is the shared chibi and is offered first. A body type
-# only reshapes the chibi build, so the web tool shows it beside the build slider.
+# hairstyles above. The tall chibi is the one figure (`docs/tall-chibi-plan.md`):
+# the shared compressed chibi (`body=None`) and the build slider are retired, so
+# these two are the whole choice.
 BODY_LABELS: dict[str, str] = {
     "tall_chibi": "Tall chibi (Katherina's)",
     "tall_chibi_long_torso": "Tall chibi (long torso)",
@@ -649,16 +614,6 @@ def _select_json(s: SelectField) -> dict[str, object]:
     }
 
 
-def _build_json(b: BuildField) -> dict[str, object]:
-    return {
-        "field": b.field,
-        "label": b.label,
-        "min": b.lo,
-        "max": b.hi,
-        "snaps": [{"value": v, "label": lbl} for v, lbl in b.snaps],
-    }
-
-
 def _garment_json(g: GarmentSlot) -> dict[str, object]:
     out: dict[str, object] = {
         "id": g.id,
@@ -689,9 +644,7 @@ def build_catalogue() -> dict[str, object]:
             "cast": [{"id": s.id, "label": s.label} for s in _cast_points()],
             "bases": [{"id": s.id, "label": s.label} for s in _base_points()],
         },
-        "build": _build_json(BUILD),
-        "bodies": [{"id": None, "label": "Chibi"}]
-        + [{"id": name, "label": BODY_LABELS[name]} for name in sorted(BODY_TYPES)],
+        "bodies": [{"id": name, "label": BODY_LABELS[name]} for name in sorted(BODY_TYPES)],
         "colors": [_color_json(c) for c in COLORS],
         "hairstyles": [
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)

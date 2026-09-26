@@ -233,40 +233,15 @@ function boolRow(container, field, label, value, onInput) {
   return input;
 }
 
-// `catalogue.build` is a `BuildField`: a continuous slider over `heads`
-// with the named `BUILDS` carried as `snaps` (see catalogue.py: BUILD, and
-// the owner's 2026-08-12 call recorded there). The slider is the control;
-// each snap is a button that sets the same field and nudges the slider back
-// to the value, so a visitor who drifts into the unjudged middle can always
-// get home. `fieldValue`/`setField` are already CharacterParams-level, and
-// `heads` was already a `CharacterParams` field the state object round-trips,
-// so no bridge change is needed.
+// The build slider and its snaps are retired with the realistic build and the
+// compressed chibi (`docs/tall-chibi-plan.md`, R1); the height slider that
+// stretches the tall chibi takes its place (R4).
 function buildBuildControls() {
   buildControls.innerHTML = "";
-  const b = catalogue.build;
-  const input = rangeRow(buildControls, b.field, b.label, b.min, b.max, fieldValue(b.field), (v) => {
-    setField(b.field, v);
-    scheduleRender();
-  });
-  const snaps = document.createElement("div");
-  snaps.className = "control-row";
-  for (const snap of b.snaps) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "snap-button";
-    btn.textContent = snap.label;
-    btn.addEventListener("click", () => {
-      input.value = String(snap.value);
-      setField(b.field, snap.value);
-      scheduleRender();
-    });
-    snaps.appendChild(btn);
-  }
-  buildControls.appendChild(snaps);
 
-  // `catalogue.bodies`: the named body types, laid over the chibi build only
-  // (see catalogue.py: BODY_LABELS). `null` is the shared chibi; a <select>
-  // holds strings, so it travels as "" and is turned back into null here.
+  // `catalogue.bodies`: the two tall chibi body types (see catalogue.py:
+  // BODY_LABELS). An old link's `body: null` is mapped to the default on the
+  // Python side (`urlstate.params_from_dict`) and so selects nothing here.
   const row = document.createElement("div");
   row.className = "control-row";
   const lbl = document.createElement("label");
@@ -282,7 +257,7 @@ function buildBuildControls() {
     select.appendChild(opt);
   }
   select.addEventListener("input", () => {
-    setField("body", select.value === "" ? null : select.value);
+    setField("body", select.value);
     scheduleRender();
   });
   row.append(lbl, select);

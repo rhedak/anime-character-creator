@@ -28,7 +28,6 @@ from anime_character_creator import (
     render_character,
 )
 from anime_character_creator.catalogue import (
-    BUILD,
     COLORS,
     FACE_BOOLS,
     FACE_RANGES,
@@ -90,28 +89,12 @@ def test_hair_tail_and_knot_fields_exist_on_character_params() -> None:
     assert HAIR_KNOT.field in names
 
 
-def test_build_field_exists_on_character_params() -> None:
-    names = {f.name for f in fields(CharacterParams)}
-    assert BUILD.field in names
-
-
-def test_build_snaps_are_exactly_the_named_builds() -> None:
-    """`BUILD` carries the two entries in `BUILDS` as snaps, and nothing else:
-    the slider is the open control now (the owner's 2026-08-12 call, recorded
-    at catalogue.py: BUILD), but the only values it may offer as jump-backs
-    are the two that have been rendered and judged."""
-    assert {value for value, _label in BUILD.snaps} == set(BUILDS.values())
-
-
-@pytest.mark.parametrize("value", [BUILD.lo, BUILD.hi, *[v for v, _l in BUILD.snaps]])
-def test_build_values_render(value: float) -> None:
-    """The slider's ends and each snap have to render. The whole open range
-    2..7 is deliberately *not* swept: that is the point of the snaps, the
-    middle has only been judged at the named builds."""
-    p = replace(CharacterParams(), heads=value)
-    svg = render_character(p, build_skeleton(heads=value, frame=p.frame))
-    root = ET.fromstring(svg)
-    assert root.tag.endswith("svg")
+def test_the_build_slider_and_the_compressed_chibi_are_retired() -> None:
+    """The tall chibi is the one figure (`docs/tall-chibi-plan.md`, R1): the
+    catalogue offers no build and no `None` body, only the tall chibi's two."""
+    cat = build_catalogue()
+    assert "build" not in cat
+    assert all(b["id"] is not None for b in cat["bodies"])
 
 
 def test_every_hairstyle_label_is_a_real_hairstyle() -> None:

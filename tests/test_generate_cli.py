@@ -4,6 +4,8 @@ into a `CharacterParams` (COLOR_ARGS/OUTFIT_ARGS/FACE_ARGS, preset selection,
 
 from __future__ import annotations
 
+import base64
+import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -11,7 +13,6 @@ import pytest
 
 from anime_character_creator.generate import main
 from anime_character_creator.skeleton import BUILDS
-from anime_character_creator.urlstate import decode_params
 
 
 def _run(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *args: str) -> str:
@@ -30,7 +31,12 @@ def _heads(svg: str) -> float:
     ns = "{http://www.w3.org/2000/svg}"
     link = root.find(f"{ns}metadata").findtext(f"{ns}character")
     assert link is not None
-    return decode_params(link.split("?c=", 1)[1]).heads
+    # The link's own JSON, not `decode_params`: loading a link maps a retired
+    # `heads` onto the tall chibi (`docs/tall-chibi-plan.md`, R1), and this reads
+    # what `main()` resolved, which the link still records.
+    encoded = link.split("?c=", 1)[1]
+    raw = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))
+    return json.loads(raw)["heads"]
 
 
 def test_preset_and_overrides_merge(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

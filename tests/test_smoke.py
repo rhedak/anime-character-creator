@@ -2341,3 +2341,18 @@ def test_an_open_coat_carries_the_line_on_its_panels_only():
     )
     kyoko = PRESETS["kyoko"]
     assert "coat-bust-" in character._coat(character.skeleton_for(kyoko), kyoko)
+
+
+def test_an_old_link_loads_as_the_tall_chibi():
+    """A link from before the realistic build and the compressed chibi were
+    retired (`docs/tall-chibi-plan.md`, R1), carrying another `heads` or
+    `body: null`, loads as the default tall chibi rather than failing."""
+    from anime_character_creator.urlstate import params_from_dict, params_to_dict
+
+    old = params_to_dict(PRESETS["satoko"])
+    old["heads"] = 6.0
+    old["body"] = None
+    p = params_from_dict(old)
+    assert p.heads == CharacterParams().heads
+    assert p.body == CharacterParams().body
+    assert render_character(p) == render_character(PRESETS["satoko"])

@@ -81,27 +81,7 @@
       }
     ]
   },
-  "build": {
-    "field": "heads",
-    "label": "Body build",
-    "min": 2.0,
-    "max": 7.0,
-    "snaps": [
-      {
-        "value": 2.4,
-        "label": "Chibi"
-      },
-      {
-        "value": 6.0,
-        "label": "Realistic"
-      }
-    ]
-  },
   "bodies": [
-    {
-      "id": null,
-      "label": "Chibi"
-    },
     {
       "id": "tall_chibi",
       "label": "Tall chibi (Katherina's)"

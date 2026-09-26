@@ -45,6 +45,12 @@ def params_from_dict(data: dict) -> CharacterParams:
     `ValueError`, never a character quietly missing the fields that failed.
     """
     data = dict(data)
+    # The realistic build and the compressed chibi are retired
+    # (`docs/tall-chibi-plan.md`): a link from before carrying another build or
+    # `body: null` loads as the default tall chibi rather than failing.
+    data.pop("heads", None)
+    if "body" in data and data["body"] is None:
+        del data["body"]
     try:
         outfit = Outfit(**data.pop("outfit", {}))
         face = FaceStyle(**data.pop("face", {}))
