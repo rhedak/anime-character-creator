@@ -5,9 +5,9 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 7: the skin sweep and the swatches are done; the browser
-  check waits for the Chrome extension, which was not connected. The blush
-  on dark skin is a question for the owner. Step 6 signed off (`f1f30cc`).
+- **Now:** step 7 done: the owner checked the web tool in the browser
+  (the gallery loads here too), and approved the blush following the skin.
+  Next: step 8, the documentation, which closes the plan.
   The armpit slot on the men left as it is (a small bare-only change if
   wanted later).
 - **Tree:** clean at `611c50b` when the plan was written.
@@ -27,7 +27,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 4 close the body | done (4a to 4d) | tests; `ref-out/` byte-identical |
 | 5 bare feet | done, signed off | 34 barefoot renders with no `None`; the audit clean; `ref-out/` byte-identical |
 | 6 male torso minimum | done, signed off | tests; catalogue slider; `ref-out/` byte-identical |
-| 7 web tool and skin tones | sweep and swatches done; browser check pending | catalogue test; `app.js` parses; the served catalogue checked |
+| 7 web tool and skin tones | done; the owner checked the browser | catalogue test; `app.js` parses; the served catalogue checked |
 | 8 documentation | | |
 
 ## Findings, newest first
@@ -55,6 +55,15 @@ free. Test: the default is among them and each renders. `app.js` passes
 optional, the underwear as always on with its top toggle, the chest range and
 the swatches. **Not yet checked in the browser**: the extension was not
 connected.
+
+**The owner:** the web tool checked in the browser and working; the blush to
+follow the skin, as recommended. `_blush(skin)`: the fixed pink at 0.45
+where the skin's luminance is 0.70 or more (every preset shipped, the
+darkest `#e0c0a4` at 0.77), moving linearly to `#ff8a8a` at 0.60 by
+luminance 0.20. Three target roses compared on Krista from "light warm" to
+deepest (`out/bare/blush.png`): `#f2667a` at 0.55 rosier, `#e0506a` at 0.6
+deeper and muddy again at the bottom, `#ff8a8a` at 0.6 a warm flush at every
+tone. **Predicted** `ref-out/` byte-identical; **measured** so, 625 passed.
 
 ### Step 6: the minimum male torso, proposal (2026-09-26)
 

@@ -12,7 +12,7 @@ import math
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
 
-from .colorutil import shade
+from .colorutil import hex_to_rgb01, rgb01_to_hex, shade
 from .skeleton import (
     BUILDS,
     DEFAULT_HEADS,
@@ -8161,8 +8161,7 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     show_tie = not show_buckle or p.outfit.apron_color is not None
     tie_top = y + h * 0.55
     if show_buckle:
-        # Metal is a fixed neutral tone, like the blush: it is not anyone's
-        # palette.
+        # Metal is a fixed neutral tone: it is not anyone's palette.
         sw = _stroke_w(sk)
         bw, bh = h * 1.5, h * 1.08
         bx, by = cx - bw / 2, y + (h - bh) / 2
@@ -9297,6 +9296,31 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     return eye_dx, eye_y, eye_r, f
 
 
+# The blush: a fixed pink at an opacity on light skin, and on dark skin a
+# warmer, brighter rose a little stronger, reached gradually. The fixed pink
+# over dark skin came out a muddy maroon, reading as a bruise rather than a
+# flush (`docs/bare-body-plan.md`, step 7). The change starts below the
+# lightness of the "light warm" swatch, so every preset shipped so far, all
+# lighter than that, keeps the fixed pink exactly.
+_BLUSH = "#e8879a"
+_BLUSH_OPACITY = 0.45
+_BLUSH_DARK = "#ff8a8a"
+_BLUSH_DARK_OPACITY = 0.6
+_BLUSH_LIGHT_L, _BLUSH_DARK_L = 0.70, 0.20
+
+
+def _blush(skin: str) -> tuple[str, float]:
+    """The blush's colour and opacity on `skin`; see `_BLUSH`."""
+    r, g, b = hex_to_rgb01(skin)
+    lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    t = max(0.0, min(1.0, (_BLUSH_LIGHT_L - lum) / (_BLUSH_LIGHT_L - _BLUSH_DARK_L)))
+    if t == 0.0:
+        return _BLUSH, _BLUSH_OPACITY
+    light, dark = hex_to_rgb01(_BLUSH), hex_to_rgb01(_BLUSH_DARK)
+    mixed = tuple(a + (d - a) * t for a, d in zip(light, dark, strict=True))
+    return rgb01_to_hex(mixed), _BLUSH_OPACITY + (_BLUSH_DARK_OPACITY - _BLUSH_OPACITY) * t
+
+
 def _face(sk: Skeleton, p: CharacterParams) -> str:
     r = sk.head_r
     cx, cy = sk.head_cx, sk.head_cy
@@ -9371,9 +9395,10 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             # at the old height the blush clipped under the lower lids.
             bx = cx + side * r * 0.58
             by = cy + r * 0.44
+            color, opacity = _blush(p.skin_tone)
             parts.append(
                 f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{r * 0.09:.1f}" '
-                f'fill="#e8879a" opacity="{0.45 * f.blush:.2f}" />'
+                f'fill="{color}" opacity="{opacity * f.blush:.2f}" />'
             )
 
     if f.scar_side:

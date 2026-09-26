@@ -2271,3 +2271,15 @@ def test_the_chest_lines_and_the_navel_are_bare_only():
     sk = character.skeleton_for(woman)
     assert character._chest_lines(sk, replace(woman, chest=1.0)) == ""
     assert character._navel(sk, woman)
+
+
+def test_the_blush_warms_on_dark_skin_and_holds_on_the_cast():
+    """The blush follows the skin (`docs/bare-body-plan.md`, step 7): the fixed
+    pink on light skin, every preset's included, and a warmer, stronger rose
+    reached gradually on dark skin, where the fixed pink read as a bruise."""
+    for p in PRESETS.values():
+        assert character._blush(p.skin_tone) == (character._BLUSH, character._BLUSH_OPACITY)
+    assert character._blush("#442617") == (character._BLUSH_DARK, character._BLUSH_DARK_OPACITY)
+    mid, opacity = character._blush("#a8704a")
+    assert mid not in (character._BLUSH, character._BLUSH_DARK)
+    assert character._BLUSH_OPACITY < opacity < character._BLUSH_DARK_OPACITY
