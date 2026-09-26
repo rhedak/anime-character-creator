@@ -8,7 +8,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 - **Now:** the plan is done and signed off (2026-09-26). Open: the men's
   armpit slot (a small bare-only change if wanted) and the realistic build's
   own fix pass. Follow-on: `tunic-bust-plan.md`, making the clothed bust
-  agree with the bare one, at T1 (the study).
+  agree with the bare one: T1 (the study) shown, waiting for the owner's pick.
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -30,6 +30,22 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 8 documentation | done | `api.md`, README, STATUS, the plan's summary |
 
 ## Findings, newest first
+
+### Tunic bust plan, T1: the study (2026-09-26)
+
+`harness/bare/tunic_bust.py`, `out/bare/tunic_bust.png` (the six adult
+women, tunic on, every other garment off; the bare row first), Krista's side
+in a, b and d at `out/bare/tunic_bust_krista.png`. **a** the current fold,
+shallow and high. **b** the line from the bare ellipse at the bare depth,
+from the tunic's side at the fullest point, tapered as a fold: round, and the
+breast reads as the bare one does, but the side still leaves the armpit at
+the drape's old angle, a slight dent above the fullest point. **c** as b at
+0.85 of the depth: barely different from b at tile size. **d** b plus the
+side from the armpit to the widest point on the bare outline's curve
+(wrapping `_bust_shape(drape=True)`, so the lobe over the arm follows): the
+side rounds cleanly out of the armpit and the line continues the silhouette
+round the bottom; the closest to the bare figure. Recommendation: d at the
+bare depth.
 
 ### Step 7: skin tones and the web tool (2026-09-26)
 
