@@ -322,11 +322,36 @@ function buildColorControls() {
       buildFamiliarControl(c);
       continue;
     }
-    colorRow(colorsControls, c.field, c.label, fieldValue(c.field), (v) => {
+    const input = colorRow(colorsControls, c.field, c.label, fieldValue(c.field), (v) => {
       setField(c.field, v);
       scheduleRender();
     });
+    // `catalogue.skin_swatches`: one click to a tone across the whole range,
+    // beside the free picker, which still takes any colour.
+    if (c.field === "skin_tone") {
+      swatchRow(colorsControls, catalogue.skin_swatches, (v) => {
+        input.value = v;
+        setField(c.field, v);
+        scheduleRender();
+      });
+    }
   }
+}
+
+function swatchRow(container, swatches, onPick) {
+  const row = document.createElement("div");
+  row.className = "control-row swatches";
+  for (const sw of swatches) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "swatch";
+    b.title = sw.label;
+    b.setAttribute("aria-label", `Skin: ${sw.label}`);
+    b.style.background = sw.value;
+    b.addEventListener("click", () => onPick(sw.value));
+    row.appendChild(b);
+  }
+  container.appendChild(row);
 }
 
 function buildFamiliarControl(c) {

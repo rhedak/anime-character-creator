@@ -237,3 +237,16 @@ def test_the_chest_slider_covers_every_preset_s_value() -> None:
     assert chest["field"] == "chest" and chest["min"] == 0.0 and chest["max"] == 1.0
     for p in PRESETS.values():
         assert chest["min"] <= p.chest <= chest["max"]
+
+
+def test_the_skin_swatches_include_the_default_and_render() -> None:
+    """The skin tones offered as swatches (`docs/bare-body-plan.md`, step 7):
+    the default among them, every one a colour a figure renders in."""
+    from anime_character_creator import CharacterParams, render_character
+    from anime_character_creator.catalogue import build_catalogue
+
+    swatches = build_catalogue()["skin_swatches"]
+    values = [s["value"] for s in swatches]
+    assert CharacterParams().skin_tone in values
+    for v in values:
+        assert f'fill="{v}"' in render_character(CharacterParams(skin_tone=v))

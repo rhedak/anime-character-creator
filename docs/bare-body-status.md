@@ -5,8 +5,9 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 6 (the minimum male torso) built, waiting for the owner's
-  look. Next: step 7, the web tool and skin tones, checked in the browser.
+- **Now:** step 7: the skin sweep and the swatches are done; the browser
+  check waits for the Chrome extension, which was not connected. The blush
+  on dark skin is a question for the owner. Step 6 signed off (`f1f30cc`).
   The armpit slot on the men left as it is (a small bare-only change if
   wanted later).
 - **Tree:** clean at `611c50b` when the plan was written.
@@ -25,11 +26,35 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 3 base layer | done, signed off | tests; 0 of 54 PNGs and the bases move, 7 SVGs' bytes and one base's do |
 | 4 close the body | done (4a to 4d) | tests; `ref-out/` byte-identical |
 | 5 bare feet | done, signed off | 34 barefoot renders with no `None`; the audit clean; `ref-out/` byte-identical |
-| 6 male torso minimum | built, as the owner chose | tests; catalogue slider; `ref-out/` byte-identical |
-| 7 web tool and skin tones | | |
+| 6 male torso minimum | done, signed off | tests; catalogue slider; `ref-out/` byte-identical |
+| 7 web tool and skin tones | sweep and swatches done; browser check pending | catalogue test; `app.js` parses; the served catalogue checked |
 | 8 documentation | | |
 
 ## Findings, newest first
+
+### Step 7: skin tones and the web tool (2026-09-26)
+
+**No skin-derived tones.** Nothing reads `shade(skin_tone)`: everything on
+the skin is in the outline colour (the line work, the chest lines, the
+navel) except the blush, a fixed pink (`#e8879a`) at 0.45 opacity.
+
+**The sweep** (`harness/bare/skin_tones.py`, `out/bare/skin_tones.png`, dark
+rows `out/bare/skin_dark.png`): eight tones, very light `#fbe6d6` to deepest
+`#442617`, on Krista, Gero, Satoko and Linnea in the base layer. The outline
+holds at every tone. The line work inside the body (under the breasts, the
+chest lines, the navel, the mouth) gets faint at the deepest but stays
+visible; light brows (blonde, pink) nearly vanish on dark skin, as light
+brows do. **The blush turns muddy maroon from "dark" down**: a question for
+the owner, not changed here.
+
+**Swatches:** `catalogue.SKIN_SWATCHES`, the eight tones (the default among
+them), as `skin_swatches` in the catalogue JSON; `app.js` draws them as a
+row of round buttons under the Skin picker (`swatchRow`), the picker still
+free. Test: the default is among them and each renders. `app.js` passes
+`node --check`; the staged server's catalogue carries the tunic and boots as
+optional, the underwear as always on with its top toggle, the chest range and
+the swatches. **Not yet checked in the browser**: the extension was not
+connected.
 
 ### Step 6: the minimum male torso, proposal (2026-09-26)
 

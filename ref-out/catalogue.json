@@ -203,6 +203,40 @@
     "min": 0.0,
     "max": 1.0
   },
+  "skin_swatches": [
+    {
+      "label": "Very light",
+      "value": "#fbe6d6"
+    },
+    {
+      "label": "Light",
+      "value": "#f2c9a1"
+    },
+    {
+      "label": "Light warm",
+      "value": "#e6b38a"
+    },
+    {
+      "label": "Medium",
+      "value": "#c98d62"
+    },
+    {
+      "label": "Medium dark",
+      "value": "#a8704a"
+    },
+    {
+      "label": "Dark",
+      "value": "#865335"
+    },
+    {
+      "label": "Very dark",
+      "value": "#633a24"
+    },
+    {
+      "label": "Deepest",
+      "value": "#442617"
+    }
+  ],
   "hair_knot": {
     "field": "hair_knot",
     "label": "Top-knot"

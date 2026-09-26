@@ -501,6 +501,20 @@ assert WAIST_SHIFT.field in _CHARACTER_FIELDS
 # How much bust the figure carries, 0 for none (`docs/bust-plan.md`). The range
 # is the one swept and judged, and the cast's own values sit inside it: Krista
 # at the top, the men at zero.
+# Skin tones offered as one-click swatches beside the free colour picker, very
+# light to very dark (`docs/bare-body-plan.md`, step 7): the range swept on the
+# cast in the base-layer view (`harness/bare/skin_tones.py`), where the outline
+# and the line work held at every one. The second is `CharacterParams`' default.
+SKIN_SWATCHES: tuple[tuple[str, str], ...] = (
+    ("Very light", "#fbe6d6"),
+    ("Light", "#f2c9a1"),
+    ("Light warm", "#e6b38a"),
+    ("Medium", "#c98d62"),
+    ("Medium dark", "#a8704a"),
+    ("Dark", "#865335"),
+    ("Very dark", "#633a24"),
+    ("Deepest", "#442617"),
+)
 BUST = RangeField("bust", "Bust", 0.0, 1.0)
 assert BUST.field in _CHARACTER_FIELDS
 # Chest definition bare, 0 for none (`docs/bare-body-plan.md`, step 6): the
@@ -687,6 +701,7 @@ def build_catalogue() -> dict[str, object]:
         "waist_shift": _range_json(WAIST_SHIFT),
         "bust": _range_json(BUST),
         "chest": _range_json(CHEST),
+        "skin_swatches": [{"label": lbl, "value": v} for lbl, v in SKIN_SWATCHES],
         "hair_knot": _bool_json(HAIR_KNOT),
         "garments": [_garment_json(g) for g in GARMENTS],
         "face": {

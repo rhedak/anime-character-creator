@@ -269,6 +269,25 @@ button:disabled {
   border-radius: 0.3rem;
 }
 
+.swatches {
+  gap: 0.3rem;
+  margin-top: -0.2rem;
+}
+
+.swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .garment-block {
   border-top: 1px solid var(--border);
   padding-top: 0.5rem;
