@@ -8,9 +8,8 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 - **Now:** the plan is done and signed off (2026-09-26). Open: the men's
   armpit slot (a small bare-only change if wanted) and the realistic build's
   own fix pass. Follow-on: `tunic-bust-plan.md`, making the clothed bust
-  agree with the bare one: T2 signed off (`cc0a2ce`); T3 (the side) built,
-  waiting for the owner's look; then T4 (the cast, docs, valley_of_mist on
-  the owner's say-so).
+  agree with the bare one: done (T1 to T4); `../valley_of_mist` regenerated
+  and waiting for the owner's commit call there.
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
   step; every preset wears a tunic and boots.
@@ -32,6 +31,17 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 8 documentation | done | `api.md`, README, STATUS, the plan's summary |
 
 ## Findings, newest first
+
+### Tunic bust plan, T4: the cast and the downstream (2026-09-26)
+
+T3 signed off. The cast sheet (`ref-out/sheet.png`) looked at: the busts
+read alike across the tunics, nothing else moved. `../valley_of_mist`
+regenerated (`generate-refs`, `generate-covers`, `generate-inserts`): 52
+files. Per file, pixels and PNG metadata compared with `HEAD`: every man's
+reference, the cover (Satoshi) and chapter 26 (no woman in it) change **0
+pixels**, their metadata only, the embedded reproducing link now carrying
+`chest`; every file whose pixels moved has a woman with a bust in it (183 to
+2648 pixels an insert, 205 to 1664 a reference). Left uncommitted there.
 
 ### Tunic bust plan, T3: the side (2026-09-26)
 

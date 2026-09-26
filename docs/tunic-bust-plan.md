@@ -9,6 +9,16 @@ procedure is `bare-body-strategy.md` and `bust-strategy.md`: predict before
 measuring, one change per measurement, look in the right view, only the
 owner signs off.
 
+## Where it stands
+
+Done (2026-09-26): the owner picked d from the study (T1); the tunic's line
+under the bust is drawn on the bare breast's own ellipse (T2, `cc0a2ce`)
+and its side from the armpit to the fullest point on the bare curve (T3,
+`5ad55fa`); the cast sheet looked at, the docs updated and
+`../valley_of_mist` regenerated (T4), uncommitted there for the owner's
+call. Not traced: at the realistic build the tunic's side does not reach the
+piece T3 changed (not judged in this plan). Record: `bare-body-status.md`.
+
 ## The problem (`harness/bare/tunic_vs_bare.py`, `out/bare/tunic_vs_bare.png`)
 
 The bare breast (`_bare_breast_spine`) is an ellipse widest at the fullest

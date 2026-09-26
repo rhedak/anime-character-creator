@@ -1686,6 +1686,13 @@ crotch off the real knee, bare feet, chest lines for a torso with no bust
 The web tool has the toggles, a chest slider and eight skin tone swatches;
 the blush warms toward a brighter rose on dark skin.
 
+The clothed bust was then made to agree with the bare one
+(`docs/tunic-bust-plan.md`): the tunic's line under the bust is drawn on the
+bare breast's own ellipse (`_breast_ellipse`) and its side from the armpit
+follows the bare curve, so a figure's bust reads the same with the tunic on
+or off. That one did move the nine clothed characters with a bust, on
+purpose.
+
 A fully bare figure, without the base layer, exists only as a harness view
 for proportion work (`harness/bare/mannequin.py`), adults only, never a web
 tool option (the owner's decision). The realistic build renders bare and is
