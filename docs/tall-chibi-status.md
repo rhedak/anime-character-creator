@@ -4,8 +4,9 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R3 done; R4, the height slider's study, next: a stop for the
-  owner's pick. Autonomous, per the
+- **Now:** R4's study shown (`out/tall_chibi/height_study.png`), waiting
+  for the owner's pick: the distribution, the range, the knee, and how
+  sheets and covers show height. Autonomous, per the
   owner; R4's study is the next stop for input.
 - **Byte guard for R3:** `./harness/run.sh harness/tall_chibi/snapshot.py
   out/tall_chibi/after`, then `cmp` against `out/tall_chibi/before` (108
@@ -23,10 +24,34 @@ The record for `tall-chibi-plan.md`, newest first.
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
-| R4 the height slider | | |
+| R4 the height slider | study shown | |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R4: the height study (2026-09-26)
+
+`harness/tall_chibi/height_study.py`: a height `h` keeps the head, the
+shoulders and every width, and moves the profile's landmarks below the
+shoulder so the shoulder-to-foot run is `h` times as long; `heads` follows
+from the new foot (`2 * heads - 1`), and `build_skeleton` fits it to the
+canvas, so on its own canvas a taller figure has a smaller head. Three
+distributions of the extra length: **A** evenly, **B** legs only, **C** two
+thirds to the legs; at 0.8, 0.9, 1.0, 1.15, 1.3 on Satoko and Satoshi, drawn
+at one head size with the feet aligned.
+
+The mechanics hold: hems, the apron, trousers, boots, the katana and the
+hair's body-relative length all follow. A at 0.8 is squat (the torso
+compresses too) and at 1.3 long-waisted; B reads young at 0.8 and lanky at
+1.3, all legs; C reads young at 0.8 and adult at 1.3 without either extreme.
+
+**Open for the owner:** the distribution (recommended C), the range
+(recommended 0.8 to 1.3), the knee (the stretch scales the long-torso
+profile's knee landmark, which sits above the hip; recommended a real knee
+as part of R4, a small visible change to every leg's curve, mostly under the
+tunic), and whether sheets, covers and the book's inserts draw figures at one
+head size so heights show (they now fit each figure to its tile, which would
+hide a height difference).
 
 ### R3c: `long_traced_real` (2026-09-26)
 
