@@ -32,6 +32,23 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## Findings, newest first
 
+### Outer layers over the bust: built (2026-09-26)
+
+The owner: the coat's bow as recommended, and the robe's line the tunic's
+**whole** curve, lighter. `_bust_fold(sk, weight, sides)` lifted out of
+`_bust_lines` (which calls it as before); `_robe_front` draws it at
+`_ROBE_BUST_LINE` = 0.6 on the breast the panel covers; `_COAT_BUST_BOW` =
+1.0. The robe's diagonal bow and `_ROBE_BUST_BOW` taken out of the code.
+
+**Predicted:** only Kyoko's and Reika's clothed renders change. **Measured,
+wider, both explained:** by `cmp`, their tunic-off renders changed too,
+since those take off only the tunic and the coat and robe still answer the
+bust over bare breasts, correctly; and `ref-out/` moved `real/keiko` and
+`real/katherina` as well: traced cuts draw only at the chibi
+(`_wears_cuts`), so at the realistic build both wear the parametric coat,
+which now bows. Nothing else moved; the men and the bases byte-identical;
+627 passed. Before and after: `out/bare/outer_layers.png`.
+
 ### Outer layers over the bust: the study (2026-09-26)
 
 The owner asked for Kyoko's open coat and Reika's robe front, the two

@@ -2300,3 +2300,21 @@ def test_the_tunic_s_line_follows_the_bare_breast():
     sw = character._stroke_w(sk)
     assert abs(max(ys) - (yp + ry)) < sw
     assert abs(min(ys) - yp) < sw
+
+
+def test_the_outer_layers_answer_the_bust():
+    """An open coat's front edges bow out over a bust and a robe front carries
+    the tunic's line, lighter, under the breast it covers
+    (`docs/tunic-bust-plan.md`, outer layers). Without a bust neither changes."""
+    reika = PRESETS["reika"]
+    sk = character.skeleton_for(reika)
+    fold = character._bust_fold(sk, character._ROBE_BUST_LINE, sides=(-1,))
+    assert fold and fold in character._robe_front(sk, reika)
+    assert character._bust_fold(sk, 1.0, sides=(-1,)) != fold
+    flat = replace(reika, bust=0.0)
+    sk_flat = character.skeleton_for(flat)
+    assert character._bust_fold(sk_flat) == ""
+    kyoko = PRESETS["kyoko"]
+    sk = character.skeleton_for(kyoko)
+    flat = replace(kyoko, bust=0.0)
+    assert character._coat(sk, kyoko) != character._coat(character.skeleton_for(flat), flat)

@@ -91,8 +91,16 @@ The whole cast clothed at the chibi, `ref-out/` refreshed and its report
 read, the realistic build rendered (not judged), the docs. Then, on the
 owner's say-so, `../valley_of_mist` regenerated.
 
-## Deferred, as before
+## Outer layers (2026-09-26)
 
-- Kyoko's parametric `_coat` and Reika's `_robe_front` do not swell with the
-  bust (`bust-plan.md`, deferred).
+Kyoko's open coat and Reika's robe front answer the bust too, subtly, at the
+owner's request: the coat's front edges bow out by the tunic's drape
+(`_COAT_BUST_BOW`), and the robe carries the tunic's line under the breast
+it covers, the whole curve at 0.6 of its weight (`_bust_fold`,
+`_ROBE_BUST_LINE`). Bowing the robe's diagonal was tried and dropped.
+
+## Deferred
+
 - The realistic build's own fix pass.
+
+

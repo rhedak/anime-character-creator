@@ -3,12 +3,10 @@ open coat and Reika's robe front, the two parametric garments that did not
 answer the bust. Variants for the owner to pick from, set through the module's
 strength constants (zero draws each as before):
 
-- now;
-- bow 0.5: the coat's front edges and the robe's diagonal bow out by half the
-  tunic's drape (`_bust_bulge`), the robe's side following the drape;
-- bow 1.0: the same at the tunic's full drape;
-- bow 0.5 and a faint line (robe only): a 0.6-stroke line under the breast
-  the panel covers, its outer half.
+- before;
+- the chosen: the coat's front edges bowing out by the tunic's full drape
+  (`_bust_bulge`), the robe carrying the tunic's line under the breast it
+  covers at 0.6 of its weight (`_bust_fold`).
 
 Each tile is the chest at 4x beside the whole figure at tile size. Writes
 `out/bare/outer_layers.png`.
@@ -24,11 +22,13 @@ from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 
 NAMES = ("kyoko", "reika")
+# (label, coat bow, robe line). The robe's diagonal bow, tried at 0.5 and 1.0
+# in the first round, kinked and then wobbled, and was taken out of the code
+# (`docs/bare-body-status.md`); the owner asked for the robe's line to be the
+# tunic's whole curve, lighter, and it is `_bust_fold` now.
 VARIANTS = (
-    ("now", 0.0, 0.0, 0.0),
-    ("bow 0.5", 0.5, 0.5, 0.0),
-    ("bow 1.0", 1.0, 1.0, 0.0),
-    ("bow 0.5, faint line on the robe", 0.5, 0.5, 0.6),
+    ("before", 0.0, 0.0),
+    ("chosen: coat bow 1.0, robe line 0.6", 1.0, 0.6),
 )
 
 
@@ -53,14 +53,14 @@ def tile(name: str) -> Image.Image:
 
 def main() -> None:
     os.makedirs("out/bare", exist_ok=True)
-    saved = (c._COAT_BUST_BOW, c._ROBE_BUST_BOW, c._ROBE_BUST_LINE)
+    saved = (c._COAT_BUST_BOW, c._ROBE_BUST_LINE)
     rows = []
     try:
-        for label, coat, robe, line in VARIANTS:
-            c._COAT_BUST_BOW, c._ROBE_BUST_BOW, c._ROBE_BUST_LINE = coat, robe, line
+        for label, coat, line in VARIANTS:
+            c._COAT_BUST_BOW, c._ROBE_BUST_LINE = coat, line
             rows.append((label, [tile(n) for n in NAMES]))
     finally:
-        c._COAT_BUST_BOW, c._ROBE_BUST_BOW, c._ROBE_BUST_LINE = saved
+        c._COAT_BUST_BOW, c._ROBE_BUST_LINE = saved
     pad, head = 8, 20
     tw = max(t.width for _, ts in rows for t in ts)
     th = max(t.height for _, ts in rows for t in ts)

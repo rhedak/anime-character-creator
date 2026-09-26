@@ -2985,11 +2985,19 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
     """
     if p.outfit.tunic_color is None:
         return _bare_breasts(sk, p)
+    return _bust_fold(sk)
+
+
+def _bust_fold(sk: Skeleton, weight: float = 1.0, sides: tuple[int, ...] = (-1, 1)) -> str:
+    """The line under the bust on cloth, on the bare breast's own ellipse:
+    the tunic's (`_bust_lines`) at full weight on both sides, and a lighter one
+    on a robe's panel over the breast it covers (`_robe_front`). Empty without
+    a bust."""
     ellipse = _breast_ellipse(sk, 0.0)
     if ellipse is None:
         return ""
     cx, sw = sk.head_cx, _stroke_w(sk)
-    heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5)
+    heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5) * weight
     # The bare breast's own ellipse (`_breast_ellipse`), from the tunic's side
     # at the fullest point round the bottom and up the inner side, so a
     # figure's bust reads the same with the tunic on or off
@@ -3017,7 +3025,7 @@ def _bust_lines(sk: Skeleton, p: CharacterParams) -> str:
         right.append((x - nx, y - ny))
     ring = left + right[::-1]
     parts = []
-    for s in (-1, 1):
+    for s in sides:
         d = "M " + " L ".join(f"{cx + s * x:.1f} {y:.1f}" for x, y in ring) + " Z"
         parts.append(f'<path d="{d}" fill="{OUTLINE}" stroke="none" />')
     return "".join(parts)
@@ -4119,12 +4127,11 @@ def _quad_point(p0: Point, p1: Point, p2: Point, u: float) -> Point:
 
 
 # How much an outer layer answers a bust (`docs/tunic-bust-plan.md`, outer
-# layers): an open coat's front edges and a robe front's diagonal bow out by
-# this share of the tunic's drape; the robe can add a faint line, this share
-# of a stroke, under the breast it covers. Zero draws each as before.
-_COAT_BUST_BOW = 0.0
-_ROBE_BUST_BOW = 0.0
-_ROBE_BUST_LINE = 0.0
+# layers; the owner's calls, 2026-09-26): an open coat's front edges bow out by
+# this share of the tunic's drape, and a robe front carries the tunic's line
+# under the breast it covers at this share of its weight.
+_COAT_BUST_BOW = 1.0
+_ROBE_BUST_LINE = 0.6
 
 
 def _quad_x_at(p0: Point, p1: Point, p2: Point, y: float) -> float | None:
@@ -4974,84 +4981,28 @@ def _robe_front(sk: Skeleton, p: CharacterParams) -> str:
     # down to the left hip. Its far edge follows the torso, so it cannot show
     # outside the tunic it is laid on.
     torso_at_shoulder = _sleeve_half_w(sk) * 0.80
-    top = (-neck, sy + sk.neck_half_w * 0.45)
-    hip = (ww * 0.72, belt_y)
-    side_y = sy + (wy - sy) * 0.22
-    if _ROBE_BUST_BOW > 0 and sk.bust > 0:
-        # Over a bust the diagonal bows out where it crosses the breast, cloth
-        # wrapping over the curve rather than cutting across it, and the panel's
-        # outer side follows the tunic's drape so it stays on the tunic
-        # (`docs/tunic-bust-plan.md`, outer layers).
-        steps = 24
-        dx, dy = hip[0] - top[0], hip[1] - top[1]
-        length = math.hypot(dx, dy)
-        nx, ny = dy / length, -dx / length
-        # A smooth bump over the breast's own height, armpit to the bottom of
-        # the breast, as much as the bust reaches: the tunic's drape profile,
-        # tried first, rises at the armpit, and across a diagonal it kinked.
-        ellipse = _breast_ellipse(sk, 0.0)
-        b_top = _sleeve_hem_y(sk)
-        b_bot = ellipse[2] + ellipse[3] if ellipse else b_top + 1.0
-
-        def bow(y: float) -> float:
-            u = max(0.0, min(1.0, (y - b_top) / (b_bot - b_top)))
-            return _ROBE_BUST_BOW * sk.bust_reach * math.sin(math.pi * u) ** 2
-
-        diagonal = [
-            (
-                top[0] + dx * t + nx * bow(top[1] + dy * t),
-                top[1] + dy * t + ny * bow(top[1] + dy * t),
-            )
-            for t in (k / steps for k in range(steps + 1))
-        ]
-        side = "".join(
-            f"L {cx - (x + _bust_bulge(sk, y)):.1f} {y:.1f} "
-            for x, y in (
-                _quad_point(
-                    (torso_at_shoulder, side_y), (torso_at_shoulder, wy), (ww, belt_y), k / steps
-                )
-                for k in range(1, steps + 1)
-            )
-        )
-        d = (
-            f"M {cx + top[0]:.1f} {top[1]:.1f} L {cx - torso_at_shoulder:.1f} {side_y:.1f} "
-            + side
-            + "".join(f"L {cx + x:.1f} {y:.1f} " for x, y in reversed(diagonal))
-            + "Z"
-        )
-        fold_d = "M " + " L ".join(f"{cx + x:.1f} {y:.1f}" for x, y in diagonal)
-    else:
-        d = (
-            f"M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} "
-            f"L {cx - torso_at_shoulder:.1f} {side_y:.1f} "
-            f"Q {cx - torso_at_shoulder:.1f} {wy:.1f} {cx - ww:.1f} {belt_y:.1f} "
-            f"L {cx + ww * 0.72:.1f} {belt_y:.1f} "
-            f"Z"
-        )
-        fold_d = f"M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} L {cx + ww * 0.72:.1f} {belt_y:.1f}"
+    d = (
+        f"M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} "
+        f"L {cx - torso_at_shoulder:.1f} {sy + (wy - sy) * 0.22:.1f} "
+        f"Q {cx - torso_at_shoulder:.1f} {wy:.1f} {cx - ww:.1f} {belt_y:.1f} "
+        f"L {cx + ww * 0.72:.1f} {belt_y:.1f} "
+        f"Z"
+    )
     # The fold's own edge, drawn as a line rather than left as a fill boundary:
     # panel and tunic can be the same colour on a character who wears one robe,
     # and then the diagonal is the only thing saying anything crossed at all.
     fold = (
-        f'<path d="{fold_d}" fill="none" stroke="{OUTLINE}" '
+        f'<path d="M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} '
+        f'L {cx + ww * 0.72:.1f} {belt_y:.1f}" fill="none" stroke="{OUTLINE}" '
         f'stroke-width="{sw * 0.8:.1f}" stroke-linecap="round" />'
     )
-    line = ""
-    ellipse = _breast_ellipse(sk, 0.0)
-    if _ROBE_BUST_LINE > 0 and ellipse is not None:
-        # A faint line under the breast the panel covers, its outer half only:
-        # a robe tied with an obi sits closer than an open coat.
-        xc, rx, yp, ry = ellipse
-        pts = [
-            (xc + rx * math.cos(th), yp + ry * math.sin(th))
-            for th in (math.pi / 2 * k / 16 for k in range(17))
-        ]
-        line = (
-            '<path d="M '
-            + " L ".join(f"{cx - x:.1f} {y:.1f}" for x, y in pts)
-            + f'" fill="none" stroke="{OUTLINE}" stroke-width="{sw * _ROBE_BUST_LINE:.1f}" '
-            f'stroke-linecap="round" />'
-        )
+    # Over a bust, the tunic's line under the breast the panel covers, the whole
+    # curve, lighter: a robe tied with an obi sits close, and with the line only
+    # on the uncovered breast (the tunic's, beside the panel) she read lopsided
+    # (`docs/tunic-bust-plan.md`, outer layers; the owner's call, 2026-09-26).
+    # Bowing the diagonal over the breast was tried and dropped: it kinked, and
+    # smoothed it wobbled.
+    line = _bust_fold(sk, _ROBE_BUST_LINE, sides=(-1,))
     return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />{fold}{line}'
 
 
