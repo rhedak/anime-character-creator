@@ -2888,13 +2888,9 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     asked for, the arm in front of the coat and behind the bust
     (`docs/bust-plan.md`, step 5c).
 
-    Chibi-range figures only, on the same halfway point the traced cuts switch
-    on. At the realistic build the arm hangs 0.45 head radii across the torso:
-    a lobe stopping at the plain side left a strip of chest showing through the
-    middle of the arm, and one carried in past the arm floated as a pad over it
-    at middling values and read as a ledge at full size (`docs/bust-status.md`,
-    step 5). That is the adult arm's placement, not the bust's shape, and it is
-    left under the arm there.
+    At the realistic build, now retired, the arm hung across the torso and the
+    lobe could not work there (`docs/bust-status.md`, step 5); the tall chibi
+    is the one figure (`docs/tall-chibi-plan.md`).
 
     The mask's id carries a hash of its shape, so figures sharing one document
     (a cast sheet) cannot pick up each other's.
@@ -2904,7 +2900,7 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     they carry their own, so nothing is clipped to the arms.
     """
     bust = _bust_shape(sk, drape=True)
-    if bust is None or sk.build >= 0.5:
+    if bust is None:
         return ""
     cx, sw = sk.head_cx, _stroke_w(sk)
     if p.outfit.tunic_color is None:
@@ -3438,7 +3434,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
     # the collar then covers. Left at 0.8 under a collar, the V's outline pokes
     # out below the collar's lower edge and reads as a second neckline.
     notch = sk.neck_half_w * (0.28 if p.outfit.collar_color else 0.8)
-    if p.outfit.collar_color is not None and p.outfit.collar_cut is not None and _wears_cuts(sk):
+    if p.outfit.collar_color is not None and p.outfit.collar_cut is not None:
         # A traced collar opens in a V onto the throat; the tunic's own neckline
         # has to sit behind its wings, or its edges show in that V above the
         # collar's back band.
@@ -4306,19 +4302,8 @@ class GarmentCut:
     bust_line_after: int | None = None
 
 
-def _wears_cuts(sk: Skeleton) -> bool:
-    """Whether traced cuts draw at this build, or the shared garments do.
-
-    Cuts are traced off a chibi-range figure and mapped across chibi-range
-    bodies; the realistic build keeps the shared parametric garments (the
-    owner's call in `katherina-clothes-plan.md`). The same halfway point the
-    face's adult features switch on at.
-    """
-    return sk.build < 0.5
-
-
 def _traced_coat(sk: Skeleton, p: CharacterParams) -> bool:
-    return p.outfit.coat_color is not None and p.outfit.coat_cut is not None and _wears_cuts(sk)
+    return p.outfit.coat_color is not None and p.outfit.coat_cut is not None
 
 
 def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams, after_arms: bool = True) -> str:
@@ -5204,14 +5189,6 @@ _MOUTH_REALISTIC_WIDEN = 0.85
 # the jaw actually visible in frame, without the two crowding each other.
 _MOUTH_REALISTIC_DROP = 0.18
 
-# How much further down the nose sits at the realistic build, in head radii,
-# on top of its own `0.36`. Local to the nose, and already build-gated by
-# `sk.build > 0.5`, so no shared constant is at risk the way `_MOUTH_Y` is.
-# Same value and the same reasoning as `_MOUTH_REALISTIC_DROP`: dropping
-# both by the same amount is also what keeps the gap between them, already
-# correct, from changing.
-_NOSE_REALISTIC_DROP = 0.18
-
 # Where the beard's mass meets the face at the sides, and how far inside the
 # skull's edge it lands there. Named constants rather than literals so a sweep
 # can try candidates without editing the drawing code; see `harness/beard/`.
@@ -5720,7 +5697,7 @@ def _collar(sk: Skeleton, p: CharacterParams) -> str:
     """
     if p.outfit.collar_color is None:
         return None or ""
-    if p.outfit.collar_cut is not None and _wears_cuts(sk):
+    if p.outfit.collar_cut is not None:
         return _draw_cut(sk, COLLAR_CUTS[p.outfit.collar_cut], p.outfit.collar_color)
     cx, sy = sk.head_cx, sk.shoulder_y
     color = p.outfit.collar_color
@@ -6072,12 +6049,11 @@ def _apron(sk: Skeleton, p: CharacterParams) -> str:
     # in the middle with the pouches flanking it, and the gap between them is what
     # tells the three pieces apart. The pouches move outboard to match.
     top_w = _belt_line_half_w(sk) * 0.74
-    if sk.build < 0.5:
-        # No longer than it is wide. On the shared chibi the apron is a short wide
-        # panel (about twice as wide as it is tall) and this never binds; on a body
-        # with a long drop to the skirt hem it hung to the hem as a tall strip
-        # that read as a bag, so it stops where it would stop being an apron.
-        bot_y = min(bot_y, top_y + 2 * top_w)
+    # No longer than it is wide. On the shared chibi the apron is a short wide
+    # panel (about twice as wide as it is tall) and this never binds; on a body
+    # with a long drop to the skirt hem it hung to the hem as a tall strip
+    # that read as a bag, so it stops where it would stop being an apron.
+    bot_y = min(bot_y, top_y + 2 * top_w)
     # Flares only a little. Following the skirt's own flare down to a hem this
     # low turns the panel into a cone that swallows the garment under it, and the
     # reference's apron is a straight-hanging panel.
@@ -6150,7 +6126,7 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.skirt_color
     if color is None:
         return ""
-    if p.outfit.skirt_cut is not None and _wears_cuts(sk):
+    if p.outfit.skirt_cut is not None:
         return _draw_cut(sk, SKIRT_CUTS[p.outfit.skirt_cut], color)
     hem_y = _skirt_hem_y(sk, p.outfit.skirt_length, p.outfit.skirt_length_chibi)
     # Starts above the hip so the tunic drawn over it has something to overlap
@@ -6312,7 +6288,7 @@ def _hand_length(sk: Skeleton) -> float:
 
 
 def _worn_sleeve(sk: Skeleton, p: CharacterParams) -> SleeveCut | None:
-    return SLEEVE_CUTS.get(p.outfit.sleeve_cut or "") if _wears_cuts(sk) else None
+    return SLEEVE_CUTS.get(p.outfit.sleeve_cut or "")
 
 
 def _arm_pivot(sk: Skeleton, p: CharacterParams, s: int) -> tuple[float, float]:
@@ -7558,26 +7534,6 @@ def _hand(
     parts = [
         f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
     ]
-    if p.shaded and sk.build > 0.5:
-        # One crease along the thumb's root, only once there is room for it.
-        parts.append(
-            f'<path d="M {x(-hw * 0.70):.1f} {wrist_y + length * 0.26:.1f} '
-            f'Q {x(-hw * 0.40):.1f} {wrist_y + length * 0.48:.1f} {x(-hw * 0.48):.1f} {wrist_y + length * 0.70:.1f}" '
-            f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.55" stroke-linecap="round" />'
-        )
-        # Fingers, as two short strokes running in from the outer edge rather
-        # than as separate digits. The canon indicates them exactly this way, and
-        # a hand drawn as four modelled fingers at this size reads as noise: the
-        # mitten with a thumb stays, these divide it. They stop short of the
-        # centre so the hand keeps one silhouette.
-        for at, reach in ((0.62, 0.62), (0.80, 0.50)):
-            parts.append(
-                f'<path d="M {x(hw * 0.98):.1f} {wrist_y + length * at:.1f} '
-                f"Q {x(hw * (0.98 - reach * 0.5)):.1f} {wrist_y + length * (at + 0.05):.1f} "
-                f'{x(hw * (0.98 - reach)):.1f} {wrist_y + length * (at + 0.07):.1f}" '
-                f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.55" '
-                f'stroke-linecap="round" />'
-            )
     return "".join(parts)
 
 
@@ -8101,16 +8057,6 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
                 f'<line x1="{cx - s * lace_w:.1f}" y1="{y0:.1f}" x2="{cx + s * lace_w:.1f}" y2="{y0 + dy:.1f}" '
                 f'stroke="{lace_color}" stroke-width="{lace_sw:.1f}" stroke-linecap="round" />'
             )
-    # Eyelets where the laces turn, which is where the canon puts them. Only at
-    # the taller builds: at chibi they land under a stroke's width of each other
-    # and read as grit on the boot.
-    if sk.build > 0.4:
-        for i in range(steps + 1):
-            for s in (-1, 1):
-                parts.append(
-                    f'<circle cx="{cx + s * lace_w:.1f}" cy="{lace_top + i * dy:.1f}" '
-                    f'r="{lace_sw * 0.9:.1f}" fill="{shade(color, 0.35)}" />'
-                )
     return "".join(parts)
 
 
@@ -8124,10 +8070,7 @@ def _belt_line_half_w(sk: Skeleton) -> float:
     off a width narrower than the figure they hang on, so a sash comes out a box,
     an apron a tall strip and the pouches crowd its corners. There they take the
     width from the hip instead, at the same ratio the chibi has between the two.
-    The realistic build keeps the waist: its apron and sash were fitted narrow.
     """
-    if sk.build > 0.5:
-        return sk.waist_half_w
     return max(sk.waist_half_w, sk.hip_half_w * 0.9)
 
 
@@ -8147,7 +8090,7 @@ def _belt_band(sk: Skeleton, scale: float = 1.0) -> tuple[float, float]:
     """
     base = (sk.hip_y - sk.waist_y) * 0.42
     h = base * max(0.2, scale)
-    if scale > 1.6 and sk.build < 0.5:
+    if scale > 1.6:
         # A sash is a wide flat band: its depth follows the waist-to-hip distance,
         # which is a sliver on the shared chibi and most of a head radius on a body
         # with a real waist, so on that one it came out a box. Capped by its own
@@ -8169,7 +8112,7 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     color = p.outfit.belt_color
     if color is None:
         return ""
-    if p.outfit.belt_cut is not None and _wears_cuts(sk):
+    if p.outfit.belt_cut is not None:
         cut = BELT_CUTS[p.outfit.belt_cut]
         return (
             _draw_cut(sk, cut.strap, color)
@@ -8181,7 +8124,7 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     half_w = sk.waist_half_w * 1.03
     if p.outfit.belt_scale > 1.6:
         half_w = _belt_line_half_w(sk) * 1.03
-    if p.outfit.trouser_color is not None and sk.build < 0.5:
+    if p.outfit.trouser_color is not None:
         # Wide enough to cover the trousers' top corners. On the shared chibi the
         # belt is wider than the legs it sits over and this never binds; on a body
         # with a narrow waist the trousers hang wider than the belt, and their
@@ -8244,15 +8187,10 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
     # detail that would say "belt" loudest on the three characters the depth is
     # there to dress. The cut-off sits between a wide belt and a narrow sash.
     obi = p.outfit.belt_scale > 1.6
-    # With an apron, whether the buckle shows rides on the build: `ref/satoko-
-    # chibi.jpg`'s apron sits high enough to cover it, but `ref/satoko-real.jpg`
-    # does not, the buckle sitting clear above the panel with the strap's tail
-    # running down over it. So the old rule ("an apron hides it, full stop",
-    # true at chibi) undershot the realistic build, where the reference shows
-    # both the buckle and the hanging tie together. `sk.build > 0.5` is the
-    # same cut a bare-headed chibi nose uses for the same reason: a detail that
-    # only reads once the figure has grown into the room for it.
-    show_buckle = (p.outfit.apron_color is None or sk.build > 0.5) and not obi
+    # An apron hides it: `ref/satoko-chibi.jpg`'s apron sits high enough to
+    # cover it. (The retired realistic build showed it above the apron, as
+    # `ref/satoko-real.jpg` does.)
+    show_buckle = p.outfit.apron_color is None and not obi
     # Whenever the buckle is not carrying the belt on its own: an obi (never
     # gets a buckle) or an apron at any build below where the buckle joins it,
     # same as before this build split existed. With both an apron and the
@@ -8431,17 +8369,16 @@ def _crystal_layout(sk: Skeleton, belt_h: float) -> tuple[float, tuple[float, fl
     half = sk.waist_half_w
     inner, outer = -_CRYSTAL_X_FRACS[1] * half, _CRYSTAL_X_FRACS[3] * half
     scale = 1.0
-    if sk.build < 0.5:
-        # Half a stroke apart, which is how the chibi's straps sit: touching.
-        gap = _stroke_w(sk) * 0.5
-        belt_half = half * 1.03
-        buckle_half = belt_h * 1.5 / 2
-        # buckle + inner crystal half + gap, then a crystal and a gap, then the
-        # outer strap's half (1.22 of a crystal's width) inside the belt's end.
-        scale = min(1.0, (belt_half - buckle_half - 2 * gap) / (2.11 * w0))
-        w = w0 * scale
-        inner = max(inner, buckle_half + w / 2 + gap)
-        outer = max(outer, inner + w + gap)
+    # Half a stroke apart, which is how the chibi's straps sit: touching.
+    gap = _stroke_w(sk) * 0.5
+    belt_half = half * 1.03
+    buckle_half = belt_h * 1.5 / 2
+    # buckle + inner crystal half + gap, then a crystal and a gap, then the
+    # outer strap's half (1.22 of a crystal's width) inside the belt's end.
+    scale = min(1.0, (belt_half - buckle_half - 2 * gap) / (2.11 * w0))
+    w = w0 * scale
+    inner = max(inner, buckle_half + w / 2 + gap)
+    outer = max(outer, inner + w + gap)
     return scale, (-outer, -inner, inner, outer)
 
 
@@ -9297,76 +9234,76 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     r = sk.head_r
     cy = sk.head_cy
     f = p.face
-    if sk.build > 0:
-        # Height measured directly off ref/satoko-real.jpg and
-        # ref/satoshi-real.jpg (aperture width/height read by eye off a
-        # pixel grid, since the automated `eyes` probe finds the iris
-        # highlight dot on this art rather than the aperture, a known
-        # failure of that tool on these two references) and confirmed
-        # against the chibi's own height, unaffected by any of this since
-        # `sk.build` gates it to 0 there: this reduction's own numbers hold
-        # up. What did not hold up on a re-measurement (`docs/gap-analysis.md`
-        # gap 10) was the aspect ratio quoted to justify them: "about 2.2
-        # times wider than tall" is not reproducible on either reference by
-        # measuring width and height each as their own fraction of figure
-        # height, which comes to 1.6 on Satoko and 1.4 on Satoshi. Height
-        # was never the problem.
-        f = replace(
-            f,
-            eye_openness=f.eye_openness * (1.0 - 0.40 * sk.build),
-            eye_lower_lid=f.eye_lower_lid * (1.0 - 0.20 * sk.build),
-            # The width was: unlike the height, nothing had ever narrowed
-            # it for the realistic build, so it carries the chibi's own
-            # wide-aperture value (`_EYE_ASPECT`, deliberately widened for
-            # the chibi's own reference in gap 6) straight into the adult
-            # face, 60% to 90% too wide against either reference measured
-            # the same way. `ref/satoko-real.jpg` is the owner's pick
-            # between the two references, which also happens to be this
-            # file's own tie-break rule when they disagree.
-            #
-            # Two wrong numbers were tried before this one, both from
-            # measuring ink on a render instead of the path it comes from.
-            # Matching our own ink width to the reference's ink width
-            # arithmetically points at a reduction near 0.99: a stroke
-            # bulges past a sharp corner by roughly its own width no
-            # matter how narrow the path underneath is, so past some point
-            # the number being matched is the stroke, not the aperture,
-            # and 0.99 renders as a black sliver with no almond left. A
-            # render sweep chosen by eye against that same ink-corrupted
-            # signal landed on 0.50, which looked like a narrower almond in
-            # a small crop but is actually the aperture's *width* passing
-            # *below* its already-correct height (`docs/gap-analysis.md`
-            # confirmed height was already close): the path comes out
-            # 10.1 x 10.1, round again rather than flattened, and reads
-            # exactly as round and crowded as the gap this was fixing,
-            # caught on a full-face overlay a tight crop did not show.
-            # `_eye_shape`'s aperture is closed-form, so there is no need to
-            # measure our own ink at all: solve `2w / (top+bot) = 1.6`,
-            # Satoko's own measured aspect, for the reduction, since
-            # `top+bot` (the height) is already right. That is 0.21, not
-            # 0.50, confirmed both by reading the emitted path's own bounds
-            # (16.1 x 10.1, aspect 1.59) and by the same full-face overlay.
-            # Satoshi's own reference wants narrower still (his measured
-            # aspect is 1.4 against Satoko's 1.6), left as a residual
-            # against his own photo rather than a second knob, the same
-            # way gap 8 leaves per-character residuals against the shared
-            # Satoko-anchored silhouette elsewhere.
-            eye_width=f.eye_width * (1.0 - 0.21 * sk.build),
-            # The canon's outer corner comes to a real point; ours rounded
-            # off well short of it (gap 11, seen but not measured there).
-            # `reach = 0.55 * eye_corner` in `_eye_shape` is what controls
-            # it, so doubling `eye_corner` at full build doubles how far
-            # the control point slides toward the apex/base, which is what
-            # sliding it does: 0 sits it on the corner (round), further
-            # along leaves the corner shallower (pointed). Picked by
-            # render sweep against `ref/satoko-real.jpg`: 0.45 doubled to
-            # 0.90 matches her corner; past about 1.0 it starts reading as
-            # a point rather than a corner. Satoshi's own reference is
-            # rounder than hers (his measured aspect is 1.4 against her
-            # 1.6), so this is the same anchored-to-Satoko tradeoff gap 10
-            # already made for width, not a new decision.
-            eye_corner=f.eye_corner * (1.0 + 1.0 * sk.build),
-        )
+    # Tuned for the realistic build, now retired, and still applied at the
+    # tall chibi's pinned `sk.build` (about 0.1): every figure's eyes are open
+    # 4% less and their lower lid 2% less than the face asks for. It is how the
+    # cast has always looked, so it is kept as it renders (the owner's call,
+    # `docs/tall-chibi-plan.md`, R0); an earlier comment here said the chibi
+    # was unaffected, which was wrong. The heights were measured off
+    # ref/satoko-real.jpg and ref/satoshi-real.jpg (aperture width/height read
+    # by eye off a pixel grid, since the automated `eyes` probe finds the iris
+    # highlight dot on this art rather than the aperture). What did not hold up on a re-measurement (`docs/gap-analysis.md`
+    # gap 10) was the aspect ratio quoted to justify them: "about 2.2
+    # times wider than tall" is not reproducible on either reference by
+    # measuring width and height each as their own fraction of figure
+    # height, which comes to 1.6 on Satoko and 1.4 on Satoshi. Height
+    # was never the problem.
+    f = replace(
+        f,
+        eye_openness=f.eye_openness * (1.0 - 0.40 * sk.build),
+        eye_lower_lid=f.eye_lower_lid * (1.0 - 0.20 * sk.build),
+        # The width was: unlike the height, nothing had ever narrowed
+        # it for the realistic build, so it carries the chibi's own
+        # wide-aperture value (`_EYE_ASPECT`, deliberately widened for
+        # the chibi's own reference in gap 6) straight into the adult
+        # face, 60% to 90% too wide against either reference measured
+        # the same way. `ref/satoko-real.jpg` is the owner's pick
+        # between the two references, which also happens to be this
+        # file's own tie-break rule when they disagree.
+        #
+        # Two wrong numbers were tried before this one, both from
+        # measuring ink on a render instead of the path it comes from.
+        # Matching our own ink width to the reference's ink width
+        # arithmetically points at a reduction near 0.99: a stroke
+        # bulges past a sharp corner by roughly its own width no
+        # matter how narrow the path underneath is, so past some point
+        # the number being matched is the stroke, not the aperture,
+        # and 0.99 renders as a black sliver with no almond left. A
+        # render sweep chosen by eye against that same ink-corrupted
+        # signal landed on 0.50, which looked like a narrower almond in
+        # a small crop but is actually the aperture's *width* passing
+        # *below* its already-correct height (`docs/gap-analysis.md`
+        # confirmed height was already close): the path comes out
+        # 10.1 x 10.1, round again rather than flattened, and reads
+        # exactly as round and crowded as the gap this was fixing,
+        # caught on a full-face overlay a tight crop did not show.
+        # `_eye_shape`'s aperture is closed-form, so there is no need to
+        # measure our own ink at all: solve `2w / (top+bot) = 1.6`,
+        # Satoko's own measured aspect, for the reduction, since
+        # `top+bot` (the height) is already right. That is 0.21, not
+        # 0.50, confirmed both by reading the emitted path's own bounds
+        # (16.1 x 10.1, aspect 1.59) and by the same full-face overlay.
+        # Satoshi's own reference wants narrower still (his measured
+        # aspect is 1.4 against Satoko's 1.6), left as a residual
+        # against his own photo rather than a second knob, the same
+        # way gap 8 leaves per-character residuals against the shared
+        # Satoko-anchored silhouette elsewhere.
+        eye_width=f.eye_width * (1.0 - 0.21 * sk.build),
+        # The canon's outer corner comes to a real point; ours rounded
+        # off well short of it (gap 11, seen but not measured there).
+        # `reach = 0.55 * eye_corner` in `_eye_shape` is what controls
+        # it, so doubling `eye_corner` at full build doubles how far
+        # the control point slides toward the apex/base, which is what
+        # sliding it does: 0 sits it on the corner (round), further
+        # along leaves the corner shallower (pointed). Picked by
+        # render sweep against `ref/satoko-real.jpg`: 0.45 doubled to
+        # 0.90 matches her corner; past about 1.0 it starts reading as
+        # a point rather than a corner. Satoshi's own reference is
+        # rounder than hers (his measured aspect is 1.4 against her
+        # 1.6), so this is the same anchored-to-Satoko tradeoff gap 10
+        # already made for width, not a new decision.
+        eye_corner=f.eye_corner * (1.0 + 1.0 * sk.build),
+    )
     # Canon face geometry, shared by every character; what differs per
     # character stays in FaceStyle. Eyes sit below the head's centre line and
     # well apart (the canon puts them at about half the face's half-width,
@@ -9451,34 +9388,6 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         else:
             parts.append(
                 EYESTYLES[f.eye_style](ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio)
-            )
-
-    if sk.build > 0.5:
-        # Two short strokes, mirrored, only at builds where the face has
-        # room for them. The chibi face reads through eyes and mouth
-        # alone, which is why the canon chibi draws none either.
-        #
-        # Used to be one stroke, off to one side, which was never a
-        # simplification of the canon's own nose so much as a different
-        # construction: `ref/satoko-real.jpg` draws a nostril shadow as a
-        # pair of short marks, each angling down from an outer point near
-        # the brow line to an inner point just short of the centre, close
-        # to touching but not quite. Measured directly off that reference
-        # at the same head-radius scale the eye fixes validated: each
-        # mark's outer end sits about 0.094 r out from centre, its inner
-        # end about 0.028 r out, and it drops about 0.033 r between the
-        # two.
-        nose_y = cy + r * (0.36 + _NOSE_REALISTIC_DROP * sk.build)
-        nose_out = r * 0.094 * sk.build
-        nose_in = r * 0.028 * sk.build
-        nose_drop = r * 0.033 * sk.build
-        for side in (-1, 1):
-            parts.append(
-                f'<path d="M {cx + side * nose_out:.1f} {nose_y - nose_drop:.1f} '
-                f"Q {cx + side * (nose_out + nose_in) / 2:.1f} {nose_y - nose_drop * 0.4:.1f} "
-                f'{cx + side * nose_in:.1f} {nose_y:.1f}" '
-                f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.45:.1f}" opacity="0.75" '
-                f'stroke-linecap="round" />'
             )
 
     mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.build)

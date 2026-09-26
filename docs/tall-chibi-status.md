@@ -4,8 +4,7 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R3a (the skeleton path) done; R3b (the build-gated branches in
-  `character.py`) next, then R3c (`long_traced_real`). Autonomous, per the
+- **Now:** R3a, R3b done; R3c (`long_traced_real`) next. Autonomous, per the
   owner; R4's study is the next stop for input.
 - **Byte guard for R3:** `./harness/run.sh harness/tall_chibi/snapshot.py
   out/tall_chibi/after`, then `cmp` against `out/tall_chibi/before` (108
@@ -22,11 +21,30 @@ The record for `tall-chibi-plan.md`, newest first.
 | R0 inventory | done, signed off | inventory below, each item classed and stepped |
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
-| R3 delete the dead code | R3a done | snapshot 108/108 byte-identical; 484 passed |
+| R3 delete the dead code | R3a, R3b done | snapshot 108/108 byte-identical; 484 passed |
 | R4 the height slider | | |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R3b: the build-gated branches (2026-09-26)
+
+Deleted, never true at the pinned build: the hand's crease and finger
+strokes, the boot eyelets, `_belt_line_half_w`'s realistic waist, the nose,
+and `_NOSE_REALISTIC_DROP` with them. Unwrapped, always true: the apron's
+length cap, the crystals' spacing, the sash cap and the belt over trousers
+(their `sk.build < 0.5` halves dropped), the buckle rule (`or sk.build >
+0.5` dropped), `_bust_over_arms`' gate (`or sk.build >= 0.5`), and **the
+eye block, frozen as it renders** (the owner's call), its wrong comment
+("`sk.build` gates it to 0 there") corrected: it trims every figure's eye
+openness by 4% and the lower lid by 2%. `_wears_cuts` removed and its six
+callers' `and _wears_cuts(sk)` dropped. One more always-true gate than the
+inventory had (the crystals', found reading the sites). The lerps that read
+`sk.build` stay: at the pinned value they give exactly today's numbers, and
+rewriting them as literals would risk float differences for nothing.
+
+**Predicted and measured:** the 108 snapshot renders byte-identical, 484
+passed, `ref-out/` matches.
 
 ### R3a: the skeleton path (2026-09-26)
 
