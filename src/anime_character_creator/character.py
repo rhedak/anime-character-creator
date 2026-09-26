@@ -4112,6 +4112,21 @@ _GARMENT_REF_BODY = "tall_chibi"
 _BUST_KNOTS = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6)
 
 
+def _quad_point(p0: Point, p1: Point, p2: Point, u: float) -> Point:
+    """The point at parameter `u` on the quadratic `p0`, `p1`, `p2`."""
+    a, b, c = (1 - u) ** 2, 2 * (1 - u) * u, u * u
+    return (a * p0[0] + b * p1[0] + c * p2[0], a * p0[1] + b * p1[1] + c * p2[1])
+
+
+# How much an outer layer answers a bust (`docs/tunic-bust-plan.md`, outer
+# layers): an open coat's front edges and a robe front's diagonal bow out by
+# this share of the tunic's drape; the robe can add a faint line, this share
+# of a stroke, under the breast it covers. Zero draws each as before.
+_COAT_BUST_BOW = 0.0
+_ROBE_BUST_BOW = 0.0
+_ROBE_BUST_LINE = 0.0
+
+
 def _quad_x_at(p0: Point, p1: Point, p2: Point, y: float) -> float | None:
     """The x where a quadratic whose height only increases crosses `y`, or None
     if it does not."""
@@ -4959,22 +4974,85 @@ def _robe_front(sk: Skeleton, p: CharacterParams) -> str:
     # down to the left hip. Its far edge follows the torso, so it cannot show
     # outside the tunic it is laid on.
     torso_at_shoulder = _sleeve_half_w(sk) * 0.80
-    d = (
-        f"M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} "
-        f"L {cx - torso_at_shoulder:.1f} {sy + (wy - sy) * 0.22:.1f} "
-        f"Q {cx - torso_at_shoulder:.1f} {wy:.1f} {cx - ww:.1f} {belt_y:.1f} "
-        f"L {cx + ww * 0.72:.1f} {belt_y:.1f} "
-        f"Z"
-    )
+    top = (-neck, sy + sk.neck_half_w * 0.45)
+    hip = (ww * 0.72, belt_y)
+    side_y = sy + (wy - sy) * 0.22
+    if _ROBE_BUST_BOW > 0 and sk.bust > 0:
+        # Over a bust the diagonal bows out where it crosses the breast, cloth
+        # wrapping over the curve rather than cutting across it, and the panel's
+        # outer side follows the tunic's drape so it stays on the tunic
+        # (`docs/tunic-bust-plan.md`, outer layers).
+        steps = 24
+        dx, dy = hip[0] - top[0], hip[1] - top[1]
+        length = math.hypot(dx, dy)
+        nx, ny = dy / length, -dx / length
+        # A smooth bump over the breast's own height, armpit to the bottom of
+        # the breast, as much as the bust reaches: the tunic's drape profile,
+        # tried first, rises at the armpit, and across a diagonal it kinked.
+        ellipse = _breast_ellipse(sk, 0.0)
+        b_top = _sleeve_hem_y(sk)
+        b_bot = ellipse[2] + ellipse[3] if ellipse else b_top + 1.0
+
+        def bow(y: float) -> float:
+            u = max(0.0, min(1.0, (y - b_top) / (b_bot - b_top)))
+            return _ROBE_BUST_BOW * sk.bust_reach * math.sin(math.pi * u) ** 2
+
+        diagonal = [
+            (
+                top[0] + dx * t + nx * bow(top[1] + dy * t),
+                top[1] + dy * t + ny * bow(top[1] + dy * t),
+            )
+            for t in (k / steps for k in range(steps + 1))
+        ]
+        side = "".join(
+            f"L {cx - (x + _bust_bulge(sk, y)):.1f} {y:.1f} "
+            for x, y in (
+                _quad_point(
+                    (torso_at_shoulder, side_y), (torso_at_shoulder, wy), (ww, belt_y), k / steps
+                )
+                for k in range(1, steps + 1)
+            )
+        )
+        d = (
+            f"M {cx + top[0]:.1f} {top[1]:.1f} L {cx - torso_at_shoulder:.1f} {side_y:.1f} "
+            + side
+            + "".join(f"L {cx + x:.1f} {y:.1f} " for x, y in reversed(diagonal))
+            + "Z"
+        )
+        fold_d = "M " + " L ".join(f"{cx + x:.1f} {y:.1f}" for x, y in diagonal)
+    else:
+        d = (
+            f"M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} "
+            f"L {cx - torso_at_shoulder:.1f} {side_y:.1f} "
+            f"Q {cx - torso_at_shoulder:.1f} {wy:.1f} {cx - ww:.1f} {belt_y:.1f} "
+            f"L {cx + ww * 0.72:.1f} {belt_y:.1f} "
+            f"Z"
+        )
+        fold_d = f"M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} L {cx + ww * 0.72:.1f} {belt_y:.1f}"
     # The fold's own edge, drawn as a line rather than left as a fill boundary:
     # panel and tunic can be the same colour on a character who wears one robe,
     # and then the diagonal is the only thing saying anything crossed at all.
     fold = (
-        f'<path d="M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} '
-        f'L {cx + ww * 0.72:.1f} {belt_y:.1f}" fill="none" stroke="{OUTLINE}" '
+        f'<path d="{fold_d}" fill="none" stroke="{OUTLINE}" '
         f'stroke-width="{sw * 0.8:.1f}" stroke-linecap="round" />'
     )
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />{fold}'
+    line = ""
+    ellipse = _breast_ellipse(sk, 0.0)
+    if _ROBE_BUST_LINE > 0 and ellipse is not None:
+        # A faint line under the breast the panel covers, its outer half only:
+        # a robe tied with an obi sits closer than an open coat.
+        xc, rx, yp, ry = ellipse
+        pts = [
+            (xc + rx * math.cos(th), yp + ry * math.sin(th))
+            for th in (math.pi / 2 * k / 16 for k in range(17))
+        ]
+        line = (
+            '<path d="M '
+            + " L ".join(f"{cx - x:.1f} {y:.1f}" for x, y in pts)
+            + f'" fill="none" stroke="{OUTLINE}" stroke-width="{sw * _ROBE_BUST_LINE:.1f}" '
+            f'stroke-linecap="round" />'
+        )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />{fold}{line}'
 
 
 def _hanging_sleeves(sk: Skeleton, p: CharacterParams) -> str:
@@ -5073,15 +5151,34 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     shoulder_y = sy + (waist_y - sy) * 0.16
     parts = []
     for s in (-1, 1):
+        # The front edge, hem to throat. Over a bust it bows out, pushed aside
+        # by the breast, following the tunic's own drape (`_bust_bulge`) scaled
+        # down, since an outer layer shows the bust by where its edges fall and
+        # does not draw a fold under it (`docs/tunic-bust-plan.md`, outer
+        # layers).
+        if _COAT_BUST_BOW > 0 and sk.bust > 0:
+            steps = 24
+            front = "".join(
+                f"L {cx + s * (x + _COAT_BUST_BOW * _bust_bulge(sk, y)):.1f} {y:.1f} "
+                for x, y in (
+                    _quad_point(
+                        (gap_hem, hem_y), (gap_top * 1.35, waist_y), (gap_top, throat_y), k / steps
+                    )
+                    for k in range(1, steps + 1)
+                )
+            )
+        else:
+            front = (
+                f"Q {cx + s * gap_top * 1.35:.1f} {waist_y:.1f} "
+                f"{cx + s * gap_top:.1f} {throat_y:.1f} "
+            )
         d = (
             f"M {cx + s * gap_top:.1f} {throat_y:.1f} "
             f"L {cx + s * lapel_x:.1f} {lapel_y:.1f} "
             f"L {cx + s * shoulder_w:.1f} {shoulder_y:.1f} "
             f"Q {cx + s * shoulder_w * 1.02:.1f} {waist_y:.1f} "
             f"{cx + s * out_hem:.1f} {hem_y:.1f} "
-            f"L {cx + s * gap_hem:.1f} {hem_y:.1f} "
-            f"Q {cx + s * gap_top * 1.35:.1f} {waist_y:.1f} "
-            f"{cx + s * gap_top:.1f} {throat_y:.1f} Z"
+            f"L {cx + s * gap_hem:.1f} {hem_y:.1f} " + front + "Z"
         )
         parts.append(f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
     return "".join(parts)

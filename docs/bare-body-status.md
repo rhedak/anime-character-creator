@@ -32,6 +32,26 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## Findings, newest first
 
+### Outer layers over the bust: the study (2026-09-26)
+
+The owner asked for Kyoko's open coat and Reika's robe front, the two
+parametric garments that did not answer the bust, subtly. Strength constants
+added to `character.py` at zero (`_COAT_BUST_BOW`, `_ROBE_BUST_BOW`,
+`_ROBE_BUST_LINE`), which emit the original path text exactly: all 34 clothed
+and bare renders byte-identical by `cmp`, `ref-out/` matches. Study:
+`harness/bare/outer_layers.py`, `out/bare/outer_layers.png`.
+
+- **Coat:** each front edge bows out by a share of the tunic's drape
+  (`_bust_bulge`), pushed aside by the breast; no line under it. At 0.5
+  barely visible at tile size; at 1.0 the opening widens over the chest and
+  reads right, still subtle.
+- **Robe, the diagonal's bow:** on the drape profile it kinked at the top of
+  the chest; on a smooth bump over the breast's height it wobbles instead.
+  Either way the straight diagonal reads better.
+- **Robe, a faint line** (0.6 of a stroke, the outer half under the breast
+  the panel covers): balances her. Now only the uncovered breast shows a
+  line (the tunic's, beside the panel), and she reads lopsided.
+
 ### Tunic bust plan, T4: the cast and the downstream (2026-09-26)
 
 T3 signed off. The cast sheet (`ref-out/sheet.png`) looked at: the busts
