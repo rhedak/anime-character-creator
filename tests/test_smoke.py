@@ -45,7 +45,7 @@ PREFIX = {"chibi": ""}
 @pytest.mark.parametrize("build", sorted(BUILDS))
 def test_named_characters_render(preset: str, build: str) -> None:
     p = PRESETS[preset]
-    svg = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
+    svg = render_character(p)
     root = ET.fromstring(svg)
     assert root.tag.endswith("svg")
     assert len(list(root)) > 10, "a character is many shapes; one or two means parts dropped out"
@@ -61,7 +61,7 @@ def test_every_hairstyle_renders_on_a_default_character(hairstyle: str) -> None:
 @pytest.mark.parametrize("build", sorted(BUILDS))
 def test_every_eyestyle_renders_on_a_default_character(eye_style: str, build: str) -> None:
     p = CharacterParams(face=FaceStyle(eye_style=eye_style))
-    svg = render_character(p, build_skeleton(heads=BUILDS[build]))
+    svg = render_character(p)
     ET.fromstring(svg)
 
 
@@ -80,7 +80,7 @@ def test_eye_glow_extremes_render_on_the_anime_style(glow: float, build: str) ->
     """`eye_glow` is only read by `EYESTYLES["anime"]`; 0 turns its two
     secondary highlights off rather than erroring, per the owner's ask."""
     p = CharacterParams(face=FaceStyle(eye_style="anime", eye_glow=glow))
-    svg = render_character(p, build_skeleton(heads=BUILDS[build]))
+    svg = render_character(p)
     ET.fromstring(svg)
 
 
@@ -192,43 +192,27 @@ def test_garment_placement_is_the_identity_on_the_traced_body() -> None:
         assert abs(my - cy) < 1e-9 and abs(mx - cw) < 1e-9
 
 
-def test_a_traced_cut_draws_at_chibi_builds_and_not_realistic() -> None:
-    """Cuts replace the shared garment only where they were traced to fit.
-
-    The realistic build keeps the shared parametric garments (the owner's call
-    in `katherina-clothes-plan.md`), so naming a cut changes a chibi render and
-    leaves a realistic one exactly as it was.
-    """
+def test_a_traced_cut_draws_at_the_chibi_build() -> None:
+    """Cuts replace the shared garment only where they were traced to fit."""
     p = PRESETS["katherina"]
     banded = replace(p, outfit=replace(p.outfit, collar_cut=None))
-    for build, changes in (("chibi", True), ("realistic", False)):
-        sk = character.skeleton_for(p, BUILDS[build])
-        differs = render_character(p, sk) != render_character(banded, sk)
-        assert differs is changes, build
+    sk = character.skeleton_for(p)
+    assert render_character(p, sk) != render_character(banded, sk)
 
 
-def test_a_body_profile_applies_only_at_the_chibi_build() -> None:
+def test_a_body_profile_applies_at_the_chibi_build() -> None:
     """A measured body replaces the chibi's lerped landmarks and nothing else.
 
-    At the chibi build the figure takes the profile's height and landmarks
-    while `build` stays the chibi's own, so the face is unchanged; at any other
-    build the skeleton is exactly what `build_skeleton` gives, since a profile
-    is measured off one design at one scale.
+    The figure takes the profile's height and landmarks while `build` stays
+    the chibi's own, so the face is unchanged.
     """
     p = PRESETS["katherina"]
     profile = character.BODY_TYPES[p.body]
-    sk = character.skeleton_for(p, BUILDS["chibi"])
+    sk = character.skeleton_for(p)
     plain = build_skeleton(heads=BUILDS["chibi"], frame=p.frame)
     assert sk.build == plain.build
     assert abs((sk.waist_y - sk.head_cy) / sk.head_r - profile.waist_y) < 1e-9
     assert abs((sk.foot_y - sk.head_cy) / sk.head_r - (2 * profile.heads - 1)) < 1e-6
-    real = character.skeleton_for(p, BUILDS["realistic"])
-    assert real == build_skeleton(
-        heads=BUILDS["realistic"],
-        frame=p.frame,
-        bust=p.bust,
-        min_hair_margin=character.hat_hair_margin(p),
-    )
 
 
 @pytest.mark.parametrize("build", sorted(BUILDS))
@@ -242,7 +226,7 @@ def test_staff_stays_in_hand_and_on_the_canvas(build: str) -> None:
     Checks the placed wood's control polygon, which bounds the drawn curve.
     """
     p = PRESETS["katherina"]
-    sk = character.skeleton_for(p, BUILDS[build])
+    sk = character.skeleton_for(p)
     xf = character._staff_placement(sk, p)
     start, segs = character._STAFF_WOOD
     pts = [xf(q) for q in (start, *(q for seg in segs for q in seg))]
@@ -295,7 +279,7 @@ def test_ref_out_matches_the_code(preset: str, build: str, rel: str) -> None:
     """
     p = PRESETS[preset]
     committed = REF_OUT / f"{rel}.svg"
-    expected = render_character(p, character.skeleton_for(p, BUILDS[build]))
+    expected = render_character(p, character.skeleton_for(p))
     assert committed.read_text() == expected, f"{rel}.svg is stale: ./refresh-ref-out.sh"
 
 
@@ -358,7 +342,7 @@ def test_the_ear_is_over_the_back_hair_and_under_the_face(preset: str) -> None:
     `_ears`.
     """
     p = PRESETS[preset]
-    sk = build_skeleton(heads=p.heads, frame=p.frame)
+    sk = character.skeleton_for(p)
     svg = render_character(p, sk)
     mass, ear, head = character._hair_mass(sk, p), character._ears(sk, p), character._head(sk, p)
     assert svg.index(mass) < svg.index(ear), (
@@ -414,7 +398,7 @@ def test_the_front_hair_adds_no_silhouette(hairstyle: str, build: str) -> None:
     which is more than the 0.04 of a real leak has any business being near.
     """
     p = CharacterParams(hairstyle=hairstyle)
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     fall = character._hair_fall(sk, p)
     style = HAIRSTYLES[hairstyle]
     poly = _walk(*style.mass(fall), per=150)
@@ -453,7 +437,7 @@ def test_sleeve_under_cap_slants_the_cap_and_the_arm_top_with_it(build: str) -> 
     must land on the underside line, not on the flat hem it had before."""
     capped = PRESETS["satoshi"]
     assert capped.outfit.sleeve_under_cap, "the slanted cap is the default"
-    sk = build_skeleton(heads=BUILDS[build], frame=capped.frame)
+    sk = character.skeleton_for(capped)
     plain = replace(capped, outfit=replace(capped.outfit, sleeve_under_cap=False))
     plain_svg = render_character(plain, sk)
     capped_svg = render_character(capped, sk)
@@ -481,7 +465,7 @@ def test_neckline_stand_raises_a_tab_either_side_of_the_neck(build: str) -> None
     plain V starts inside it."""
     stand = PRESETS["satoshi"]
     assert stand.outfit.neckline_stand, "the stand collar is the default"
-    sk = build_skeleton(heads=BUILDS[build], frame=stand.frame)
+    sk = character.skeleton_for(stand)
     base = replace(stand, outfit=replace(stand.outfit, neckline_stand=False))
     plain_svg, stand_svg = render_character(base, sk), render_character(stand, sk)
     assert plain_svg != stand_svg
@@ -505,8 +489,8 @@ def test_neckline_stand_defers_to_a_collar_and_a_round_neckline() -> None:
         assert render_character(plain) == render_character(stand), change
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
-def test_waist_shift_moves_the_belt_line_and_nothing_above_or_below_it(body: str | None) -> None:
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
+def test_waist_shift_moves_the_belt_line_and_nothing_above_or_below_it(body: str) -> None:
     """`waist_shift` slides the waist and hip together, in head radii, and leaves
     the shoulders, knees and soles where the build put them. It is a character
     field, so it is ignored when a skeleton is handed in."""
@@ -562,8 +546,8 @@ def test_head_scaled_makes_the_head_bigger_against_the_same_body() -> None:
     assert b.waist_half_w / b.head_r == pytest.approx(a.waist_half_w / a.head_r / 1.1)
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
-def test_a_tall_boot_stops_below_the_knee_not_at_the_belt(body: str | None) -> None:
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
+def test_a_tall_boot_stops_below_the_knee_not_at_the_belt(body: str) -> None:
     """`boot_shaft` sends the shaft toward the knee. A body profile's `knee_y` can
     sit above the hip (Katherina's is under her skirt), so the shaft has to aim at
     a real knee: on the long-torso body it once came up to the belt."""
@@ -743,8 +727,7 @@ def test_keikos_belt_is_worn_over_her_coat_and_her_arms_over_both() -> None:
     assert k_svg.index(character._arms(k_sk, k, hands=True)) > k_svg.index(jacket)
 
 
-@pytest.mark.parametrize("build", ["chibi", "realistic"])
-def test_a_mock_collar_hugs_the_neck_and_covers_the_tunics_v(build: str) -> None:
+def test_a_mock_collar_hugs_the_neck_and_covers_the_tunics_v() -> None:
     """A mock neck takes the neck's own silhouette, where the standing band
     spreads to 1.70 neck half-widths and reads as a yoke. It also has to reach
     below the tunic's V, which is cut to `neck_half_w * 0.28` under the shoulder
@@ -752,11 +735,11 @@ def test_a_mock_collar_hugs_the_neck_and_covers_the_tunics_v(build: str) -> None
     and it carries no centre notch: there are no two halves to meet."""
     p = PRESETS["keiko"]
     assert p.outfit.collar_mock and p.outfit.collar_color is not None
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     band = character._collar(sk, p)
     for side in (-1, 1):
         x = sk.head_cx + side * sk.neck_half_w * 1.03
-        assert f"{x:.1f}" in band, f"{build}: the band is not at the neck's own width"
+        assert f"{x:.1f}" in band, "the band is not at the neck's own width"
     standing = replace(p, outfit=replace(p.outfit, collar_mock=False))
     assert character._collar(sk, standing) != band
     assert band.count("<path") == 2, (
@@ -768,20 +751,18 @@ def test_a_mock_collar_hugs_the_neck_and_covers_the_tunics_v(build: str) -> None
     # (the owner's review, P2).
     seam = band[band.index("<line") :]
     width = float(re.search(r'stroke-width="(\d+\.\d+)"', seam).group(1))
-    assert width < character._stroke_w(sk), f"{build}: the seam is a full outline"
+    assert width < character._stroke_w(sk), "the seam is a full outline"
     # Skin shows between the chin and the band: drawn above the chin it was
     # covered by the head and the throat read as one dark slab.
     assert (
         min(float(t) for t in re.findall(r"\d+\.\d+", band.split('d="')[1].split('"')[0])[1::2])
         > sk.head_cy + sk.head_r
-    ), f"{build}: the band rises above the chin"
+    ), "the band rises above the chin"
     v_point = sk.shoulder_y + sk.neck_half_w * 0.28
     bottom = max(
         float(t) for t in re.findall(r"\d+\.\d+", band.split('d="')[1].split('"')[0])[1::2]
     )
-    assert bottom >= v_point, (
-        f"{build}: the band stops at {bottom:.1f}, above the V's {v_point:.1f}"
-    )
+    assert bottom >= v_point, f"the band stops at {bottom:.1f}, above the V's {v_point:.1f}"
 
 
 def test_a_mock_collar_is_worn_under_an_open_coat() -> None:
@@ -804,9 +785,9 @@ def test_a_mock_collar_is_worn_under_an_open_coat() -> None:
     assert o_svg.index(character._collar(o_sk, other)) > o_svg.index(character._tunic(o_sk, other))
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
 @pytest.mark.parametrize("preset", ["daizen", "haruto", "reika"])
-def test_a_sash_stays_a_wide_flat_band_on_every_chibi_body(preset: str, body: str | None) -> None:
+def test_a_sash_stays_a_wide_flat_band_on_every_chibi_body(preset: str, body: str) -> None:
     """A sash's depth followed the waist-to-hip distance, a sliver on the shared
     chibi and most of a head radius on a body with a real waist, so it came out a
     box there. On the shared chibi the cast's sashes are 4.8 to 6 times as wide as
@@ -819,11 +800,9 @@ def test_a_sash_stays_a_wide_flat_band_on_every_chibi_body(preset: str, body: st
     assert depth >= character._belt_band(sk)[1]
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
 @pytest.mark.parametrize("preset", ["chiyo", "satoko"])
-def test_an_apron_is_no_taller_than_it_is_wide_on_every_chibi_body(
-    preset: str, body: str | None
-) -> None:
+def test_an_apron_is_no_taller_than_it_is_wide_on_every_chibi_body(preset: str, body: str) -> None:
     """On the shared chibi the apron is a short wide panel; on a body with a long
     drop to the hem it hung to the hem as a tall strip that read as a bag."""
     p = replace(PRESETS[preset], body=body)
@@ -836,8 +815,8 @@ def test_an_apron_is_no_taller_than_it_is_wide_on_every_chibi_body(
     assert height <= width * 1.02, f"{preset} on {body}: {width:.0f} wide, {height:.0f} tall"
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
-def test_the_crystals_clear_the_buckle_and_stay_on_the_belt(body: str | None) -> None:
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
+def test_the_crystals_clear_the_buckle_and_stay_on_the_belt(body: str) -> None:
     """Two crystals a side with the buckle showing between the middle pair, all
     inside the belt. On a body with a narrow waist and a deep belt the old spacing
     put the middle pair on the buckle and hid it. The shared chibi keeps the
@@ -852,14 +831,11 @@ def test_the_crystals_clear_the_buckle_and_stay_on_the_belt(body: str | None) ->
     assert outer_r + w * 1.22 / 2 <= sk.waist_half_w * 1.03 + 0.5, (
         f"{body}: the outer strap runs past the belt's end"
     )
-    if body is None:
-        assert scale == 1.0
-        assert (outer_r, inner_r) == pytest.approx((0.60 * sk.waist_half_w, 0.28 * sk.waist_half_w))
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
 @pytest.mark.parametrize("preset", ["satoshi", "tenno", "linnea"])
-def test_the_belt_covers_the_trouser_tops(preset: str, body: str | None) -> None:
+def test_the_belt_covers_the_trouser_tops(preset: str, body: str) -> None:
     """On a body with a narrow waist the trousers hang wider than the belt, and
     their square corners stood out under its rounded ends as a small step. The belt
     has to reach the trousers' outer edge; on the shared chibi it is wider than the
@@ -872,8 +848,6 @@ def test_the_belt_covers_the_trouser_tops(preset: str, body: str | None) -> None
     half = float(m.group(2)) / 2
     gap, w_top = character._leg_gap_and_top(sk, True)
     assert half >= gap + w_top - 0.05, f"{preset} on {body}: the trousers stand out past the belt"
-    if body is None:
-        assert half == pytest.approx(sk.waist_half_w * 1.03, abs=0.06)
 
 
 def test_a_katana_is_worn_only_when_asked_for() -> None:
@@ -889,8 +863,8 @@ def test_a_katana_is_worn_only_when_asked_for() -> None:
     assert PRESETS["tomohiro"].outfit.katana_color is None
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
-def test_the_katana_hangs_from_the_belt_on_the_left_and_clears_the_arm(body: str | None) -> None:
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
+def test_the_katana_hangs_from_the_belt_on_the_left_and_clears_the_arm(body: str) -> None:
     """The guard sits at the belt on the character's left (the viewer's right), the
     tip stays above the soles, and the guard's outer edge stays inside the arm's
     inner edge, since the arm is drawn over the sword and would otherwise cover
@@ -925,14 +899,13 @@ def test_a_sheet_tile_draws_the_figure_on_its_own_body(preset: str) -> None:
 
     p = PRESETS[preset]
     bare = replace(p, outfit=replace(p.outfit, hat_color=None))
-    sk = character.skeleton_for(bare, BUILDS["chibi"])
+    sk = character.skeleton_for(bare)
     doc = render_character(p, sk)
     body = re.sub(r"</svg>\s*\Z", "", re.sub(r"\A<svg[^>]*>\s*", "", doc)).strip()
     svg = sheet.render_sheet(sheet.SheetParams(members=(preset,), columns=1))
     assert body in svg, f"{preset}: the sheet does not draw the figure on its own body"
     old = render_character(p, build_skeleton(heads=BUILDS["chibi"], frame=p.frame))
-    if p.body is not None or character.CharacterParams().body is not None:
-        assert re.sub(r"\A<svg[^>]*>\s*", "", old) not in svg
+    assert re.sub(r"\A<svg[^>]*>\s*", "", old) not in svg
 
 
 def test_katana_length_stretches_the_scabbard_and_nothing_else() -> None:
@@ -953,9 +926,9 @@ def test_katana_length_stretches_the_scabbard_and_nothing_else() -> None:
     assert cap1 - cap0 == pytest.approx(character._KATANA_TIP_U - b), "the cap changed size"
 
 
-@pytest.mark.parametrize("body", [None, "tall_chibi", "tall_chibi_long_torso"])
+@pytest.mark.parametrize("body", ["tall_chibi", "tall_chibi_long_torso"])
 @pytest.mark.parametrize("length", [0.8, 1.0, 1.25, 1.4])
-def test_a_longer_katana_keeps_its_tip_off_the_floor(length: float, body: str | None) -> None:
+def test_a_longer_katana_keeps_its_tip_off_the_floor(length: float, body: str) -> None:
     """A longer sword swings out about the guard until its tip stands above the
     soles, as far as the tilt cap allows, and never comes out shorter."""
     p = replace(PRESETS["haruto"], body=body)
@@ -1001,6 +974,11 @@ def test_a_tucked_tunic_and_its_trousers_meet_inside_the_belt(build: str) -> Non
     # not one character's use of it: flipping Satoshi untucked should change what
     # he looks like, not turn this check into a no-op.
     p = replace(base, outfit=replace(base.outfit, tunic_tucked=True))
+    # Still on the shared skeleton, not the tall chibi's: there the legs' path
+    # carries the long-torso profile's knee landmark, which sits above the hip,
+    # as a control point, and this check reads a garment's top as its highest
+    # coordinate. Hidden under the tunic, and fixed with the real knee in R4
+    # (`docs/tall-chibi-status.md`, R3).
     sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
     belt_y, belt_h = character._belt_band(sk)
     svg = render_character(p, sk)
@@ -1071,7 +1049,7 @@ def test_hair_stays_under_the_canvas_ceiling(hairstyle: str, build: str) -> None
     wants `hair_margin` raised with it, not its crown flattened to fit.
     """
     p = CharacterParams(hairstyle=hairstyle)
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     top_units = _highest_ink(*HAIRSTYLES[hairstyle].mass(character._hair_fall(sk, p)))
     # The stroke straddles the path, so half of it paints above the curve.
     ink_y = sk.head_cy + sk.head_r * top_units - character._stroke_w(sk) / 2
@@ -1243,7 +1221,7 @@ def test_the_disguise_changes_only_the_disguise(before: str, after: str) -> None
     assert was.face == replace(now.face, scar_side=0), (
         "one face, minus a burn that has not happened"
     )
-    assert was.frame == now.frame and was.heads == now.heads
+    assert was.frame == now.frame
     # Not the outfit, and not the hairstyle. A companion test used to pin both as
     # "not dressed yet" while the pair still wore their originals' clothes, and
     # it was deleted the day they were dressed, which is what it existed to
@@ -1289,8 +1267,7 @@ def test_an_outer_layer_is_visible_against_what_it_covers(preset: str) -> None:
         )
 
 
-@pytest.mark.parametrize("build", sorted(BUILDS))
-def test_the_topknot_is_visible_and_still_fits(build: str) -> None:
+def test_the_topknot_is_visible_and_still_fits() -> None:
     """A knot has to clear the cut under it and stay inside the canvas margin.
 
     Both halves have bitten. Drawn at -1.02 head radii it was a same-coloured
@@ -1301,8 +1278,8 @@ def test_the_topknot_is_visible_and_still_fits(build: str) -> None:
     `Hairstyle`, and the failure at either end is silent: too low is invisible,
     too high is sliced flat against the canvas edge.
     """
-    p = replace(PRESETS["haruto"], heads=BUILDS[build])
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    p = PRESETS["haruto"]
+    sk = character.skeleton_for(p)
     svg = character._hair_knot(sk, p)
     cy_k = float(re.search(r'cy="([-\d.]+)"', svg).group(1))
     ry = float(re.search(r'ry="([-\d.]+)"', svg).group(1))
@@ -1320,8 +1297,7 @@ def test_the_topknot_is_visible_and_still_fits(build: str) -> None:
     )
 
 
-@pytest.mark.parametrize("build", ["chibi", "realistic"])
-def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
+def test_the_sideburn_rides_the_jaw_rather_than_chording_it() -> None:
     """The strip's outer edge holds its distance from the skull all the way down.
 
     The edge used to be a single quadratic from the top of the strip to the
@@ -1337,9 +1313,7 @@ def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
     cheek to leave and has moved twice; a chord fails this at any value of it.
 
     Off the drawn path rather than off `_face_track`, since the bug being
-    guarded lives in how the points are joined up, not in where they are. Both
-    builds, because the jaw taper only exists at the tall end and an edge that
-    ignores the contour goes wrong there first.
+    guarded lives in how the points are joined up, not in where they are.
 
     The *inner* edge is deliberately not held to this. It carries the width
     easing, so it bows away from its own two ends by about a tenth of a head
@@ -1347,7 +1321,7 @@ def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
     test.
     """
     p = PRESETS["reinhard"]
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     d = re.search(r'd="([^"]+)"', character._beard(sk, p)).group(1)
     # The path opens at the top of the left strip and runs down it, so the strip
     # is its leading run, taken until the height where the mass takes over. Bound
@@ -1386,8 +1360,7 @@ def test_the_sideburn_rides_the_jaw_rather_than_chording_it(build: str) -> None:
         )
 
 
-@pytest.mark.parametrize("build", ["chibi", "realistic"])
-def test_the_sideburn_never_narrows_on_its_way_down(build: str) -> None:
+def test_the_sideburn_never_narrows_on_its_way_down() -> None:
     """The strip covers more of the cheek at every step toward the jaw.
 
     This is the original defect stated as an invariant. The strip used to be
@@ -1399,15 +1372,14 @@ def test_the_sideburn_never_narrows_on_its_way_down(build: str) -> None:
     Measured as how far the inner edge sits inside the skull's own edge, which
     is what the width looks like once it is drawn on a face that is itself
     narrowing. That makes it a check on the contour's taper and the ratio and
-    the width together, not a restatement of the three constants: the realistic
-    build's jaw pulls in fast enough to eat a width that only just grows.
+    the width together, not a restatement of the three constants.
 
     Computed rather than parsed, unlike its neighbour. The inner edge's points
     are buried mid-path between the chin's curves and the top edge's dive, and
     what is being asserted here is where they are, which is exactly the half a
     parse would add nothing to.
     """
-    sk = build_skeleton(heads=BUILDS[build], frame=PRESETS["reinhard"].frame)
+    sk = character.skeleton_for(PRESETS["reinhard"])
     corner = character._face_track(
         character._BEARD_SIDEBURN_Y,
         character._BEARD_TOP,
@@ -1473,7 +1445,7 @@ def test_the_beard_reaches_over_the_mouth_and_the_mouth_survives_it(preset: str)
     part grew something over the lip. Both would have to be seen, not asserted.
     """
     p = PRESETS[preset]
-    sk = build_skeleton(heads=p.heads, frame=p.frame)
+    sk = character.skeleton_for(p)
     beard = character._beard(sk, p)
     d = re.search(r'd="([^"]+)"', beard).group(1)
     nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", d)]
@@ -1493,8 +1465,7 @@ def test_the_beard_reaches_over_the_mouth_and_the_mouth_survives_it(preset: str)
 
 
 @pytest.mark.parametrize("preset", ["reinhard", "daizen"])
-@pytest.mark.parametrize("build", ["chibi", "realistic"])
-def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str, build: str) -> None:
+def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str) -> None:
     """There has to be more hair above the lip than there is ink round it.
 
     The moustache is not a number anybody sets. It is what is left between the
@@ -1515,12 +1486,12 @@ def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str, build
     0.31 the shape climbs toward the nose and reads as a snout.
     """
     p = PRESETS[preset]
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     lip_top = character._MOUTH_Y - character._BEARD_LIP_H * 0.12 * p.face.mouth_width
     band = (lip_top - character._BEARD_TASH_Y) * sk.head_r
     stroke = character._stroke_w(sk)
     assert band >= stroke * 2, (
-        f"{preset} at the {build} build has {band:.1f}px of moustache between the lobe and the "
+        f"{preset} has {band:.1f}px of moustache between the lobe and the "
         f"lip, against a {stroke:.1f}px outline, so it reads as a line above the mouth"
     )
 
@@ -1547,7 +1518,7 @@ def test_the_cap_covers_the_hair_it_is_tied_over(hairstyle: str, build: str) -> 
     regression worth catching.
     """
     p = replace(PRESETS["chiyo"], hairstyle=hairstyle)
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     d = re.search(r'd="([^"]+)"', character._headscarf(sk, p)).group(1)
     rx = float(re.search(r"A ([\d.]+) ", d).group(1)) / sk.head_r
     hair = character._hair_edge_x(character._SCARF_EDGE_Y, sk, p)
@@ -1592,7 +1563,7 @@ def test_the_glasses_frame_the_eye_rather_than_a_second_guess_at_it(face, build:
     symmetric `rh` could never have held regardless of its value.
     """
     p = replace(PRESETS["keiko"], face=face)
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     svg = character._glasses(sk, p)
     rects = re.findall(r'<rect x="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"', svg)
     assert len(rects) == 2, f"expected two rims, found {len(rects)}"
@@ -1632,7 +1603,7 @@ def test_the_coats_lapel_actually_reaches_the_neck(preset: str, build: str) -> N
     shoulder is a raised epaulette, not a lapel.
     """
     p = PRESETS[preset]
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     if character._traced_coat(sk, p):
         # Keiko wears `COAT_CUTS["lab_coat"]` at the chibi builds, which draws
         # its own notched lapel and leaves `_coat` empty; she still falls
@@ -1664,7 +1635,7 @@ def test_the_hakama_is_pleated_not_a_plain_panel(preset: str, build: str) -> Non
     difference only shows up as a count.
     """
     p = PRESETS[preset]
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     svg = character._hakama(sk, p)
     lines = re.findall(r"<line ", svg)
     assert len(lines) == 7, f"{preset} {build}: {len(lines)} pleats, expected the full comb of 7"
@@ -1680,7 +1651,7 @@ def test_the_hakama_is_drawn_over_whatever_is_on_the_legs(preset: str) -> None:
     which one it is, so this checks the order rather than either leg style.
     """
     p = PRESETS[preset]
-    sk = build_skeleton(heads=p.heads, frame=p.frame)
+    sk = character.skeleton_for(p)
     svg = render_character(p, sk)
     assert svg.index(character._legs_and_boots(sk, p)) < svg.index(character._hakama(sk, p)), (
         f"{preset}: the hakama is drawn before the legs, so the legs would paint over it"
@@ -1721,7 +1692,7 @@ def test_the_goggles_lift_off_the_eye_rather_than_frame_it(build: str) -> None:
     over the same aperture instead.
     """
     p = PRESETS["krista"]
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     svg = character._goggles(sk, p)
     circles = re.findall(r'<circle cx="([-\d.]+)" cy="([-\d.]+)" r="([\d.]+)"', svg)
     _dx, eye_y, eye_r, _f = character._eye_placement(sk, p)
@@ -1753,7 +1724,7 @@ def test_the_goggles_do_not_leave_the_ponytail_tie_exposed() -> None:
         "this test only means something for a character with both"
     )
     for build in sorted(BUILDS):
-        sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+        sk = character.skeleton_for(p)
         eye_dx, eye_y, eye_r, _f = character._eye_placement(sk, p)
         lens_r = eye_r * character._GOGGLE_R_SCALE
         lens_dx = eye_dx * character._GOGGLE_DX_SCALE
@@ -1783,7 +1754,7 @@ def test_the_goggle_strap_arms_end_inside_the_hair_not_past_it(build: str) -> No
     head, the owner's report against the first render of this fix.
     """
     p = PRESETS["krista"]
-    sk = build_skeleton(heads=BUILDS[build], frame=p.frame)
+    sk = character.skeleton_for(p)
     lens_y, _lens_r, _lens_dx = character._goggle_geometry(sk, p)
     strap_y_hr = (lens_y - sk.head_cy) / sk.head_r
     hair_edge = character._hair_edge_x(strap_y_hr, sk, p) * sk.head_r
@@ -1964,14 +1935,11 @@ def _torso_widest(p: CharacterParams) -> float:
     return (max(xs) - sk.head_cx) / sk.head_r
 
 
-@pytest.mark.parametrize("build", ["chibi", "realistic"])
-def test_a_small_bust_moves_the_torso_a_small_amount(build):
+def test_a_small_bust_moves_the_torso_a_small_amount():
     """The dial is continuous at zero and grows with the value. The first draft
     switched the torso 0.37 head radii out at `bust = 0.01`, because it drew a
     width of its own rather than adding to the tunic's (`docs/bust-plan.md`)."""
-    base = replace(PRESETS["satoko"], heads=BUILDS[build])
-    if build != "chibi":
-        base = replace(base, body=None)
+    base = PRESETS["satoko"]
     widths = [_torso_widest(replace(base, bust=v)) for v in (0.0, 0.01, 0.5, 1.0)]
     assert widths[1] - widths[0] <= 0.01 + 0.1 / character.skeleton_for(base).head_r
     assert widths[0] <= widths[1] < widths[2] < widths[3]
@@ -2005,9 +1973,8 @@ def test_the_body_reads_no_garment(name):
     assert character._torso(sk, p) == character._torso(sk, replace(p, outfit=character.Outfit()))
 
 
-def test_the_bust_comes_over_the_arms_at_the_chibi_only():
-    """Nothing without a bust; over the arms at the chibi; left under them at the
-    realistic build, whose arm hangs across the torso (`docs/bust-status.md`,
+def test_the_bust_comes_over_the_arms_at_the_chibi():
+    """Nothing without a bust; over the arms at the chibi (`docs/bust-status.md`,
     step 5). The mask's id follows its shape, so a sheet of several figures
     cannot share one."""
     p = replace(PRESETS["satoko"], bust=0.0)
@@ -2021,8 +1988,6 @@ def test_the_bust_comes_over_the_arms_at_the_chibi_only():
     assert re.search(r'id="(bust-\w+)"', small).group(1) != re.search(
         r'id="(bust-\w+)"', full
     ).group(1)
-    real = character.skeleton_for(replace(p, bust=1.0), BUILDS["realistic"])
-    assert character._bust_over_arms(real, p, "x") == ""
 
 
 def test_a_traced_cut_widens_at_the_bust_and_nowhere_else():
@@ -2109,13 +2074,12 @@ def _tunic_off(p: CharacterParams) -> CharacterParams:
     return replace(p, outfit=replace(p.outfit, tunic_color=None))
 
 
-@pytest.mark.parametrize("build", ["chibi", "realistic"])
 @pytest.mark.parametrize("name", sorted(PRESETS))
-def test_every_preset_renders_with_its_tunic_off(name, build):
+def test_every_preset_renders_with_its_tunic_off(name):
     """The tunic is optional like every other garment (`docs/bare-body-plan.md`,
     step 2): off, it draws nothing and nothing that reads it gets a `None`."""
     p = _tunic_off(PRESETS[name])
-    svg = render_character(p, character.skeleton_for(p, BUILDS[build]))
+    svg = render_character(p, character.skeleton_for(p))
     assert '"None"' not in svg
 
 
@@ -2154,9 +2118,6 @@ def test_the_bare_breasts_are_their_own_shape_over_the_arms():
     sk = character.skeleton_for(flat)
     assert character._bust_over_arms(sk, flat, "") == ""
     assert character._bust_lines(sk, flat) == ""
-    realistic = character.skeleton_for(p, BUILDS["realistic"])
-    assert character._bust_over_arms(realistic, p, breasts) == ""
-    assert character._bust_lines(realistic, p)
 
 
 def test_the_underwear_top_is_drawn_bare_with_a_bust_or_when_asked():
@@ -2227,14 +2188,13 @@ def test_the_bare_crotch_reads_the_real_knee():
     assert character._crotch_y(sk, bare) > sk.hip_y + character._stroke_w(sk) * 4
 
 
-@pytest.mark.parametrize("build", ["chibi", "realistic"])
 @pytest.mark.parametrize("name", sorted(PRESETS))
-def test_every_preset_renders_barefoot(name, build):
+def test_every_preset_renders_barefoot(name):
     """The boots are optional (`docs/bare-body-plan.md`, step 5): off, each
     foot is bare, in the skin tone, and nothing reads a `None`."""
     p = PRESETS[name]
     p = replace(p, outfit=replace(p.outfit, boot_color=None))
-    sk = character.skeleton_for(p, BUILDS[build])
+    sk = character.skeleton_for(p)
     svg = render_character(p, sk)
     assert '"None"' not in svg
     foot = character._boot(sk, p, sk.head_cx, sk.leg_half_w, 1)
@@ -2340,6 +2300,5 @@ def test_an_old_link_loads_as_the_tall_chibi():
     old["heads"] = 6.0
     old["body"] = None
     p = params_from_dict(old)
-    assert p.heads == CharacterParams().heads
     assert p.body == CharacterParams().body
     assert render_character(p) == render_character(PRESETS["satoko"])

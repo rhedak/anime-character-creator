@@ -15,7 +15,6 @@ from dataclasses import asdict, dataclass, field, replace
 from .colorutil import hex_to_rgb01, rgb01_to_hex, shade
 from .skeleton import (
     BUILDS,
-    DEFAULT_HEADS,
     BodyProfile,
     Skeleton,
     build_skeleton,
@@ -467,12 +466,12 @@ class CharacterParams:
     beard_length: float = 0.15
     outfit: Outfit = field(default_factory=Outfit)
     face: FaceStyle = field(default_factory=FaceStyle)
-    # Head-heights tall. Ignored when render_character is handed a skeleton.
-    heads: float = DEFAULT_HEADS
-    # A named body type from `BODY_TYPES`, laid over the chibi build; `None` is
-    # the shared chibi. A name rather than the numbers, like
-    # `hairstyle`, so a character stays a flat, linkable set of fields.
-    body: str | None = "tall_chibi_long_torso"
+    # A named body type from `BODY_TYPES`: the tall chibi is the one figure
+    # (`docs/tall-chibi-plan.md`), and this picks its proportions. A name rather
+    # than the numbers, like `hairstyle`, so a character stays a flat, linkable
+    # set of fields. `heads` and the compressed chibi (`body=None`) are retired;
+    # an old link carrying either loads as the default (`urlstate`).
+    body: str = "tall_chibi_long_torso"
     # A bat familiar in flight beside the figure's left shoulder: his fur (and
     # membranes, which the reference draws in the same tone) and his eyes.
     # `None` draws nothing. Two fields rather than one because the book's two
@@ -4071,41 +4070,41 @@ BODY_TYPES["tall_chibi_long_torso"] = replace(
 ).head_scaled(_LONG_TORSO_HEAD_SCALE)
 
 
-def skeleton_for(p: CharacterParams, heads: float | None = None) -> Skeleton:
-    """The skeleton `p` is drawn on at `heads` (its own `p.heads` by default).
+def skeleton_for(p: CharacterParams) -> Skeleton:
+    """The skeleton `p` is drawn on: its body profile laid over the chibi build.
 
     What every caller that builds a skeleton *for a character* should use, so
     the things only the character knows reach it: the headroom its hat needs,
-    and at the chibi build its measured `body`. Other builds keep the shared
-    lerp, since a profile is measured off one design at one scale.
+    its `body`, its belt line.
     """
-    sk = _skeleton_at(p, heads)
+    sk = _skeleton_at(p)
     if p.waist_shift:
         shift = p.waist_shift * sk.head_r
         sk = replace(sk, waist_y=sk.waist_y + shift, hip_y=sk.hip_y + shift)
     return sk
 
 
-def _skeleton_at(p: CharacterParams, heads: float | None) -> Skeleton:
-    heads = p.heads if heads is None else heads
+def _skeleton_at(p: CharacterParams) -> Skeleton:
+    heads = BUILDS["chibi"]
     margin = hat_hair_margin(p)
-    if p.body is not None and heads == BUILDS["chibi"]:
-        profile = BODY_TYPES[p.body]
-        # The hair (and everything else on the head) always draws at the
-        # chibi build under a profile, since `BodyProfile.applied` pins
-        # `sk.build` back to it below, so it needs the chibi build's own
-        # headroom rather than whatever `profile.heads`'s taller figure gets
-        # by default. Without this floor a hat-less hairstyle clips flat
-        # against the canvas top on a profile taller than chibi (found on
-        # Satoshi's `short_crop` under `tall_chibi`,
-        # `docs/satoshi-tall-chibi-plan.md` T1); a hat's own floor already
-        # covers it for whoever wears one, so this only widens the floor,
-        # never narrows it.
-        margin = max(margin, default_hair_margin(heads))
-        sk = build_skeleton(heads=profile.heads, frame=p.frame, bust=p.bust, min_hair_margin=margin)
-        chibi = build_skeleton(heads=heads, frame=p.frame, bust=p.bust).build
-        return profile.applied(sk, chibi)
-    return build_skeleton(heads=heads, frame=p.frame, bust=p.bust, min_hair_margin=margin)
+    profile = BODY_TYPES[p.body]
+    # The hair (and everything else on the head) always draws at the
+    # chibi build under a profile, since `BodyProfile.applied` pins
+    # `sk.build` back to it below, so it needs the chibi build's own
+    # headroom rather than whatever `profile.heads`'s taller figure gets
+    # by default. Without this floor a hat-less hairstyle clips flat
+    # against the canvas top on a profile taller than chibi (found on
+    # Satoshi's `short_crop` under `tall_chibi`,
+    # `docs/satoshi-tall-chibi-plan.md` T1); a hat's own floor already
+    # covers it for whoever wears one, so this only widens the floor,
+    # never narrows it.
+    margin = max(margin, default_hair_margin(heads))
+    sk = build_skeleton(heads=profile.heads, frame=p.frame, bust=p.bust, min_hair_margin=margin)
+    # The chibi's build, computed rather than written as 0.1: every figure's
+    # `sk.build` is this value, (2.4 - 2.0) / 4.0 in floating point, and
+    # the parts' lerps are evaluated at it exactly.
+    chibi = build_skeleton(heads=heads, frame=p.frame, bust=p.bust).build
+    return profile.applied(sk, chibi)
 
 
 # Traced garments ("cuts", `katherina-clothes-plan.md`) are drawn in the head
@@ -10094,12 +10093,13 @@ def render_character(
     """Draw one character and return the whole SVG document as a string.
 
     `p` carries what the character *is* (colours, garments, face, haircut) and
-    `sk` what its proportions are. Passing no skeleton builds one from `p.heads`
-    and `p.frame`, which is the common case; passing one is how the same
-    character is rendered at another build, or on a canvas of another size:
+    `sk` what its proportions are. Passing no skeleton builds one with
+    `skeleton_for(p)`, the tall chibi on `p.body`, which is the common case;
+    passing one is how a caller that needs the skeleton itself (a cover, a
+    sheet laying out tiles) draws on the same one:
 
         render_character(PRESETS["satoko"])
-        render_character(PRESETS["satoko"], build_skeleton(heads=BUILDS["realistic"]))
+        render_character(PRESETS["satoko"], skeleton_for(PRESETS["satoko"]))
 
     `background` is any SVG paint, and defaults to **none at all**, so the
     figure comes out on transparency. That is what a character is for here: it

@@ -21,21 +21,20 @@ def _run(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *args: str) -> str:
     return (out.with_suffix(".svg")).read_text()
 
 
-def _heads(svg: str) -> float:
-    """The `heads` value baked into the embedded character-link metadata,
-    which is the most direct way to see what `main()` actually resolved
-    --build/--heads to, since the rendered canvas is a fixed size regardless
-    of build."""
+def _link_json(svg: str) -> dict:
+    """The embedded character-link metadata's own JSON, decoded.
+
+    Not `decode_params`: loading a link maps a retired `heads` onto the tall
+    chibi (`docs/tall-chibi-plan.md`, R1), and this reads what `main()`
+    resolved, which the link still records.
+    """
     root = ET.fromstring(svg)
     ns = "{http://www.w3.org/2000/svg}"
     link = root.find(f"{ns}metadata").findtext(f"{ns}character")
     assert link is not None
-    # The link's own JSON, not `decode_params`: loading a link maps a retired
-    # `heads` onto the tall chibi (`docs/tall-chibi-plan.md`, R1), and this reads
-    # what `main()` resolved, which the link still records.
     encoded = link.split("?c=", 1)[1]
     raw = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))
-    return json.loads(raw)["heads"]
+    return json.loads(raw)
 
 
 def test_preset_and_overrides_merge(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -51,7 +50,7 @@ def test_the_retired_build_options_are_gone(
     for retired in (["--build", "chibi"], ["--heads", "6"]):
         with pytest.raises(SystemExit):
             _run(monkeypatch, tmp_path, *retired)
-    assert _heads(_run(monkeypatch, tmp_path)) == 2.4
+    assert "heads" not in _link_json(_run(monkeypatch, tmp_path))
 
 
 def test_explicit_face_knob_wins_over_expression(

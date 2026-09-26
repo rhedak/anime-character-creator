@@ -4,8 +4,12 @@ The record for `tall-chibi-plan.md`, newest first.
 
 ## RESUME (for a fresh context)
 
-- **Now:** R2 done; R3 next (the owner said to keep going autonomously,
-  stopping only for input; R4's study is the next stop).
+- **Now:** R3a (the skeleton path) done; R3b (the build-gated branches in
+  `character.py`) next, then R3c (`long_traced_real`). Autonomous, per the
+  owner; R4's study is the next stop for input.
+- **Byte guard for R3:** `./harness/run.sh harness/tall_chibi/snapshot.py
+  out/tall_chibi/after`, then `cmp` against `out/tall_chibi/before` (108
+  renders, taken at `9e3942a`).
 - **Tree:** clean at `2e549d2` when the plan was written.
 - **Invariant:** every tall-chibi render byte-identical through R1 to R3
   (`./refresh-ref-out.sh --check`); only R4 may move a figure.
@@ -17,12 +21,42 @@ The record for `tall-chibi-plan.md`, newest first.
 | --- | --- | --- |
 | R0 inventory | done, signed off | inventory below, each item classed and stepped |
 | R1 remove the choices | done, signed off | `ref-out/` and bases byte-identical; old link test; browser checked |
-| R2 retire the realistic outputs | done | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
-| R3 delete the dead code | | |
+| R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
+| R3 delete the dead code | R3a done | snapshot 108/108 byte-identical; 484 passed |
 | R4 the height slider | | |
 | R5 docs and the downstream | | |
 
 ## Findings, newest first
+
+### R3a: the skeleton path (2026-09-26)
+
+`_skeleton_at(p)` always lays `p.body`'s profile over the chibi build; its
+pinned `sk.build` is still computed by `build_skeleton(heads=2.4).build`
+(0.09999999999999998 in floating point, not a literal 0.1, so every lerp
+evaluates exactly as before). `skeleton_for(p)` lost its `heads` argument;
+`CharacterParams.heads` removed; `body` is a plain `str`; `BUILDS` keeps the
+chibi only. `urlstate` still maps an old link's `heads` and `body: null`.
+
+**The byte guard:** `harness/tall_chibi/snapshot.py`, 108 renders (every
+preset dressed, tunic off, all off, barefoot; the neutral bases; every
+hairstyle, eye style, expression, body type and traced cut; a bust sweep,
+the belt line both ways, an arm out, a parametric coat and a robe over a
+bust), byte-identical before and after.
+
+**Tests:** a sonnet delegate (184k tokens, over the 100k signal; the next
+such brief to be split) moved the failing tests to the new API, deleting no
+test and removing only assertions about the realistic build or the
+compressed chibi's own numbers (reviewed in its diff). It moved only the six
+tests that failed, not every character drawn on the compressed skeleton as
+briefed; the orchestrator moved 18 more by pattern. One then failed, and
+stays on the shared skeleton with a note: **the legs' path (`_seat_notch_d`)
+carries the long-torso profile's knee landmark, which is above the hip, as a
+control point**, so tucked the crotch curve rises a little before it dips and
+untucked the path's sides reach above its own top. Hidden under the tunic in
+every preset; changing it would move every leg's curve, so it goes to R4,
+whose height slider needs a real knee anyway. 14 `build_skeleton(heads=...)`
+calls stay in the tests: the skeleton-machinery tests and a few on the
+default character. 484 passed (606 before, the realistic cases gone).
 
 ### R2: the realistic outputs retired (2026-09-26)
 

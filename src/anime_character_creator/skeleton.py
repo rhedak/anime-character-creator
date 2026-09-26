@@ -15,15 +15,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-# Named builds. Most characters want one of these rather than a number, but
-# `heads` stays open for anything in between (4.0 is a common middle ground).
-# Above 6 the figure just gets longer; the widths are already at their limit.
+# The one named build: the chibi, which every body profile is laid over and
+# which pins `Skeleton.build` for every figure. The realistic build (6 heads)
+# and the compressed chibi it lerped from were retired on 2026-09-26
+# (`docs/tall-chibi-plan.md`); `build_skeleton` still takes any `heads`, since a
+# profile builds its base skeleton at its own (3.47 for `tall_chibi`).
 BUILDS: dict[str, float] = {
     "chibi": 2.4,
-    # 6 rather than a life-drawing 8, and rather than the 7 this started at.
-    # Anime figures run shorter than real ones, and at 7 the head was small
-    # enough against the body that the result stopped reading as the style.
-    "realistic": 6.0,
 }
 DEFAULT_BUILD = "chibi"
 DEFAULT_HEADS = BUILDS[DEFAULT_BUILD]

@@ -123,7 +123,7 @@ def test_every_base_starting_point_is_a_neutral_base() -> None:
 def test_hair_length_extremes_render(build: str) -> None:
     for value in (HAIR_LENGTH.lo, HAIR_LENGTH.hi):
         p = replace(CharacterParams(), hair_length=value)
-        svg = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
+        svg = render_character(p)
         ET.fromstring(svg)
 
 
@@ -131,14 +131,14 @@ def test_hair_length_extremes_render(build: str) -> None:
 def test_hair_tail_extremes_render(build: str) -> None:
     for value in (HAIR_TAIL.lo, HAIR_TAIL.hi):
         p = replace(CharacterParams(), hair_tail=value)
-        svg = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
+        svg = render_character(p)
         ET.fromstring(svg)
 
 
 @pytest.mark.parametrize("build", sorted(BUILDS))
 def test_hair_knot_renders(build: str) -> None:
     p = replace(CharacterParams(), hair_knot=True)
-    svg = render_character(p, build_skeleton(heads=BUILDS[build], frame=p.frame))
+    svg = render_character(p)
     ET.fromstring(svg)
 
 

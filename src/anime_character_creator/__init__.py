@@ -6,10 +6,10 @@ composited from pre-made art and no image model is involved: every shape is
 computed from the skeleton and written out as SVG text, so a change of
 proportions restyles every character at once.
 
-    from anime_character_creator import PRESETS, build_skeleton, render_character
+    from anime_character_creator import PRESETS, render_character, skeleton_for
 
-    svg = render_character(PRESETS["satoko"])                     # default build
-    svg = render_character(PRESETS["satoko"], build_skeleton(heads=6.0))
+    svg = render_character(PRESETS["satoko"])
+    svg = render_character(PRESETS["satoko"], skeleton_for(PRESETS["satoko"]))
 
 `render_character` returns the document as a string; writing it and turning it
 into a PNG is `generate.main`, which is also the `anime-character-creator`
