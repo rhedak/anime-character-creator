@@ -48,6 +48,14 @@ are Krista and Chiyo, whose references lean hardest on a head accessory.
 All of them live in `ref-out/` as both `.png` and `.svg`. **They are
 transparent**, so a render drops onto a scene as it is.
 
+Under the clothes there is a body. The tunic and the boots are optional
+like every other garment, and with the tunic off a figure shows its body in
+a plain base layer (underwear that is always worn), with bare feet when the
+boots come off too. That is what lets new garments be layered over a real
+torso and skin tones be judged on more than a face and two hands; the web
+tool offers the toggles and a row of skin tone swatches. See
+`docs/bare-body-plan.md`.
+
 They are also only two people. Kyoko is Satoko before the dye and the
 burn, and Tomohiro is Satoshi the same way, so each pair is one preset
 and a `replace()` of three fields rather than two sets of numbers that

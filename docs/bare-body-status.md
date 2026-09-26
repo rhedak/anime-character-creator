@@ -5,9 +5,9 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** step 7 done: the owner checked the web tool in the browser
-  (the gallery loads here too), and approved the blush following the skin.
-  Next: step 8, the documentation, which closes the plan.
+- **Now:** the plan is done (step 8, the documentation, 2026-09-26), waiting
+  for the owner's sign-off. Open: the men's armpit slot (a small bare-only
+  change if wanted) and the realistic build's own fix pass.
   The armpit slot on the men left as it is (a small bare-only change if
   wanted later).
 - **Tree:** clean at `611c50b` when the plan was written.
@@ -27,8 +27,8 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 | 4 close the body | done (4a to 4d) | tests; `ref-out/` byte-identical |
 | 5 bare feet | done, signed off | 34 barefoot renders with no `None`; the audit clean; `ref-out/` byte-identical |
 | 6 male torso minimum | done, signed off | tests; catalogue slider; `ref-out/` byte-identical |
-| 7 web tool and skin tones | done; the owner checked the browser | catalogue test; `app.js` parses; the served catalogue checked |
-| 8 documentation | | |
+| 7 web tool and skin tones | done, signed off | catalogue test; `app.js` parses; the served catalogue checked |
+| 8 documentation | done | `api.md`, README, STATUS, the plan's summary |
 
 ## Findings, newest first
 

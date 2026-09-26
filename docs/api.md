@@ -103,8 +103,10 @@ piece.
 
 | Field | Default | Notes |
 | --- | --- | --- |
-| `tunic_color` | `#4f7a52` | Always worn. |
-| `boot_color` | `#5b4632` | Always worn. |
+| `tunic_color` | `#4f7a52` | `None` takes the tunic off, with its placket, chest pockets and long sleeve, and the body shows. See `docs/bare-body-plan.md`. |
+| `boot_color` | `#5b4632` | `None` draws bare feet. |
+| `underwear_color` | `#e8e4dc` | The base layer, always worn: underpants under every bare leg, and a top with the tunic off. |
+| `underwear_top` | `False` | The top is drawn with the tunic off whenever there is a bust; this adds one without. |
 | `undersleeve_color` | `None` | Long sleeve under the tunic's short one. `None` leaves the arm bare. |
 | `belt_color` | `None` | A belt with no apron over it also draws a buckle. |
 | `apron_color` | `None` | Front panel hanging from the belt, over the skirt. |

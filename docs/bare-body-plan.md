@@ -10,6 +10,16 @@ The record is `bare-body-status.md`; the procedure and its anti-patterns are
 `bare-body-strategy.md`, which leans on `bust-strategy.md` for everything the
 two campaigns share.
 
+## Where it stands
+
+Every step is done (2026-09-26): the tunic and the boots optional, the bare
+body closed where it shows (the breasts as their own shape, the shoulder,
+the crotch), the base layer, bare feet, chest lines and a navel, and in the
+web tool the toggles, a chest slider, skin tone swatches and a blush that
+follows the skin. The record is `bare-body-status.md`. Left open: the
+men's armpit reads as a narrow flat-topped slot (a small bare-only change if
+wanted), and the realistic build, judged after its own fix pass.
+
 ## Owner's decisions (2026-09-25)
 
 1. **No anatomical detail.** No nipples, no genitals: the body is a smooth

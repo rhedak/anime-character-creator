@@ -1672,6 +1672,25 @@ new opt-in fields nothing existing sets). The chibi hem fix
 (`_skirt_hem_y`'s pull-back removed) does not touch the realistic
 build at all, confirmed unchanged in `ref-out/real/`.
 
+## Bare body, 2026-09-26
+
+The figure can be drawn with nothing worn over its skin but a base layer
+(`docs/bare-body-plan.md`, record in `docs/bare-body-status.md`). The tunic
+and the boots are optional; with the tunic off the body shows, drawn for it
+rather than left over from under a garment: the breasts as their own shape,
+over the arms at the chibi, an underwear top and underpants
+(`underwear_color`, always worn), a shoulder that rounds over the arm, the
+crotch off the real knee, bare feet, chest lines for a torso with no bust
+(`CharacterParams.chest`, the men at 1.0) and a navel. Every change is behind
+`tunic_color is None` or `boot_color is None`, so no clothed render moved.
+The web tool has the toggles, a chest slider and eight skin tone swatches;
+the blush warms toward a brighter rose on dark skin.
+
+A fully bare figure, without the base layer, exists only as a harness view
+for proportion work (`harness/bare/mannequin.py`), adults only, never a web
+tool option (the owner's decision). The realistic build renders bare and is
+not judged: it waits for its own fix pass.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.
