@@ -32,6 +32,23 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D4d: the grip's position, a study (2026-09-27)
+
+The owner: before locking the hands in, work on the positioning and the
+transitions; it looks especially odd on Katherina holding her staff (the
+chibi reference, `ref-local/katherina_grok/`, for comparison). Cause: her
+staff arm is swung out 36 degrees, so it is not the hanging arm option (a)
+was chosen for; the fist kept upright with its wrist taken from above left a
+wedge between the diagonal cuff and its flat top, the fist hanging below the
+sleeve. `harness/trace_hands/grip_study.py`: **wrist**, the fist anchored at
+its own traced wrist (its side, where the reference's forearm met it) on the
+arm's wrist, upright, the staff moved to run through the fist's channel;
+**wrist, smaller**, the same at 0.50 head radii. Both connect to the cuff and
+sit as the chibi reference's fist does, the forearm coming in from the upper
+side; the smaller matches the chibi reference's fist (about 0.45 against its
+head). The relaxed hand, long and open, still reads odd beside it: the chibi
+reference's other hand is a small closed fist. With the owner.
+
 ### D4d H2, H3: the traced hands drawn (2026-09-27)
 
 The owner's calls: option (a), the grip's fist kept as traced with the wrist
