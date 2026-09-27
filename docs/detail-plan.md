@@ -231,10 +231,10 @@ a book) join the registry the same way, traced or constructed.
   the joins at the cuff and sleeve; a very different skin tone; heights 0.8 to
   1.3. The owner signs off.
 
-**Decisions for the owner along the way:** the traced hand's size against the
-chibi's (H0); and where the mitten stays: a switch per character or per story
-(recommended, since a pose change is a switch, not a slider, and would jump
-if it followed the height), or small figures only.
+**The owner's calls (2026-09-27):** the traced hand's size against the
+chibi's is decided later, on the H0 measurement; the mitten stays as a choice
+per character, a dropdown in the web tool (a `CharacterParams` field), not
+tied to the height.
 
 **Acceptance:** the traced hands side by side with the reference; every preset
 at 4x and at the insert size; the mitten byte-identical when chosen; the suite

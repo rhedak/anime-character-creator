@@ -26,11 +26,38 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a, D4b, the bare knee done; D4c study with the owner |
+| D4 body at height | D4a, D4b, the knee done; D4c superseded; D4d H0 with the owner |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4d H0: the reference's hands calibrated (2026-09-27)
+
+`harness/trace_hands/calib.py`: each hand's wrist is where its skin meets the
+cuff, fitted as a line in a box read off the gridded close-ups (the sleeve
+and the dress are the same navy, so "skin touching navy" alone ran down the
+relaxed hand's whole side), the hand closed over its own interior lines
+before labelling (the trace skill's step 3; the grip's finger rolls had cut
+it into pieces). Measured (the reference's head radius about 84 px):
+
+| | wrist | length | length / wrist |
+|---|---|---|---|
+| relaxed | 36 px, 0.43 head radii | 98 px, 1.17 | 2.72 |
+| grip | 26 px (foreshortened) | 68 px, 0.81 | 2.63 |
+| our mitten | 0.39 head radii | 0.31 | 0.79 |
+
+The wrists nearly agree against the head; the reference's hands are more
+than three times as long as the mitten, an adult's hand about the face's
+length. So a uniform scale cannot fit both the wrist and a chibi's hand.
+`harness/trace_hands/size_mock.py` pastes the reference's relaxed hand onto
+Krista (a harness preview, nothing ships) at three sizes: **A**, by the wrist,
+about 1.06 head radii, reaches mid-thigh, too big; **B**, 0.65 head radii,
+reads as a real hand on this body at 1.0 and 1.3; **C**, 0.45, reads spindly,
+its wrist far narrower than the sleeve. At B the traced wrist is narrower than
+our arm's: the cuff hides it on a sleeve, a bare arm needs the join handled
+(the arm tapering into it, or the hand's top widened to the arm). With the
+owner.
 
 ### D4c: the hands, research and a study (2026-09-27)
 
