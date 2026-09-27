@@ -128,6 +128,8 @@ def test_arm_out_swings_the_hand_away_from_the_body(build: str) -> None:
     swung = render_character(CharacterParams(right_arm_out=40.0), sk)
 
     def min_x_max_y(svg: str) -> tuple[float, float]:
+        # An arc's two radii read as a pair too; they are sizes, not points.
+        svg = re.sub(r"A -?\d+\.\d+ -?\d+\.\d+ ", "A ", svg)
         nums = re.findall(r"(-?\d+\.\d+) (-?\d+\.\d+)", svg)
         xs = [float(x) for x, _ in nums]
         ys = [float(y) for _, y in nums]

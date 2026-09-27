@@ -8787,16 +8787,15 @@ _EYE_OUTLINE_W = 0.85
 _PUPIL_REALISTIC_GROW = 0.10
 
 
-def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tuple[str, str]:
-    """Eye aperture as a closed almond, plus its upper lid on its own so the
-    lash line can be redrawn heavier over the iris.
+def _eye_quads(er: float, f: FaceStyle) -> list[tuple[Point, Point, Point]]:
+    """The eye aperture's four quadratics, in eye radii about the eye's center
+    with x measured outward from the face center: inner corner to apex, apex to
+    outer corner (the upper lid), outer corner to base, base to inner corner.
 
-    Four quadratics run inner corner, apex, outer corner, base, back to the
-    inner corner. Each control point sits at the extreme of its half and is
-    slid along x by `eye_corner`: sitting directly over a corner it gives an
-    elliptical quarter and the corner reads round, pulled toward the middle
-    the curve leaves the corner shallowly and reads pointed. Points are built
-    with x measured outward from the face center, then mirrored per side.
+    Each control point sits at the extreme of its half and is slid along x by
+    `eye_corner`: sitting directly over a corner it gives an elliptical quarter
+    and the corner reads round, pulled toward the middle the curve leaves the
+    corner shallowly and reads pointed.
     """
     w = er * f.eye_width * _EYE_ASPECT
     top = er * f.eye_openness
@@ -8809,21 +8808,99 @@ def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tupl
     outer = (w, -tilt)
     base = (-w * 0.10, bot)
 
-    def pt(p: Point) -> str:
-        return f"{ex + side * p[0]:.1f} {ey + p[1]:.1f}"
-
     def ctrl(corner: Point, toward: Point, y: float) -> Point:
         return (corner[0] + (toward[0] - corner[0]) * reach, y)
 
-    lid = (
-        f"M {pt(inner)} Q {pt(ctrl(inner, apex, -top))} {pt(apex)} "
-        f"Q {pt(ctrl(outer, apex, -top))} {pt(outer)}"
-    )
-    d = (
-        lid
-        + f" Q {pt(ctrl(outer, base, bot))} {pt(base)} Q {pt(ctrl(inner, base, bot))} {pt(inner)} Z"
-    )
+    return [
+        (inner, ctrl(inner, apex, -top), apex),
+        (apex, ctrl(outer, apex, -top), outer),
+        (outer, ctrl(outer, base, bot), base),
+        (base, ctrl(inner, base, bot), inner),
+    ]
+
+
+def _eye_shape(ex: float, ey: float, er: float, side: int, f: FaceStyle) -> tuple[str, str]:
+    """Eye aperture as a closed almond (`_eye_quads`), plus its upper lid on
+    its own, mirrored per side."""
+
+    def pt(p: Point) -> str:
+        return f"{ex + side * p[0]:.1f} {ey + p[1]:.1f}"
+
+    q = _eye_quads(er, f)
+    lid = f"M {pt(q[0][0])} Q {pt(q[0][1])} {pt(q[0][2])} Q {pt(q[1][1])} {pt(q[1][2])}"
+    d = lid + f" Q {pt(q[2][1])} {pt(q[2][2])} Q {pt(q[3][1])} {pt(q[3][2])} Z"
     return d, lid
+
+
+# The eye's lining (step D2 of `docs/detail-plan.md`, the owner's pick from
+# `harness/detail/eye_study.py`, 2026-09-27), in the spirit of
+# `ref-local/katherina_grok_real/`: the upper lash is the one heavy line in the
+# face, a filled band along the lid, thin at the inner corner and thickening
+# toward the outer one, where it ends in a flick past the corner. The lower
+# edge is only a faint line, with a short lash at its outer corner; unlined,
+# the white bled into pale skin. Lash thickness in eye radii, flick length too;
+# its angle in degrees above the lid's own direction at the corner.
+_LASH_INNER = 0.05
+_LASH_OUTER = 0.24
+_LASH_EASE = 1.4
+# Where the lash has grown to its easing curve from nothing at the inner
+# corner, as a share of the lid.
+_LASH_ONSET = 0.12
+_LASH_FLICK = 0.40
+_LASH_FLICK_ANGLE = 28.0
+# How far along the lower lid, outer corner toward the base, the lower lash
+# reaches, as the outer quadratic's parameter.
+_LOWER_LASH_REACH = 0.5
+_LID_SAMPLES = 16
+# The top of the iris in a darker flat band, cut this far above the iris's
+# centre (a share of the coloured disc's radius), at this `shade()`.
+_IRIS_BAND_CUT = 0.25
+_IRIS_BAND_SHADE = 0.68
+
+
+def _lid_points(quads: list[tuple[Point, Point, Point]], first: int, last: int) -> list[Point]:
+    """Points along the aperture's quadratics `first` to `last` inclusive."""
+    pts: list[Point] = []
+    for i in range(first, last + 1):
+        start = 0 if i == first else 1
+        pts += [_quad_point(*quads[i], k / _LID_SAMPLES) for k in range(start, _LID_SAMPLES + 1)]
+    return pts
+
+
+def _eye_lash(er: float, f: FaceStyle, edge_w: float) -> list[Point]:
+    """The upper lash as a closed outline in eye-local units: its upper edge
+    along the lid pushed outward by the lash's thickness, the flick's tip, and
+    back along the lid half a line inside it, so the lash covers where the
+    aperture's edge is."""
+    lid = _lid_points(_eye_quads(er, f), 0, 1)
+    n = len(lid) - 1
+    up: list[Point] = []
+    down: list[Point] = []
+    for i, (x, y) in enumerate(lid):
+        a, b = lid[max(0, i - 1)], lid[min(n, i + 1)]
+        tx, ty = b[0] - a[0], b[1] - a[1]
+        tl = math.hypot(tx, ty) or 1.0
+        nx, ny = ty / tl, -tx / tl
+        if ny > 0:
+            nx, ny = -nx, -ny
+        s = i / n
+        t = er * (_LASH_INNER + (_LASH_OUTER - _LASH_INNER) * s**_LASH_EASE)
+        if s < _LASH_ONSET:
+            t *= s / _LASH_ONSET
+        t = max(edge_w * 0.5, t)
+        up.append((x + nx * t, y + ny * t))
+        down.append((x - nx * edge_w * 0.5, y - ny * edge_w * 0.5))
+    tx, ty = lid[n][0] - lid[n - 3][0], lid[n][1] - lid[n - 3][1]
+    tl = math.hypot(tx, ty) or 1.0
+    tx, ty = tx / tl, ty / tl
+    ang = math.radians(-_LASH_FLICK_ANGLE)
+    fx = tx * math.cos(ang) - ty * math.sin(ang)
+    fy = tx * math.sin(ang) + ty * math.cos(ang)
+    tip = (
+        lid[n][0] + fx * er * _LASH_FLICK,
+        lid[n][1] + fy * er * _LASH_FLICK - er * _LASH_OUTER * 0.5,
+    )
+    return [*up, tip, *reversed(down)]
 
 
 def _eye(
@@ -8836,7 +8913,7 @@ def _eye(
     sw: float,
     pupil_ratio: float = 0.40,
 ) -> str:
-    d, lid = _eye_shape(ex, ey, er, side, f)
+    d, _lid = _eye_shape(ex, ey, er, side, f)
     clip_id = f"eye-{'l' if side < 0 else 'r'}"
 
     # Size the iris off whichever half-axis of the aperture is smaller, so a
@@ -8851,13 +8928,11 @@ def _eye(
     # Still clipped to the aperture, so a low lid crops the iris rather than
     # letting it hang over the lash line.
     parts = [f'<defs><clipPath id="{clip_id}"><path d="{d}" /></clipPath></defs>']
-    # Upper and lower share one width, `_EYE_OUTLINE_W`, rather than the
-    # upper lash line carrying extra weight the way the canon's does: the
-    # owner's call on 2026-08-11, dropping the asymmetry rather than
-    # tuning it.
-    parts.append(
-        f'<path d="{d}" fill="white" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, _EYE_OUTLINE_W):.2f}" />'
-    )
+    # Unstroked: the lining is drawn over the iris below, a heavy lash above
+    # and a faint line below (`_LASH_INNER` and the rest). This undoes the
+    # 2026-08-11 call that gave both halves one weight, by the owner's pick
+    # of 2026-09-27.
+    parts.append(f'<path d="{d}" fill="white" stroke="none" />')
     parts.append(f'<g clip-path="url(#{clip_id})">')
     # Canon iris: a rim of the eye color's own darker tone around the color,
     # with a distinct near-dark pupil inside that. Three flat tones, which is
@@ -8867,6 +8942,13 @@ def _eye(
     )
     parts.append(
         f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{eye_color}" />'
+    )
+    band_r = iris_r * 0.84
+    cut = band_r * _IRIS_BAND_CUT
+    half = math.sqrt(band_r * band_r - cut * cut)
+    parts.append(
+        f'<path d="M {ex - half:.2f} {iris_cy - cut:.2f} A {band_r:.2f} {band_r:.2f} 0 0 1 '
+        f'{ex + half:.2f} {iris_cy - cut:.2f} Z" fill="{shade(eye_color, _IRIS_BAND_SHADE)}" />'
     )
     parts.append(
         f'<circle cx="{ex:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * pupil_ratio:.1f}" '
@@ -8880,12 +8962,25 @@ def _eye(
         f'fill="white" opacity="0.85" />'
     )
     parts.append("</g>")
-    # Redrawn rather than left to the aperture's own stroke so the corners
-    # get a round cap instead of the closed path's miter join, at the same
-    # `_EYE_OUTLINE_W` weight as the rest of the aperture now that the
-    # upper lash line no longer carries extra weight (see above).
+
+    def path(pts: list[Point], closed: bool = False) -> str:
+        d = "M " + " L ".join(f"{ex + side * x:.2f} {ey + y:.2f}" for x, y in pts)
+        return d + " Z" if closed else d
+
+    edge_w = _outline_w(sw, _EYE_OUTLINE_W)
+    quads = _eye_quads(er, f)
     parts.append(
-        f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, _EYE_OUTLINE_W):.2f}" stroke-linecap="round" />'
+        f'<path d="{path(_lid_points(quads, 2, 3))}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
+    )
+    reach = int(_LID_SAMPLES * _LOWER_LASH_REACH)
+    lower_lash = [_quad_point(*quads[2], k / _LID_SAMPLES) for k in range(reach + 1)]
+    parts.append(
+        f'<path d="{path(lower_lash)}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{edge_w * 0.8:.2f}" stroke-linecap="round" />'
+    )
+    parts.append(
+        f'<path d="{path(_eye_lash(er, f, edge_w), closed=True)}" fill="{OUTLINE}" stroke="none" />'
     )
     return "".join(parts)
 

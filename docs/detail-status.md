@@ -5,8 +5,8 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 ## RESUME
 
 D0 and D1 done (2026-09-27; D1 approved), and the second eye style
-retired. D2's eye study is with the owner (`harness/detail/eye_study.py`,
-sheets `out/detail/eye_study*.png`); recommendation D without the crease.
+retired. D2 built (the owner's pick D, no crease); one question open: a
+`FaceStyle.lash` knob for the men (below).
 The owner does not want `../valley_of_mist` regenerated for now: work
 through the plan. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
@@ -19,13 +19,44 @@ through the plan. The baseline is
 |---|---|
 | D0 inventory and baseline | done |
 | D1 line weights | done |
-| D2 eyes | study with the owner |
+| D2 eyes | built; the men's lash open |
 | D3 face maturity | not started |
 | D4 body at height | not started |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D2: the eye built (2026-09-27)
+
+`_eye` draws variant D: the aperture filled white and unstroked; the
+iris's top in a darker band (`_IRIS_BAND_CUT`, `_IRIS_BAND_SHADE`); a faint
+lower edge (`_interior_w(sw, 0.8)`); a short lower lash over the outer half
+of the lower lid's outer curve; the upper lash as a filled band
+(`_eye_lash`: `_LASH_INNER` 0.05 to `_LASH_OUTER` 0.24 eye radii, the
+flick `_LASH_FLICK` 0.40 at `_LASH_FLICK_ANGLE` 28 degrees). The aperture's
+four quadratics now come from one place, `_eye_quads`, which `_eye_shape`
+and the lash both read.
+
+**Predicted:** pixel-identical to the study's D; every render changed only
+inside the eyes. **Measured:** zero differing pixels against the study's
+candidate on all five study cases; all 105 snapshot cases changed, none
+outside a box of the eyes (`eye_y - 1.6 r` to `eye_y + 1.4 r`, eye radii).
+One test read the iris band's arc radii as a point (`A 11.78 11.78`) and
+now skips arc radii. `ref-out/` and the bases refreshed; 479 passed, 1
+skipped.
+
+**Seen:**
+
+- The glasses sit cleanly over the lash; the closed eye is unchanged (a
+  thinner line than the open lash: a blink would jump, which matters only
+  for animation; noted for it).
+- **On the men the flick reads as winged eyeliner**: Satoshi, Daizen and
+  Tenno have narrow, sharp-cornered eyes and the wing dominates them.
+  `harness/detail/lash_men.py` scales the lash's outer thickness and the
+  flick: at 0.6 the wing is small, at 0.3 gone and the upper line still
+  firm. **Owner question:** a `FaceStyle.lash` knob (default 1.0, the women
+  as now), the men at about 0.4?
 
 ### D2: the eye study (2026-09-27, at 2736cb6)
 
