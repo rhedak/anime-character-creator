@@ -1,0 +1,124 @@
+# Detail status
+
+The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
+
+## RESUME
+
+D0 done (2026-09-27). Next: D1's line-weight study, once the owner has
+answered D0's questions (below, under the stroke inventory). The baseline is
+`harness/detail/baseline.py` (writes `out/detail/`); the height range is
+`harness/tall_chibi/height_range.py`; the inventories are in
+`docs/detail-inventory/`. The plan is committed at 7b8a2f7.
+
+## Scoreboard
+
+| step | state |
+|---|---|
+| D0 inventory and baseline | done |
+| D1 line weights | not started |
+| D2 eyes | not started |
+| D3 face maturity | not started |
+| D4 body at height | not started |
+| D5 hair | not started |
+| D6 garment line work | not started |
+
+## Findings, newest first
+
+### D0: the line-weight inventory (2026-09-27)
+
+Full list: `docs/detail-inventory/strokes.md` (a Sonnet delegate's read,
+109k tokens; its UNSURE classes are marked there). 105 `stroke-width` sites
+plus 18 places the weight is used as geometry:
+
+| class | sites | multipliers of `_stroke_w` |
+|---|---|---|
+| silhouette | 53 | 1.0 on 37; 0.7 to 0.9 on the rest |
+| interior | 44 | 0.4 to 0.7 mostly; 1.0 on 2 |
+| feature (eyes, brows, mouth, glasses) | 11 | eyes 0.85 (`_EYE_OUTLINE_W`); brows from `FaceStyle.brow_weight` |
+| geometry, not ink | 18 | offsets, radii, thresholds, clamps |
+
+What it means for D1, checked by reading:
+
+- **Interior lines are already split off by a factor** almost everywhere, so
+  "lighter silhouette" and "lighter interior" are two separate levers: the
+  base in `_stroke_w`, and the interior factors.
+- **The weight doubles as geometry in 18 places**, and not all of it should
+  follow a lighter line. Offsets that cover or meet a drawn stroke (the bust
+  over the arms, the arm joint cap's half stroke, the bare foot's ankle
+  patch, the body inset under a garment) should follow the ink. Sizes and
+  thresholds should not: the navel's size, the placket button's radius, the
+  underskirt's and hakama's pleats (drawn only when wider than four
+  strokes), the crystal spacing, the staff's and familiar's canvas clamps.
+  D1 therefore gives the ink its own weight and keeps the current value for
+  the geometry that must not move, site by site.
+- **`hat_hair_margin`** allows for the stroke with a literal 0.06 head
+  radii, not `_stroke_w`. A lighter line leaves it generous, which is
+  harmless and keeps the canvas; leave it.
+- **Existing lighter silhouettes**: the robe front (0.7), several at 0.85.
+  A lighter base would make them lighter still; D1's study checks they
+  still read.
+- **Not tracking the weight**: the goggles' lens rim (from `lens_r`) and the
+  staff crystal's outline (full weight on a small shape).
+
+**Questions for the owner, from D0:**
+
+1. `_eye_anime`, used by no preset: keep as is, upgrade it in D2 alongside
+   `_eye_realistic`, or retire it? Recommendation: retire, which halves D2.
+2. Commits for this campaign: the usual one-liners as each step lands, as
+   in the last campaigns?
+
+### D0: the baseline (2026-09-27, at 7b8a2f7)
+
+**Calibration** (`out/detail/calibration.txt`). Our face (Katherina, the
+hat off, the skin component): widest visible row at 0.446 head radii below
+the head centre, half-width 0.852, chin at 0.987. The reference's face
+component: widest row y 330, x 564 to 707, chin y 399.
+
+- Scale from face width: 83.9 px per head radius; the reference's head
+  centre at (636, 293).
+- Scale from the widest row to the chin: 127.7. They disagree by 52%, by
+  design: at one face width the reference's chin is at 1.26 head radii
+  against our 0.99, a longer lower face ending in a point. That is D3's
+  direction (a chin that drops and narrows), not a calibration fault.
+- The review's by-eye crop (88 px) was 5% off; the calibrated sheet is
+  `out/detail/face_vs_reference.png`.
+
+**The smallest view** (`out/detail/smallest.png`). `../valley_of_mist`'s
+chapter inserts are `sheet.sh` sheets, up to four columns, 2576 px wide;
+its reader (`.chapter-end`, `max-width: 40rem`) shows them about 600 CSS px
+wide, a scale of 0.233. A tile scales the figure by `0.86 * 400 /
+canvas_h`, so the head radius there is about 21 px at 1x (Satoko 21.6,
+Katherina 20.3; the review's "13 px" was a guess) and today's line (0.0427
+head radii) about 0.9 CSS px, 1.8 device px on a 2x screen. Halving it
+leaves about 0.45 CSS px at 1x: D1's lighter weights must be judged at this
+size first.
+
+### D0: the face, body and hair inventory (2026-09-27)
+
+Full list: `docs/detail-inventory/face-body-hair.md` (a Sonnet delegate's
+read, 131k tokens); the load-bearing lines, checked by reading:
+
+- **The realistic lerp is still in place, running at the pinned build.**
+  `_head_pt` (the skull: `_SKULL_NARROW * build`, `jaw_pull = 0.20 * build`,
+  `chin_drop = 0.05 * build`), `_eye_placement` (`eye_dx` and the eye's size,
+  openness, width and corner scale with `sk.build`; `eye_y = cy + 0.16 r` has
+  no build term), `_arms` (elbow and wrist taper by `0.15` and `0.34 *
+  build`), `_legs_and_boots` (`taper = sk.build`). With `sk.build` pinned at
+  0.1 each runs at a tenth. **D3 and D4b can drive these terms** from face
+  maturity and height instead of drawing new shapes, keeping today's value
+  at the default so the default stays byte-identical. The realistic values
+  they lerp toward were measured off `ref/satoko-real.jpg`; D3's study
+  decides how far along each the slider goes.
+- **No nose exists anywhere**: D3's nose tick is new.
+- **One hand shape**, `_hand`, a mitten with a thumb bump ("still no
+  fingers"); props sit over it at `_hand_centre`.
+- **`_KEEP_WS` holds all eight width fields** and `stretched()` rescales
+  them with `head_r` only; D4a's follow-through goes there, and the hands,
+  feet, belt, skirt and torso all read those fields, so they follow free.
+- **Every hairstyle already draws strands** (open quadratic chains as thin
+  strokes); `long_traced` has the fewest (4), `short_crop` the most (10).
+- **`_eye_anime`**: no preset uses it, but the catalogue's eye style option
+  lists it and two tests iterate `EYESTYLES`; retiring it is three small
+  touches. An owner question for D2.
+- **Discontinuities**: `eyes_closed`, `scar_side`, `eye_style` switch by
+  design; no stray thresholds in the face.
