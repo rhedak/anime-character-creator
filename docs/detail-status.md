@@ -32,6 +32,15 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### The two other covers regenerated (2026-09-27)
+
+At the owner's request, after the eye and spacing fixes:
+`../short_stories` 3c496e7 (the Everglow cover, `scripts/build_cover_dual.py`)
+and `../time_slider_katherina` 617b37d (the cover by `tools/generate_cover.py`,
+the reference by `render.sh --preset katherina --no-metadata`, as it was made
+before). Both covers byte-identical to the rebuilds the owner reviewed.
+`../valley_of_mist` not regenerated (the owner: not for now).
+
 ### D3 follow-up: the eyes' spacing follows their size (2026-09-27)
 
 The owner: on the rebuilt Everglow cover Gero's eyes still read much farther
