@@ -26,11 +26,24 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | not started |
+| D4 body at height | D4a study with the owner |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4a: the widths at height, the study (2026-09-27)
+
+`harness/detail/width_study.py` scales the body's widths after the height
+stretch by `1 + k * (height - 1)` (shoulders, waist, hips, hem, arms and
+where they hang, legs; not the neck), k 0, 0.3 and 0.6, on seven characters
+and Krista's base layer at 0.8, 1.0 and 1.3. At 1.0 nothing moves (the
+stretch is not applied there), and no preset uses another height, so this
+changes the slider, not the cast. Seen: the traced coat and jacket, the long
+coat, the robe and the skirts all follow; only Satoshi's hair reaches the
+canvas edge, as before. At 1.3, k 0.3 is still a little lanky, k 0.6 reads
+as an adult build, and it is the skirts and the hakama that grow widest.
+With the owner.
 
 ### D3: the cast's ages applied (2026-09-27)
 
