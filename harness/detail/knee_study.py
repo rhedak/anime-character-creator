@@ -58,12 +58,12 @@ def bare_foot(sk, p, cx, w_ankle, side):
     return FOOT(sk, p, cx, realistic_ankle(sk, w_ankle), side)
 
 
-def knee_notch(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle) -> str:
+def knee_notch(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle, knee=0.0) -> str:
     k = strength(sk)
     inset, swell = STATE["inset"] * k, STATE["swell"] * k
     w_ankle = realistic_ankle(sk, w_ankle)
     if inset == 0 and swell == 0:
-        return NOTCH(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle)
+        return NOTCH(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle, knee)
     calf_y = sk.knee_y + (sk.ankle_y - sk.knee_y) * 0.35
     knee_ctrl_y = sk.knee_y - (sk.knee_y - top_y) * 0.3
     wk = w_knee * (1 - inset)

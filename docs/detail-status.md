@@ -26,11 +26,30 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a, D4b done; D4c (fingers) and the bare knee open |
+| D4 body at height | D4a, D4b, the bare knee done; D4c (fingers) next |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4: the bare leg's knee built (2026-09-27)
+
+The owner's pick, "realistic, with height": `_knee_notch_d` draws the bare
+leg with the knee in by `_KNEE_IN` (0.10), the calf's control `_CALF_CTRL`
+(1.15) out from the narrowed knee and the bare ankle to `_BARE_ANKLE` (0.70)
+of it, the bare foot taking that ankle (`_bare_ankle`); its strength follows
+the limb taper (`_knee_strength`: none at 0.8, full from 1.3). The trousers and
+the boots are untouched. Continuous: the leg's inside, one curve without a
+knee, is split at the knee's height (`_quad_u_at`, a bisection;
+`_quad_crossing`'s closed form hit a math domain error on one figure) into the
+same curve in two halves, and its points blend toward the knee's.
+
+**Measured:** at 1.3 pixel-identical to the study's realistic row; across
+height 0.8 no element moves by more than 0.25 px (a test), the extra
+anti-aliased pixels there being rounding in the arms, not a jump (the leg's
+path changes structure only); trousered renders byte-identical, the bare-legged
+ones changed (`ref-out/`: Satoko, Katherina, Keiko, Reika, Chiyo, the sheets
+and the female base). 545 passed, 1 skipped.
 
 ### D4: a knee on the bare leg, the study (2026-09-27)
 

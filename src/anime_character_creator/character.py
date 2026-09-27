@@ -7509,8 +7509,12 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
         # skirt shorter than default, both garments off entirely, and read as
         # the figure's legs not being attached to its body.
         parts = [_bare_seat(sk, p, gap, w_top, w_knee, w_calf, w_ankle)]
+    # A bare foot on a bare leg takes the leg's slimmer ankle; a boot, or a foot
+    # under trousers, keeps the width it had.
+    bare = not trousers and p.outfit.boot_color is None
+    foot_w = _bare_ankle(sk, w_knee, w_ankle) if bare else w_ankle
     for side in (-1, 1):
-        parts.append(_boot(sk, p, sk.head_cx + side * gap, w_ankle, side))
+        parts.append(_boot(sk, p, sk.head_cx + side * gap, foot_w, side))
     return "".join(parts)
 
 
@@ -7557,6 +7561,7 @@ def _seat_notch_d(
     w_knee: float,
     w_calf: float,
     w_ankle: float,
+    knee: float = 0.0,
 ) -> str:
     """A seat with a notch cut out of it, not two tubes: one closed silhouette
     from the waist to both ankles, meeting at `crotch_y` and parting below it.
@@ -7588,6 +7593,10 @@ def _seat_notch_d(
     # canon draws at both builds anyway. The cost is that the belt is wider than
     # the trousers under it, and that is a leg-width gap, not a trouser one.
     knee_ctrl_y = sk.knee_y - (sk.knee_y - top_y) * 0.3
+    if knee > 0.0:
+        return _knee_notch_d(
+            sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle, knee, calf_y, knee_ctrl_y
+        )
 
     def outer_down(s: int) -> str:
         """Belt to ankle down one side, on the leg's own contour throughout."""
@@ -7705,6 +7714,121 @@ def _underpants(
     )
 
 
+# The bare leg's knee (`docs/detail-plan.md`, D4; the owner's pick, 2026-09-27,
+# from `harness/detail/knee_study.py`). A tube of a leg is the chibi's; a real
+# one, front on, is about as wide at the calf as at the knee and six or seven
+# tenths of it at the ankle. At full strength the knee comes in by `_KNEE_IN`
+# of the leg, the calf's control sits `_CALF_CTRL` out from the narrowed knee
+# (the curve peaking about 1.03 of it) and the bare ankle, the bare foot with
+# it, goes to `_BARE_ANKLE` of the knee. Measured off the render: calf 1.04 and
+# ankle 0.76 of the knee (the outline adds to both). It follows the limb taper,
+# none at height 0.8 and full from 1.3, so a short figure keeps the chibi's
+# leg. The trousers keep their own, measured run and the boots their width.
+_KNEE_IN = 0.10
+_CALF_CTRL = 1.15
+_BARE_ANKLE = 0.70
+
+
+def _knee_strength(sk: Skeleton) -> float:
+    """How much of the bare leg's knee a figure is drawn with, 0 to 1."""
+    return min(1.0, sk.limb_taper / _TAPER_MAX)
+
+
+def _bare_ankle(sk: Skeleton, w_knee: float, w_ankle: float) -> float:
+    """The bare ankle's half-width at this figure's knee strength."""
+    k = _knee_strength(sk)
+    return w_ankle + (w_knee * (1.0 - _KNEE_IN * k) * _BARE_ANKLE - w_ankle) * k
+
+
+def _quad_u_at(p0: Point, p1: Point, p2: Point, y: float) -> float:
+    """The parameter where the quadratic `p0`, `p1`, `p2` comes nearest height
+    `y`, found by bisection on its height, which runs one way from `p0` to `p2`
+    here; `_quad_crossing`'s closed form fails when the control's height is not
+    between the ends'."""
+    lo, hi = 0.0, 1.0
+    rising = p2[1] >= p0[1]
+    for _ in range(40):
+        u = (lo + hi) / 2
+        h = _quad_point(p0, p1, p2, u)[1]
+        if (h < y) == rising:
+            lo = u
+        else:
+            hi = u
+    return (lo + hi) / 2
+
+
+def _knee_notch_d(
+    sk: Skeleton,
+    cx: float,
+    gap: float,
+    top_y: float,
+    crotch_y: float,
+    w_top: float,
+    w_knee: float,
+    w_calf: float,
+    w_ankle: float,
+    k: float,
+    calf_y: float,
+    knee_ctrl_y: float,
+) -> str:
+    """`_seat_notch_d` with a knee at strength `k`. Continuous in `k`: the leg's
+    inside, one curve from the crotch to the ankle without a knee, is split at
+    the knee's height into the same curve in two halves, and each of its points
+    moves toward the knee's by `k`; the outside's knee, calf and ankle blend the
+    same way from the widths passed in."""
+    wk_full = w_knee * (1.0 - _KNEE_IN)
+    wk = w_knee * (1.0 - _KNEE_IN * k)
+    wc = w_calf + (wk * _CALF_CTRL - w_calf) * k
+    wa = _bare_ankle(sk, w_knee, w_ankle)
+
+    def lerp(a: Point, b: Point) -> Point:
+        return (a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k)
+
+    crotch, ctrl, ankle = (0.0, crotch_y), (gap - w_top, sk.knee_y), (gap - w_ankle, sk.ankle_y)
+    a, mid, b = _quad_split(crotch, ctrl, ankle, _quad_u_at(crotch, ctrl, ankle, sk.knee_y))
+    thigh_in_y = crotch_y + (sk.knee_y - crotch_y) * 0.5
+    c1 = lerp(a, (gap - w_top, thigh_in_y))
+    m = lerp(mid, (gap - wk_full, sk.knee_y))
+    c2 = lerp(b, (gap - wk_full * _CALF_CTRL, calf_y))
+    ankle_in = (gap - wa, sk.ankle_y)
+
+    def pt(s: int, q: Point) -> str:
+        return f"{cx + s * q[0]:.1f} {q[1]:.1f}"
+
+    def outer_down(s: int) -> str:
+        return (
+            f"Q {cx + s * (gap + w_top):.1f} {knee_ctrl_y:.1f} {cx + s * (gap + wk):.1f} {sk.knee_y:.1f} "
+            f"Q {cx + s * (gap + wc):.1f} {calf_y:.1f} {cx + s * (gap + wa):.1f} {sk.ankle_y:.1f} "
+        )
+
+    def inner_up(s: int) -> str:
+        return (
+            f"L {pt(s, ankle_in)} Q {pt(s, c2)} {pt(s, m)} Q {pt(s, c1)} {cx:.1f} {crotch_y:.1f} "
+        )
+
+    def inner_down(s: int) -> str:
+        return (
+            f"Q {pt(s, c1)} {pt(s, m)} Q {pt(s, c2)} {pt(s, ankle_in)} "
+            f"L {cx + s * (gap + wa):.1f} {sk.ankle_y:.1f} "
+        )
+
+    def outer_up(s: int) -> str:
+        return (
+            f"Q {cx + s * (gap + wc):.1f} {calf_y:.1f} {cx + s * (gap + wk):.1f} {sk.knee_y:.1f} "
+            f"Q {cx + s * (gap + w_top):.1f} {knee_ctrl_y:.1f} {cx + s * (gap + w_top):.1f} {top_y:.1f} "
+        )
+
+    w_waist = gap + w_top
+    return (
+        f"M {cx - w_waist:.1f} {top_y:.1f} L {cx + w_waist:.1f} {top_y:.1f} "
+        + outer_down(1)
+        + inner_up(1)
+        + inner_down(-1)
+        + outer_up(-1)
+        + "Z"
+    )
+
+
 def _bare_seat(
     sk: Skeleton,
     p: CharacterParams,
@@ -7733,7 +7857,9 @@ def _bare_seat(
     # above the hip (`docs/bare-body-status.md`, step 3).
     brief_y = top_y - (sk.hip_y - sk.waist_y) * 0.35 if p.outfit.tunic_color is None else top_y
     crotch_y = _crotch_y(sk, p)
-    d = _seat_notch_d(sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle)
+    d = _seat_notch_d(
+        sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle, _knee_strength(sk)
+    )
     # No tone down the leg, same as the old two-tube version: a stripe down a
     # leg reads the way one down a sleeve does, one flat surface with an outline
     # doing the work instead.

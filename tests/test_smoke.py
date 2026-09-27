@@ -27,6 +27,7 @@ from anime_character_creator import (
     ROSTERS,
     CharacterParams,
     FaceStyle,
+    Outfit,
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
     cover,
@@ -2379,6 +2380,25 @@ def test_the_drawn_lash_keeps_its_flick_inside_the_face(preset):
     right = [float(x) - sk.head_cx - dx for x in re.findall(r"(-?\d+\.\d+) -?\d+\.\d+", lashes[-1])]
     assert max(right) > corner + 0.01 * sk.head_r
     assert max(right) < edge - dx
+
+
+def test_the_bare_knee_grows_in_without_a_jump():
+    """`docs/detail-plan.md`, D4: the bare leg's knee follows the limb taper from
+    nothing at height 0.8. Just past it, where the leg's inside becomes two
+    curves, nothing in the drawing moves by more than a rounding step."""
+    krista = PRESETS["krista"]
+    off = [
+        n for n in Outfit.__dataclass_fields__ if n.endswith("_color") and n != "underwear_color"
+    ]
+    bare = replace(krista, outfit=replace(krista.outfit, **dict.fromkeys(off)))
+    a = re.findall(r"<[a-zA-Z][^>]*>", render_character(replace(bare, height=0.8)))
+    b = re.findall(r"<[a-zA-Z][^>]*>", render_character(replace(bare, height=0.8001)))
+    assert len(a) == len(b)
+    for x, y in zip(a, b, strict=True):
+        nx = [float(v) for v in re.findall(r"-?\d+\.\d+", x)]
+        ny = [float(v) for v in re.findall(r"-?\d+\.\d+", y)]
+        if len(nx) == len(ny):
+            assert max((abs(p - q) for p, q in zip(nx, ny, strict=True)), default=0.0) <= 0.25
 
 
 def test_the_limbs_taper_with_the_height():
