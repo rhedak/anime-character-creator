@@ -8,8 +8,9 @@ D0 and D1 done (2026-09-27; D1 approved), and the second eye style
 retired. D2 done, with `FaceStyle.lash` (the men at 0.4). D3: one Age
 slider (`CharacterParams.face_age`, 0 to 2) in the web tool; the chin and
 the crease deferred (the owner's call). Open in D3: which presets state an
-age (the aged four move from `aged()` onto `face_age`, the adults take
-maturity), a lineup for the owner first.
+age (a lineup and a whole-figure before/after, `harness/detail/age_lineup.py`
+and `age_before_after.py`; the owner: "mostly good"); and the nose against
+the beard (added to the plan, D3).
 The owner does not want `../valley_of_mist` regenerated for now: work
 through the plan. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
@@ -29,6 +30,15 @@ through the plan. The baseline is
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D3: the nose inside the beard (2026-09-27)
+
+The owner, on the whole-figure before/after: mostly good, but the nose
+collides with the beard. A beard ends between the nose and the mouth, it does
+not grow around the nose. Cause: `_BEARD_TASH_Y` holds the moustache's top at
+0.36 head radii, which is `_NOSE_Y` itself, and the nose and mouth drop with
+the face build (`_MOUTH_REALISTIC_DROP`, to about 0.54 for the nose at face
+age 1) while the moustache does not. Added to the plan under D3.
 
 ### D3: one Age slider (2026-09-27)
 

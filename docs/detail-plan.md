@@ -140,6 +140,15 @@ Web tool slider, `urlstate`, catalogue.
 **Acceptance:** byte-identical at 0; continuous across the range (a sweep
 at fine steps with no pops); the owner's sign-off on the grid.
 
+**Added 2026-09-27, the owner's call: revisit the nose and the beard.** With
+maturity the nose grows in and drops with the mouth, but the beard's
+moustache keeps its top edge at a fixed height (`_BEARD_TASH_Y`, 0.36 head
+radii below the head centre, where the chibi face has no nose), so on a
+grown bearded face (Gero, Daizen, Reinhard) the nose sits inside the
+moustache. A beard does not grow around the nose: it ends between the nose
+and the mouth. The moustache's top has to ride the face build with the nose
+and mouth and stay below the nose at every face age.
+
 ### D4. The body at height
 
 In three parts, each studied first:
