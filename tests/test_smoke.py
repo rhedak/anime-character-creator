@@ -2340,6 +2340,17 @@ def test_the_lash_renders_across_its_range(lash):
     assert FaceStyle().lash == 1.0
 
 
+def test_the_limbs_taper_with_the_height():
+    """`docs/detail-plan.md`, D4b: none at 0.8, half the adult taper from 1.3,
+    linear between, carried on the skeleton the figure is drawn on."""
+    at = character._limb_taper_at
+    assert (at(0.7), at(0.8), at(1.3), at(1.5)) == (0.0, 0.0, 0.5, 0.5)
+    assert at(1.0) == pytest.approx(0.2)
+    p = PRESETS["krista"]
+    assert character.skeleton_for(replace(p, height=1.3)).limb_taper == pytest.approx(0.5)
+    assert character.skeleton_for(replace(p, height=0.8)).limb_taper == 0.0
+
+
 @pytest.mark.parametrize("h", [0.8, 1.3])
 def test_the_height_stretches_below_the_shoulders_only(h):
     """`height` stretches the tall chibi below the shoulder line, two thirds of

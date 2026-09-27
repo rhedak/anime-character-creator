@@ -81,6 +81,9 @@ class Skeleton:
     # Stored here because everything welded to the skull reads it through
     # `face_build`, not only the face.
     face_maturity: float = 0.0
+    # How far along the retired adult build's limb taper the arms and legs are
+    # drawn, 0 to 1; it follows the height (`character._limb_taper_at`).
+    limb_taper: float = 0.0
 
     @property
     def face_build(self) -> float:

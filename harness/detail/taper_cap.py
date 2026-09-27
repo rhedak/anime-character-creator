@@ -8,6 +8,10 @@ Rows: the taper at 1.3 capped at 1 (the sweep), 0.7, 0.5 (so `clamp((h -
 0.8) / 0.5, 0, 1) * cap`); columns: Krista's base layer and Satoshi at 1.3
 and 1.0, the arms at 2x. The upper-arm-to-wrist ratio printed on each.
 Writes `out/detail/taper_cap.png`.
+
+A record: the taper is now `Skeleton.limb_taper`, set from the height
+(`character._limb_taper_at`), and the `_LIMB_TAPER` this patches is gone, so
+it no longer draws what it did.
 """
 
 import io

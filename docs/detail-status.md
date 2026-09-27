@@ -26,11 +26,32 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a done; D4b study with the owner |
+| D4 body at height | D4a, D4b done; D4c (fingers) and the bare knee open |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4b: the limbs taper with the height (2026-09-27)
+
+The owner's calls over three rounds: the hands follow the wrists; the taper
+grows with the height instead of being one amount for all (the point of it,
+explained to the owner: a straight tube of an arm is the chibi's, fine on a
+short young figure and a pipe on a tall grown one); and, seeing the full
+taper leave a tall figure's upper arm 1.5 times its wrist once D4a had
+widened the arm, half of it at most. Now `Skeleton.limb_taper =
+_limb_taper_at(height)`: 0 at 0.8, `_TAPER_MAX` 0.5 from 1.3, linear between,
+0.2 at 1.0 where every preset stands (about 7% narrower at the wrist, the
+hands with it). `_limb_build` reads it for `_arms` and `_legs_and_boots`.
+
+**Measured:** all 20 `ref-out/` renders and both bases changed (every figure
+stands at 1.0); at 4x the wrists, cuffs, sleeves and hands join cleanly on
+six presets, Katherina's grip on the staff included. A test of the mapping.
+The web tool restaged. 490 passed, 1 skipped. The three study scripts are
+records now (the `_LIMB_TAPER` they patch is gone).
+
+**Open:** the bare leg has no knee (the adult taper was measured on
+trousers); a knee is a new shape, a separate study if the owner wants one.
 
 ### D4b: the limb taper, the study (2026-09-27)
 

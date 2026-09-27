@@ -3964,7 +3964,7 @@ def _skeleton_at(p: CharacterParams) -> Skeleton:
         )
     if p.face_age > 0.0:
         sk = replace(sk, face_maturity=min(1.0, p.face_age))
-    return sk
+    return replace(sk, limb_taper=_limb_taper_at(p.height))
 
 
 # Traced garments ("cuts", `katherina-clothes-plan.md`) are drawn in the head
@@ -7450,16 +7450,28 @@ def _leg_gap_and_top(sk: Skeleton, trousers: bool) -> tuple[float, float]:
     return gap, w_top
 
 
-# How far along the retired adult build's limb taper the arms and legs are
-# drawn (`docs/detail-plan.md`, D4b): 0 the figure's own build, as ever, 1 the
-# adult taper (the elbow 15% and the wrist 34% in, the ankle to 0.85 of the
-# leg). A study value until the owner picks one.
-_LIMB_TAPER = 0.0
+# The arms and legs taper with the height (`docs/detail-plan.md`, D4b): a short
+# figure keeps the chibi's tube of an arm, a tall one narrows to the wrist and
+# the ankle, along the retired adult build's taper (the elbow 15% and the wrist
+# 34% in at its full amount, the ankle to 0.85 of the leg), the hands following
+# the wrists. None at height `_TAPER_FROM`, `_TAPER_MAX` of it at `_TAPER_TO`
+# and above. The full taper left a tall figure's upper arm 1.5 times its wrist
+# once D4a had widened the arm; half of it leaves 1.23. The owner's picks from
+# `harness/detail/taper_study.py`, `taper_sweep.py` and `taper_cap.py`,
+# 2026-09-27.
+_TAPER_FROM = 0.8
+_TAPER_TO = 1.3
+_TAPER_MAX = 0.5
+
+
+def _limb_taper_at(height: float) -> float:
+    """How much limb taper a figure of this height is drawn with."""
+    return _TAPER_MAX * min(1.0, max(0.0, (height - _TAPER_FROM) / (_TAPER_TO - _TAPER_FROM)))
 
 
 def _limb_build(sk: Skeleton) -> float:
     """The build the arms and legs taper at."""
-    return sk.build + _LIMB_TAPER * (1.0 - sk.build)
+    return sk.build + sk.limb_taper * (1.0 - sk.build)
 
 
 def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:

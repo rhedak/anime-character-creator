@@ -10,6 +10,10 @@ Two sheets in `out/detail/`: `taper_sweep.png`, whole figures at heights 0.8
 to 1.3 in steps of 0.1 (Krista's base layer, Satoshi, Keiko, Satoko), one head
 size, feet on one line; and `taper_sweep_arms.png`, the base layer's arms and
 hands at 2x across the same heights.
+
+A record: the taper is now `Skeleton.limb_taper`, set from the height
+(`character._limb_taper_at`), and the `_LIMB_TAPER` this patches is gone, so
+it no longer draws what it did.
 """
 
 import io

@@ -12,6 +12,10 @@ tapered wrist and today's, 1.0 with the hands kept. Columns: Krista in
 the base layer (bare arms and legs), Satoshi (sleeves, trousers), Keiko (the
 traced coat's sleeves) and Satoko (a skirt, bare hands), each at height 1.0
 and 1.3, one head size, feet on one line. Writes `out/detail/taper_study.png`.
+
+A record: the taper is now `Skeleton.limb_taper`, set from the height
+(`character._limb_taper_at`), and the `_LIMB_TAPER` this patches is gone, so
+it no longer draws what it did.
 """
 
 import io
