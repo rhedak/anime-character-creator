@@ -26,11 +26,37 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a, D4b, the knee done; D4c superseded; D4d H0 with the owner |
+| D4 body at height | D4a, D4b, the knee done; D4d H0, H1 done; the grip's orientation open |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4d H1: the two hands traced (2026-09-27)
+
+`harness/trace_hands/seg.py` mapped the fills (outline and page are one black
+here): the grip is four skin pieces (the back of the hand with the thumb, the
+index roll, the middle and ring together, the little finger) with the staff's
+wood between them; the relaxed hand one piece and two curled fingertips.
+`harness/trace_hands/trace_hands.py` traces **each piece as its own outlined
+shape** (the skill's shape decomposition), in drawing order: first one union
+silhouette with interior lines was tried, and the staff showing between the
+grip's rolls and the back of its hand (5 to 7 px wide, too wide to close over)
+cut a notch into it instead of drawing a line. Pieces are picked by colour
+(every skin fill over 30 px, a mean red above 150): seeds read off a picture
+landed two in one piece where a fingertip is a sliver. Lines inside one piece
+(the middle and ring's split, the relaxed hand's outer finger line) are the
+dark pixels inside it, centre-lined and fitted. Points are relative to the
+wrist's centre, in the image's axes, in units of the hand's length (size B is
+then 0.65 head radii), with the forearm's direction kept per hand
+(`out/trace_hands/hands.json`). The overlay rides the reference's lines on
+both hands (`out/trace_hands/trace_both.png`); of the relaxed hand's two
+parallel outer lines only one is found.
+
+**Open, for H3:** the grip's forearm comes in from the side in the reference
+(the elbow bent, the staff across the fist); our arms have no elbow and hang,
+so turning the grip to follow our forearm would lay its finger rolls along the
+staff instead of round it.
 
 ### D4d H0, round two: size B without the mitten (2026-09-27)
 

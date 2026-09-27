@@ -225,7 +225,11 @@ a book) join the registry the same way, traced or constructed.
 - **H3. Draw them**: `_hand` draws the chosen pose, mapped and mirrored, at the
   usual weights; the staff passes through the grip's grip point
   (`_staff_placement`), and a grip's fingers go over the staff while its palm
-  stays under.
+  stays under. **The transition, reworked after the trace** (the owner,
+  2026-09-27, on the size mock-ups): the hand goes behind the sleeve, the
+  cuff's edge over the wrist, as a sleeve sits; a bare arm leaves its end
+  unstroked and the hand's first stretch, its wrist, widens to the arm's, so
+  the forearm runs into the hand.
 - **H4. Check**: side by side with the reference at one hand size; on our
   figure at 4x and at the smallest insert size; both sides; an arm swung out;
   the joins at the cuff and sleeve; a very different skin tone; heights 0.8 to
