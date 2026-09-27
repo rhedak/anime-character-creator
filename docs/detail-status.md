@@ -4,8 +4,9 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 
 ## RESUME
 
-D0 done (2026-09-27), and the second eye style retired. Next: D1's
-line-weight study. The baseline is
+D0 done (2026-09-27), and the second eye style retired. D1's line-weight
+study is with the owner (`harness/detail/line_weight.py`, sheets in
+`out/detail/line_weight_*.png`); recommendation (0.75, 0.55). The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
 `harness/tall_chibi/height_range.py`; the inventories are in
 `docs/detail-inventory/`. The plan is committed at 7b8a2f7.
@@ -15,7 +16,7 @@ line-weight study. The baseline is
 | step | state |
 |---|---|
 | D0 inventory and baseline | done |
-| D1 line weights | not started |
+| D1 line weights | study with the owner |
 | D2 eyes | not started |
 | D3 face maturity | not started |
 | D4 body at height | not started |
@@ -23,6 +24,36 @@ line-weight study. The baseline is
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D1: the line-weight study (2026-09-27, at 9079ad7)
+
+`harness/detail/line_weight.py` rescales only the drawn `stroke-width`
+attributes (geometry untouched, as the change will be), silhouette strokes
+(within 5% of `_stroke_w` or above) and interior strokes separately, on
+Satoko, Krista, Keiko (a white coat on a light card, the worst case) and
+Katherina. Variants (outline, interior): (1.0, 1.0) today, (0.75, 0.75),
+(0.6, 0.6), (0.75, 0.55), (0.6, 0.4).
+
+**Predicted:** (0.6, 0.4) closest to the reference at full size; at the
+smallest size, 1x, the 0.6 outline goes faint.
+
+**Measured, by looking:**
+
+- Full size: (0.6, 0.4) reads closest to the reference, as predicted.
+- Smallest size, 1x (`line_weight_small_zoom.png`): every variant's
+  silhouette still reads, since the flat fills carry it; the prediction
+  was wrong there. What fades is the interior: at 0.4, Keiko's lapels and
+  glasses frame and the hair strands go near-invisible grey. At 0.55 they
+  hold.
+- **The reference's own weight**, measured on its chin line (a dark run of
+  2 to 3 px across columns 610 to 665) at the calibrated 83.9 px per head
+  radius: about 0.030 head radii, 0.70 of ours. Its finger lines measure
+  the same.
+
+**Recommendation: (0.75, 0.55).** It is within 7% of the reference's
+measured line, and the interior survives the smallest view. (0.6, 0.4)
+looks lighter still at full size but loses the interior in the chapter
+inserts.
 
 ### The second eye style retired (2026-09-27)
 
