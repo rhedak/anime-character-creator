@@ -32,6 +32,23 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D4d: the wrist's angle against the sleeve (2026-09-27)
+
+The owner: zoom on Katherina's arms and turn the hands so the wrist's angle
+matches the sleeve's. `harness/trace_hands/wrist_angle.py` turns each traced
+hand about its wrist so the direction its reference forearm came in from lies
+along our forearm (elbow to wrist), then lets it swing with the arm; rows
+upright, half, matched. **The staff arm** needs -80 degrees in the arm's own
+frame, and the arm's 36-degree swing undoes 36 of it, so "half" comes out
+nearly upright; **matched** carries the sleeve's line on into the back of the
+hand, but the fist then grips the staff at a slant and its fingers overhang
+the staff's far side. **The other arm** needs only -3.5 degrees (the arm
+hangs nearly straight), so matching changes nothing: the odd look there is
+Katherina's traced jacket cuff, whose opening slopes and is wider than the
+open hand's wrist, not the arm's axis. A first measure of the cuff opening
+off its chain's lowest points read it level; it needs its edge found
+properly. With the owner.
+
 ### D4d: the relaxed hand, both options (2026-09-27)
 
 The owner: build both (the open hand smaller; a loose fist from the grip's
