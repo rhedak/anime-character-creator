@@ -10,7 +10,7 @@ slider (`CharacterParams.face_age`, 0 to 2) in the web tool; the chin and
 the crease deferred (the owner's call). Open in D3: which presets state an
 age (a lineup and a whole-figure before/after, `harness/detail/age_lineup.py`
 and `age_before_after.py`; the owner: "mostly good"); and the nose against
-the beard (added to the plan, D3).
+the beard (fixed, below).
 The owner does not want `../valley_of_mist` regenerated for now: work
 through the plan. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
@@ -30,6 +30,21 @@ through the plan. The baseline is
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D3: the moustache ends under the nose (2026-09-27)
+
+The moustache's outer corner now drops with the mouth
+(`_MOUTH_REALISTIC_DROP` times the face build's growth), and its top edge
+moves to `_BEARD_NOSE_GAP` (0.05 head radii) under the nose's lowest point
+(`_nose_y`, shared with `_nose`), settled by face maturity
+`_BEARD_NOSE_ONSET` (0.25) while the nose is still faint, so it never
+jumps. **Predicted:** byte-identical at face age 0 (both terms zero), the
+nose clear of the moustache from 0.25 up. **Measured:** all 105 snapshot
+renders identical; `harness/detail/beard_nose.py` (Gero at 0 to 1, and
+Gero, Daizen and Reinhard at their proposed ages) shows the nose above the
+moustache everywhere and no jump. The cost: on a grown face nose and mouth
+are closer, so the moustache's band over the lip is thinner than the
+chibi's; it still reads as a moustache. 487 passed, 1 skipped.
 
 ### D3: the nose inside the beard (2026-09-27)
 

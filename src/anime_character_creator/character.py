@@ -5146,6 +5146,10 @@ _BEARD_SIDEBURN_W_EASE = 2.0
 # reads as a snout.
 _BEARD_TASH_Y = 0.36
 _BEARD_TASH_HALF = 0.28
+# On a grown face the moustache's top sits this far under the nose, in head
+# radii, reached by this face maturity (`_beard`).
+_BEARD_NOSE_GAP = 0.05
+_BEARD_NOSE_ONSET = 0.25
 # The lips, showing through. Both as multiples of the mouth's own half width, so
 # the lozenge keeps its proportions on a character whose mouth is narrow; zero
 # draws none.
@@ -5235,9 +5239,16 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # mouth so the two corners meet, which is where a beard and a moustache join
     # on a face.
     x_join = inner[-1][0]
-    corner_y = _MOUTH_Y + 0.02
+    # Both follow the grown face down (`docs/detail-plan.md`, D3): the corner with
+    # the mouth, and the top edge to just under the nose, since a beard ends
+    # between the nose and the mouth rather than growing round the nose. It
+    # settles there by `_BEARD_NOSE_ONSET`, while the nose is still faint, so the
+    # edge never jumps; at face maturity 0 both terms are nothing.
+    grown = sk.face_build - sk.build
+    corner_y = _MOUTH_Y + 0.02 + _MOUTH_REALISTIC_DROP * grown
     tash_half = _BEARD_TASH_HALF
-    tash_y = _BEARD_TASH_Y
+    settle = min(1.0, sk.face_maturity / _BEARD_NOSE_ONSET)
+    tash_y = _BEARD_TASH_Y + settle * (_nose_y(sk) + _BEARD_NOSE_GAP - _BEARD_TASH_Y)
 
     def line(pts: list[Point], s: int) -> str:
         return "".join(f"L {cx + s * x * r:.1f} {cy + y * r:.1f} " for x, y in pts)
@@ -9253,10 +9264,16 @@ _NOSE_IN = 0.028
 _NOSE_DROP = 0.033
 
 
+def _nose_y(sk: Skeleton) -> float:
+    """How far below the head's centre the nose's lowest point sits, in head
+    radii: with the mouth, which drops as the face grows."""
+    return _NOSE_Y + _MOUTH_REALISTIC_DROP * sk.face_build
+
+
 def _nose(sk: Skeleton, sw: float) -> str:
     m = sk.face_maturity
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    y = cy + r * (_NOSE_Y + _MOUTH_REALISTIC_DROP * sk.face_build)
+    y = cy + r * _nose_y(sk)
     out, inn, drop = r * _NOSE_OUT * m, r * _NOSE_IN * m, r * _NOSE_DROP * m
     parts = []
     for side in (-1, 1):
