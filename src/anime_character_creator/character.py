@@ -488,6 +488,10 @@ class CharacterParams:
     # to adult inside the one style; on its own canvas a taller figure has a
     # smaller head, the canvas being a fixed size.
     height: float = 1.0
+    # Which hands the figure is drawn with: "mitten", the chibi's own, or "traced",
+    # the reference's two hands (`docs/detail-plan.md`, D4d): hanging relaxed,
+    # and gripping the staff when the figure holds one.
+    hand_style: str = "mitten"
     # How old the face reads, one axis from child to old (`docs/detail-plan.md`,
     # D3). 0 to 1 is face maturity, the chibi face growing up: the skull narrows
     # to a jaw, the eyes grow smaller, narrower and lower, the mouth drops, a
@@ -7255,9 +7259,17 @@ def _arms(
             # Filled whole, stroked everywhere but across the top. A bare arm
             # too: the shoulder rounds over it, and a line across its top read
             # as a sleeve's hem with no sleeve (`docs/bare-body-plan.md`, 4c).
+            outline = f"M {x(centre_top + w_top):.1f} {top_out:.1f} {body}"
+            if p.hand_style == "traced":
+                # Open across the wrist: the traced hand runs on from the arm,
+                # and a line there would cut it off (`_traced_hand`).
+                across = f"L {x(centre_wrist - w_wrist):.1f} {wrist_y:.1f} "
+                outline = outline.replace(
+                    across, f"M {x(centre_wrist - w_wrist):.1f} {wrist_y:.1f} ", 1
+                )
             limb = [
                 f'<path d="{d}" fill="{sleeve_fill}" stroke="none" />',
-                f'<path d="M {x(centre_top + w_top):.1f} {top_out:.1f} {body}" fill="none" '
+                f'<path d="{outline}" fill="none" '
                 f'stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" stroke-linejoin="round" />',
             ]
         else:
@@ -7269,7 +7281,11 @@ def _arms(
         elif cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
         hand = _hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s)
-        if hands is None:
+        if hands is None and p.hand_style == "traced":
+            # Under the arm, so a sleeve's cuff lies over the wrist as a sleeve
+            # does, and a bare arm's fill over the hand's tucked-in top.
+            limb.insert(0, hand)
+        elif hands is None:
             limb.append(hand)
         elif hands:
             limb = [hand]
@@ -7386,6 +7402,351 @@ def _wrist_cuff(sk: Skeleton, color: str, cx: float, wrist_y: float, w: float) -
     )
 
 
+# Two hands, traced per `.claude/skills/trace-reference/SKILL.md`
+# off `ref-local/katherina_grok_real/` (`docs/detail-plan.md`, D4d; the scripts
+# in `harness/trace_hands/`): her left hand hanging (`relaxed`, the viewer's
+# right) and her right hand round the staff (`grip`, the viewer's left). Each is
+# its pieces in drawing order, every piece its outline, its holes (the page
+# showing through) and its interior lines, grown to the stroke's centre line.
+# Points are relative to the wrist's centre where the skin meets the cuff, in
+# the picture's own axes (x right, y down), in units of the hand's length.
+# Emitted by `harness/trace_hands/emit_hands.py`; do not edit by hand.
+HandPiece = tuple[Chain, tuple[Chain, ...], tuple[Chain, ...]]
+
+_HAND_RELAXED: tuple[HandPiece, ...] = (
+    (
+        (
+            (-0.1133, 1.0263),
+            [
+                ((-0.1286, 1.0111), (-0.1439, 0.9958)),
+                ((-0.1388, 0.9703), (-0.1337, 0.9449)),
+                ((-0.0754, 0.8583), (-0.0115, 0.7717)),
+                ((-0.0049, 0.7412), (0.0089, 0.7106)),
+                ((0.0198, 0.5986), (0.0190, 0.4866)),
+                ((-0.0007, 0.4459), (-0.0115, 0.4051)),
+                ((-0.0316, 0.3848), (-0.0421, 0.3644)),
+                ((-0.0472, 0.3695), (-0.0522, 0.3746)),
+                ((-0.0472, 0.3848), (-0.0624, 0.3950)),
+                ((-0.0624, 0.5019), (-0.0624, 0.6088)),
+                ((-0.0764, 0.6597), (-0.0828, 0.7106)),
+                ((-0.0958, 0.7361), (-0.1235, 0.7616)),
+                ((-0.1578, 0.7450), (-0.1745, 0.7106)),
+                ((-0.1776, 0.6597), (-0.1948, 0.6088)),
+                ((-0.1948, 0.5426), (-0.1948, 0.4764)),
+                ((-0.2152, 0.3695), (-0.2356, 0.2626)),
+                ((-0.2356, 0.2167), (-0.2356, 0.1709)),
+                ((-0.2168, 0.0945), (-0.2050, 0.0182)),
+                ((-0.1897, 0.0080), (-0.1745, -0.0022)),
+                ((-0.1133, -0.0132), (-0.0522, -0.0328)),
+                ((0.0547, -0.0328), (0.1616, -0.0328)),
+                ((0.1718, -0.0175), (0.1820, -0.0022)),
+                ((0.2023, 0.1200), (0.2227, 0.2422)),
+                ((0.2456, 0.3135), (0.2634, 0.3848)),
+                ((0.2634, 0.4153), (0.2634, 0.4459)),
+                ((0.2431, 0.4866), (0.2431, 0.5273)),
+                ((0.2278, 0.5630), (0.2125, 0.5986)),
+                ((0.2003, 0.6801), (0.1718, 0.7616)),
+                ((0.1463, 0.7870), (0.1209, 0.8125)),
+                ((0.1158, 0.8074), (0.1107, 0.8023)),
+                ((0.0089, 0.9255), (-0.1133, 1.0263)),
+            ],
+        ),
+        (),
+        (
+            (
+                (-0.0461, 0.3400),
+                [
+                    ((-0.0403, 0.3229), (-0.0344, 0.3058)),
+                ],
+            ),
+            (
+                (0.1878, 0.4924),
+                [
+                    ((0.1479, 0.6639), (0.1175, 0.7768)),
+                ],
+            ),
+        ),
+    ),
+    (
+        (
+            (-0.0013, 0.6597),
+            [
+                ((0.0157, 0.6801), (0.0089, 0.7005)),
+                ((-0.0052, 0.7463), (-0.0319, 0.7921)),
+                ((-0.0472, 0.8074), (-0.0624, 0.8227)),
+                ((-0.1133, 0.8416), (-0.1643, 0.8736)),
+                ((-0.1745, 0.8634), (-0.1846, 0.8532)),
+                ((-0.1795, 0.8379), (-0.1745, 0.8227)),
+                ((-0.1490, 0.7972), (-0.1235, 0.7717)),
+                ((-0.1083, 0.7667), (-0.0930, 0.7616)),
+                ((-0.0416, 0.7106), (-0.0013, 0.6597)),
+            ],
+        ),
+        (),
+        (),
+    ),
+    (
+        (
+            (-0.0624, 0.8430),
+            [
+                ((-0.0828, 0.8634), (-0.1032, 0.8838)),
+                ((-0.1216, 0.9143), (-0.1337, 0.9449)),
+                ((-0.1439, 0.9601), (-0.1541, 0.9551)),
+                ((-0.1678, 0.9245), (-0.1745, 0.8940)),
+                ((-0.1592, 0.8787), (-0.1439, 0.8634)),
+                ((-0.1133, 0.8548), (-0.0828, 0.8328)),
+                ((-0.0726, 0.8278), (-0.0624, 0.8430)),
+            ],
+        ),
+        (),
+        (),
+    ),
+)
+
+_HAND_GRIP: tuple[HandPiece, ...] = (
+    (
+        (
+            (-0.6285, -0.0946),
+            [
+                ((-0.6504, -0.0946), (-0.6724, -0.0946)),
+                ((-0.7675, -0.1323), (-0.8625, -0.1677)),
+                ((-0.9284, -0.2148), (-0.9942, -0.2847)),
+                ((-1.0156, -0.3359), (-1.0088, -0.3871)),
+                ((-0.9869, -0.4237), (-0.9649, -0.4603)),
+                ((-0.8991, -0.4858), (-0.8333, -0.5041)),
+                ((-0.8113, -0.5133), (-0.7894, -0.4895)),
+                ((-0.7993, -0.4603), (-0.7748, -0.4310)),
+                ((-0.7894, -0.4164), (-0.8040, -0.4017)),
+                ((-0.6943, -0.3372), (-0.5846, -0.2555)),
+                ((-0.6060, -0.2116), (-0.6285, -0.1677)),
+                ((-0.6384, -0.1384), (-0.6139, -0.1092)),
+                ((-0.6212, -0.1019), (-0.6285, -0.0946)),
+            ],
+        ),
+        (),
+        (),
+    ),
+    (
+        (
+            (-0.9649, -0.2408),
+            [
+                ((-0.8698, -0.1717), (-0.7748, -0.1238)),
+                ((-0.6870, -0.1070), (-0.5992, -0.0653)),
+                ((-0.5188, -0.0546), (-0.4383, -0.0360)),
+                ((-0.4091, -0.0068), (-0.3798, 0.0225)),
+                ((-0.3798, 0.0444), (-0.3798, 0.0663)),
+                ((-0.4017, 0.0883), (-0.4237, 0.1102)),
+                ((-0.4190, 0.1395), (-0.3798, 0.1687)),
+                ((-0.3798, 0.1980), (-0.3798, 0.2273)),
+                ((-0.4017, 0.2492), (-0.4237, 0.2711)),
+                ((-0.4456, 0.2620), (-0.4676, 0.2858)),
+                ((-0.5627, 0.2973), (-0.6577, 0.3004)),
+                ((-0.6651, 0.3077), (-0.6724, 0.3150)),
+                ((-0.7382, 0.3137), (-0.8040, 0.3004)),
+                ((-0.8625, 0.2746), (-0.9210, 0.2419)),
+                ((-0.9609, 0.2053), (-0.9796, 0.1687)),
+                ((-0.9796, 0.1029), (-0.9796, 0.0371)),
+                ((-0.9576, 0.0225), (-0.9649, 0.0078)),
+                ((-1.0047, -0.0287), (-1.0234, -0.0653)),
+                ((-1.0234, -0.1092), (-1.0234, -0.1531)),
+                ((-1.0023, -0.1970), (-0.9649, -0.2408)),
+            ],
+        ),
+        (),
+        (
+            (
+                (-0.9043, 0.0475),
+                [
+                    ((-0.8719, 0.0653), (-0.8395, 0.0831)),
+                    ((-0.7604, 0.1032), (-0.6765, 0.1186)),
+                    ((-0.6142, 0.1209), (-0.4773, 0.1224)),
+                ],
+            ),
+        ),
+    ),
+    (
+        (
+            (-0.4237, 0.3150),
+            [
+                ((-0.4237, 0.3443), (-0.4237, 0.3735)),
+                ((-0.4822, 0.4187), (-0.5407, 0.4467)),
+                ((-0.5992, 0.4532), (-0.6577, 0.4759)),
+                ((-0.7089, 0.4759), (-0.7601, 0.4759)),
+                ((-0.8186, 0.4531), (-0.8772, 0.4174)),
+                ((-0.9051, 0.3443), (-0.9210, 0.2711)),
+                ((-0.9064, 0.2492), (-0.8918, 0.2565)),
+                ((-0.8260, 0.2972), (-0.7601, 0.3150)),
+                ((-0.7089, 0.3150), (-0.6577, 0.3150)),
+                ((-0.5919, 0.3004), (-0.5261, 0.2858)),
+                ((-0.4895, 0.2858), (-0.4529, 0.2858)),
+                ((-0.4383, 0.3004), (-0.4237, 0.3150)),
+            ],
+        ),
+        (),
+        (),
+    ),
+    (
+        (
+            (-0.3067, 0.4174),
+            [
+                ((-0.3213, 0.3589), (-0.3359, 0.3004)),
+                ((-0.3359, 0.1980), (-0.3359, 0.0956)),
+                ((-0.3432, 0.0883), (-0.3506, 0.0810)),
+                ((-0.3428, -0.0580), (-0.3652, -0.1970)),
+                ((-0.3725, -0.2043), (-0.3798, -0.2116)),
+                ((-0.4269, -0.1458), (-0.4968, -0.0799)),
+                ((-0.5188, -0.0891), (-0.5407, -0.0653)),
+                ((-0.5700, -0.0795), (-0.5992, -0.0799)),
+                ((-0.6139, -0.1019), (-0.6285, -0.1238)),
+                ((-0.6285, -0.1458), (-0.6285, -0.1677)),
+                ((-0.6074, -0.2116), (-0.5700, -0.2555)),
+                ((-0.5460, -0.3286), (-0.5115, -0.4017)),
+                ((-0.4822, -0.4383), (-0.4529, -0.4749)),
+                ((-0.4091, -0.4872), (-0.3652, -0.5188)),
+                ((-0.3067, -0.5265), (-0.2482, -0.5041)),
+                ((-0.1970, -0.4529), (-0.1458, -0.4017)),
+                ((-0.1238, -0.3506), (-0.1019, -0.2994)),
+                ((-0.0946, -0.2920), (-0.0872, -0.2847)),
+                ((-0.0799, -0.2920), (-0.0726, -0.2994)),
+                ((-0.0580, -0.2847), (-0.0434, -0.2701)),
+                ((-0.0311, -0.2262), (0.0005, -0.1823)),
+                ((0.0006, -0.1238), (0.0298, -0.0653)),
+                ((0.0298, -0.0068), (0.0298, 0.0517)),
+                ((0.0371, 0.0590), (0.0444, 0.0663)),
+                ((0.0444, 0.1102), (0.0444, 0.1541)),
+                ((0.0225, 0.1761), (0.0005, 0.1980)),
+                ((-0.0434, 0.2208), (-0.0872, 0.2273)),
+                ((-0.1405, 0.3004), (-0.2189, 0.3735)),
+                ((-0.2628, 0.4001), (-0.3067, 0.4174)),
+            ],
+        ),
+        (),
+        (
+            (
+                (-0.3310, -0.2701),
+                [
+                    ((-0.3140, -0.2725), (-0.2969, -0.2750)),
+                ],
+            ),
+            (
+                (-0.0814, -0.2438),
+                [
+                    ((-0.0770, -0.2204), (-0.0726, -0.1970)),
+                ],
+            ),
+        ),
+    ),
+)
+
+# (end of the traced hands)
+
+
+# The ways a figure's hands can be drawn (`CharacterParams.hand_style`).
+HAND_STYLES = ("mitten", "traced")
+
+# A traced hand's length, head radii: size B of `harness/trace_hands/size_mock.py`,
+# the owner's pick. The reference's hand is an adult's, about the face's length;
+# fitted to our wrist it reached mid-thigh, fitted to a chibi's third of a face it
+# went spindly.
+_HAND_TRACED_LENGTH = 0.65
+
+
+def _chain_points(ch: Chain, per: int = 8) -> list[Point]:
+    """Points along a fitted chain."""
+    start, segs = ch
+    pts = [start]
+    p0 = start
+    for c1, p2 in segs:
+        pts += [_quad_point(p0, c1, p2, k / per) for k in range(1, per + 1)]
+        p0 = p2
+    return pts
+
+
+def _grip_anchor() -> Point:
+    """Where the traced grip takes its wrist on our figure, in its own units: over
+    the staff's channel (between the finger rolls and the back of the hand), at
+    the top of the back of the hand. Our arm hangs, so the wrist comes from above
+    rather than from the side as the reference's does (the owner's option a)."""
+    *fingers, back = _HAND_GRIP
+    finger_x = max(x for piece in fingers for x, _ in _chain_points(piece[0]))
+    back_pts = _chain_points(back[0])
+    top = min(y for _, y in back_pts)
+    lo, hi = min(y for piece in fingers for _, y in _chain_points(piece[0])), top + 1.0
+    back_x = min(x for x, y in back_pts if lo <= y <= hi)
+    return ((finger_x + back_x) / 2, top)
+
+
+# The relaxed hand's first stretch, its wrist, in hand lengths down from the
+# wrist line: over it the hand widens from its traced width to the arm's, and
+# its top reaches `_HAND_WRIST_TUCK` up under the arm, so a bare forearm runs
+# into the hand without a step or a line across it; on a sleeve the cuff covers
+# the join (the owner, 2026-09-27, `docs/detail-plan.md`, D4d H3).
+_HAND_WRIST_STRETCH = 0.30
+_HAND_WRIST_TUCK = 0.06
+
+
+def _traced_wrist_half(pieces: tuple[HandPiece, ...]) -> float:
+    """The traced hand's half-width at its wrist line, in hand lengths."""
+    top = [x for x, y in _chain_points(pieces[0][0]) if y < 0.03]
+    return (max(top) - min(top)) / 2
+
+
+def _traced_hand(
+    sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float, side: int
+) -> str:
+    """A traced hand at the wrist `cx`, `wrist_y`: gripping when this is the hand
+    on a held staff, hanging relaxed otherwise, mirrored for the other side. The
+    relaxed hand's wrist is fitted to the arm's `w_wrist`; the grip takes the
+    arm on the back of its fist."""
+    grip = side == -1 and p.outfit.staff_color is not None
+    pieces = _HAND_GRIP if grip else _HAND_RELAXED
+    # The relaxed hand was traced on the viewer's right, the grip on the left.
+    mirror = (side == -1) if not grip else (side == 1)
+    k = _HAND_TRACED_LENGTH * sk.head_r
+    ax, ay = _grip_anchor() if grip else (0.0, 0.0)
+    sw = _stroke_w(sk)
+    widen = 1.0 if grip else w_wrist / (_traced_wrist_half(pieces) * k)
+
+    def fit(q: Point) -> Point:
+        """The relaxed hand's wrist stretch, widened to the arm and tucked under it."""
+        x, y = q
+        if grip or y >= _HAND_WRIST_STRETCH:
+            return q
+        t = 1.0 - max(0.0, y) / _HAND_WRIST_STRETCH
+        return (x * (1.0 + (widen - 1.0) * t * t), y - _HAND_WRIST_TUCK * t * t)
+
+    def pt(q: Point) -> str:
+        q = fit(q)
+        x = (q[0] - ax) * k
+        return f"{cx + (-x if mirror else x):.2f} {wrist_y + (q[1] - ay) * k:.2f}"
+
+    def path(ch: Chain, closed: bool) -> str:
+        start, segs = ch
+        d = f"M {pt(start)} " + " ".join(f"Q {pt(c1)} {pt(e)}" for c1, e in segs)
+        return d + " Z" if closed else d
+
+    parts = []
+    for outline, holes, lines in pieces:
+        d = " ".join(path(ch, True) for ch in (outline, *holes))
+        parts.append(
+            f'<path d="{d}" fill="{p.skin_tone}" fill-rule="evenodd" stroke="{OUTLINE}" '
+            f'stroke-width="{_outline_w(sw, 0.85):.2f}" stroke-linejoin="round" />'
+        )
+        for ln in lines:
+            parts.append(
+                f'<path d="{path(ln, False)}" fill="none" stroke="{OUTLINE}" '
+                f'stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
+            )
+    out = "".join(parts)
+    if grip:
+        # Upright along the staff whatever the arm's swing: the arm's group turns
+        # the hand with it, and this turns it back about the wrist.
+        swing = p.right_arm_out if side == -1 else p.left_arm_out
+        if swing:
+            out = f'<g transform="rotate({side * swing:.2f} {cx:.1f} {wrist_y:.1f})">{out}</g>'
+    return out
+
+
 def _hand(
     sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float, side: int
 ) -> str:
@@ -7397,6 +7758,8 @@ def _hand(
     build, and at this size separate digits read as noise rather than as a
     hand.
     """
+    if p.hand_style == "traced":
+        return _traced_hand(sk, p, cx, wrist_y, w_wrist, side)
     hw = w_wrist * 1.02
     length = _hand_length(sk)
     tip = hw * (1.0 - 0.32 * sk.build)

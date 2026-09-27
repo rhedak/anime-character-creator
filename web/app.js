@@ -263,6 +263,29 @@ function buildBuildControls() {
   row.append(lbl, select);
   buildControls.appendChild(row);
 
+  // `catalogue.hand_styles`: the chibi's mitten or the drawn (traced) hands,
+  // a choice per character (`docs/detail-plan.md`, D4d).
+  const handRow = document.createElement("div");
+  handRow.className = "control-row";
+  const handLbl = document.createElement("label");
+  handLbl.htmlFor = "field-hand-style";
+  handLbl.textContent = "Hands";
+  const handSelect = document.createElement("select");
+  handSelect.id = "field-hand-style";
+  for (const style of catalogue.hand_styles) {
+    const opt = document.createElement("option");
+    opt.value = style.id;
+    opt.textContent = style.label;
+    if (style.id === (state.hand_style ?? "mitten")) opt.selected = true;
+    handSelect.appendChild(opt);
+  }
+  handSelect.addEventListener("input", () => {
+    setField("hand_style", handSelect.value);
+    scheduleRender();
+  });
+  handRow.append(handLbl, handSelect);
+  buildControls.appendChild(handRow);
+
   // `catalogue.height`: how tall the figure stands against its head, the
   // tall chibi stretched below the shoulders (`docs/tall-chibi-plan.md`, R4b).
   const height = catalogue.height;

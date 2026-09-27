@@ -37,6 +37,7 @@ from .character import (
     COAT_CUTS,
     COLLAR_CUTS,
     HAIRSTYLES,
+    HAND_STYLES,
     SKIRT_CUTS,
     SLEEVE_CUTS,
     CharacterParams,
@@ -525,6 +526,16 @@ assert set(BODY_LABELS) == set(BODY_TYPES), (
 )
 assert "body" in _CHARACTER_FIELDS
 
+# How the hands are drawn (`docs/detail-plan.md`, D4d): the chibi's mitten, or the
+# hands traced off the reference, hanging relaxed and gripping a held staff. A
+# choice per character, the owner's call, not tied to the height.
+HAND_LABELS: dict[str, str] = {
+    "mitten": "Mitten (chibi)",
+    "traced": "Drawn hands",
+}
+assert set(HAND_LABELS) == set(HAND_STYLES)
+assert "hand_style" in _CHARACTER_FIELDS
+
 # `FaceStyle` carries fourteen floats, and `docs/web-gui-plan.md` calls the
 # whole set "a mixing desk, not a limited set of choices" and keeps it out of
 # the catalogue entirely. What follows is a deliberately smaller, curated
@@ -642,6 +653,7 @@ def build_catalogue() -> dict[str, object]:
             "bases": [{"id": s.id, "label": s.label} for s in _base_points()],
         },
         "bodies": [{"id": name, "label": BODY_LABELS[name]} for name in sorted(BODY_TYPES)],
+        "hand_styles": [{"id": name, "label": HAND_LABELS[name]} for name in HAND_STYLES],
         "height": _range_json(HEIGHT),
         "face_age": _range_json(AGE),
         "colors": [_color_json(c) for c in COLORS],

@@ -91,6 +91,16 @@
       "label": "Tall chibi (long torso)"
     }
   ],
+  "hand_styles": [
+    {
+      "id": "mitten",
+      "label": "Mitten (chibi)"
+    },
+    {
+      "id": "traced",
+      "label": "Drawn hands"
+    }
+  ],
   "height": {
     "field": "height",
     "label": "Height",

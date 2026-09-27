@@ -2443,3 +2443,34 @@ def test_the_height_stretches_below_the_shoulders_only(h):
     assert (legs(tall) - legs(base)) == pytest.approx(2 * (torso(tall) - torso(base)))
     assert tall.knee_y == pytest.approx(tall.hip_y + (tall.ankle_y - tall.hip_y) * 0.5)
     ET.fromstring(render_character(replace(p, height=h)))
+
+
+@pytest.mark.parametrize("preset", ["katherina", "krista", "gero"])
+def test_the_traced_hands_draw_and_the_mitten_is_the_default(preset):
+    """`docs/detail-plan.md`, D4d: `hand_style="traced"` draws the reference's
+    hands (a grip on a held staff, relaxed otherwise); "mitten" stays the default
+    and draws as it did. A bare arm under a traced hand leaves its wrist open."""
+    p = PRESETS[preset]
+    assert p.hand_style == "mitten"
+    traced = render_character(replace(p, hand_style="traced"))
+    ET.fromstring(traced)
+    assert traced != render_character(p)
+    if preset == "katherina":
+        return
+    off = [
+        n
+        for n in Outfit.__dataclass_fields__
+        if n.endswith("_color") and n not in ("underwear_color", "boot_color")
+    ]
+    bare = replace(p, outfit=replace(p.outfit, **dict.fromkeys(off)))
+    sk = character.skeleton_for(bare)
+    _t, _e, centre_wrist, wrist_y = character._arm_line(sk)
+    w_wrist = sk.arm_half_w * (1.0 - 0.34 * character._limb_build(sk))
+    across = f"L {sk.head_cx + (centre_wrist - w_wrist):.1f} {wrist_y:.1f} "
+
+    def outlines(q):
+        """The arm's stroked outline paths, not its unstroked fill."""
+        return "".join(re.findall(r'<path d="([^"]+)" fill="none"', character._arms(sk, q)))
+
+    assert across in outlines(bare)
+    assert across not in outlines(replace(bare, hand_style="traced"))

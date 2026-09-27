@@ -26,11 +26,37 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a, D4b, the knee done; D4d H0, H1 done; the grip's orientation open |
+| D4 body at height | D4a, D4b, the knee done; D4d H2, H3 built, with the owner |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4d H2, H3: the traced hands drawn (2026-09-27)
+
+The owner's calls: option (a), the grip's fist kept as traced with the wrist
+from above; an elbow later (the plan's deferred list). **H2**:
+`harness/trace_hands/emit_hands.py` writes `_HAND_RELAXED` and `_HAND_GRIP`
+(pieces in drawing order: outline, holes, interior lines) into
+`character.py` between marker lines. **H3**: `CharacterParams.hand_style`
+("mitten", the default, or "traced"; `HAND_STYLES`), a "Hands" dropdown in
+the web tool. `_traced_hand` draws the pose at `_HAND_TRACED_LENGTH` (0.65
+head radii, size B), mirrored per side: the grip when the hand holds the
+staff, anchored at the top of the back of its fist over the staff's channel
+(`_grip_anchor`) and kept upright against the arm's swing; relaxed
+otherwise. **The transition** (the owner): the traced hand is drawn under its
+arm, so a sleeve's cuff lies over the wrist; the relaxed hand's first stretch
+(`_HAND_WRIST_STRETCH`, 0.30 of its length) widens from its traced wrist to
+the arm's and tucks `_HAND_WRIST_TUCK` up under it; a bare arm leaves its
+wrist unstroked under a traced hand.
+
+**Measured:** with the default mitten all 105 snapshot renders byte-identical
+to the committed tree; a test that traced hands draw and a bare arm's wrist is
+open under them (and closed under the mitten). By eye
+(`harness/trace_hands/look.py`, `checks.py`): the cuff over the wrist on
+sleeves, a bare forearm running into the hand, the grip round the staff; at
+heights 0.8 and 1.3, an arm swung out, a dark skin tone, and at the insert
+size, where the hand reads as a hand. 548 passed, 1 skipped.
 
 ### D4d H1: the two hands traced (2026-09-27)
 
