@@ -32,6 +32,27 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D4: a knee on the bare leg, the study (2026-09-27)
+
+`harness/detail/knee_study.py` draws the bare leg (only: the trousers keep
+their measured, nearly straight run) with a knee: in at the knee, the inside
+split there into two curves, the crotch as it was. The owner asked whether
+the ratios are realistic; measured off the render (knee = 1; a real leg front
+on: upper thigh 1.4 to 1.6, calf about 1, ankle about 0.6):
+
+| | upper thigh | mid-thigh | calf | ankle |
+|---|---|---|---|---|
+| today, no knee | 1.15 | 1.08 | 0.98 | 0.85 |
+| firm (knee in 0.10, calf swell 0.08) | 1.35 | 1.15 | 1.12 | 1.00 |
+| realistic (knee in 0.10, calf 1.03, ankle 0.70), full | 1.35 | 1.15 | 1.04 | 0.76 |
+
+The firm knee only narrowed the knee, leaving the calf and ankle heavy. The
+realistic row narrows the bare ankle too, and the bare foot with it (it is
+sized off the ankle); the boots keep today's width. The ankle measures 0.76
+against its 0.70 target because the outline adds a fixed width. With the
+height (as the limb taper): none at 0.8, light at 1.0 (calf 1.01, ankle
+0.87), full at 1.3. With the owner.
+
 ### The two other covers regenerated (2026-09-27)
 
 At the owner's request, after the eye and spacing fixes:
