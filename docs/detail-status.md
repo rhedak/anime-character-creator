@@ -32,6 +32,34 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D3 follow-up: the eyes' spacing follows their size (2026-09-27)
+
+The owner: on the rebuilt Everglow cover Gero's eyes still read much farther
+apart than Linnea's. Measured: their centres were nearly as far apart (0.85
+and 0.88 head radii, `eye_dx` held at 0.46 whatever the eye's size) but his
+eyes are smaller, so the gap between them was 0.56 of an eye's width against
+her 0.36 (Tenno 0.58, Krista 0.30). `harness/detail/eye_spacing_study.py`
+(the gap following the eye's width at k 0, 0.5, 1; the target the cast's
+median 0.44, not the default face's 0.58, which sat at Gero's end); at k 1
+the eye's corner crossed the face's edge at the sliders' tops. The owner's
+pick: k 1 with a limit. `_eye_placement` now puts the eye's centre at `w * (1
++ _EYE_GAP)` from the face's centre, `w` the eye's half-width, but never
+nearer the face's edge than `_EYE_CORNER_CLEAR` (0.05) at its corner; the
+lash's upper edge is kept inside too (`_eye_lash`).
+
+**A bug, and a retraction.** The flick cap of the previous entry (e504eb0)
+never worked: inside `_eye` the lower lash's sample count was also called
+`reach` and shadowed the parameter, so every flick was cut to nothing (the
+cap read 8 px against a real 28). The face-edge test passed, since it
+computed its own reach. e504eb0's `ref-out/` and the two covers rebuilt to
+scratch then had flickless eyes. Fixed (the local renamed `lower_n`); a new
+test reads the lash off the rendered face (the flick past the corner, inside
+the face) and fails on all three of its presets with the shadow put back.
+
+**Measured:** `ref-out/` (all 20) and the bases refreshed, the cast's faces
+checked by eye; 544 passed, 1 skipped. Both covers rebuilt to scratch again
+(`out/review/covers_before_after.png`).
+
 ### D3 follow-up: the eye and the age, one story at a time (2026-09-27)
 
 The owner, on a rebuilt Everglow cover: Gero (face age 1.55) and Linnea (0,

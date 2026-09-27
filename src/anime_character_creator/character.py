@@ -8972,6 +8972,10 @@ def _eye_lash(er: float, f: FaceStyle, edge_w: float, reach: float | None = None
         lid[n][0] + fx * er * flick,
         lid[n][1] + fy * er * flick - er * outer * 0.5,
     )
+    if reach is not None:
+        # The lash's thickness at the outer corner reaches past the corner itself,
+        # so an eye near the face's edge could put its upper edge over it.
+        up = [(min(x, reach), y) for x, y in up]
     return [*up, tip, *reversed(down)]
 
 
@@ -9046,8 +9050,8 @@ def _eye(
         f'<path d="{path(_lid_points(quads, 2, 3))}" fill="none" stroke="{OUTLINE}" '
         f'stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
     )
-    reach = int(_LID_SAMPLES * _LOWER_LASH_REACH)
-    lower_lash = [_quad_point(*quads[2], k / _LID_SAMPLES) for k in range(reach + 1)]
+    lower_n = int(_LID_SAMPLES * _LOWER_LASH_REACH)
+    lower_lash = [_quad_point(*quads[2], k / _LID_SAMPLES) for k in range(lower_n + 1)]
     parts.append(
         f'<path d="{path(lower_lash)}" fill="none" stroke="{OUTLINE}" '
         f'stroke-width="{edge_w * 0.8:.2f}" stroke-linecap="round" />'
@@ -9123,6 +9127,13 @@ def aged_face(face: FaceStyle, years: float = 1.0) -> FaceStyle:
         iris_size=face.iris_size * (1 - 0.09 / 3 * years),
         brow_weight=face.brow_weight * (1 + 0.18 * years),
     )
+
+
+# The half-gap between the eyes against an eye's half-width, and the least room
+# between an eye's outer corner and the face's edge, in head radii
+# (`_eye_placement`).
+_EYE_GAP = 0.44
+_EYE_CORNER_CLEAR = 0.05
 
 
 def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, float, FaceStyle]:
@@ -9231,7 +9242,6 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     # a 27% reduction to land on it, confirmed by full-face overlay rather
     # than trusted from the ratio alone (gap 11).
     eye_y = cy + r * (0.16 + _MATURE_EYE_DROP * sk.face_maturity)
-    eye_dx = r * 0.46 * (1.0 - 0.27 * _eye_build(sk))
     # Was 0.22 (this comment's own history, above). Not a reference match:
     # the owner's call on 2026-08-12 was bigger eyes than either photo
     # draws, after the rest of gap 11 landed, so there was no ratio to
@@ -9240,6 +9250,18 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     # each other. 0.12 still shrinks the realistic eye from the chibi's
     # own size, just by less than before.
     eye_r = r * 0.26 * (1.0 - 0.12 * _eye_build(sk)) * f.eye_size
+    # The spacing follows the eye (`docs/detail-plan.md`, D3; the owner,
+    # 2026-09-27): held at 0.46 head radii whatever the eye's size, a smaller
+    # eye (an older face, a preset's own `eye_size`) left a gap between the eyes
+    # half again as wide against the eye as a larger one's, and on the Everglow
+    # cover Gero's eyes read far apart beside Linnea's. So the half-gap is
+    # `_EYE_GAP` of the eye's half-width, the cast's median, and an eye never
+    # comes nearer the face's edge than `_EYE_CORNER_CLEAR`: a very large, wide
+    # eye sits closer to its neighbour instead of running over the face
+    # (`harness/detail/eye_spacing_study.py`).
+    w = eye_r * f.eye_width * _EYE_ASPECT
+    edge = _head_edge_x((eye_y - cy) / r, sk.face_build) * r
+    eye_dx = min(w * (1.0 + _EYE_GAP), edge - w - _EYE_CORNER_CLEAR * r)
     return eye_dx, eye_y, eye_r, f
 
 

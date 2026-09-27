@@ -2362,6 +2362,25 @@ def test_the_eye_stays_inside_the_face(preset, age):
         assert max(x for x, _ in lash) < edge - dx
 
 
+@pytest.mark.parametrize("preset", ["linnea", "krista", "gero"])
+def test_the_drawn_lash_keeps_its_flick_inside_the_face(preset):
+    """Read off the rendered face, not recomputed: the lash's flick runs past the
+    eye's outer corner and stays inside the face. A local in `_eye` once shadowed
+    the `reach` passed to it, and every flick was cut to nothing while the test
+    above, computing its own reach, still passed."""
+    p = PRESETS[preset]
+    sk = character.skeleton_for(p)
+    dx, ey, er, f = character._eye_placement(sk, p)
+    edge = character._head_edge_x((ey - sk.head_cy) / sk.head_r, sk.face_build) * sk.head_r
+    corner = max(q[2][0] for q in character._eye_quads(er, f))
+    lashes = re.findall(
+        r'<path d="(M [^"]+ Z)" fill="#0d0d0d" stroke="none" />', character._face(sk, p)
+    )
+    right = [float(x) - sk.head_cx - dx for x in re.findall(r"(-?\d+\.\d+) -?\d+\.\d+", lashes[-1])]
+    assert max(right) > corner + 0.01 * sk.head_r
+    assert max(right) < edge - dx
+
+
 def test_the_limbs_taper_with_the_height():
     """`docs/detail-plan.md`, D4b: none at 0.8, half the adult taper from 1.3,
     linear between, carried on the skeleton the figure is drawn on."""
