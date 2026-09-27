@@ -32,6 +32,20 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D4d: the relaxed hand, both options (2026-09-27)
+
+The owner: build both (the open hand smaller; a loose fist from the grip's
+pieces) and compare before locking anything. `harness/trace_hands/relaxed_study.py`,
+every column with the grip "wrist, smaller": mitten; open 0.65; open 0.50;
+a fist from the grip's pieces with nothing held (the channel filled, a hull
+outline), upright with the wrist from above; the same fist turned a quarter
+so its traced wrist faces up the arm. On Katherina, Krista, and Krista in the
+base layer. Seen: **open 0.50** is the right size but reads thin, the fingers
+spindly on a chibi; **the fists** read as clenched, tense rather than
+relaxed, and "from above" leaves the hull's top edge across a bare wrist;
+"turned" is muddled (the rolls stand vertical). At whole-figure size the
+mitten is still the cleanest relaxed hand. With the owner.
+
 ### D4d: the grip's position, a study (2026-09-27)
 
 The owner: before locking the hands in, work on the positioning and the
