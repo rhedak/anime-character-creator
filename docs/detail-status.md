@@ -4,9 +4,9 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 
 ## RESUME
 
-D0 done (2026-09-27), and the second eye style retired. D1's line-weight
-study is with the owner (`harness/detail/line_weight.py`, sheets in
-`out/detail/line_weight_*.png`); recommendation (0.75, 0.55). The baseline is
+D0 and D1 done (2026-09-27), and the second eye style retired. Next: D2,
+the eyes (a study first). `../valley_of_mist` is not regenerated yet: the
+plan's first checkpoint is after D2. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
 `harness/tall_chibi/height_range.py`; the inventories are in
 `docs/detail-inventory/`. The plan is committed at 7b8a2f7.
@@ -16,7 +16,7 @@ study is with the owner (`harness/detail/line_weight.py`, sheets in
 | step | state |
 |---|---|
 | D0 inventory and baseline | done |
-| D1 line weights | study with the owner |
+| D1 line weights | done |
 | D2 eyes | not started |
 | D3 face maturity | not started |
 | D4 body at height | not started |
@@ -24,6 +24,43 @@ study is with the owner (`harness/detail/line_weight.py`, sheets in
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D1: the line weights built (2026-09-27)
+
+The owner's pick: outlines at 0.75 of the old weight, interior lines at
+0.55. `_stroke_w` keeps the old weight, since 18 places size geometry off
+it; the drawn weight goes through `_outline_w` and `_interior_w`
+(`_OUTLINE_SCALE`, `_INTERIOR_SCALE`), all 100 drawn sites classed by hand:
+
+- **By meaning, not by the study's value rule.** An outline is a part's
+  edge at whatever fraction it was drawn (the hands, cuffs, pouches, belt
+  pieces, strap, robe front, the eyes' aperture and the brows); an interior
+  line divides or decorates inside a part. So those edges come out 0.75 of
+  their old weight where the study showed 0.55.
+- **Kept**: the bust mask's widening stroke and the goggles' rim (a band
+  sized off the lens).
+- **Filled lines** (the bust fold, the bare breasts' line, the male chest
+  lines) take the outline scale in their width: they meet the body's
+  outline and have to match it there.
+- **Every geometry use of the weight is untouched**, including the offsets
+  that tuck a fill under a line (the bust over the arms, the arm's joint
+  cap, the bare foot's ankle patch, the belt).
+- Drawn weights print to two decimals now, not one, which cost up to 8% on
+  the thinnest lines.
+
+**Predicted:** with `stroke-width` stripped every SVG identical but the
+three filled lines; the stroke ratios at 0.55 and 0.75, and 1 on the kept
+sites. **Measured** (`harness/detail/d1_check.py` over two snapshot runs):
+the only geometry changes are those filled lines and the coat-bust masks
+whose content-hashed ids hold the bust line; ratios 0.53 to 0.56 and 0.72
+to 0.77 (the old values' one-decimal rounding), 1.00 on 29 strokes. By eye
+(`harness/detail/d1_look.py`): the whole figure lightens evenly; at 4x the
+bust over the arm, the base layer, the belt, the hand and the bare foot show
+no gap or overhang. `ref-out/` and the bases refreshed; 479 passed, 1
+skipped.
+
+**Seen, not caused by D1:** a short grey vertical mark at the bottom of
+Keiko's coat-at-the-arm zoom, before and after alike. Left for D6.
 
 ### D1: the line-weight study (2026-09-27, at 9079ad7)
 

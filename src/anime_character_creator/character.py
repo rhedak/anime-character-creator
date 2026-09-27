@@ -43,6 +43,30 @@ def _stroke_w(sk: Skeleton) -> float:
     return sk.head_r * (0.041 + 0.017 * sk.build)
 
 
+# The line as drawn, against `_stroke_w`, which keeps the weight from before
+# step D1 of `docs/detail-plan.md` because parts also size geometry off it
+# (offsets, radii, thresholds, clamps: `docs/detail-inventory/strokes.md`),
+# and that geometry stays where it was. An outline is a part's edge, at
+# whatever fraction of the weight the part draws it; an interior line divides
+# or decorates inside a part (a fold, a seam, a strand, a crease) and goes
+# lighter than the outline, the way `ref-local/katherina_grok_real/` draws it.
+# The owner's pick from `harness/detail/line_weight.py`, 2026-09-27: the
+# reference's own line measures 0.70 of the old weight, and interior lines at
+# 0.55 still read at the smallest size a chapter insert shows a figure.
+_OUTLINE_SCALE = 0.75
+_INTERIOR_SCALE = 0.55
+
+
+def _outline_w(sw: float, k: float = 1.0) -> float:
+    """The drawn weight of an outline at `k` of the weight `sw`."""
+    return sw * k * _OUTLINE_SCALE
+
+
+def _interior_w(sw: float, k: float = 1.0) -> float:
+    """The drawn weight of an interior line at `k` of the weight `sw`."""
+    return sw * k * _INTERIOR_SCALE
+
+
 @dataclass(frozen=True)
 class FaceStyle:
     """Expression knobs. Every default reproduces the stock chibi face, so a
@@ -2331,7 +2355,7 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
     d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     parts = _two_tone_hair(d, p)
     parts.append(
-        f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" '
+        f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
     )
     return "".join(parts)
@@ -2363,7 +2387,7 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
         nx = sk.head_cx + side * sk.neck_half_w
         parts.append(
             f'<line x1="{nx:.1f}" y1="{sk.neck_y:.1f}" x2="{nx:.1f}" y2="{end:.1f}" '
-            f'stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+            f'stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
         )
     return "".join(parts)
 
@@ -2755,7 +2779,7 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
         f'<clipPath id="{clip_id}">{arms}</clipPath></defs>'
         f'<g mask="url(#{mask_id})">{chest}</g>'
         f'<path d="{" ".join(outline)}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw:.1f}" stroke-linecap="round" clip-path="url(#{clip_id})" />'
+        f'stroke-width="{_outline_w(sw):.2f}" stroke-linecap="round" clip-path="url(#{clip_id})" />'
     )
 
 
@@ -2796,7 +2820,7 @@ def _bust_fold(sk: Skeleton, weight: float = 1.0, sides: tuple[int, ...] = (-1, 
     if ellipse is None:
         return ""
     cx, sw = sk.head_cx, _stroke_w(sk)
-    heaviest = sw * 0.95 * min(1.0, sk.bust / 0.5) * weight
+    heaviest = _outline_w(sw * 0.95 * min(1.0, sk.bust / 0.5) * weight)
     # The bare breast's own ellipse (`_breast_ellipse`), from the tunic's side
     # at the fullest point round the bottom and up the inner side, so a
     # figure's bust reads the same with the tunic on or off
@@ -2915,7 +2939,7 @@ def _bare_breasts(sk: Skeleton, p: CharacterParams) -> str:
     if not spine:
         return ""
     cx, sw = sk.head_cx, _stroke_w(sk)
-    heaviest = sw * min(1.0, sk.bust / 0.2)
+    heaviest = _outline_w(sw * min(1.0, sk.bust / 0.2))
     n = len(spine) - 1
     left: list[Point] = []
     right: list[Point] = []
@@ -2971,7 +2995,7 @@ def _underwear_top(sk: Skeleton, p: CharacterParams) -> str:
         )
         return (
             f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" '
-            f'stroke-width="{sw:.1f}" stroke-linejoin="round" />'
+            f'stroke-width="{_outline_w(sw):.2f}" stroke-linejoin="round" />'
         )
     low = max(range(len(spine)), key=lambda k: spine[k][1])
     outer, inner = spine[: low + 1], spine[low:]
@@ -2984,9 +3008,9 @@ def _underwear_top(sk: Skeleton, p: CharacterParams) -> str:
     )
     return (
         f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" '
-        f'stroke-width="{sw:.1f}" stroke-linejoin="round" />'
+        f'stroke-width="{_outline_w(sw):.2f}" stroke-linejoin="round" />'
         f'<path d="{cups}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw * 0.6:.1f}" stroke-linecap="round" />'
+        f'stroke-width="{_interior_w(sw, 0.6):.2f}" stroke-linecap="round" />'
     )
 
 
@@ -3013,7 +3037,7 @@ def _chest_lines(sk: Skeleton, p: CharacterParams) -> str:
     x_out, x_in = side * 0.92, side * 0.10
     xc, rx = (x_out + x_in) / 2, (x_out - x_in) / 2
     yc = sk.shoulder_y + run * 0.50 - depth
-    heaviest = sw * 0.8 * (0.5 + 0.5 * amount)
+    heaviest = _outline_w(sw * 0.8 * (0.5 + 0.5 * amount))
     a0, a1, steps = math.radians(15), math.radians(165), 28
     spine = [
         (xc + rx * math.cos(th), yc + depth * math.sin(th))
@@ -3182,7 +3206,7 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     )
     return (
         f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
-        f'stroke-width="{_stroke_w(sk):.1f}" />'
+        f'stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
     )
 
 
@@ -3390,7 +3414,7 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         + closing
     )
     fill = p.outfit.tunic_color
-    shape = f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    shape = f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
     if (
         p.outfit.undersleeve_color is not None
         and p.outfit.collar_color is None
@@ -3409,11 +3433,11 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
             f'<path d="M {cx - notch_t:.1f} {sy + notch * 0.10:.1f} '
             f"Q {cx:.1f} {sy + notch_t * 2.0:.1f} {cx + notch_t:.1f} {sy + notch * 0.10:.1f}"
             f'" fill="none" stroke="{p.outfit.undersleeve_color}" '
-            f'stroke-width="{_stroke_w(sk) * 0.9:.1f}" />'
+            f'stroke-width="{_outline_w(_stroke_w(sk), 0.9):.2f}" />'
             if p.outfit.neckline_round
             else f'<path d="M {cx - notch_t:.1f} {sy + notch * 0.10:.1f} L {cx:.1f} {sy + notch_t:.1f} '
             f'L {cx + notch_t:.1f} {sy + notch * 0.10:.1f}" fill="none" '
-            f'stroke="{p.outfit.undersleeve_color}" stroke-width="{_stroke_w(sk) * 0.9:.1f}" />'
+            f'stroke="{p.outfit.undersleeve_color}" stroke-width="{_outline_w(_stroke_w(sk), 0.9):.2f}" />'
         )
         shape += trim
     return shape
@@ -3462,7 +3486,7 @@ def _hair_tail(sk: Skeleton, p: CharacterParams) -> str:
         f"{cx + near * 0.52:.1f} {tie_y + (tip_y - tie_y) * 0.30:.1f} "
         f"Z"
     )
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
 
 
 def _tail_tie(sk: Skeleton) -> tuple[float, float]:
@@ -3561,10 +3585,10 @@ def _headscarf(sk: Skeleton, p: CharacterParams) -> str:
     lobe = r * 0.17
     knot = "".join(
         f'<ellipse cx="{kx + dx * lobe:.1f}" cy="{ky + dy * lobe:.1f}" rx="{lobe:.1f}" '
-        f'ry="{lobe * 0.82:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'ry="{lobe * 0.82:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         for dx, dy in ((0.55, -0.5), (0.95, 0.6))
     )
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />{knot}'
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />{knot}'
 
 
 # A pointed witch's hat, traced per `.claude/skills/trace-reference/SKILL.md`
@@ -4186,7 +4210,7 @@ def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> 
         return _curve(cx, cy, r, xf(start), [(xf(c), xf(e)) for c, e in segs], close=close)
 
     parts = [
-        f'<path d="{d(shape)}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="{d(shape)}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         for shape in cut.fills
     ]
     if cut.bust_line_after is not None:
@@ -4195,7 +4219,7 @@ def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> 
         parts.insert(n, line)
     parts.extend(
         f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        f'stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
         for line in cut.lines
     )
     return "".join(parts)
@@ -4684,7 +4708,7 @@ def _hat_underside(sk: Skeleton, p: CharacterParams) -> str:
         return ""
     d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *_HAT_UNDERSIDE)
     fill = shade(p.outfit.hat_color, value_factor=0.62)
-    return f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    return f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
 
 
 def _hat(sk: Skeleton, p: CharacterParams) -> str:
@@ -4709,7 +4733,9 @@ def _hat(sk: Skeleton, p: CharacterParams) -> str:
 
     def shape(chain: Chain, fill: str) -> str:
         d = _curve(cx, cy, r, *chain)
-        return f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        return (
+            f'<path d="{d}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
+        )
 
     parts = [shape(_HAT_BRIM, color), shape(_HAT_CROWN, color)]
     band_color = p.outfit.hat_band_color
@@ -4719,7 +4745,7 @@ def _hat(sk: Skeleton, p: CharacterParams) -> str:
     for crease in _HAT_CREASES:
         d = _curve(cx, cy, r, *crease, close=False)
         parts.append(
-            f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.8:.1f}" '
+            f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.8):.2f}" '
             'stroke-linecap="round" />'
         )
     return "".join(parts)
@@ -4741,10 +4767,10 @@ def _hair_tie(sk: Skeleton, p: CharacterParams) -> str:
     w, h = r * 0.20, r * 0.13
     return (
         f'<ellipse cx="{x:.1f}" cy="{y:.1f}" rx="{w:.1f}" ry="{h:.1f}" '
-        f'fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         f'<path d="M {x - w * 0.72:.1f} {y - h * 0.30:.1f} '
         f'L {x + w * 0.72:.1f} {y - h * 0.30:.1f}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        f'stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
     )
 
 
@@ -4777,10 +4803,10 @@ def _hair_knot(sk: Skeleton, p: CharacterParams) -> str:
     band_w = rx * 0.85
     return (
         f'<ellipse cx="{cx:.1f}" cy="{cyk:.1f}" rx="{rx:.1f}" ry="{ry:.1f}" '
-        f'fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'fill="{p.hair_color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         f'<path d="M {cx - band_w:.1f} {cyk + ry * 0.86:.1f} '
         f'L {cx + band_w:.1f} {cyk + ry * 0.86:.1f}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        f'stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
     )
 
 
@@ -4824,7 +4850,7 @@ def _robe_front(sk: Skeleton, p: CharacterParams) -> str:
     fold = (
         f'<path d="M {cx - neck:.1f} {sy + sk.neck_half_w * 0.45:.1f} '
         f'L {cx + ww * 0.72:.1f} {belt_y:.1f}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{sw * 0.8:.1f}" stroke-linecap="round" />'
+        f'stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
     )
     # Over a bust, the tunic's line under the breast the panel covers, the whole
     # curve, lighter: a robe tied with an obi sits close, and with the line only
@@ -4833,7 +4859,7 @@ def _robe_front(sk: Skeleton, p: CharacterParams) -> str:
     # Bowing the diagonal over the breast was tried and dropped: it kinked, and
     # smoothed it wobbled.
     line = _bust_fold(sk, _ROBE_BUST_LINE, sides=(-1,))
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />{fold}{line}'
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.7):.2f}" />{fold}{line}'
 
 
 def _hanging_sleeves(sk: Skeleton, p: CharacterParams) -> str:
@@ -4870,7 +4896,9 @@ def _hanging_sleeves(sk: Skeleton, p: CharacterParams) -> str:
             f"L {cx + s * inner:.1f} {hem:.1f} "
             f"Z"
         )
-        parts.append(f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
+        parts.append(
+            f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
+        )
     return "".join(parts)
 
 
@@ -4962,7 +4990,9 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
             f"{cx + s * out_hem:.1f} {hem_y:.1f} "
             f"L {cx + s * gap_hem:.1f} {hem_y:.1f} " + front + "Z"
         )
-        parts.append(f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />')
+        parts.append(
+            f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
+        )
         panels.append(d)
     parts.append(_bust_panel_line(sk, panels))
     return "".join(parts)
@@ -5224,7 +5254,7 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
         f"{line(inner[-2::-1], -1)}"
         f"Z"
     )
-    mass = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    mass = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
     if _BEARD_LIP_W <= 0:
         return mass
     # Outlined, at well under the usual weight. Unstroked was tried first, on the
@@ -5250,7 +5280,7 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
         f"{mass}"
         f'<ellipse cx="{cx:.1f}" cy="{lip_y:.1f}" '
         f'rx="{lip * _BEARD_LIP_W * r:.1f}" ry="{lip * _BEARD_LIP_H * r:.1f}" '
-        f'fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{sw * 0.4:.1f}" />'
+        f'fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.4):.2f}" />'
     )
 
 
@@ -5291,7 +5321,7 @@ def _glasses(sk: Skeleton, p: CharacterParams) -> str:
     half_w = eye_r * f.eye_width * _EYE_ASPECT * _GLASSES_CLEAR
     top_h = eye_r * f.eye_openness * _GLASSES_CLEAR
     bot_h = eye_r * f.eye_lower_lid * _GLASSES_CLEAR
-    stroke = f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}"'
+    stroke = f'fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.55):.2f}"'
     parts = [
         f'<rect x="{cx + s * eye_dx - half_w:.1f}" y="{eye_y - top_h:.1f}" '
         f'width="{half_w * 2:.1f}" height="{top_h + bot_h:.1f}" '
@@ -5389,7 +5419,7 @@ def _goggles_strap(sk: Skeleton, p: CharacterParams) -> str:
             f"L {x1:.1f} {lens_y - strap_h / 2:.1f} "
             f"L {x1:.1f} {lens_y + strap_h / 2:.1f} "
             f'L {x0:.1f} {lens_y + strap_h / 2:.1f} Z" '
-            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         )
     return "".join(parts)
 
@@ -5430,7 +5460,7 @@ def _goggles(sk: Skeleton, p: CharacterParams) -> str:
         lx = cx + side * lens_dx
         parts.append(
             f'<circle cx="{lx:.1f}" cy="{lens_y:.1f}" r="{lens_r:.1f}" '
-            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         )
         parts.append(
             f'<circle cx="{lx:.1f}" cy="{lens_y:.1f}" r="{lens_r * 0.72:.1f}" fill="{glass}" />'
@@ -5489,9 +5519,9 @@ def _mock_collar(sk: Skeleton, p: CharacterParams, color: str, sw: float) -> str
         f'fill="{color}" stroke="none" />'
         f'<path d="M {cx - half_low:.1f} {bottom:.1f} L {cx - half:.1f} {top:.1f} '
         f'Q {cx:.1f} {ctrl:.1f} {cx + half:.1f} {top:.1f} L {cx + half_low:.1f} {bottom:.1f}" '
-        f'fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" stroke-linejoin="round" />'
+        f'fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" stroke-linejoin="round" />'
         f'<line x1="{cx - half_low:.1f}" y1="{bottom:.1f}" x2="{cx + half_low:.1f}" y2="{bottom:.1f}" '
-        f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
     )
 
 
@@ -5532,9 +5562,9 @@ def _collar(sk: Skeleton, p: CharacterParams) -> str:
     )
     notch = h * 0.55
     return (
-        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         f'<path d="M {cx:.1f} {top:.1f} L {cx:.1f} {top + notch:.1f}" fill="none" '
-        f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
+        f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.7):.2f}" />'
     )
 
 
@@ -5562,7 +5592,7 @@ def _placket(sk: Skeleton, p: CharacterParams) -> str:
     x = cx + sk.waist_half_w * 0.13
     parts = [
         f'<path d="M {x:.1f} {top:.1f} L {x:.1f} {bottom:.1f}" fill="none" '
-        f'stroke="{color}" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        f'stroke="{color}" stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
     ]
     # Four, which is what fits between a collar and a belt without the row
     # reading as a zip. They ride the line rather than sitting beside it.
@@ -5605,7 +5635,7 @@ def _chest_pockets(sk: Skeleton, p: CharacterParams) -> str:
             # survives being shrunk is a faint rectangle of outline.
             f'<rect x="{px - w / 2:.1f}" y="{top:.1f}" width="{w:.1f}" height="{h:.1f}" '
             f'rx="{h * 0.22:.1f}" fill="{shade(color)}" stroke="{OUTLINE}" '
-            f'stroke-width="{sw * 0.7:.1f}" />'
+            f'stroke-width="{_outline_w(sw, 0.7):.2f}" />'
         )
     return "".join(parts)
 
@@ -5640,7 +5670,7 @@ def _strap(sk: Skeleton, p: CharacterParams) -> str:
         f"M {top_x + nx:.1f} {top_y + ny:.1f} L {bot_x + nx:.1f} {belt_y + ny:.1f} "
         f"L {bot_x - nx:.1f} {belt_y - ny:.1f} L {top_x - nx:.1f} {top_y - ny:.1f} Z"
     )
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.8:.1f}" />'
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.8):.2f}" />'
 
 
 def _skirt_half_w(sk: Skeleton, y: float) -> float:
@@ -5800,7 +5830,7 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
     scallop = _UNDERSKIRT_SCALLOP if deep else 0
     dip = (sk.ankle_y - sk.hip_y) * _UNDERSKIRT_SCALLOP_DIP
     d = _skirt_path(sk, sk.waist_y, hem_y, hem_w=hem_w, scallop=scallop, scallop_dip=dip)
-    shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
     if not p.shaded:
         return shape
     # Only the band below the skirt above it is ever visible, so the shading is
@@ -5830,7 +5860,7 @@ def _underskirt(sk: Skeleton, p: CharacterParams) -> str:
             x1 = sk.head_cx + hem_w * at
             parts.append(
                 f'<line x1="{x0:.1f}" y1="{skirt_hem:.1f}" x2="{x1:.1f}" y2="{band_y:.1f}" '
-                f'stroke="{shade(color)}" stroke-width="{pleat_sw:.1f}" opacity="0.75" />'
+                f'stroke="{shade(color)}" stroke-width="{_interior_w(pleat_sw):.2f}" opacity="0.75" />'
             )
     return "".join(parts)
 
@@ -5881,7 +5911,7 @@ def _apron(sk: Skeleton, p: CharacterParams) -> str:
         f"L {cx + top_w:.1f} {top_y:.1f} "
         f"Z"
     )
-    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
 
 
 def _hakama(sk: Skeleton, p: CharacterParams) -> str:
@@ -5914,7 +5944,9 @@ def _hakama(sk: Skeleton, p: CharacterParams) -> str:
     top_y = sk.waist_y
     hem_y = _skirt_hem_y(sk, p.outfit.hakama_length, p.outfit.hakama_length_chibi)
     d = _skirt_path(sk, top_y, hem_y)
-    shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+    shape = (
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
+    )
     if not p.shaded:
         return shape
     # Pleats run to the corner where the panel turns under, not through it, so
@@ -5930,7 +5962,7 @@ def _hakama(sk: Skeleton, p: CharacterParams) -> str:
         x1 = sk.head_cx + _skirt_half_w(sk, corner) * at
         parts.append(
             f'<line x1="{x0:.1f}" y1="{top_y:.1f}" x2="{x1:.1f}" y2="{corner:.1f}" '
-            f'stroke="{shade(color)}" stroke-width="{pleat_sw:.1f}" opacity="0.75" />'
+            f'stroke="{shade(color)}" stroke-width="{_interior_w(pleat_sw):.2f}" opacity="0.75" />'
         )
     return "".join(parts)
 
@@ -5946,7 +5978,7 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
     # and the waistband never opens onto skin.
     top_y = sk.waist_y
     d = _skirt_path(sk, top_y, hem_y)
-    shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+    shape = f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
     if not p.shaded:
         return shape
     # Two folds, as thin lines rather than the shadow wedges they used to be. The
@@ -5960,7 +5992,7 @@ def _skirt(sk: Skeleton, p: CharacterParams) -> str:
         folds.append(
             f'<line x1="{x0:.1f}" y1="{top_y + (hem_y - top_y) * 0.30:.1f}" '
             f'x2="{x1:.1f}" y2="{hem_y:.1f}" stroke="{shade(color)}" '
-            f'stroke-width="{max(1.0, _stroke_w(sk) * 0.45):.1f}" opacity="0.7" />'
+            f'stroke-width="{_interior_w(max(1.0, _stroke_w(sk) * 0.45)):.2f}" opacity="0.7" />'
         )
     return shape + "".join(folds)
 
@@ -6569,10 +6601,10 @@ def _staff(sk: Skeleton, p: CharacterParams) -> str:
         return _curve(cx, cy, r, xf(start), [(xf(c), xf(e)) for c, e in segs])
 
     parts = [
-        f'<path d="{d(_STAFF_WOOD)}" fill="{wood}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="{d(_STAFF_WOOD)}" fill="{wood}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
     ]
     parts.extend(
-        f'<path d="{d(strand)}" fill="{wood}" stroke="{OUTLINE}" stroke-width="{sw * 0.6:.1f}" '
+        f'<path d="{d(strand)}" fill="{wood}" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.6):.2f}" '
         'stroke-linejoin="round" />'
         for strand in _STAFF_STRANDS
     )
@@ -6584,7 +6616,7 @@ def _staff(sk: Skeleton, p: CharacterParams) -> str:
         parts.extend(f'<path d="{d(face)}" fill="{dark}" />' for face in _STAFF_FACETS_DARK)
         parts.extend(f'<path d="{d(face)}" fill="{light}" />' for face in _STAFF_FACETS_LIGHT)
         parts.append(
-            f'<path d="{d(_STAFF_CRYSTAL)}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+            f'<path d="{d(_STAFF_CRYSTAL)}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         )
     return "".join(parts)
 
@@ -7017,7 +7049,7 @@ def _katana(sk: Skeleton, p: CharacterParams) -> str:
     def shape(chain: Chain, fill: str, weight: float) -> str:
         return (
             f'<path d="{d(chain)}" fill="{fill}" stroke="{OUTLINE}" '
-            f'stroke-width="{sw * weight:.1f}" stroke-linejoin="round" />'
+            f'stroke-width="{_outline_w(sw, weight):.2f}" stroke-linejoin="round" />'
         )
 
     # Lighter than the figure's own line, in the proportion the reference draws it:
@@ -7174,7 +7206,7 @@ def _arms(
                 )
 
             limb = [
-                f'<path d="{traced(part)}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+                f'<path d="{traced(part)}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
                 for part in (cut.sleeve, cut.cuff)
             ]
             shapes = [f'<path d="{traced(part)}"' for part in (cut.sleeve, cut.cuff)]
@@ -7187,11 +7219,11 @@ def _arms(
             limb = [
                 f'<path d="{d}" fill="{sleeve_fill}" stroke="none" />',
                 f'<path d="M {x(centre_top + w_top):.1f} {top_out:.1f} {body}" fill="none" '
-                f'stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" stroke-linejoin="round" />',
+                f'stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" stroke-linejoin="round" />',
             ]
         else:
             limb = [
-                f'<path d="{d}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+                f'<path d="{d}" fill="{sleeve_fill}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
             ]
         if cut is None and p.outfit.coat_sleeves:
             limb.append(_cuff_line(sk, x(centre_wrist), wrist_y, w_wrist))
@@ -7264,7 +7296,7 @@ def _arm_joint_cap(sk: Skeleton, color: str, cx: float, cy: float, w_top: float)
     r = w_top + _stroke_w(sk) * 0.5
     return (
         f'<path d="M {cx - r:.1f} {cy:.1f} A {r:.1f} {r:.1f} 0 0 0 {cx + r:.1f} {cy:.1f} Z" '
-        f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+        f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
     )
 
 
@@ -7286,7 +7318,7 @@ def _cuff_line(sk: Skeleton, cx: float, wrist_y: float, w: float) -> str:
     sw = _stroke_w(sk)
     return (
         f'<line x1="{cx - w:.1f}" y1="{y:.1f}" x2="{cx + w:.1f}" y2="{y:.1f}" '
-        f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+        f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
     )
 
 
@@ -7311,7 +7343,7 @@ def _wrist_cuff(sk: Skeleton, color: str, cx: float, wrist_y: float, w: float) -
     return (
         f'<path d="M {cx - top_w:.1f} {wrist_y - h:.1f} L {cx + top_w:.1f} {wrist_y - h:.1f} '
         f'L {cx + w:.1f} {wrist_y:.1f} L {cx - w:.1f} {wrist_y:.1f} Z" '
-        f'fill="{shade(color)}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk) * 0.85:.1f}" />'
+        f'fill="{shade(color)}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk), 0.85):.2f}" />'
     )
 
 
@@ -7345,7 +7377,7 @@ def _hand(
     )
     sw = _stroke_w(sk)
     parts = [
-        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
+        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.85):.2f}" />'
     ]
     return "".join(parts)
 
@@ -7571,7 +7603,7 @@ def _trousers(
     # SVG's default miter shoots a spike off any sharp corner. `_hair_mass` hit
     # the same thing at a lock's tip.
     return (
-        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" '
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" '
         f'stroke-linejoin="round" />' + _trouser_seams(sk, p, color, gap, w_top, top_y, crotch_y)
     )
 
@@ -7606,7 +7638,7 @@ def _underpants(
     )
     return (
         f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" '
-        f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" stroke-linejoin="round" />'
+        f'stroke-width="{_outline_w(_stroke_w(sk), 0.85):.2f}" stroke-linejoin="round" />'
     )
 
 
@@ -7644,7 +7676,7 @@ def _bare_seat(
     # doing the work instead.
     return (
         f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
-        f'stroke-width="{_stroke_w(sk) * 0.85:.1f}" stroke-linejoin="round" />'
+        f'stroke-width="{_outline_w(_stroke_w(sk), 0.85):.2f}" stroke-linejoin="round" />'
         + _underpants(sk, p.outfit.underwear_color, gap, brief_y, crotch_y, w_top)
     )
 
@@ -7672,14 +7704,14 @@ def _trouser_seams(
     seam_sw = max(1.0, _stroke_w(sk) * 0.45)
     parts = [
         f'<line x1="{cx:.1f}" y1="{top_y + drop * 0.12:.1f}" x2="{cx:.1f}" y2="{crotch_y:.1f}" '
-        f'stroke="{shade(color)}" stroke-width="{seam_sw:.1f}" opacity="0.8" />'
+        f'stroke="{shade(color)}" stroke-width="{_interior_w(seam_sw):.2f}" opacity="0.8" />'
     ]
     for s in (-1, 1):
         parts.append(
             f'<path d="M {cx + s * (gap + w_top * 0.90):.1f} {top_y + drop * 0.16:.1f} '
             f"Q {cx + s * (gap + w_top * 0.40):.1f} {top_y + drop * 0.46:.1f} "
             f'{cx + s * (gap - w_top * 0.10):.1f} {top_y + drop * 0.86:.1f}" '
-            f'fill="none" stroke="{shade(color)}" stroke-width="{seam_sw:.1f}" opacity="0.8" />'
+            f'fill="none" stroke="{shade(color)}" stroke-width="{_interior_w(seam_sw):.2f}" opacity="0.8" />'
         )
     return "".join(parts)
 
@@ -7730,7 +7762,7 @@ def _bare_foot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side
     )
     return (
         f'<path d="{fill}" fill="{p.skin_tone}" stroke="none" />'
-        f'<path d="{edge}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" '
+        f'<path d="{edge}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linejoin="round" />'
     )
 
@@ -7808,7 +7840,7 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
         f"Z"
     )
     parts = [
-        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
     ]
     if not p.shaded:
         return "".join(parts)
@@ -7830,7 +7862,7 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
     parts.append(
         f'<rect x="{cx - shaft_w:.1f}" y="{top_y:.1f}" width="{shaft_w * 2:.1f}" '
         f'height="{cuff_h:.1f}" fill="{shade(color, 0.78)}" stroke="{OUTLINE}" '
-        f'stroke-width="{_stroke_w(sk) * 0.7:.1f}" />'
+        f'stroke-width="{_interior_w(_stroke_w(sk), 0.7):.2f}" />'
     )
     # The tongue, under the laces and above the instep. Drawn before them so they
     # cross it, which is the only way a tongue reads on a front view.
@@ -7840,7 +7872,7 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
         f"Q {cx + tongue_w * 0.86:.1f} {instep_y + foot_h * 0.10:.1f} "
         f"{cx:.1f} {instep_y + foot_h * 0.18:.1f} "
         f'Q {cx - tongue_w * 0.86:.1f} {instep_y + foot_h * 0.10:.1f} {cx - tongue_w:.1f} {top_y + cuff_h:.1f} Z" '
-        f'fill="{shade(color, 0.88)}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk) * 0.55:.1f}" />'
+        f'fill="{shade(color, 0.88)}" stroke="{OUTLINE}" stroke-width="{_interior_w(_stroke_w(sk), 0.55):.2f}" />'
     )
     # Cross-laces down the instep, between the cuff and the sole. Dark tone of
     # the boot's own leather, thin: they divide a surface, they do not bound one.
@@ -7856,7 +7888,7 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
         for s in (-1, 1):
             parts.append(
                 f'<line x1="{cx - s * lace_w:.1f}" y1="{y0:.1f}" x2="{cx + s * lace_w:.1f}" y2="{y0 + dy:.1f}" '
-                f'stroke="{lace_color}" stroke-width="{lace_sw:.1f}" stroke-linecap="round" />'
+                f'stroke="{lace_color}" stroke-width="{_interior_w(lace_sw):.2f}" stroke-linecap="round" />'
             )
     return "".join(parts)
 
@@ -7963,13 +7995,13 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
         ]
         parts += [
             f'<line x1="{cx - half_w:.1f}" y1="{edge:.1f}" x2="{cx + half_w:.1f}" y2="{edge:.1f}" '
-            f'stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+            f'stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
             for edge in (y, y + h)
         ]
     else:
         parts = [
             f'<rect x="{cx - half_w:.1f}" y="{y:.1f}" width="{half_w * 2:.1f}" height="{h:.1f}" '
-            f'rx="{h * 0.18:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_stroke_w(sk):.1f}" />'
+            f'rx="{h * 0.18:.1f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" />'
         ]
     # Not on a dress belt. This band is meant to read as the strap's own
     # thickness, which it does on the dark leather the rest of the cast wears
@@ -8007,7 +8039,7 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
         inset = h * 0.26
         parts.append(
             f'<rect x="{bx:.1f}" y="{by:.1f}" width="{bw:.1f}" height="{bh:.1f}" rx="{bh * 0.22:.1f}" '
-            f'fill="#8a8578" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
+            f'fill="#8a8578" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.85):.2f}" />'
         )
         # The buckle's opening shows the cloth behind the belt. On a dark belt a
         # shade of its own colour says that well enough, but on a pale one it
@@ -8025,7 +8057,7 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
         )
         parts.append(
             f'<line x1="{cx:.1f}" y1="{by:.1f}" x2="{cx:.1f}" y2="{by + bh * 0.55:.1f}" '
-            f'stroke="{OUTLINE}" stroke-width="{sw * 0.5:.1f}" stroke-linecap="round" />'
+            f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.5):.2f}" stroke-linecap="round" />'
         )
         # The keeper, the loop that holds the strap's loose end down past the
         # buckle. One small band, and it is most of what tells a buckle from the
@@ -8045,14 +8077,14 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
                 parts.append(
                     f'<rect x="{kx:.1f}" y="{ky:.1f}" width="{kw:.1f}" height="{kh:.1f}" '
                     f'rx="{kw * 0.3:.1f}" fill="{color}" '
-                    f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" />'
+                    f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.55):.2f}" />'
                 )
         else:
             kw = h * 0.22
             parts.append(
                 f'<rect x="{bx + bw + h * 0.30:.1f}" y="{y + h * 0.08:.1f}" width="{kw:.1f}" '
                 f'height="{h * 0.84:.1f}" rx="{kw * 0.3:.1f}" fill="{shade(color, 0.7)}" '
-                f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" />'
+                f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.55):.2f}" />'
             )
         # The tail continues from the buckle's own bottom edge when both show,
         # so the strap reads as one piece running through the buckle rather
@@ -8072,7 +8104,7 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
             parts.append(
                 f'<rect x="{cx - h * 0.42:.1f}" y="{knot_y:.1f}" width="{h * 0.84:.1f}" '
                 f'height="{knot_h:.1f}" rx="{knot_h * 0.35:.1f}" fill="{shade(color, 0.86)}" '
-                f'stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
+                f'stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.7):.2f}" />'
             )
         # Two different heights off the same knot, not one: the top edge sits
         # inside where the knot box would be (or right at the buckle's own
@@ -8089,7 +8121,7 @@ def _belt_drawn(sk: Skeleton, p: CharacterParams) -> str:
                 f"L {x0 + tie_w / 2:.1f} {tail_start:.1f} "
                 f"L {x0 + s * h * 0.10 + tie_w / 2:.1f} {tail_base + (sk.hip_y - sk.waist_y) * drop:.1f} "
                 f"L {x0 + s * h * 0.10 - tie_w / 2:.1f} {tail_base + (sk.hip_y - sk.waist_y) * drop:.1f} "
-                f'Z" fill="{shade(color, 0.86)}" stroke="{OUTLINE}" stroke-width="{sw * 0.7:.1f}" />'
+                f'Z" fill="{shade(color, 0.86)}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.7):.2f}" />'
             )
     return "".join(parts)
 
@@ -8126,12 +8158,12 @@ def _pouches(sk: Skeleton, p: CharacterParams) -> str:
         x = cx + side * _belt_line_half_w(sk) * x_frac - w / 2
         parts.append(
             f'<rect x="{x:.1f}" y="{top:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{r:.1f}" '
-            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
+            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.85):.2f}" />'
         )
         flap_h = h * 0.44
         parts.append(
             f'<rect x="{x:.1f}" y="{top:.1f}" width="{w:.1f}" height="{flap_h:.1f}" rx="{r:.1f}" '
-            f'fill="{shade(color, 0.82)}" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" />'
+            f'fill="{shade(color, 0.82)}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.85):.2f}" />'
         )
         parts.append(
             f'<circle cx="{x + w / 2:.1f}" cy="{top + flap_h:.1f}" r="{w * 0.10:.1f}" '
@@ -8227,20 +8259,20 @@ def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
             f"L {left[0]:.1f} {left[1]:.1f} Z"
         )
         parts.append(
-            f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{sw * 0.8:.1f}" />'
+            f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.8):.2f}" />'
         )
         # One facet line, top point to bottom point: the cheap cue that reads
         # as a cut stone rather than a bead, without a second fill or a
         # gradient.
         parts.append(
             f'<line x1="{top[0]:.1f}" y1="{top[1]:.1f}" x2="{bottom[0]:.1f}" y2="{bottom[1]:.1f}" '
-            f'stroke="{shade(color, 0.6)}" stroke-width="{sw * 0.5:.1f}" />'
+            f'stroke="{shade(color, 0.6)}" stroke-width="{_interior_w(sw, 0.5):.2f}" />'
         )
         # The loop clipping it to the belt: a short stroke standing in for a
         # leather keeper, the same idea as the buckle's own keeper in `_belt`.
         parts.append(
             f'<line x1="{gx:.1f}" y1="{band_cy - h * 0.60:.1f}" x2="{gx:.1f}" y2="{top[1]:.1f}" '
-            f'stroke="{OUTLINE}" stroke-width="{sw * 0.6:.1f}" stroke-linecap="round" />'
+            f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.6):.2f}" stroke-linecap="round" />'
         )
         # A leather strap wrapping the gem at its widest point, holding it to
         # the belt rather than leaving it looking merely balanced there.
@@ -8251,7 +8283,7 @@ def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
         parts.append(
             f'<rect x="{gx - strap_w / 2:.1f}" y="{strap_y:.1f}" width="{strap_w:.1f}" '
             f'height="{strap_h:.1f}" fill="{p.outfit.belt_color}" '
-            f'stroke="{OUTLINE}" stroke-width="{sw * 0.6:.1f}" />'
+            f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.6):.2f}" />'
         )
     if p.outfit.crystal_tongs:
         # A small crossed-tongs silhouette hanging below the outer right
@@ -8266,12 +8298,12 @@ def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
         parts.append(
             f'<line x1="{tx - arm * 0.22:.1f}" y1="{ty - arm * 0.55:.1f}" '
             f'x2="{tx + arm * 0.28:.1f}" y2="{ty + arm * 0.55:.1f}" '
-            f'stroke="#8a8578" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+            f'stroke="#8a8578" stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
         )
         parts.append(
             f'<line x1="{tx + arm * 0.22:.1f}" y1="{ty - arm * 0.55:.1f}" '
             f'x2="{tx - arm * 0.28:.1f}" y2="{ty + arm * 0.55:.1f}" '
-            f'stroke="#8a8578" stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+            f'stroke="#8a8578" stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
         )
         parts.append(f'<circle cx="{tx:.1f}" cy="{ty:.1f}" r="{sw * 0.6:.1f}" fill="#6b665c" />')
     return "".join(parts)
@@ -8672,11 +8704,11 @@ def _ears(sk: Skeleton, p: CharacterParams) -> str:
         )
         parts.append(
             f'<path d="{_curve(cx, cy, r, ear_start, ear_segments, close=False)}" fill="none" '
-            f'stroke="{OUTLINE}" stroke-width="{sw:.1f}" stroke-linecap="round" />'
+            f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw):.2f}" stroke-linecap="round" />'
         )
         parts.append(
             f'<path d="{_curve(cx, cy, r, c_start, c_segments, close=False)}" fill="none" '
-            f'stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" stroke-linecap="round" />'
+            f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.55):.2f}" stroke-linecap="round" />'
         )
     return "".join(parts)
 
@@ -8709,11 +8741,11 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     under_chin = _curve(cx, cy, r, anchors[chin_from], segments[chin_from:chin_to], close=False)
     sw = _stroke_w(sk)
     parts.append(
-        f'<path d="{silhouette}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" '
+        f'<path d="{silhouette}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linecap="round" />'
     )
     parts.append(
-        f'<path d="{under_chin}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.6:.1f}" '
+        f'<path d="{under_chin}" fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.6):.2f}" '
         f'stroke-linecap="round" />'
     )
     return "".join(parts)
@@ -8824,7 +8856,7 @@ def _eye(
     # owner's call on 2026-08-11, dropping the asymmetry rather than
     # tuning it.
     parts.append(
-        f'<path d="{d}" fill="white" stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" />'
+        f'<path d="{d}" fill="white" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, _EYE_OUTLINE_W):.2f}" />'
     )
     parts.append(f'<g clip-path="url(#{clip_id})">')
     # Canon iris: a rim of the eye color's own darker tone around the color,
@@ -8853,7 +8885,7 @@ def _eye(
     # `_EYE_OUTLINE_W` weight as the rest of the aperture now that the
     # upper lash line no longer carries extra weight (see above).
     parts.append(
-        f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" stroke-linecap="round" />'
+        f'<path d="{lid}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, _EYE_OUTLINE_W):.2f}" stroke-linecap="round" />'
     )
     return "".join(parts)
 
@@ -8885,7 +8917,7 @@ def _eye_closed(ex: float, ey: float, er: float, side: int, f: FaceStyle, sw: fl
     cx, cy = ex + side * w * 0.05, y + er * _EYE_CLOSED_SAG
     return (
         f'<path d="M {x0:.1f} {y0:.1f} Q {cx:.1f} {cy:.1f} {x1:.1f} {y1:.1f}" fill="none" '
-        f'stroke="{OUTLINE}" stroke-width="{sw * _EYE_OUTLINE_W:.1f}" stroke-linecap="round" />'
+        f'stroke="{OUTLINE}" stroke-width="{_outline_w(sw, _EYE_OUTLINE_W):.2f}" stroke-linecap="round" />'
     )
 
 
@@ -8900,7 +8932,7 @@ def _scar(sk: Skeleton, side: int) -> str:
         return (
             f'<line x1="{cx + side * r * x1:.1f}" y1="{cy + r * y1:.1f}" '
             f'x2="{cx + side * r * x2:.1f}" y2="{cy + r * y2:.1f}" '
-            f'stroke="{OUTLINE}" stroke-width="{w:.1f}" stroke-linecap="round" opacity="0.6" />'
+            f'stroke="{OUTLINE}" stroke-width="{_interior_w(w):.2f}" stroke-linecap="round" opacity="0.6" />'
         )
 
     return line(0.52, 0.56, 0.65, 0.35, sw * 0.6) + line(0.55, 0.44, 0.63, 0.49, sw * 0.45)
@@ -9072,7 +9104,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         parts.append(
             f'<line x1="{ex - side * eye_r:.1f}" y1="{brow_y + tilt:.1f}" '
             f'x2="{ex + side * eye_r:.1f}" y2="{brow_y - tilt:.1f}" '
-            f'stroke="{brow_color}" stroke-width="{sw * f.brow_weight:.1f}" stroke-linecap="round" />'
+            f'stroke="{brow_color}" stroke-width="{_outline_w(sw, f.brow_weight):.2f}" stroke-linecap="round" />'
         )
         if f.eyes_closed:
             parts.append(_eye_closed(ex, eye_y, eye_r, side, f, sw))
@@ -9084,7 +9116,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     parts.append(
         f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
         f'Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f}" '
-        f'fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.85:.1f}" stroke-linecap="round" />'
+        f'fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.85):.2f}" stroke-linecap="round" />'
     )
 
     if f.blush > 0:
@@ -9119,7 +9151,7 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     line_d = _curve(cx, cy, r, start, line, close=False)
     parts = _two_tone_hair(fill_d, p)
     parts.append(
-        f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" '
+        f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
     )
     # Outer edge of each lock. Redundant where the mass shows behind the body,
@@ -9134,7 +9166,7 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     for edge_start, edge_segments in style.fall_edge(fall):
         edge_d = _curve(cx, cy, r, edge_start, edge_segments, close=False)
         parts.append(
-            f'<path d="{edge_d}" fill="none" stroke="{OUTLINE}" stroke-width="{sw:.1f}" '
+            f'<path d="{edge_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
             f'stroke-linecap="round" />'
         )
     # Interior strands last, so they sit over the fill and the hairline both.
@@ -9144,7 +9176,7 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
         for s_start, s_segments in style.strands(fall):
             s_d = _curve(cx, cy, r, s_start, s_segments, close=False)
             parts.append(
-                f'<path d="{s_d}" fill="none" stroke="{OUTLINE}" stroke-width="{sw * 0.55:.1f}" '
+                f'<path d="{s_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.55):.2f}" '
                 f'stroke-linecap="round" clip-path="url(#{_HAIR_FRONT_CLIP_ID})" />'
             )
     return "".join(parts)
@@ -9639,16 +9671,16 @@ def _familiar(sk: Skeleton, p: CharacterParams) -> str:
     # drawn lighter, since what they are for is the thin strut lines between
     # them, not a second silhouette.
     parts = [
-        f'<path d="{d(shape)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="{d(shape)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
         for shape in _KOU_WINGS
     ]
     parts.extend(
-        f'<path d="{d(cell)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{sw * 0.5:.1f}" '
+        f'<path d="{d(cell)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.5):.2f}" '
         'stroke-linejoin="round" />'
         for cell in _KOU_WING_CELLS
     )
     parts.append(
-        f'<path d="{d(_KOU_BODY)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{sw:.1f}" />'
+        f'<path d="{d(_KOU_BODY)}" fill="{fur}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
     )
     # Each eye, then its pupil: the same traced shape scaled about its own
     # centre, so the pupil is the eye's form rather than a circle laid on it.
@@ -9656,7 +9688,7 @@ def _familiar(sk: Skeleton, p: CharacterParams) -> str:
     for eye in _KOU_EYES:
         parts.append(
             f'<path d="{d(eye)}" fill="{p.familiar_eye_color or OUTLINE}" stroke="{OUTLINE}" '
-            f'stroke-width="{sw * 0.5:.1f}" />'
+            f'stroke-width="{_interior_w(sw, 0.5):.2f}" />'
         )
         if p.familiar_eye_color is None:
             continue
@@ -9674,7 +9706,7 @@ def _familiar(sk: Skeleton, p: CharacterParams) -> str:
             line = _mirrored_y(line)
         parts.append(
             f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
-            f'stroke-width="{sw * 0.7:.1f}" stroke-linecap="round" />'
+            f'stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
         )
     return "".join(parts)
 
