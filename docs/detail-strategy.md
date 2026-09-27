@@ -39,3 +39,7 @@ raising the detail level.
   above the orchestrator skill's ~100k signal. Both read `character.py`
   (10k lines) broadly. Next time split by region of the file, or by one
   question per delegate.
+- **A web tool staged before a preset change.** The ages were applied after
+  the last `./web-stage.sh`, so the tool opened every preset at age 0 (the
+  owner spotted it). Restage after any change to `presets.py` or the
+  catalogue, not only after a web change.
