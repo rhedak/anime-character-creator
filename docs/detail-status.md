@@ -5,8 +5,11 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 ## RESUME
 
 D0 and D1 done (2026-09-27; D1 approved), and the second eye style
-retired. D2 done, with `FaceStyle.lash` (the men at 0.4). Next: D3, the
-face maturity slider (a study first; note `presets.aged()`, below).
+retired. D2 done, with `FaceStyle.lash` (the men at 0.4). D3 in progress:
+the face maturity mechanism is in (`CharacterParams.face_maturity`, not yet
+in the web tool); a longer chin and a lid crease are prototypes with the
+owner (`harness/detail/maturity_proto.py`); then maturity and `aged()`
+become one "Age" slider (the owner's point, below).
 The owner does not want `../valley_of_mist` regenerated for now: work
 through the plan. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
@@ -20,12 +23,62 @@ through the plan. The baseline is
 | D0 inventory and baseline | done |
 | D1 line weights | done |
 | D2 eyes | done |
-| D3 face maturity | not started |
+| D3 face maturity | mechanism in; chin, crease, one Age slider open |
 | D4 body at height | not started |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D3: the face maturity mechanism (2026-09-27)
+
+`CharacterParams.face_maturity` (0 to 1, default 0) is carried on the
+skeleton (`Skeleton.face_maturity`), which exposes `face_build = build +
+maturity * (1 - build)`. Everything welded to the skull reads it instead of
+`build`: the head's outline (`_head_pt` through `_head_shape`), the hair's
+inner edge, the ears, the beard, the glasses' arms, the mouth. That reaches
+the retired adult build's face terms, which were still in the code, running
+at the chibi's pinned build. Maturity's own terms: the eyes lower
+(`_MATURE_EYE_DROP` 0.06) and a nose growing in (`_nose`: the retired adult
+build's two marks, measured off `ref/satoko-real.jpg`, their length, weight
+and spacing scaled by maturity, so it never pops; nothing drawn at 0). The
+hair's volume and the familiar's size stay on the figure's own build.
+
+**The study** (`harness/detail/maturity_study.py`): 0.5 read as a teen or a
+young adult; with height 1.3 it is the first figure that reads grown rather
+than a child's head on a long body. At 1 the adult build's eye change
+(openness down 40%, width down 21%) left an adult squinting, where the
+reference keeps a large, open eye. The sweep in steps of 0.1 moves without
+a jump. **The owner's calls:** the eye takes half of that change
+(`_MATURE_EYE_SHARE`, through `_eye_build`), the skull and mouth all of
+theirs; `aged()` stays a separate mechanism, but a user sees one continuous
+slider (child to adult to old), so the two become one "Age" slider, 0 to 1
+maturity and 1 to 2 `aged()`; the chin and the crease as prototypes first.
+
+**Ears under long hair.** From maturity 0.4 the ear showed under all three
+long cuts: their side locks were fitted to the chibi skull and meet the face
+at maturity 0; a narrower face opens a gap between lock and jaw (measured:
+0 to 2 px of ear at 0, 94 to 225 px at 1). `Hairstyle.covers_ears` on the
+three long cuts, and `_ears` draws nothing under them. At maturity 0 that
+removes the hidden ear's six paths from every long-haired render (checked:
+with the flag off every snapshot render is byte-identical to before, and
+each changed render lost exactly six paths and gained none); the 2 px
+sliver it leaked on `long_traced` is gone with it.
+
+**Measured:** at maturity 0 the eye share leaves every render
+byte-identical (the flag-off check above); `ref-out/` refreshed (10
+changed: the eight long-haired presets and the two sheets); 485 passed, 1
+skipped.
+
+### D3: the chin and crease prototypes (2026-09-27)
+
+`harness/detail/maturity_proto.py` patches `_head_pt` (the chin's drop
+plus `extra * maturity`) and `_eye` (a crease over the outer half of the lid,
+its weight growing with maturity). Seen: **+0.10** gives a longer, adult
+lower face, and Gero's beard follows it; **+0.20** reaches the reference's
+chin but the chin starts to cover the collar and the tunic's V, so the neck
+reads short; **the crease** reads like the reference's lid line and is
+light at 0.5. With the owner.
 
 ### D2: the men's lash (2026-09-27)
 

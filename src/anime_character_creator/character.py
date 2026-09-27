@@ -488,6 +488,11 @@ class CharacterParams:
     # to adult inside the one style; on its own canvas a taller figure has a
     # smaller head, the canvas being a fixed size.
     height: float = 1.0
+    # How grown-up the face reads, 0 (the chibi face) to 1: the skull narrows to
+    # a jaw, the eyes grow smaller, narrower and lower, the mouth drops, a nose
+    # grows in. Its own slider rather than following `height`, since short
+    # adults and tall teenagers both exist (`docs/detail-plan.md`, D3).
+    face_maturity: float = 0.0
     # A bat familiar in flight beside the figure's left shoulder: his fur (and
     # membranes, which the reference draws in the same tone) and his eyes.
     # `None` draws nothing. Two fields rather than one because the book's two
@@ -2220,6 +2225,12 @@ class Hairstyle:
     # A cut that raises this needs `build_skeleton`'s `hair_margin` to have room
     # for it at the chibi end, and the ceiling test is what says so.
     volume: tuple[float, float] | None = None
+    # Whether the cut hangs in front of the ears. Such a cut's side locks were
+    # fitted to the chibi skull, so they meet the face at face maturity 0 and
+    # an ear under them never showed; a narrower, older face opens a gap
+    # between lock and jaw that the ear would show through. The short cuts
+    # show their ears.
+    covers_ears: bool = False
 
 
 def _long_fall_edges(length: float) -> list[tuple[Point, list[Segment]]]:
@@ -2236,7 +2247,12 @@ def _tousle_fall_edges(tip: float) -> list[tuple[Point, list[Segment]]]:
 
 HAIRSTYLES: dict[str, Hairstyle] = {
     "long_blunt": Hairstyle(
-        _hair_mass_shape, _hairline_shape, _long_fall_edges, _hair_tip_edge, strands=_long_strands
+        _hair_mass_shape,
+        _hairline_shape,
+        _long_fall_edges,
+        _hair_tip_edge,
+        strands=_long_strands,
+        covers_ears=True,
     ),
     "short_layered": Hairstyle(
         _short_mass_shape,
@@ -2257,6 +2273,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         strands=_center_part_strands,
         # No `tip_range` and no `volume`, same as `long_blunt`: same mass, same
         # fall, so the same body-relative `hair_length` measure applies.
+        covers_ears=True,
     ),
     "long_traced": Hairstyle(
         _long_traced_mass,
@@ -2268,6 +2285,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # is what keeps a long haircut the same haircut when the build changes;
         # a head-relative range would freeze her hair at one length and it would
         # ride up the adult's back.
+        covers_ears=True,
     ),
     "short_crop": Hairstyle(
         _crop_mass_shape,
@@ -3942,6 +3960,8 @@ def _skeleton_at(p: CharacterParams) -> Skeleton:
             p.height,
             lambda h: build_skeleton(heads=h, frame=p.frame, bust=p.bust, min_hair_margin=margin),
         )
+    if p.face_maturity:
+        sk = replace(sk, face_maturity=p.face_maturity)
     return sk
 
 
@@ -5156,7 +5176,7 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     if p.beard_color is None:
         return ""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    b = sk.build
+    b = sk.face_build
     color = p.beard_color
     sw = _stroke_w(sk)
     # Where the mass meets the face at the sides. Level with the mouth, which is
@@ -5280,7 +5300,7 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # lozenge's own width already clears the mouth's realistic-build widening
     # without needing the same treatment (`_BEARD_LIP_W` at 2.3 against the
     # mouth's own worst case of `mouth_width * 1.85`).
-    lip_y = cy + (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.build) * r
+    lip_y = cy + (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.face_build) * r
     return (
         f"{mass}"
         f'<ellipse cx="{cx:.1f}" cy="{lip_y:.1f}" '
@@ -5347,7 +5367,7 @@ def _glasses(sk: Skeleton, p: CharacterParams) -> str:
     for s in (-1, 1):
         parts.append(
             f'<path d="M {cx + s * (eye_dx + half_w):.1f} {eye_y:.1f} '
-            f'L {cx + s * _head_edge_x(arm_y_hr, sk.build) * r:.1f} {arm_y:.1f}" {stroke} />'
+            f'L {cx + s * _head_edge_x(arm_y_hr, sk.face_build) * r:.1f} {arm_y:.1f}" {stroke} />'
         )
     return "".join(parts)
 
@@ -8398,7 +8418,7 @@ def _hair_edge_x(y: float, sk: Skeleton, p: CharacterParams) -> float:
     drawing until somebody retunes one of them.
     """
     start, segments = HAIRSTYLES[p.hairstyle].mass(_hair_fall(sk, p))
-    widest = _head_edge_x(y, sk.build)
+    widest = _head_edge_x(y, sk.face_build)
     prev = start
     for ctrl, end in segments:
         here = prev
@@ -8686,10 +8706,12 @@ def _ears(sk: Skeleton, p: CharacterParams) -> str:
     attach points, so it emerges from the face's outline rather than crossing
     it.
     """
+    if HAIRSTYLES[p.hairstyle].covers_ears:
+        return ""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk)
-    start, segments = _ear_outer(sk.build)
-    place = _ear_place(sk.build)
+    start, segments = _ear_outer(sk.face_build)
+    place = _ear_place(sk.face_build)
 
     # The antihelix, traced with the rim. It stops well short of both ends, as
     # the canon's does: run it to the lobe and it closes into a second outline,
@@ -8727,7 +8749,7 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     brow ridge for it to fall off, so it has nothing to explain it. The hair
     already darkens one side of the head, which is enough.
     """
-    start, segments = _head_shape(sk.build)
+    start, segments = _head_shape(sk.face_build)
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     fill = _curve(cx, cy, r, start, segments)
     parts = [f'<path d="{fill}" fill="{p.skin_tone}" />']
@@ -9075,8 +9097,8 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     # was never the problem.
     f = replace(
         f,
-        eye_openness=f.eye_openness * (1.0 - 0.40 * sk.build),
-        eye_lower_lid=f.eye_lower_lid * (1.0 - 0.20 * sk.build),
+        eye_openness=f.eye_openness * (1.0 - 0.40 * _eye_build(sk)),
+        eye_lower_lid=f.eye_lower_lid * (1.0 - 0.20 * _eye_build(sk)),
         # The width was: unlike the height, nothing had ever narrowed
         # it for the realistic build, so it carries the chibi's own
         # wide-aperture value (`_EYE_ASPECT`, deliberately widened for
@@ -9113,7 +9135,7 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
         # against his own photo rather than a second knob, the same
         # way gap 8 leaves per-character residuals against the shared
         # Satoko-anchored silhouette elsewhere.
-        eye_width=f.eye_width * (1.0 - 0.21 * sk.build),
+        eye_width=f.eye_width * (1.0 - 0.21 * _eye_build(sk)),
         # The canon's outer corner comes to a real point; ours rounded
         # off well short of it (gap 11, seen but not measured there).
         # `reach = 0.55 * eye_corner` in `_eye_shape` is what controls
@@ -9127,7 +9149,7 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
         # rounder than hers (his measured aspect is 1.4 against her
         # 1.6), so this is the same anchored-to-Satoko tradeoff gap 10
         # already made for width, not a new decision.
-        eye_corner=f.eye_corner * (1.0 + 1.0 * sk.build),
+        eye_corner=f.eye_corner * (1.0 + 1.0 * _eye_build(sk)),
     )
     # Canon face geometry, shared by every character; what differs per
     # character stays in FaceStyle. Eyes sit below the head's centre line and
@@ -9145,8 +9167,8 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     # assumption is needed: hers comes to 0.82 against our 1.12 before this,
     # a 27% reduction to land on it, confirmed by full-face overlay rather
     # than trusted from the ratio alone (gap 11).
-    eye_y = cy + r * 0.16
-    eye_dx = r * 0.46 * (1.0 - 0.27 * sk.build)
+    eye_y = cy + r * (0.16 + _MATURE_EYE_DROP * sk.face_maturity)
+    eye_dx = r * 0.46 * (1.0 - 0.27 * _eye_build(sk))
     # Was 0.22 (this comment's own history, above). Not a reference match:
     # the owner's call on 2026-08-12 was bigger eyes than either photo
     # draws, after the rest of gap 11 landed, so there was no ratio to
@@ -9154,7 +9176,7 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     # for "slightly larger" without crowding the brow or the two eyes into
     # each other. 0.12 still shrinks the realistic eye from the chibi's
     # own size, just by less than before.
-    eye_r = r * 0.26 * (1.0 - 0.12 * sk.build) * f.eye_size
+    eye_r = r * 0.26 * (1.0 - 0.12 * _eye_build(sk)) * f.eye_size
     return eye_dx, eye_y, eye_r, f
 
 
@@ -9183,6 +9205,53 @@ def _blush(skin: str) -> tuple[str, float]:
     return rgb01_to_hex(mixed), _BLUSH_OPACITY + (_BLUSH_DARK_OPACITY - _BLUSH_OPACITY) * t
 
 
+# Face maturity's own terms, beyond the retired adult build's that it reaches
+# through `Skeleton.face_build` (`docs/detail-plan.md`, D3): how much lower the
+# eyes sit at maturity 1, in head radii. The reference's eyes sit lower in a
+# longer face than ours (`docs/detail-status.md`, D0).
+_MATURE_EYE_DROP = 0.06
+# And how much of the retired adult build's change to the eye itself (its
+# openness, width, corner, size, spacing and pupil) face maturity carries: the
+# full change left an adult squinting, where the reference keeps a large, open
+# eye on a grown face (the owner's call, 2026-09-27). The skull and the mouth
+# take all of theirs.
+_MATURE_EYE_SHARE = 0.5
+
+
+def _eye_build(sk: Skeleton) -> float:
+    """The build the eye is drawn at: `face_build`, but only
+    `_MATURE_EYE_SHARE` of the way from the figure's own build."""
+    return sk.build + _MATURE_EYE_SHARE * (sk.face_build - sk.build)
+
+
+# The nose, a pair of short marks angling in toward the centre, measured off
+# `ref/satoko-real.jpg` for the retired adult build at head-radius scale (the
+# outer end 0.094 r out, the inner 0.028 r, a drop of 0.033 r) and sitting with
+# the mouth (`_MOUTH_REALISTIC_DROP`). It grows in with face maturity, length,
+# weight and all, so it never pops in; at 0 there is no nose, as the chibi
+# canon draws none.
+_NOSE_Y = 0.36
+_NOSE_OUT = 0.094
+_NOSE_IN = 0.028
+_NOSE_DROP = 0.033
+
+
+def _nose(sk: Skeleton, sw: float) -> str:
+    m = sk.face_maturity
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    y = cy + r * (_NOSE_Y + _MOUTH_REALISTIC_DROP * sk.face_build)
+    out, inn, drop = r * _NOSE_OUT * m, r * _NOSE_IN * m, r * _NOSE_DROP * m
+    parts = []
+    for side in (-1, 1):
+        parts.append(
+            f'<path d="M {cx + side * out:.2f} {y - drop:.2f} '
+            f'Q {cx + side * (out + inn) / 2:.2f} {y - drop * 0.4:.2f} {cx + side * inn:.2f} {y:.2f}" '
+            f'fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.8 * m):.2f}" '
+            f'opacity="0.75" stroke-linecap="round" />'
+        )
+    return "".join(parts)
+
+
 def _face(sk: Skeleton, p: CharacterParams) -> str:
     r = sk.head_r
     cx, cy = sk.head_cx, sk.head_cy
@@ -9193,7 +9262,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     # 0.45 rather than a softer tint because the brows are what carry
     # expression now the eyes stay open: too faint and the face goes blank.
     brow_color = shade(p.hair_color, 0.45)
-    pupil_ratio = 0.40 + _PUPIL_REALISTIC_GROW * sk.build
+    pupil_ratio = 0.40 + _PUPIL_REALISTIC_GROW * _eye_build(sk)
     parts = []
 
     for side in (-1, 1):
@@ -9213,8 +9282,11 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         else:
             parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio))
 
-    mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.build)
-    mouth_half = r * 0.12 * f.mouth_width * (1.0 + _MOUTH_REALISTIC_WIDEN * sk.build)
+    if sk.face_maturity > 0.0:
+        parts.append(_nose(sk, sw))
+
+    mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.face_build)
+    mouth_half = r * 0.12 * f.mouth_width * (1.0 + _MOUTH_REALISTIC_WIDEN * sk.face_build)
     parts.append(
         f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
         f'Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f}" '

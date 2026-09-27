@@ -319,6 +319,10 @@ def test_the_ear_is_over_the_back_hair_and_under_the_face(preset: str) -> None:
     sk = character.skeleton_for(p)
     svg = render_character(p, sk)
     mass, ear, head = character._hair_mass(sk, p), character._ears(sk, p), character._head(sk, p)
+    if character.HAIRSTYLES[p.hairstyle].covers_ears:
+        # A cut that hangs in front of the ears draws none (`Hairstyle.covers_ears`).
+        assert ear == ""
+        return
     assert svg.index(mass) < svg.index(ear), (
         f"{preset}: the ear is behind the hair mass, so it is gone"
     )
@@ -2292,6 +2296,18 @@ def test_an_old_link_with_an_eye_style_loads_with_the_one_eye(style):
     old = params_to_dict(PRESETS["satoko"])
     old["face"] = {**old["face"], "eye_style": style, "eye_glow": 0.5}
     assert render_character(params_from_dict(old)) == render_character(PRESETS["satoko"])
+
+
+@pytest.mark.parametrize("m", [0.25, 0.5, 1.0])
+def test_face_maturity_moves_only_the_head(m):
+    """`face_maturity` draws an older face through `Skeleton.face_build`; at 0
+    the face build is the figure's own, and the body does not move with it."""
+    p = PRESETS["satoko"]
+    sk0, sk = character.skeleton_for(p), character.skeleton_for(replace(p, face_maturity=m))
+    assert sk0.face_build == sk0.build
+    assert sk.face_build > sk.build
+    assert replace(sk, face_maturity=0.0) == sk0
+    ET.fromstring(render_character(replace(p, face_maturity=m)))
 
 
 @pytest.mark.parametrize("lash", [0.0, 0.5, 1.0])

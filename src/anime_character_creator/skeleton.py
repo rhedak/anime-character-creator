@@ -77,6 +77,19 @@ class Skeleton:
     # a waist shift that moves those carries the bust with them. Stored as
     # values they went stale under both (`docs/bust-status.md`).
     bust: float = 0.0
+    # How grown-up the face reads, 0 to 1 (`CharacterParams.face_maturity`).
+    # Stored here because everything welded to the skull reads it through
+    # `face_build`, not only the face.
+    face_maturity: float = 0.0
+
+    @property
+    def face_build(self) -> float:
+        """The build the head and face are drawn at: the figure's own at face
+        maturity 0, the retired adult build's (1) at face maturity 1. The adult
+        face's terms (the skull's taper, the eye's shape, size and spacing, the
+        mouth) still ride on the build, and this is what reaches them now that
+        the figure is always the chibi (`docs/detail-plan.md`, D3)."""
+        return self.build + self.face_maturity * (1.0 - self.build)
 
     @property
     def armpit_y(self) -> float:
