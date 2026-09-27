@@ -5,9 +5,10 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 ## RESUME
 
 D0 and D1 done (2026-09-27; D1 approved), and the second eye style
-retired. D2 done, with `FaceStyle.lash` (the men at 0.4). D3: one Age
-slider (`CharacterParams.face_age`, 0 to 2) in the web tool; the chin and
-the crease deferred (the owner's call). Open in D3: which presets state an
+retired. D2 done, with `FaceStyle.lash` (the men at 0.4). D3 done: one
+Age slider (`CharacterParams.face_age`, 0 to 2), the cast's ages applied,
+the moustache under the nose; the chin and the crease deferred. Next: D4,
+the body at height (a study first). Earlier D3 notes: which presets state an
 age (a lineup and a whole-figure before/after, `harness/detail/age_lineup.py`
 and `age_before_after.py`; the owner: "mostly good"); and the nose against
 the beard (fixed, below).
@@ -24,12 +25,34 @@ through the plan. The baseline is
 | D0 inventory and baseline | done |
 | D1 line weights | done |
 | D2 eyes | done |
-| D3 face maturity | Age slider in; presets' ages open |
+| D3 face maturity | done |
 | D4 body at height | not started |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D3: the cast's ages applied (2026-09-27)
+
+The owner approved the lineup ("mostly good", the nose and beard then
+fixed). Applied: Katherina and Linnea 0 (unchanged); Kyoko and Tomohiro 0.6;
+Satoko, Satoshi and Viktor 0.8; Krista, Elara, Keiko, Reika, Haruto and
+Reinhard 1.0; Gero 1.55; Chiyo, Daizen and Tenno 2.0. The male and female
+bases stay at 0.
+
+**One correction to the proposal:** Kyoko is Satoko's earlier self
+(`_before`), as Tomohiro is Satoshi's, and the proposal had her older (1.0)
+than Satoko (0.5). Now the pair mirrors Satoshi and Tomohiro: `_before` takes
+the earlier self's face age, 0.6 for both.
+
+**The aged four** no longer bake `aged()` into their face: their plain face at
+`face_age = 1 + years`. **Measured:** each renders SVG-identical to the old
+baked face at age 1 (Gero's 1.55 included), so the web tool no longer ages
+them twice. `presets.aged` stays as a helper with no preset caller.
+`ref-out/` refreshed (18 changed: every preset but Katherina and Linnea, and
+the sheets); two tests that assumed age 0 now read the mouth's real height
+and set Satoko's baseline to 0. 489 passed, 1 skipped. `../valley_of_mist`
+not regenerated (the owner's call: not for now).
 
 ### D3: one moustache rule at every face age (2026-09-27)
 

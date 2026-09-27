@@ -9,6 +9,11 @@ gives few ages: Satoshi twenty and reading older, Tomohiro seventeen to
 nineteen; the rest are by role, and the numbers here are guesses to correct.
 
 Writes `out/detail/age_lineup.png`.
+
+A record of the proposal as shown. Applied on 2026-09-27 with one correction:
+Kyoko is Satoko's earlier self (`presets._before`), as Tomohiro is Satoshi's,
+so the pair mirrors theirs, Satoko 0.8 and Kyoko 0.6, not 0.5 and 1.0. Since
+then the presets carry their ages, so the "now" row no longer shows age 0.
 """
 
 import io

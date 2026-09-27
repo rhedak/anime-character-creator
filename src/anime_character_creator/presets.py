@@ -38,6 +38,7 @@ BOOTS = "#6d4c33"
 # left jaw and cheek, which is `scar_side=1`: that field counts from the
 # viewer's side and she faces us, so her left is the right of the picture.
 SATOKO = CharacterParams(
+    face_age=0.8,
     # Practical and guarded; Kyoko, built from her, takes the same (`docs/bust-plan.md`, step 7).
     bust=0.5,
     skin_tone="#f6dbc2",
@@ -101,6 +102,7 @@ SATOKO = CharacterParams(
 # from ref/satoshi.png only because the model that drew that reference dropped
 # it, which makes this one of the few places the reference is not the target.
 SATOSHI = CharacterParams(
+    face_age=0.8,
     skin_tone="#f2d4bb",
     hair_color=HAIR,
     hair_tip_color=HAIR_TIPS,
@@ -206,14 +208,15 @@ SATOSHI = CharacterParams(
 BLACK_HAIR = "#313538"
 
 
-def _before(base: CharacterParams, outfit: Outfit) -> CharacterParams:
+def _before(base: CharacterParams, outfit: Outfit, face_age: float) -> CharacterParams:
     """The same person before the dye and the burn, in the clothes of that life.
 
     The face and everything about it comes through untouched; the three fields
     listed above and the wardrobe are all that differ. The outfit is passed in
     rather than derived because it is the one thing that genuinely *is* different
     rather than a variation: a researcher's layers are not an innkeeper's with a
-    colour changed.
+    colour changed. So is the face's age: the earlier self is some two years
+    younger (`CharacterParams.face_age`, `docs/detail-plan.md`, D3).
     """
     return replace(
         base,
@@ -221,6 +224,7 @@ def _before(base: CharacterParams, outfit: Outfit) -> CharacterParams:
         hair_tip_color=None,
         outfit=outfit,
         face=replace(base.face, scar_side=0),
+        face_age=face_age,
     )
 
 
@@ -248,6 +252,7 @@ KYOKO = _before(
         coat_color="#575d67",
         coat_length=0.72,
     ),
+    face_age=0.6,
 )
 TOMOHIRO = _before(
     SATOSHI,
@@ -262,6 +267,7 @@ TOMOHIRO = _before(
         coat_color="#4a5442",
         coat_length=0.44,
     ),
+    face_age=0.6,
 )
 
 # ---------------------------------------------------------------------------
@@ -345,6 +351,7 @@ SKIN_WORN = "#e0c0a4"
 SKIN = "#f2d4bb"
 
 CHIYO = CharacterParams(
+    face_age=2.0,
     # Late 40s to mid 50s, "strong capable build" (`docs/bust-plan.md`, step 7).
     bust=0.6,
     skin_tone=SKIN_WORN,
@@ -382,24 +389,23 @@ CHIYO = CharacterParams(
     frame=-0.2,
     # Firm and assessing rather than warm: the innkeeper who keeps the books,
     # the rooms and the people in line. Brows down, mouth set flat, then aged.
-    face=aged(
-        FaceStyle(
-            eye_size=1.00,
-            eye_width=1.06,
-            eye_openness=0.86,
-            eye_tilt=0.10,
-            eye_corner=0.50,
-            iris_size=1.04,
-            brow_tilt=0.50,
-            brow_weight=0.90,
-            mouth_curve=-0.10,
-            mouth_width=0.68,
-            blush=0.0,
-        )
+    face=FaceStyle(
+        eye_size=1.00,
+        eye_width=1.06,
+        eye_openness=0.86,
+        eye_tilt=0.10,
+        eye_corner=0.50,
+        iris_size=1.04,
+        brow_tilt=0.50,
+        brow_weight=0.90,
+        mouth_curve=-0.10,
+        mouth_width=0.68,
+        blush=0.0,
     ),
 )
 
 DAIZEN = CharacterParams(
+    face_age=2.0,
     skin_tone=SKIN_WORN,
     # Dark iron-blue-gray rather than plain gray, and gold eyes rather than
     # the pale blue an earlier reference image happened to render: his own
@@ -440,24 +446,23 @@ DAIZEN = CharacterParams(
     # start at the top of the range, to be tuned per character later.
     chest=1.0,
     # Shrewd and severe, and the oldest-looking man in the cast next to Tenno.
-    face=aged(
-        FaceStyle(
-            lash=MAN_LASH,
-            eye_size=0.84,
-            eye_width=1.10,
-            eye_tilt=0.14,
-            eye_corner=0.62,
-            iris_size=1.09,
-            brow_tilt=0.65,
-            brow_weight=1.00,
-            mouth_curve=-0.20,
-            mouth_width=0.70,
-            blush=0.0,
-        )
+    face=FaceStyle(
+        lash=MAN_LASH,
+        eye_size=0.84,
+        eye_width=1.10,
+        eye_tilt=0.14,
+        eye_corner=0.62,
+        iris_size=1.09,
+        brow_tilt=0.65,
+        brow_weight=1.00,
+        mouth_curve=-0.20,
+        mouth_width=0.70,
+        blush=0.0,
     ),
 )
 
 ELARA = CharacterParams(
+    face_age=1.0,
     # "Slender strong build", an officer (`docs/bust-plan.md`, step 7).
     bust=0.4,
     skin_tone="#e8c8ab",
@@ -513,6 +518,7 @@ ELARA = CharacterParams(
 )
 
 HARUTO = CharacterParams(
+    face_age=1.0,
     skin_tone=SKIN,
     # Deep bottle-green rather than plain dark hair: rich and refined, the
     # noble "liked by nearly everyone in the room." Burnt copper-orange eyes,
@@ -576,6 +582,7 @@ HARUTO = CharacterParams(
 DRESS = "#373833"
 
 KEIKO = CharacterParams(
+    face_age=1.0,
     # An adult; her hair and coat carry most of it (`docs/bust-plan.md`, step 7).
     bust=0.6,
     skin_tone=SKIN,
@@ -634,6 +641,7 @@ KEIKO = CharacterParams(
 )
 
 KRISTA = CharacterParams(
+    face_age=1.0,
     # Her brief asks for "a noticeable bust" (`docs/bust-plan.md`, step 7).
     bust=1.0,
     skin_tone="#f4d3b6",
@@ -689,6 +697,7 @@ KRISTA = CharacterParams(
 )
 
 REIKA = CharacterParams(
+    face_age=1.0,
     # An adult; her robe front covers the line under it (`docs/bust-plan.md`, step 7).
     bust=0.6,
     skin_tone="#f6dcc6",
@@ -741,6 +750,7 @@ REIKA = CharacterParams(
 )
 
 REINHARD = CharacterParams(
+    face_age=1.0,
     skin_tone="#eccaa9",
     # Cool ash-blond rather than the warmer light-brown/dark-blond a
     # reference image landed on, and a pale storm-blue eye rather than a
@@ -797,6 +807,7 @@ REINHARD = CharacterParams(
 )
 
 TENNO = CharacterParams(
+    face_age=2.0,
     skin_tone=SKIN_WORN,
     # Full silver-white rather than a duller "graying" tone: regal even
     # diminished. Warm brown eyes carry the permanently apologetic read his
@@ -824,28 +835,27 @@ TENNO = CharacterParams(
     # Chest definition bare (`docs/bare-body-plan.md`, step 6): the men all
     # start at the top of the range, to be tuned per character later.
     chest=1.0,
-    face=aged(
-        FaceStyle(
-            lash=MAN_LASH,
-            eye_size=0.88,
-            eye_width=1.06,
-            eye_tilt=0.02,
-            eye_corner=0.60,
-            iris_size=1.09,
-            # Inner ends raised: the permanently apologetic expression the
-            # document describes, which is the sorrow direction rather than the
-            # stern one, and the one thing that separates him from Daizen at
-            # tile size once both are grey.
-            brow_tilt=-0.35,
-            brow_weight=0.75,
-            mouth_curve=-0.15,
-            mouth_width=0.66,
-            blush=0.0,
-        )
+    face=FaceStyle(
+        lash=MAN_LASH,
+        eye_size=0.88,
+        eye_width=1.06,
+        eye_tilt=0.02,
+        eye_corner=0.60,
+        iris_size=1.09,
+        # Inner ends raised: the permanently apologetic expression the
+        # document describes, which is the sorrow direction rather than the
+        # stern one, and the one thing that separates him from Daizen at
+        # tile size once both are grey.
+        brow_tilt=-0.35,
+        brow_weight=0.75,
+        mouth_curve=-0.15,
+        mouth_width=0.66,
+        blush=0.0,
     ),
 )
 
 VIKTOR = CharacterParams(
+    face_age=0.8,
     skin_tone="#f0cfb2",
     # Deep slate-teal rather than plain dark hair, against warm gold eyes:
     # cool and moody on the surface, warmer and sharper underneath than he
@@ -1022,6 +1032,7 @@ KATHERINA = CharacterParams(
 # these people dress bright to catch scarce light (ch1), and Gero is of
 # that world even if he keeps the drab coat over it.
 GERO = CharacterParams(
+    face_age=1.55,
     skin_tone=SKIN_WORN,
     hair_color="#6b6459",
     hairstyle="short_layered",
@@ -1052,23 +1063,20 @@ GERO = CharacterParams(
     chest=1.0,
     # Middle-aged rather than the cast's oldest (Daizen and Tenno take
     # `years=1.0`): the aperture narrows partway, not all the way.
-    face=aged(
-        FaceStyle(
-            lash=MAN_LASH,
-            eye_size=0.88,
-            eye_width=1.05,
-            eye_tilt=0.05,
-            eye_corner=0.55,
-            iris_size=1.05,
-            # Level and watchful rather than stern: he reads people, he
-            # does not confront them.
-            brow_tilt=0.30,
-            brow_weight=0.85,
-            mouth_curve=-0.05,
-            mouth_width=0.68,
-            blush=0.0,
-        ),
-        years=0.55,
+    face=FaceStyle(
+        lash=MAN_LASH,
+        eye_size=0.88,
+        eye_width=1.05,
+        eye_tilt=0.05,
+        eye_corner=0.55,
+        iris_size=1.05,
+        # Level and watchful rather than stern: he reads people, he
+        # does not confront them.
+        brow_tilt=0.30,
+        brow_weight=0.85,
+        mouth_curve=-0.05,
+        mouth_width=0.68,
+        blush=0.0,
     ),
 )
 

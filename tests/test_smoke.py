@@ -1432,9 +1432,11 @@ def test_the_beard_reaches_over_the_mouth_and_the_mouth_survives_it(preset: str)
         (py - sk.head_cy) / sk.head_r for px, py in pts if abs(px - sk.head_cx) < sk.head_r * 0.15
     ]
     assert middle, "the beard has no point near the centre line at all"
-    assert min(middle) < character._MOUTH_Y, (
+    # Where `_face` puts the mouth: lower on a grown face (`face_age`).
+    mouth_y = character._MOUTH_Y + character._MOUTH_REALISTIC_DROP * sk.face_build
+    assert min(middle) < mouth_y, (
         f"the beard's highest point near the centre is {min(middle):.2f} head radii and the "
-        f"mouth is at {character._MOUTH_Y}, so it stops below the lip and reads as a neckbeard"
+        f"mouth is at {mouth_y:.2f}, so it stops below the lip and reads as a neckbeard"
     )
     svg = render_character(p, sk)
     assert svg.index(beard) < svg.index(character._face(sk, p)), (
@@ -2309,7 +2311,7 @@ def test_an_old_link_with_an_eye_style_loads_with_the_one_eye(style):
 def test_face_age_up_to_one_matures_only_the_head(m):
     """`face_age` up to 1 draws a grown face through `Skeleton.face_build`; at
     0 the face build is the figure's own, and the body does not move with it."""
-    p = PRESETS["satoko"]
+    p = replace(PRESETS["satoko"], face_age=0.0)
     sk0, sk = character.skeleton_for(p), character.skeleton_for(replace(p, face_age=m))
     assert sk0.face_build == sk0.build
     assert sk.face_build > sk.build
