@@ -10,6 +10,10 @@ hanging hand at three sizes. Nothing here ships; the harness only.
   to a third of the face's height), its wrist then narrower than our arm.
 
 Our figure: Krista at heights 1.0 and 1.3. Writes `out/trace_hands/size_mock.png`.
+
+Round two (the owner: the first pasted the hand over the mitten; show the
+sleeve and the bare arm meeting the hand): `size_mock_b.png`, size B only, the
+mitten not drawn, Krista dressed and in the base layer, at 1.0 and 1.3.
 """
 
 import io
@@ -83,5 +87,42 @@ def main():
     print(f"{OUT}/size_mock.png", sheet.size)
 
 
+def round_two():
+    hand, (ax, ay), _ref_wrist, ref_len = cutout()
+    krista = PRESETS["krista"]
+    off = [n for n in c.Outfit.__dataclass_fields__ if n.endswith("_color") and n not in ("underwear_color", "boot_color")]
+    bare = replace(krista, outfit=replace(krista.outfit, **dict.fromkeys(off)))
+    mitten = c._hand
+    c._hand = lambda *a, **k: ""
+    tiles = []
+    try:
+        for label, p0 in (("dressed", krista), ("base layer", bare)):
+            for h in (1.0, 1.3):
+                p = replace(p0, height=h)
+                sk = c.skeleton_for(p)
+                svg = c.render_character(p, sk, background="#ffffff")
+                im = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), scale=SCALE))).convert("RGBA")
+                _t, _e, centre_wrist, wrist_y = c._arm_line(sk)
+                wx, wy = (sk.head_cx + centre_wrist) * SCALE, wrist_y * SCALE
+                r = sk.head_r * SCALE
+                k = 0.65 * r / ref_len
+                hs = hand.resize((int(hand.width * k), int(hand.height * k)), Image.LANCZOS)
+                im.alpha_composite(hs, (int(wx - ax * k), int(wy - ay * k)))
+                box = (int(wx - 1.0 * r), int(wy - 1.2 * r), int(wx + 0.7 * r), int(wy + 0.9 * r))
+                t = im.crop(box).convert("RGB")
+                ImageDraw.Draw(t).text((3, 3), f"B, {label}, h{h}", fill=(200, 0, 0))
+                tiles.append(t)
+    finally:
+        c._hand = mitten
+    w = max(t.width for t in tiles)
+    hh = max(t.height for t in tiles)
+    sheet = Image.new("RGB", (4 * (w + 4), hh), (190, 190, 190))
+    for i, t in enumerate(tiles):
+        sheet.paste(t, (i * (w + 4), 0))
+    sheet.save(f"{OUT}/size_mock_b.png")
+    print(f"{OUT}/size_mock_b.png", sheet.size)
+
+
 if __name__ == "__main__":
     main()
+    round_two()

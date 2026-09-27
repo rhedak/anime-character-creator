@@ -32,6 +32,20 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D4d H0, round two: size B without the mitten (2026-09-27)
+
+The owner: B is the best size; the first mock pasted the hand over the mitten,
+so redraw it without, and add a bare arm. `size_mock.py`'s `round_two`
+(`out/trace_hands/size_mock_b.png`), Krista dressed and in the base layer at
+1.0 and 1.3, the mitten not drawn. **The sleeve join works**: the hand reads
+as coming out of the cuff, which hides that its wrist is narrower than the
+arm. **The bare join does not yet**: the arm's path closes with a stroke
+across the wrist, which the mitten used to cover; and the arm is wider than
+the hand's wrist (about 0.37 head radii against the traced 0.24 at height 1.0,
+less at 1.3, where the arm tapers), a step. For H3: a bare arm leaves its end
+unstroked, and the hand's first stretch, its wrist, widens from the traced
+width to the arm's, so the forearm runs into the hand.
+
 ### D4d H0: the reference's hands calibrated (2026-09-27)
 
 `harness/trace_hands/calib.py`: each hand's wrist is where its skin meets the
