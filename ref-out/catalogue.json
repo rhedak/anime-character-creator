@@ -747,6 +747,12 @@
         "max": 0.8
       },
       {
+        "field": "lash",
+        "label": "Lash (soft to winged)",
+        "min": 0.0,
+        "max": 1.0
+      },
+      {
         "field": "mouth_width",
         "label": "Mouth width",
         "min": 0.6,

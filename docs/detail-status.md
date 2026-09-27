@@ -5,8 +5,8 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 ## RESUME
 
 D0 and D1 done (2026-09-27; D1 approved), and the second eye style
-retired. D2 built (the owner's pick D, no crease); one question open: a
-`FaceStyle.lash` knob for the men (below).
+retired. D2 done, with `FaceStyle.lash` (the men at 0.4). Next: D3, the
+face maturity slider (a study first; note `presets.aged()`, below).
 The owner does not want `../valley_of_mist` regenerated for now: work
 through the plan. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
@@ -19,13 +19,31 @@ through the plan. The baseline is
 |---|---|
 | D0 inventory and baseline | done |
 | D1 line weights | done |
-| D2 eyes | built; the men's lash open |
+| D2 eyes | done |
 | D3 face maturity | not started |
 | D4 body at height | not started |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D2: the men's lash (2026-09-27)
+
+The owner's call: `FaceStyle.lash` (default 1.0) scales the lash's outer
+thickness above the inner one and the flick's length; `presets.MAN_LASH =
+0.4` on every man (Satoshi, Tomohiro through him, Daizen, Haruto, Reinhard,
+Tenno, Viktor, Gero) and the male base. A web tool slider, "Lash (soft to
+winged)", 0 to 1. **Predicted:** only the nine male figures change, in all
+four snapshot states each. **Measured:** exactly those 36 of 105 snapshot
+renders changed, the rest byte-identical; by eye, a firm upper line and no
+wing on all of them. 482 passed, 1 skipped.
+
+**For D3:** `presets.aged(face, years)` already reads a face older by
+walking the eye's size, width and openness down and the brows' weight up
+(Chiyo, Daizen, Tenno at the full amount). Face maturity overlaps it; D3's
+study has to decide whether maturity replaces `aged`, builds on it, or is
+kept apart from it (maturity as adult against child, `aged` as old against
+adult).
 
 ### D2: the eye built (2026-09-27)
 

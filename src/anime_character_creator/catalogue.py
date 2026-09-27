@@ -551,6 +551,7 @@ FACE_RANGES: tuple[RangeField, ...] = (
     _face_range("eye_tilt", "Eye tilt", 0.0, 0.20),
     _face_range("eye_corner", "Eye corner (round to sharp)", 0.30, 0.65),
     _face_range("iris_size", "Iris size", 0.60, 0.80),
+    _face_range("lash", "Lash (soft to winged)", 0.0, 1.0),
     _face_range("mouth_width", "Mouth width", 0.60, 1.05),
 )
 for _fr in FACE_RANGES:

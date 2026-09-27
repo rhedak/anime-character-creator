@@ -26,6 +26,7 @@ from anime_character_creator import (
     PRESETS,
     ROSTERS,
     CharacterParams,
+    FaceStyle,
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
     cover,
@@ -2291,6 +2292,15 @@ def test_an_old_link_with_an_eye_style_loads_with_the_one_eye(style):
     old = params_to_dict(PRESETS["satoko"])
     old["face"] = {**old["face"], "eye_style": style, "eye_glow": 0.5}
     assert render_character(params_from_dict(old)) == render_character(PRESETS["satoko"])
+
+
+@pytest.mark.parametrize("lash", [0.0, 0.5, 1.0])
+def test_the_lash_renders_across_its_range(lash):
+    """`FaceStyle.lash` scales the lash's outer thickness and its flick; the
+    ends of the web tool's range draw, and the default is the full lash."""
+    p = CharacterParams(face=FaceStyle(lash=lash))
+    ET.fromstring(render_character(p))
+    assert FaceStyle().lash == 1.0
 
 
 @pytest.mark.parametrize("h", [0.8, 1.3])

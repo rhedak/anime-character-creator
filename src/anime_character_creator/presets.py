@@ -11,6 +11,11 @@ from dataclasses import replace
 
 from .character import CharacterParams, Expression, FaceStyle, Outfit
 
+# The men's upper lash (`FaceStyle.lash`): the full flick read as winged
+# eyeliner on their narrow, sharp-cornered eyes; at this it is a firm upper line
+# with no wing (`harness/detail/lash_men.py`, the owner's call, 2026-09-27).
+MAN_LASH = 0.4
+
 # Satoko and Satoshi are meant to read as related, so the palette they share
 # lives here once rather than being duplicated per character. What tells them
 # apart is the haircut, the lower body, and the frame, not the colors.
@@ -139,6 +144,7 @@ SATOSHI = CharacterParams(
     # start at the top of the range, to be tuned per character later.
     chest=1.0,
     face=FaceStyle(
+        lash=MAN_LASH,
         eye_size=0.92,
         eye_width=1.08,
         eye_openness=0.90,
@@ -440,6 +446,7 @@ DAIZEN = CharacterParams(
     # Shrewd and severe, and the oldest-looking man in the cast next to Tenno.
     face=aged(
         FaceStyle(
+            lash=MAN_LASH,
             eye_size=0.84,
             eye_width=1.10,
             eye_tilt=0.14,
@@ -552,6 +559,7 @@ HARUTO = CharacterParams(
     # start at the top of the range, to be tuned per character later.
     chest=1.0,
     face=FaceStyle(
+        lash=MAN_LASH,
         eye_size=0.88,
         eye_width=1.10,
         eye_tilt=0.20,
@@ -775,6 +783,7 @@ REINHARD = CharacterParams(
     # start at the top of the range, to be tuned per character later.
     chest=1.0,
     face=FaceStyle(
+        lash=MAN_LASH,
         eye_size=0.86,
         eye_width=1.08,
         eye_openness=0.88,
@@ -821,6 +830,7 @@ TENNO = CharacterParams(
     chest=1.0,
     face=aged(
         FaceStyle(
+            lash=MAN_LASH,
             eye_size=0.88,
             eye_width=1.06,
             eye_tilt=0.02,
@@ -874,6 +884,7 @@ VIKTOR = CharacterParams(
     # start at the top of the range, to be tuned per character later.
     chest=1.0,
     face=FaceStyle(
+        lash=MAN_LASH,
         eye_size=0.88,
         eye_width=1.10,
         eye_openness=0.84,
@@ -1047,6 +1058,7 @@ GERO = CharacterParams(
     # `years=1.0`): the aperture narrows partway, not all the way.
     face=aged(
         FaceStyle(
+            lash=MAN_LASH,
             eye_size=0.88,
             eye_width=1.05,
             eye_tilt=0.05,
@@ -1232,6 +1244,7 @@ BASE_MALE = CharacterParams(
     hairstyle="short_crop",
     hair_length=0.65,
     chest=1.0,
+    face=FaceStyle(lash=MAN_LASH),
     outfit=Outfit(
         skirt_color=None,
         trouser_color="#4f7a52",

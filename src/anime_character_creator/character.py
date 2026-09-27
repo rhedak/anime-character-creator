@@ -89,6 +89,11 @@ class FaceStyle:
     # Iris against the aperture's smaller half-axis. Below 1 leaves white
     # sclera showing all the way around it.
     iris_size: float = 0.72
+    # How far the upper lash thickens toward the outer corner and how long its
+    # flick runs past it: 1 the full lash (`_LASH_OUTER`, `_LASH_FLICK`), 0 a
+    # lash of even, inner-corner weight with no flick. The men draw less of it,
+    # where the flick read as winged eyeliner (`docs/detail-status.md`, D2).
+    lash: float = 1.0
     # 0 is level. Positive drops the inner ends (stern), negative raises them.
     brow_tilt: float = 0.0
     brow_weight: float = 1.0
@@ -8874,6 +8879,8 @@ def _eye_lash(er: float, f: FaceStyle, edge_w: float) -> list[Point]:
     aperture's edge is."""
     lid = _lid_points(_eye_quads(er, f), 0, 1)
     n = len(lid) - 1
+    outer = _LASH_INNER + (_LASH_OUTER - _LASH_INNER) * f.lash
+    flick = _LASH_FLICK * f.lash
     up: list[Point] = []
     down: list[Point] = []
     for i, (x, y) in enumerate(lid):
@@ -8884,7 +8891,7 @@ def _eye_lash(er: float, f: FaceStyle, edge_w: float) -> list[Point]:
         if ny > 0:
             nx, ny = -nx, -ny
         s = i / n
-        t = er * (_LASH_INNER + (_LASH_OUTER - _LASH_INNER) * s**_LASH_EASE)
+        t = er * (_LASH_INNER + (outer - _LASH_INNER) * s**_LASH_EASE)
         if s < _LASH_ONSET:
             t *= s / _LASH_ONSET
         t = max(edge_w * 0.5, t)
@@ -8897,8 +8904,8 @@ def _eye_lash(er: float, f: FaceStyle, edge_w: float) -> list[Point]:
     fx = tx * math.cos(ang) - ty * math.sin(ang)
     fy = tx * math.sin(ang) + ty * math.cos(ang)
     tip = (
-        lid[n][0] + fx * er * _LASH_FLICK,
-        lid[n][1] + fy * er * _LASH_FLICK - er * _LASH_OUTER * 0.5,
+        lid[n][0] + fx * er * flick,
+        lid[n][1] + fy * er * flick - er * outer * 0.5,
     )
     return [*up, tip, *reversed(down)]
 
