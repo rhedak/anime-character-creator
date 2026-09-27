@@ -26,11 +26,32 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a done; D4b next |
+| D4 body at height | D4a done; D4b study with the owner |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4b: the limb taper, the study (2026-09-27)
+
+The retired adult build's limb taper is still in `_arms` (the elbow 15% and
+the wrist 34% in) and `_legs_and_boots` (the ankle to 0.85), riding the build.
+`_LIMB_TAPER` (0, byte-identical: checked, 0 of 105 renders differ) sets how
+far along it the limbs are drawn, through `_limb_build`.
+`harness/detail/taper_study.py`: taper 0, 0.5 and 1, on Krista's base layer,
+Satoshi, Keiko and Satoko at heights 1.0 and 1.3. Seen:
+
+- **The arms** read better tapered: at 1 the forearm narrows to a wrist.
+- **The hands** take the wrist's width (`_hand`: `w_wrist * 1.02`), so at 1
+  they shrink with it and read small; kept at today's size they overhang the
+  narrower wrist like a mitten stuck on; **half way** between reads as a
+  hand a little wider than its wrist.
+- **The legs barely change**: the adult taper was measured on trousers
+  (`ref/satoshi.png`), nearly straight below the thigh, so a bare leg stays
+  a tube with no knee.
+
+**Recommendation:** taper 1 with the hands half way. The bare leg's knee is
+a separate question for the owner.
 
 ### D4a: the widths follow the height (2026-09-27)
 

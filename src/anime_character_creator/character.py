@@ -7166,8 +7166,8 @@ def _arms(
     # Tapers on the build, the way the leg does. A constant-width tube is right at
     # chibi and matches ref/girl-chibi.png; at a taller build it reads as a pipe.
     w_top = sk.arm_half_w
-    w_elbow = sk.arm_half_w * (1.0 - 0.15 * sk.build)
-    w_wrist = sk.arm_half_w * (1.0 - 0.34 * sk.build)
+    w_elbow = sk.arm_half_w * (1.0 - 0.15 * _limb_build(sk))
+    w_wrist = sk.arm_half_w * (1.0 - 0.34 * _limb_build(sk))
     # The arm is narrower than the sleeve it comes out of, which is what says
     # "sleeve" rather than "plank". It used to be the sleeve's own width, to 1%,
     # deliberately, so the two outlines landed on each other and the silhouette
@@ -7450,6 +7450,18 @@ def _leg_gap_and_top(sk: Skeleton, trousers: bool) -> tuple[float, float]:
     return gap, w_top
 
 
+# How far along the retired adult build's limb taper the arms and legs are
+# drawn (`docs/detail-plan.md`, D4b): 0 the figure's own build, as ever, 1 the
+# adult taper (the elbow 15% and the wrist 34% in, the ankle to 0.85 of the
+# leg). A study value until the owner picks one.
+_LIMB_TAPER = 0.0
+
+
+def _limb_build(sk: Skeleton) -> float:
+    """The build the arms and legs taper at."""
+    return sk.build + _LIMB_TAPER * (1.0 - sk.build)
+
+
 def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     # The taper belongs in the thigh, and nearly nowhere else. Measured off
     # ref/satoshi.png, the trouser leg is 1.42 leg-half-widths at the thigh, 1.03
@@ -7463,7 +7475,7 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
     # reference's leg is photographed on a hip wider than this skeleton's, so the
     # full measurement came out heavy on it. The knee, calf and ankle are the
     # measured values.
-    taper = sk.build
+    taper = _limb_build(sk)
     # Trousers are the outermost garment on the leg, so unlike bare skin they
     # need their own outline, they start at the belt rather than under a hem, and
     # they carry more thigh: a shin-width tube running up to the hip reads as a
