@@ -32,6 +32,23 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D4d: the hands fitted to the cuff openings (2026-09-27)
+
+The owner: match the hands to the cuff openings, their positions and angles.
+`harness/trace_hands/cuff_fit.py` finds each opening in the arm's own frame:
+on a traced sleeve, the cuff band's chain placed on the figure, its long axis
+the band, the side further along the forearm the opening, a line fitted
+through it (Katherina's: 8.7 degrees off level, 0.228 head radii half-width;
+the earlier measure by its lowest points read it level); on a drawn sleeve or
+a bare arm, the wrist line. Each hand is turned so its traced wrist lies
+along the opening, facing out of it, its wrist's centre on the opening's,
+tucked 0.04 head radii under the cuff; the open hand's wrist widens to 0.9 of
+the opening, the grip keeps its shape and the staff runs through its channel;
+size 0.50. Seen: on both of Katherina's arms the hand now comes out of the
+cuff at its angle, the fist following the raised arm and the open hand the
+jacket's sloping cuff; on Krista's sleeve and bare arm the join holds. With
+the owner.
+
 ### D4d: the wrist's angle against the sleeve (2026-09-27)
 
 The owner: zoom on Katherina's arms and turn the hands so the wrist's angle
