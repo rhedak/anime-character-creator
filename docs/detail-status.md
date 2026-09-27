@@ -4,19 +4,17 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 
 ## RESUME
 
-D0 and D1 done (2026-09-27; D1 approved), and the second eye style
-retired. D2 done, with `FaceStyle.lash` (the men at 0.4). D3 done: one
-Age slider (`CharacterParams.face_age`, 0 to 2), the cast's ages applied,
-the moustache under the nose; the chin and the crease deferred. Next: D4,
-the body at height (a study first). Earlier D3 notes: which presets state an
-age (a lineup and a whole-figure before/after, `harness/detail/age_lineup.py`
-and `age_before_after.py`; the owner: "mostly good"); and the nose against
-the beard (fixed, below).
-The owner does not want `../valley_of_mist` regenerated for now: work
-through the plan. The baseline is
-`harness/detail/baseline.py` (writes `out/detail/`); the height range is
-`harness/tall_chibi/height_range.py`; the inventories are in
-`docs/detail-inventory/`. The plan is committed at 7b8a2f7.
+Paused 2026-09-27 at the owner's request (the weekly limit). D0 to D4 done;
+next is **D5, the hair** (strand lines and bangs parted into locks, starting
+with `long_traced`, Katherina's), a study first. Open, all the owner's to
+decide later: which presets take which `hand_style` (all "mitten" now; "grip"
+recommended for Katherina); a relaxed hand pose of its own; the chin and the
+lid crease (deferred); `../valley_of_mist` not regenerated since the detail
+pass began (the owner: not for now; the Everglow and Katherina covers were).
+Tools: the baseline `harness/detail/baseline.py`, the byte guard
+`harness/tall_chibi/snapshot.py` (take the before from the committed tree with
+`git stash`), and restage the web tool (`./web-stage.sh`) after any preset or
+catalogue change; the local server may still be running on port 8000.
 
 ## Scoreboard
 
