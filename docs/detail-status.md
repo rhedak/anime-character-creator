@@ -4,9 +4,11 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 
 ## RESUME
 
-D0 and D1 done (2026-09-27), and the second eye style retired. Next: D2,
-the eyes (a study first). `../valley_of_mist` is not regenerated yet: the
-plan's first checkpoint is after D2. The baseline is
+D0 and D1 done (2026-09-27; D1 approved), and the second eye style
+retired. D2's eye study is with the owner (`harness/detail/eye_study.py`,
+sheets `out/detail/eye_study*.png`); recommendation D without the crease.
+The owner does not want `../valley_of_mist` regenerated for now: work
+through the plan. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
 `harness/tall_chibi/height_range.py`; the inventories are in
 `docs/detail-inventory/`. The plan is committed at 7b8a2f7.
@@ -17,13 +19,41 @@ plan's first checkpoint is after D2. The baseline is
 |---|---|
 | D0 inventory and baseline | done |
 | D1 line weights | done |
-| D2 eyes | not started |
+| D2 eyes | study with the owner |
 | D3 face maturity | not started |
 | D4 body at height | not started |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D2: the eye study (2026-09-27, at 2736cb6)
+
+`harness/detail/eye_study.py` stands candidates in for `_eye`, keeping the
+aperture and the iris and changing the lining: A today; B a filled lash
+along the lid (thin inner, thick outer, a flick past the corner), a short
+lower lash at the outer corner, the lower edge unlined, the iris's top in a
+darker flat band (`shade(eye_color, 0.68)`); C B plus a faint lower edge
+(`_interior_w(sw, 0.8)`); D C with a heavier lash (0.24 eye radii at the
+outer end, against 0.16) and a longer flick; E C plus a crease over the
+outer half. On Katherina (amber), Krista (teal), red eyes on dark skin, and
+Katherina "hollow" and "sorrow"; and at the smallest insert size.
+
+**Seen:**
+
+- **B fails**: without a lower line the white under the iris bleeds into
+  pale skin, worst with the lids lowered. The reference gets away with it on
+  a face drawn at a larger scale with a shaded lid; we cannot. C, D and E
+  keep the faint line.
+- **The iris band reads** on all three palettes, the red one included.
+- **D is closest in spirit** to the reference: the lash reads as the one
+  heavy line in the face, as there, and the flick shows. At the insert size
+  it still reads as a darker lash line.
+- **E's crease crowds our brows**, which sit at `eye_y - 1.30 * eye_r`, and
+  at the insert size crease and brow merge into a double brow. A crease
+  belongs with higher brows, which face maturity (D3) may bring.
+
+**Recommendation: D, without the crease** (the crease revisited in D3).
 
 ### D1: the line weights built (2026-09-27)
 
