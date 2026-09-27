@@ -15,6 +15,10 @@ the diagonal cuff and the fist's flat top.
   reference's fist is about 0.45 against its head).
 
 Each at 5x round the fist, and whole. Writes `out/trace_hands/grip_study.png`.
+
+A record: the placement it studied went into `character.py` as
+`_traced_placement` (the cuff fit) on 2026-09-27, and helpers it patches
+(`_grip_anchor`, the upright grip) are gone, so it may no longer run.
 """
 
 import io

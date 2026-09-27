@@ -14,6 +14,10 @@ Our figure: Krista at heights 1.0 and 1.3. Writes `out/trace_hands/size_mock.png
 Round two (the owner: the first pasted the hand over the mitten; show the
 sleeve and the bare arm meeting the hand): `size_mock_b.png`, size B only, the
 mitten not drawn, Krista dressed and in the base layer, at 1.0 and 1.3.
+
+A record: the placement it studied went into `character.py` as
+`_traced_placement` (the cuff fit) on 2026-09-27, and helpers it patches
+(`_grip_anchor`, the upright grip) are gone, so it may no longer run.
 """
 
 import io

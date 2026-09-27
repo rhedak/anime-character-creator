@@ -12,6 +12,10 @@ Rows: **upright** (the grip kept upright, `grip_study.py`'s "wrist,
 smaller"); **half** (turned half way); **matched** (turned fully). Columns:
 Katherina's staff arm and her other arm (the open hand at 0.50), 5x, and the
 whole figure. Writes `out/trace_hands/wrist_angle.png`.
+
+A record: the placement it studied went into `character.py` as
+`_traced_placement` (the cuff fit) on 2026-09-27, and helpers it patches
+(`_grip_anchor`, the upright grip) are gone, so it may no longer run.
 """
 
 import io

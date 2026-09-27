@@ -59,8 +59,12 @@ def main():
         "HandPiece = tuple[Chain, tuple[Chain, ...], tuple[Chain, ...]]",
         "",
     ]
+    cal = json.load(open(f"{OUT}/calib.json"))
     for key, const in (("relaxed", "_HAND_RELAXED"), ("grip", "_HAND_GRIP")):
         lines += pose(const, data[key])
+        ix, iy = cal[key]["into_hand"]
+        lines.append(f"# The direction the reference's forearm ran into the {key} hand, wrist to hand.")
+        lines.append(f"{const}_INTO: Point = ({ix:.4f}, {iy:.4f})")
         lines.append("")
     lines.append(END)
     block = "\n".join(lines) + "\n"

@@ -97,6 +97,10 @@
       "label": "Mitten (chibi)"
     },
     {
+      "id": "grip",
+      "label": "Drawn grip on a staff"
+    },
+    {
       "id": "traced",
       "label": "Drawn hands"
     }

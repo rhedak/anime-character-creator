@@ -2449,13 +2449,21 @@ def test_the_height_stretches_below_the_shoulders_only(h):
 def test_the_traced_hands_draw_and_the_mitten_is_the_default(preset):
     """`docs/detail-plan.md`, D4d: `hand_style="traced"` draws the reference's
     hands (a grip on a held staff, relaxed otherwise); "mitten" stays the default
-    and draws as it did. A bare arm under a traced hand leaves its wrist open."""
+    and draws as it did. A bare arm under a traced hand leaves its wrist open;
+    "grip" draws the traced fist on a held staff and the mitten otherwise, and the
+    staff then runs through the fist's channel."""
     p = PRESETS[preset]
     assert p.hand_style == "mitten"
     traced = render_character(replace(p, hand_style="traced"))
     ET.fromstring(traced)
     assert traced != render_character(p)
     if preset == "katherina":
+        grip = replace(p, hand_style="grip")
+        sk = character.skeleton_for(grip)
+        assert character._hand_traced(grip, -1) and not character._hand_traced(grip, 1)
+        channel = character._traced_placement(sk, grip, -1)(character._grip_channel())
+        assert character._hand_centre(sk, grip, -1) != character._hand_centre(sk, p, -1)
+        assert channel
         return
     off = [
         n

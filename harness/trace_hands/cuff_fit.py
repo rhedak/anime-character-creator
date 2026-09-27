@@ -20,6 +20,10 @@ channel. Size 0.50 head radii.
 Columns: Katherina's staff arm, her other arm, her whole figure; Krista's arm
 and the base layer's bare arm; 5x. Writes `out/trace_hands/cuff_fit.png` and
 prints each opening.
+
+A record: the placement it studied went into `character.py` as
+`_traced_placement` (the cuff fit) on 2026-09-27, and helpers it patches
+(`_grip_anchor`, the upright grip) are gone, so it may no longer run.
 """
 
 import io

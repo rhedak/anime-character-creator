@@ -26,11 +26,35 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a, D4b, the knee done; D4d H2, H3 built, with the owner |
+| D4 body at height | done (the hands good enough for now; another pass deferred) |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4d: the hands locked in for now (2026-09-27)
+
+The owner: keep the best recommendation, defer the rest (another pass on the
+hands later), good enough for now. Built from the studies: `_traced_placement`
+fits a traced hand to its cuff's opening (`_cuff_opening`: on a traced sleeve
+the cuff band's far side, a fitted line; otherwise the wrist line), turned so
+its traced wrist (`_HAND_*_INTO`, now emitted with the poses) lies along it,
+tucked `_HAND_CUFF_TUCK` under the cuff; the open hand's wrist fills
+`_HAND_WRIST_FILL` of the opening; size `_HAND_TRACED_LENGTH` 0.50. The staff
+runs through a traced grip's channel (`_hand_centre`, `_grip_channel`).
+`HAND_STYLES`: "mitten" (the default), **"grip"** (the recommendation: the
+traced fist on a held staff, the mitten otherwise, since the traced open hand
+reads thin on a chibi), "traced" (both). The web tool's Hands dropdown lists
+all three. No preset changed (the owner has not picked which take which).
+
+**Measured:** with the default, all 105 snapshot renders byte-identical to the
+committed tree; tests for the styles, the open bare wrist and the staff in
+the channel; 548 passed, 1 skipped. The superseded study scripts are marked
+as records.
+
+**Deferred:** a relaxed pose of its own (a half-closed hanging hand), the
+grip's size against the cuff on a tube sleeve, which presets take which
+style, and the elbow.
 
 ### D4d: the hands fitted to the cuff openings (2026-09-27)
 

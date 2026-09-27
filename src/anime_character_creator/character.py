@@ -488,9 +488,9 @@ class CharacterParams:
     # to adult inside the one style; on its own canvas a taller figure has a
     # smaller head, the canvas being a fixed size.
     height: float = 1.0
-    # Which hands the figure is drawn with: "mitten", the chibi's own, or "traced",
-    # the reference's two hands (`docs/detail-plan.md`, D4d): hanging relaxed,
-    # and gripping the staff when the figure holds one.
+    # Which hands the figure is drawn with (`HAND_STYLES`, `docs/detail-plan.md`,
+    # D4d): "mitten", the chibi's own; "grip", the traced fist on a held staff and
+    # the mitten otherwise; "traced", the traced hands on both sides.
     hand_style: str = "mitten"
     # How old the face reads, one axis from child to old (`docs/detail-plan.md`,
     # D3). 0 to 1 is face maturity, the chibi face growing up: the skull narrows
@@ -6202,6 +6202,9 @@ def _hand_centre(sk: Skeleton, p: CharacterParams, s: int) -> Point:
     _, _, centre_wrist, wrist_y = _arm_line(sk)
     px, py = _arm_pivot(sk, p, s)
     hx, hy = sk.head_cx + s * centre_wrist, wrist_y + _hand_length(sk) * 0.5
+    if _hand_traced(p, s) and s == -1 and p.outfit.staff_color is not None:
+        # A traced grip holds the staff in its channel (`_grip_channel`).
+        hx, hy = _traced_placement(sk, p, s)(_grip_channel())
     swing = p.right_arm_out if s == -1 else p.left_arm_out
     a = math.radians(-s * swing)
     rx = px + (hx - px) * math.cos(a) - (hy - py) * math.sin(a)
@@ -7260,7 +7263,7 @@ def _arms(
             # too: the shoulder rounds over it, and a line across its top read
             # as a sleeve's hem with no sleeve (`docs/bare-body-plan.md`, 4c).
             outline = f"M {x(centre_top + w_top):.1f} {top_out:.1f} {body}"
-            if p.hand_style == "traced":
+            if _hand_traced(p, s):
                 # Open across the wrist: the traced hand runs on from the arm,
                 # and a line there would cut it off (`_traced_hand`).
                 across = f"L {x(centre_wrist - w_wrist):.1f} {wrist_y:.1f} "
@@ -7281,7 +7284,7 @@ def _arms(
         elif cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
         hand = _hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s)
-        if hands is None and p.hand_style == "traced":
+        if hands is None and _hand_traced(p, s):
             # Under the arm, so a sleeve's cuff lies over the wrist as a sleeve
             # does, and a bare arm's fill over the hand's tucked-in top.
             limb.insert(0, hand)
@@ -7502,6 +7505,8 @@ _HAND_RELAXED: tuple[HandPiece, ...] = (
         (),
     ),
 )
+# The direction the reference's forearm ran into the relaxed hand, wrist to hand.
+_HAND_RELAXED_INTO: Point = (0.0441, 0.9990)
 
 _HAND_GRIP: tuple[HandPiece, ...] = (
     (
@@ -7637,18 +7642,31 @@ _HAND_GRIP: tuple[HandPiece, ...] = (
         ),
     ),
 )
+# The direction the reference's forearm ran into the grip hand, wrist to hand.
+_HAND_GRIP_INTO: Point = (-0.9972, 0.0749)
 
 # (end of the traced hands)
 
 
-# The ways a figure's hands can be drawn (`CharacterParams.hand_style`).
-HAND_STYLES = ("mitten", "traced")
+# The ways a figure's hands can be drawn (`CharacterParams.hand_style`,
+# `docs/detail-plan.md`, D4d): the chibi's mitten; "grip", the traced fist on a
+# held staff and the mitten otherwise (the recommended one: the traced open hand
+# reads thin beside a chibi's body); "traced", both traced hands.
+HAND_STYLES = ("mitten", "grip", "traced")
 
-# A traced hand's length, head radii: size B of `harness/trace_hands/size_mock.py`,
-# the owner's pick. The reference's hand is an adult's, about the face's length;
-# fitted to our wrist it reached mid-thigh, fitted to a chibi's third of a face it
-# went spindly.
-_HAND_TRACED_LENGTH = 0.65
+# A traced hand's length, head radii. The reference's hand is an adult's, about
+# the face's length: fitted to our wrist it reached mid-thigh; 0.65 read as a hand
+# on a hanging arm; beside Katherina's staff, 0.50 matched the chibi reference's
+# fist (`harness/trace_hands/size_mock.py`, `grip_study.py`, the owner's picks).
+_HAND_TRACED_LENGTH = 0.50
+# How far a traced hand's wrist sits under its cuff, head radii: the hand is drawn
+# under its arm, so the cuff's edge lies over the wrist.
+_HAND_CUFF_TUCK = 0.04
+# The open hand's first stretch, its wrist, in hand lengths down from the wrist
+# line: over it the hand widens from its traced width to `_HAND_WRIST_FILL` of the
+# cuff's opening, so it fills the sleeve or runs on from a bare forearm.
+_HAND_WRIST_STRETCH = 0.30
+_HAND_WRIST_FILL = 0.9
 
 
 def _chain_points(ch: Chain, per: int = 8) -> list[Point]:
@@ -7662,27 +7680,17 @@ def _chain_points(ch: Chain, per: int = 8) -> list[Point]:
     return pts
 
 
-def _grip_anchor() -> Point:
-    """Where the traced grip takes its wrist on our figure, in its own units: over
-    the staff's channel (between the finger rolls and the back of the hand), at
-    the top of the back of the hand. Our arm hangs, so the wrist comes from above
-    rather than from the side as the reference's does (the owner's option a)."""
+def _grip_channel() -> Point:
+    """Where the staff runs through the traced grip, in its own units: between the
+    finger rolls and the back of the hand, half way down the rolls."""
     *fingers, back = _HAND_GRIP
-    finger_x = max(x for piece in fingers for x, _ in _chain_points(piece[0]))
+    finger_pts = [q for piece in fingers for q in _chain_points(piece[0])]
+    finger_x = max(x for x, _ in finger_pts)
     back_pts = _chain_points(back[0])
-    top = min(y for _, y in back_pts)
-    lo, hi = min(y for piece in fingers for _, y in _chain_points(piece[0])), top + 1.0
+    lo = min(y for _, y in finger_pts)
+    hi = max(y for _, y in finger_pts)
     back_x = min(x for x, y in back_pts if lo <= y <= hi)
-    return ((finger_x + back_x) / 2, top)
-
-
-# The relaxed hand's first stretch, its wrist, in hand lengths down from the
-# wrist line: over it the hand widens from its traced width to the arm's, and
-# its top reaches `_HAND_WRIST_TUCK` up under the arm, so a bare forearm runs
-# into the hand without a step or a line across it; on a sleeve the cuff covers
-# the join (the owner, 2026-09-27, `docs/detail-plan.md`, D4d H3).
-_HAND_WRIST_STRETCH = 0.30
-_HAND_WRIST_TUCK = 0.06
+    return ((finger_x + back_x) / 2, (lo + hi) / 2)
 
 
 def _traced_wrist_half(pieces: tuple[HandPiece, ...]) -> float:
@@ -7691,34 +7699,97 @@ def _traced_wrist_half(pieces: tuple[HandPiece, ...]) -> float:
     return (max(top) - min(top)) / 2
 
 
-def _traced_hand(
-    sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float, side: int
-) -> str:
-    """A traced hand at the wrist `cx`, `wrist_y`: gripping when this is the hand
-    on a held staff, hanging relaxed otherwise, mirrored for the other side. The
-    relaxed hand's wrist is fitted to the arm's `w_wrist`; the grip takes the
-    arm on the back of its fist."""
+def _hand_traced(p: CharacterParams, side: int) -> bool:
+    """Whether the hand on `side` is drawn traced rather than as the mitten."""
     grip = side == -1 and p.outfit.staff_color is not None
-    pieces = _HAND_GRIP if grip else _HAND_RELAXED
-    # The relaxed hand was traced on the viewer's right, the grip on the left.
-    mirror = (side == -1) if not grip else (side == 1)
-    k = _HAND_TRACED_LENGTH * sk.head_r
-    ax, ay = _grip_anchor() if grip else (0.0, 0.0)
-    sw = _stroke_w(sk)
-    widen = 1.0 if grip else w_wrist / (_traced_wrist_half(pieces) * k)
+    return p.hand_style == "traced" or (p.hand_style == "grip" and grip)
 
-    def fit(q: Point) -> Point:
-        """The relaxed hand's wrist stretch, widened to the arm and tucked under it."""
+
+def _principal(pts: list[Point]) -> tuple[Point, Point]:
+    """The centroid of `pts` and the unit direction of their longest spread."""
+    n = len(pts)
+    mx = sum(x for x, _ in pts) / n
+    my = sum(y for _, y in pts) / n
+    sxx = sum((x - mx) ** 2 for x, _ in pts)
+    syy = sum((y - my) ** 2 for _, y in pts)
+    sxy = sum((x - mx) * (y - my) for x, y in pts)
+    a = 0.5 * math.atan2(2 * sxy, sxx - syy)
+    return (mx, my), (math.cos(a), math.sin(a))
+
+
+def _cuff_opening(sk: Skeleton, p: CharacterParams, side: int) -> tuple[Point, float, Point]:
+    """`(centre, half_width, out)` of the sleeve's opening a hand comes out of, in
+    the arm's own unswung frame (the frame the hand is drawn in); `out` the unit
+    normal pointing out of the sleeve. On a traced sleeve it is the cuff band's
+    side further along the forearm, a line fitted through it; on a drawn sleeve
+    or a bare arm, the wrist line."""
+    centre_top, _top_y, centre_wrist, wrist_y = _arm_line(sk)
+    cut = _worn_sleeve(sk, p)
+    if cut is None:
+        w = sk.arm_half_w * (1.0 - 0.34 * _limb_build(sk))
+        return (sk.head_cx + side * centre_wrist, wrist_y), w, (0.0, 1.0)
+    centre_elbow = centre_top + (centre_wrist - centre_top) * 0.35
+    fx, fy = side * (centre_wrist - centre_elbow), wrist_y - sk.waist_y
+    place = _sleeve_placement(sk, cut, side)
+    pts = [
+        (sk.head_cx + x * sk.head_r, sk.head_cy + y * sk.head_r)
+        for x, y in (place(q) for q in _chain_points(cut.cuff, 16))
+    ]
+    (cx, cy), (ax, ay) = _principal(pts)
+    mx, my = -ay, ax
+    if mx * fx + my * fy < 0:
+        mx, my = -mx, -my
+    far = [(x, y) for x, y in pts if (x - cx) * mx + (y - cy) * my > 0]
+    (fcx, fcy), (ex, ey) = _principal(far)
+    t = [(x - fcx) * ex + (y - fcy) * ey for x, y in far]
+    mid = (fcx + ex * (max(t) + min(t)) / 2, fcy + ey * (max(t) + min(t)) / 2)
+    ox, oy = -ey, ex
+    if ox * fx + oy * fy < 0:
+        ox, oy = -ox, -oy
+    return mid, (max(t) - min(t)) / 2, (ox, oy)
+
+
+def _traced_placement(sk: Skeleton, p: CharacterParams, side: int) -> Callable[[Point], Point]:
+    """Maps a traced hand's point onto the figure, in its arm's unswung frame: the
+    hand turned so its traced wrist lies along the cuff's opening, facing out of
+    it, its wrist's centre on the opening's, tucked under the cuff (the owner,
+    2026-09-27, `harness/trace_hands/cuff_fit.py`); the open hand's wrist
+    widened to the opening. Mirrored per side: the open hand was traced on the
+    viewer's right, the grip on the left."""
+    grip = side == -1 and p.outfit.staff_color is not None
+    mirror = (side == 1) if grip else (side == -1)
+    ix, iy = _HAND_GRIP_INTO if grip else _HAND_RELAXED_INTO
+    if mirror:
+        ix = -ix
+    (mx, my), half, (ox, oy) = _cuff_opening(sk, p, side)
+    theta = math.atan2(oy, ox) - math.atan2(iy, ix)
+    cos, sin = math.cos(theta), math.sin(theta)
+    k = _HAND_TRACED_LENGTH * sk.head_r
+    widen = 1.0 if grip else _HAND_WRIST_FILL * half / (_traced_wrist_half(_HAND_RELAXED) * k)
+    bx, by = mx - ox * _HAND_CUFF_TUCK * sk.head_r, my - oy * _HAND_CUFF_TUCK * sk.head_r
+
+    def place(q: Point) -> Point:
         x, y = q
-        if grip or y >= _HAND_WRIST_STRETCH:
-            return q
-        t = 1.0 - max(0.0, y) / _HAND_WRIST_STRETCH
-        return (x * (1.0 + (widen - 1.0) * t * t), y - _HAND_WRIST_TUCK * t * t)
+        if not grip and y < _HAND_WRIST_STRETCH:
+            t = 1.0 - max(0.0, y) / _HAND_WRIST_STRETCH
+            x *= 1.0 + (widen - 1.0) * t * t
+        x = (-x if mirror else x) * k
+        y *= k
+        return (bx + x * cos - y * sin, by + x * sin + y * cos)
+
+    return place
+
+
+def _traced_hand(sk: Skeleton, p: CharacterParams, side: int) -> str:
+    """A traced hand on `side`: gripping the staff when this is the hand holding
+    it, hanging open otherwise, fitted to its cuff (`_traced_placement`)."""
+    grip = side == -1 and p.outfit.staff_color is not None
+    place = _traced_placement(sk, p, side)
+    sw = _stroke_w(sk)
 
     def pt(q: Point) -> str:
-        q = fit(q)
-        x = (q[0] - ax) * k
-        return f"{cx + (-x if mirror else x):.2f} {wrist_y + (q[1] - ay) * k:.2f}"
+        x, y = place(q)
+        return f"{x:.2f} {y:.2f}"
 
     def path(ch: Chain, closed: bool) -> str:
         start, segs = ch
@@ -7726,7 +7797,7 @@ def _traced_hand(
         return d + " Z" if closed else d
 
     parts = []
-    for outline, holes, lines in pieces:
+    for outline, holes, lines in _HAND_GRIP if grip else _HAND_RELAXED:
         d = " ".join(path(ch, True) for ch in (outline, *holes))
         parts.append(
             f'<path d="{d}" fill="{p.skin_tone}" fill-rule="evenodd" stroke="{OUTLINE}" '
@@ -7737,14 +7808,7 @@ def _traced_hand(
                 f'<path d="{path(ln, False)}" fill="none" stroke="{OUTLINE}" '
                 f'stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
             )
-    out = "".join(parts)
-    if grip:
-        # Upright along the staff whatever the arm's swing: the arm's group turns
-        # the hand with it, and this turns it back about the wrist.
-        swing = p.right_arm_out if side == -1 else p.left_arm_out
-        if swing:
-            out = f'<g transform="rotate({side * swing:.2f} {cx:.1f} {wrist_y:.1f})">{out}</g>'
-    return out
+    return "".join(parts)
 
 
 def _hand(
@@ -7758,8 +7822,8 @@ def _hand(
     build, and at this size separate digits read as noise rather than as a
     hand.
     """
-    if p.hand_style == "traced":
-        return _traced_hand(sk, p, cx, wrist_y, w_wrist, side)
+    if _hand_traced(p, side):
+        return _traced_hand(sk, p, side)
     hw = w_wrist * 1.02
     length = _hand_length(sk)
     tip = hw * (1.0 - 0.32 * sk.build)

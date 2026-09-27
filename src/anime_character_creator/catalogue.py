@@ -531,6 +531,7 @@ assert "body" in _CHARACTER_FIELDS
 # choice per character, the owner's call, not tied to the height.
 HAND_LABELS: dict[str, str] = {
     "mitten": "Mitten (chibi)",
+    "grip": "Drawn grip on a staff",
     "traced": "Drawn hands",
 }
 assert set(HAND_LABELS) == set(HAND_STYLES)
