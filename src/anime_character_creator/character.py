@@ -6201,7 +6201,9 @@ def _hand_centre(sk: Skeleton, p: CharacterParams, s: int) -> Point:
     """
     _, _, centre_wrist, wrist_y = _arm_line(sk)
     px, py = _arm_pivot(sk, p, s)
-    hx, hy = sk.head_cx + s * centre_wrist, wrist_y + _hand_length(sk) * 0.5
+    hx, hy = _mitten_placement(sk, p, s, sk.head_cx + s * centre_wrist, wrist_y)(
+        0.0, _hand_length(sk) * 0.5
+    )
     if _hand_traced(p, s) and s == -1 and p.outfit.staff_color is not None:
         # A traced grip holds the staff in its channel (`_grip_channel`).
         hx, hy = _traced_placement(sk, p, s)(_grip_channel())
@@ -7811,6 +7813,28 @@ def _traced_hand(sk: Skeleton, p: CharacterParams, side: int) -> str:
     return "".join(parts)
 
 
+def _mitten_placement(
+    sk: Skeleton, p: CharacterParams, side: int, cx: float, wrist_y: float
+) -> Callable[[float, float], Point]:
+    """Maps a mitten's `(offset, down)` onto the figure, in its arm's unswung
+    frame: `offset` across the wrist (the right hand's, mirrored per side),
+    `down` along the hand from its wrist line. Hanging straight down from the
+    wrist on a drawn sleeve or a bare arm; on a traced sleeve, turned so its
+    wrist line lies on the cuff's opening, centred on it and facing out of it
+    (`_cuff_opening`), the way `_traced_placement` fits a traced hand. The
+    mitten is drawn over its cuff, so its top edge sits on the cuff's edge
+    rather than tucked under it (the owner, 2026-09-27)."""
+    if _worn_sleeve(sk, p) is None:
+        return lambda offset, down: (cx + side * offset, wrist_y + down)
+    (mx, my), _half, (ox, oy) = _cuff_opening(sk, p, side)
+
+    def place(offset: float, down: float) -> Point:
+        x = side * offset
+        return (mx + x * oy + down * ox, my - x * ox + down * oy)
+
+    return place
+
+
 def _hand(
     sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float, side: int
 ) -> str:
@@ -7827,18 +7851,21 @@ def _hand(
     hw = w_wrist * 1.02
     length = _hand_length(sk)
     tip = hw * (1.0 - 0.32 * sk.build)
+    place = _mitten_placement(sk, p, side, cx, wrist_y)
 
-    def x(offset: float) -> float:
-        """Offsets are for the right hand, thumb toward -x; the left mirrors."""
-        return cx + side * offset
+    def pt(offset: float, down: float) -> str:
+        """Offsets are for the right hand, thumb toward -x; the left mirrors.
+        `down` is how far along the hand from its wrist line."""
+        x, y = place(offset, down)
+        return f"{x:.1f} {y:.1f}"
 
     d = (
-        f"M {x(hw):.1f} {wrist_y:.1f} "
-        f"Q {x(hw * 1.14):.1f} {wrist_y + length * 0.55:.1f} {x(tip * 0.74):.1f} {wrist_y + length:.1f} "
-        f"Q {x(0.0):.1f} {wrist_y + length * 1.16:.1f} {x(-tip * 0.70):.1f} {wrist_y + length * 0.97:.1f} "
-        f"Q {x(-hw * 1.02):.1f} {wrist_y + length * 0.80:.1f} {x(-hw * 0.86):.1f} {wrist_y + length * 0.60:.1f} "
-        f"Q {x(-hw * 1.32):.1f} {wrist_y + length * 0.50:.1f} {x(-hw * 1.12):.1f} {wrist_y + length * 0.28:.1f} "
-        f"Q {x(-hw * 0.98):.1f} {wrist_y + length * 0.16:.1f} {x(-hw):.1f} {wrist_y:.1f} "
+        f"M {pt(hw, 0.0)} "
+        f"Q {pt(hw * 1.14, length * 0.55)} {pt(tip * 0.74, length)} "
+        f"Q {pt(0.0, length * 1.16)} {pt(-tip * 0.70, length * 0.97)} "
+        f"Q {pt(-hw * 1.02, length * 0.80)} {pt(-hw * 0.86, length * 0.60)} "
+        f"Q {pt(-hw * 1.32, length * 0.50)} {pt(-hw * 1.12, length * 0.28)} "
+        f"Q {pt(-hw * 0.98, length * 0.16)} {pt(-hw, 0.0)} "
         f"Z"
     )
     sw = _stroke_w(sk)

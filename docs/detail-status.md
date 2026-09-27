@@ -7,8 +7,8 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 Paused 2026-09-27 at the owner's request (the weekly limit). D0 to D4 done;
 next is **D5, the hair** (strand lines and bangs parted into locks, starting
 with `long_traced`, Katherina's), a study first. Open, all the owner's to
-decide later: which presets take which `hand_style` (all "mitten" now; "grip"
-recommended for Katherina); a relaxed hand pose of its own; the chin and the
+decide later: which presets take which `hand_style` (all "mitten", the owner's
+call on 2026-09-27 until the traced hands get another pass); a relaxed hand pose of its own; the chin and the
 lid crease (deferred); `../valley_of_mist` not regenerated since the detail
 pass began (the owner: not for now; the Everglow and Katherina covers were).
 Tools: the baseline `harness/detail/baseline.py`, the byte guard
@@ -29,6 +29,19 @@ catalogue change; the local server may still be running on port 8000.
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4d follow-up: the mitten fitted to a traced cuff (2026-09-27)
+
+The owner: Katherina's hands did not meet her sleeves, the mitten's flat top
+off to one side of the traced cuff's slanted edge. The cuff fit above only
+reached the traced hands; the mitten still hung from the plain arm's wrist.
+`_mitten_placement` now turns it onto the cuff's opening (`_cuff_opening`),
+centred and facing out of it, its top edge on the cuff's edge rather than
+tucked under (it is drawn over the coat), and `_hand_centre` follows, so the
+staff still runs through the fist. Only Katherina wears a traced sleeve, so
+only her `ref-out/` render changed. Compared mitten, grip and traced side by
+side on her; the owner kept the mitten as the default for now, the traced
+hands wanting more work before they are picked up again.
 
 ### D1 follow-up: the line under the chin (2026-09-27)
 
