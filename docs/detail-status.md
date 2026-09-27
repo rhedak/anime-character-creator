@@ -26,11 +26,33 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a, D4b, the bare knee done; D4c (fingers) next |
+| D4 body at height | D4a, D4b, the bare knee done; D4c study with the owner |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4c: the hands, research and a study (2026-09-27)
+
+The owner asked for proper research first. A Sonnet delegate (59k tokens)
+read drawing tutorials and style guides: `docs/detail-inventory/hands-research.md`
+(sources listed there). What is sourced: chibi and distant figures keep the
+thumb and drop creases and nails first; a hand is a finger mass plus a thumb;
+a grip is stacked curves, one per finger, down the pole, the thumb the anchor;
+knuckles are interior lines at the joints, not notches in the outline. The
+delegate's level recommendations for our sizes are its own inference and were
+treated as a hypothesis.
+
+`harness/detail/hand_study.py` draws levels over today's mitten as interior
+lines, for the relaxed hand and Katherina's hand on the staff (drawn over the
+staff already), at 4x and at the smallest insert size. Seen: **level 1** (a
+thumb crease) makes the thumb its own part on both hands, cleanly; the grip's
+**stacked finger rolls** (levels 1 to 3) read as fingers round the staff;
+level 2's two finger lines at the tips of the relaxed hand read as a paw, the
+failure the research warned of; **level 3** (a fold where the fingers curl
+under, one separation below it) reads as a loose fist. At the insert size
+every level shows the same silhouette: nothing turns to mud, the lines just
+fade. With the owner.
 
 ### D4: the bare leg's knee built (2026-09-27)
 
