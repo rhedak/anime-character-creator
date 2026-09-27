@@ -55,9 +55,14 @@ def params_from_dict(data: dict) -> CharacterParams:
     # chibi counterpart is the same cut.
     if data.get("hairstyle") == "long_traced_real":
         data["hairstyle"] = "long_traced"
+    # The second eye style (`anime`) went with its `eye_glow` knob
+    # (`docs/detail-plan.md`); a link carrying either loads with the one eye.
+    face_data = dict(data.pop("face", {}))
+    face_data.pop("eye_style", None)
+    face_data.pop("eye_glow", None)
     try:
         outfit = Outfit(**data.pop("outfit", {}))
-        face = FaceStyle(**data.pop("face", {}))
+        face = FaceStyle(**face_data)
         return CharacterParams(**data, outfit=outfit, face=face)
     except TypeError as e:
         raise ValueError(f"not a valid character: {e}") from e

@@ -21,13 +21,11 @@ from anime_character_creator import (
     BUILDS,
     DISPLAY_NAMES,
     EXPRESSIONS,
-    EYESTYLES,
     HAIRSTYLES,
     NEUTRAL_BASES,
     PRESETS,
     ROSTERS,
     CharacterParams,
-    FaceStyle,
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
     cover,
@@ -54,33 +52,6 @@ def test_named_characters_render(preset: str, build: str) -> None:
 @pytest.mark.parametrize("hairstyle", sorted(HAIRSTYLES))
 def test_every_hairstyle_renders_on_a_default_character(hairstyle: str) -> None:
     svg = render_character(CharacterParams(hairstyle=hairstyle))
-    ET.fromstring(svg)
-
-
-@pytest.mark.parametrize("eye_style", sorted(EYESTYLES))
-@pytest.mark.parametrize("build", sorted(BUILDS))
-def test_every_eyestyle_renders_on_a_default_character(eye_style: str, build: str) -> None:
-    p = CharacterParams(face=FaceStyle(eye_style=eye_style))
-    svg = render_character(p)
-    ET.fromstring(svg)
-
-
-def test_realistic_eyestyle_is_every_preset_s_own_default() -> None:
-    """`eye_style` defaults to "realistic" on `FaceStyle` itself, so a preset
-    that never mentions it renders exactly as it did before `EYESTYLES`
-    existed; this is what keeps `ref-out/` byte-identical across that
-    change."""
-    for name in sorted(PRESETS):
-        assert PRESETS[name].face.eye_style == "realistic"
-
-
-@pytest.mark.parametrize("glow", [0.0, 0.5, 1.0])
-@pytest.mark.parametrize("build", sorted(BUILDS))
-def test_eye_glow_extremes_render_on_the_anime_style(glow: float, build: str) -> None:
-    """`eye_glow` is only read by `EYESTYLES["anime"]`; 0 turns its two
-    secondary highlights off rather than erroring, per the owner's ask."""
-    p = CharacterParams(face=FaceStyle(eye_style="anime", eye_glow=glow))
-    svg = render_character(p)
     ET.fromstring(svg)
 
 
@@ -2307,6 +2278,17 @@ def test_an_old_link_loads_as_the_tall_chibi():
     assert real_hair.hairstyle == "long_traced"
     assert p.body == CharacterParams().body
     assert render_character(p) == render_character(PRESETS["satoko"])
+
+
+@pytest.mark.parametrize("style", ["realistic", "anime"])
+def test_an_old_link_with_an_eye_style_loads_with_the_one_eye(style):
+    """The second eye style and its `eye_glow` knob are retired
+    (`docs/detail-plan.md`); a link carrying either loads with the one eye."""
+    from anime_character_creator.urlstate import params_from_dict, params_to_dict
+
+    old = params_to_dict(PRESETS["satoko"])
+    old["face"] = {**old["face"], "eye_style": style, "eye_glow": 0.5}
+    assert render_character(params_from_dict(old)) == render_character(PRESETS["satoko"])
 
 
 @pytest.mark.parametrize("h", [0.8, 1.3])

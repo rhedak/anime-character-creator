@@ -36,7 +36,6 @@ from .character import (
     BODY_TYPES,
     COAT_CUTS,
     COLLAR_CUTS,
-    EYESTYLES,
     HAIRSTYLES,
     SKIRT_CUTS,
     SLEEVE_CUTS,
@@ -567,17 +566,7 @@ FACE_SCAR: SelectField = _face_select(
     "scar_side", "Scar", ((0, "None"), (-1, "Left cheek"), (1, "Right cheek"))
 )
 
-# Which of `EYESTYLES` draws the eye, exposed the way the plan's "swap
-# between the hairstyles that already exist" treats hairstyles: the two
-# styles are already in the generator, this just lets a visitor pick. Values
-# come from `EYESTYLES` itself, keyed as a plain dict the way `HAIRSTYLES`
-# keys hairstyles, so a third style added there shows up here with no second
-# list to keep in step.
-FACE_EYE_STYLE: SelectField = _face_select(
-    "eye_style", "Eye style", tuple((name, name.capitalize()) for name in EYESTYLES)
-)
-
-FACE_SELECTS: tuple[SelectField, ...] = (FACE_EYE_STYLE, FACE_SCAR)
+FACE_SELECTS: tuple[SelectField, ...] = (FACE_SCAR,)
 for _fs in FACE_SELECTS:
     assert _fs.field in _FACE_FIELDS
 

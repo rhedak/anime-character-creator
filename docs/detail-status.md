@@ -4,8 +4,8 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 
 ## RESUME
 
-D0 done (2026-09-27). Next: D1's line-weight study, once the owner has
-answered D0's questions (below, under the stroke inventory). The baseline is
+D0 done (2026-09-27), and the second eye style retired. Next: D1's
+line-weight study. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
 `harness/tall_chibi/height_range.py`; the inventories are in
 `docs/detail-inventory/`. The plan is committed at 7b8a2f7.
@@ -23,6 +23,18 @@ answered D0's questions (below, under the stroke inventory). The baseline is
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### The second eye style retired (2026-09-27)
+
+`_eye_anime`, its `eye_glow` knob, the `eye_style` field and the
+`EYESTYLES` registry are gone; `_eye_realistic` is now `_eye`, the one eye
+D2 redraws. The web tool's eye style select went with the catalogue entry;
+an old link carrying `eye_style` or `eye_glow` loads with the one eye
+(`urlstate`, tested). **Predicted:** every render byte-identical, since no
+preset used the style; the suite at 483 minus the 6 eye-style tests plus 2
+old-link tests. **Measured:** `harness/tall_chibi/snapshot.py`, 105 renders
+`cmp`-identical to the committed tree's (its two `eyes.*` cases dropped);
+`./refresh-ref-out.sh --check` matches; 479 passed, 1 skipped.
 
 ### D0: the line-weight inventory (2026-09-27)
 
@@ -60,12 +72,8 @@ What it means for D1, checked by reading:
 - **Not tracking the weight**: the goggles' lens rim (from `lens_r`) and the
   staff crystal's outline (full weight on a small shape).
 
-**Questions for the owner, from D0:**
-
-1. `_eye_anime`, used by no preset: keep as is, upgrade it in D2 alongside
-   `_eye_realistic`, or retire it? Recommendation: retire, which halves D2.
-2. Commits for this campaign: the usual one-liners as each step lands, as
-   in the last campaigns?
+**The owner's answers (2026-09-27):** retire `_eye_anime`; commit as each
+step lands with the usual one-liners.
 
 ### D0: the baseline (2026-09-27, at 7b8a2f7)
 

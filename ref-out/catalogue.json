@@ -761,20 +761,6 @@
     ],
     "selects": [
       {
-        "field": "eye_style",
-        "label": "Eye style",
-        "options": [
-          {
-            "value": "realistic",
-            "label": "Realistic"
-          },
-          {
-            "value": "anime",
-            "label": "Anime"
-          }
-        ]
-      },
-      {
         "field": "scar_side",
         "label": "Scar",
         "options": [

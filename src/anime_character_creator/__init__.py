@@ -20,7 +20,6 @@ how the parts fit together.
 from __future__ import annotations
 
 from .character import (
-    EYESTYLES,
     HAIRSTYLES,
     CharacterParams,
     Expression,
@@ -40,7 +39,6 @@ __all__ = [
     "DEFAULT_HEADS",
     "DISPLAY_NAMES",
     "EXPRESSIONS",
-    "EYESTYLES",
     "HAIRSTYLES",
     "NEUTRAL_BASES",
     "PRESETS",
@@ -53,8 +51,8 @@ __all__ = [
     "Skeleton",
     "build_skeleton",
     "render_character",
-    "skeleton_for",
     "shade",
+    "skeleton_for",
 ]
 
 __version__ = "0.1.0"

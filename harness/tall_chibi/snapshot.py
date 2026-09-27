@@ -17,7 +17,6 @@ import os
 import sys
 from dataclasses import replace
 
-from anime_character_creator import EYESTYLES
 from anime_character_creator import character as c
 from anime_character_creator.presets import EXPRESSIONS, NEUTRAL_BASES, PRESETS
 
@@ -35,8 +34,6 @@ def cases() -> dict[str, c.CharacterParams]:
     base = c.CharacterParams()
     for h in sorted(c.HAIRSTYLES):
         out[f"hair.{h}"] = replace(base, hairstyle=h)
-    for e in sorted(EYESTYLES):
-        out[f"eyes.{e}"] = replace(base, face=replace(base.face, eye_style=e))
     for x in sorted(EXPRESSIONS):
         out[f"expr.{x}"] = EXPRESSIONS[x].applied_to(base)
     for b in sorted(c.BODY_TYPES):

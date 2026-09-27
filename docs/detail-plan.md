@@ -82,7 +82,7 @@ every height, and anything added to the head carries to every height free.
   `character.py`, 20 of them with a fraction; each classed as silhouette,
   interior, or feature (lash, brow, mouth).
 - The face: `_face`, `_eye_realistic` (every preset uses it), `_eye_anime`
-  (no preset uses it: keep, upgrade too, or retire), the brows, the mouth,
+  (no preset uses it; retired on 2026-09-27, `_eye_realistic` is now `_eye`), the brows, the mouth,
   and every `FaceStyle` knob and expression they must keep honouring.
 - The hands (`_hand`, `_hand_length`, `_hand_centre`), the limbs'
   outlines, and `_KEEP_WS` in `skeleton.py`, which the height stretch holds.
@@ -107,7 +107,7 @@ green.
 
 ### D2. Eyes
 
-`_eye_realistic` redrawn in the reference's spirit, still flat:
+`_eye` (formerly `_eye_realistic`) redrawn in the reference's spirit, still flat:
 
 - the upper lash as a filled shape, thickening toward the outer corner,
   with a flick;
