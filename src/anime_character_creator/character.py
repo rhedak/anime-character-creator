@@ -8932,7 +8932,7 @@ def _lid_points(quads: list[tuple[Point, Point, Point]], first: int, last: int) 
     return pts
 
 
-def _eye_lash(er: float, f: FaceStyle, edge_w: float) -> list[Point]:
+def _eye_lash(er: float, f: FaceStyle, edge_w: float, reach: float | None = None) -> list[Point]:
     """The upper lash as a closed outline in eye-local units: its upper edge
     along the lid pushed outward by the lash's thickness, the flick's tip, and
     back along the lid half a line inside it, so the lash covers where the
@@ -8963,6 +8963,11 @@ def _eye_lash(er: float, f: FaceStyle, edge_w: float) -> list[Point]:
     ang = math.radians(-_LASH_FLICK_ANGLE)
     fx = tx * math.cos(ang) - ty * math.sin(ang)
     fy = tx * math.sin(ang) + ty * math.cos(ang)
+    # Shortened, never lengthened, so its tip stays `reach` from the eye's centre:
+    # a flick running past the face's edge reads as the eye itself overflowing
+    # the face, which the owner found creepy (2026-09-27).
+    if reach is not None and fx > 0.0:
+        flick = max(0.0, min(flick, (reach - lid[n][0]) / (fx * er)))
     tip = (
         lid[n][0] + fx * er * flick,
         lid[n][1] + fy * er * flick - er * outer * 0.5,
@@ -8979,6 +8984,7 @@ def _eye(
     eye_color: str,
     sw: float,
     pupil_ratio: float = 0.40,
+    reach: float | None = None,
 ) -> str:
     d, _lid = _eye_shape(ex, ey, er, side, f)
     clip_id = f"eye-{'l' if side < 0 else 'r'}"
@@ -9047,7 +9053,7 @@ def _eye(
         f'stroke-width="{edge_w * 0.8:.2f}" stroke-linecap="round" />'
     )
     parts.append(
-        f'<path d="{path(_eye_lash(er, f, edge_w), closed=True)}" fill="{OUTLINE}" stroke="none" />'
+        f'<path d="{path(_eye_lash(er, f, edge_w, reach), closed=True)}" fill="{OUTLINE}" stroke="none" />'
     )
     return "".join(parts)
 
@@ -9105,12 +9111,16 @@ def aged_face(face: FaceStyle, years: float = 1.0) -> FaceStyle:
     `years` 0 leaves it alone, 1 is the cast's oldest. `presets.aged` says why
     the eye carries almost all of it; `CharacterParams.face_age` applies it at
     render time above 1."""
+    # The eye's terms at a third of what `aged()` first took (the eye shrank by
+    # 14% and closed by 16% at the cast's oldest), for the same reason as
+    # `_MATURE_EYE_SHARE`: within one story the eyes should not differ this
+    # much; the grown face's jaw and nose now carry most of the age.
     return replace(
         face,
-        eye_size=face.eye_size * (1 - 0.14 * years),
-        eye_openness=face.eye_openness * (1 - 0.16 * years),
-        eye_lower_lid=face.eye_lower_lid * (1 - 0.07 * years),
-        iris_size=face.iris_size * (1 - 0.09 * years),
+        eye_size=face.eye_size * (1 - 0.14 / 3 * years),
+        eye_openness=face.eye_openness * (1 - 0.16 / 3 * years),
+        eye_lower_lid=face.eye_lower_lid * (1 - 0.07 / 3 * years),
+        iris_size=face.iris_size * (1 - 0.09 / 3 * years),
         brow_weight=face.brow_weight * (1 + 0.18 * years),
     )
 
@@ -9264,11 +9274,13 @@ def _blush(skin: str) -> tuple[str, float]:
 # longer face than ours (`docs/detail-status.md`, D0).
 _MATURE_EYE_DROP = 0.06
 # And how much of the retired adult build's change to the eye itself (its
-# openness, width, corner, size, spacing and pupil) face maturity carries: the
-# full change left an adult squinting, where the reference keeps a large, open
-# eye on a grown face (the owner's call, 2026-09-27). The skull and the mouth
-# take all of theirs.
-_MATURE_EYE_SHARE = 0.5
+# openness, width, corner, size, spacing and pupil) face maturity carries. At
+# half, the owner found the grown face's eye too small against the reference's
+# (2026-09-27); on the rebuilt Everglow cover, too different within one story:
+# the eye's area fell to 0.70 at face age 1. How big a character's eyes are is
+# `FaceStyle.eye_size`'s to say; the age now only nudges it
+# (`harness/detail/eye_age_study.py`, the owner's pick "light").
+_MATURE_EYE_SHARE = 0.2
 
 
 def _eye_build(sk: Skeleton) -> float:
@@ -9311,10 +9323,19 @@ def _nose(sk: Skeleton, sw: float) -> str:
     return "".join(parts)
 
 
+# How far inside the face's edge an eye's outermost ink (the lash's flick) has to
+# stay, in head radii (`_face`, `_eye_lash`).
+_EYE_EDGE_CLEAR = 0.03
+
+
 def _face(sk: Skeleton, p: CharacterParams) -> str:
     r = sk.head_r
     cx, cy = sk.head_cx, sk.head_cy
     eye_dx, eye_y, eye_r, f = _eye_placement(sk, p)
+    # How far out from an eye's centre its lash may reach: the face's edge at the
+    # eye's height, less `_EYE_EDGE_CLEAR`.
+    edge = _head_edge_x((eye_y - cy) / r, sk.face_build) * r
+    reach = edge - eye_dx - _EYE_EDGE_CLEAR * r
     sw = _stroke_w(sk)
     # Brows are hair, so they carry the hair's own darker tone rather than the
     # outline color. On dark hair the difference vanishes, which is correct.
@@ -9339,7 +9360,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         if f.eyes_closed:
             parts.append(_eye_closed(ex, eye_y, eye_r, side, f, sw))
         else:
-            parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio))
+            parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio, reach))
 
     if sk.face_maturity > 0.0:
         parts.append(_nose(sk, sw))

@@ -32,6 +32,33 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D3 follow-up: the eye and the age, one story at a time (2026-09-27)
+
+The owner, on a rebuilt Everglow cover: Gero (face age 1.55) and Linnea (0,
+though she is fifteen) looked inconsistent; eye sizes should not differ this
+dramatically within one story; scaling them is fine but as its own choice.
+Measured: the eye's area fell to 0.87 at age 0.4, 0.70 at 1, 0.46 at 2.
+`harness/detail/eye_age_study.py` (now, light, none); the owner's pick
+**light**: `_MATURE_EYE_SHARE` 0.5 to 0.2, `aged_face`'s eye terms at a
+third. The area is now 0.95 at 0.4, 0.87 at 1, 0.76 at 2; how big a
+character's eyes are is `FaceStyle.eye_size`'s (the web tool's Eye size).
+Ages set: Linnea 0.4 (fifteen), Katherina 0.35 (fourteen at the start of her
+story, the owner).
+
+**The eye inside the face.** On the study's "none" row the eyes reached and
+ran over the face's edge, which read as creepy (the owner). Measured with
+"light": the eye's outer corner stays 0.06 head radii inside the face even at
+the top of the web tool's eye size and width, but the lash's flick crossed by
+up to 0.036 there, and by 0.009 on Krista at her own settings. `_eye_lash`
+now shortens the flick (never lengthens it) so its tip stays `_EYE_EDGE_CLEAR`
+(0.03) inside the face's edge at the eye's height; a test holds the corner
+0.04 inside and the lash inside, for every preset at face ages 0, 1 and 2, at
+its own settings and the sliders' tops.
+
+**Measured:** `ref-out/` (all 20) and the bases refreshed; 541 passed, 1
+skipped. The Everglow and Time Slider Katherina covers rebuilt to scratch
+(`out/review/covers_before_after.png`), not yet written to their repos.
+
 ### D4b: the limbs taper with the height (2026-09-27)
 
 The owner's calls over three rounds: the hands follow the wrists; the taper

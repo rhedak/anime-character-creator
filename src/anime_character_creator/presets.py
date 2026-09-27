@@ -961,6 +961,8 @@ VIKTOR = CharacterParams(
 # tried for the same purpose and rejected: it read as a sticker laid over the
 # drawing rather than part of it.
 KATHERINA = CharacterParams(
+    # Fourteen at the start of her story (the owner, 2026-09-27).
+    face_age=0.35,
     # Fourteen; the owner's value (`docs/bust-plan.md`, step 7).
     bust=0.2,
     skin_tone="#f2c9a8",
@@ -1094,6 +1096,8 @@ GERO = CharacterParams(
 # dress bright to catch the little light they have; on the road she has
 # to hood it and later loses the coat binding Gero's wound.
 LINNEA = CharacterParams(
+    # Fifteen (above), a year older than Katherina.
+    face_age=0.4,
     # Fifteen; the owner's value (`docs/bust-plan.md`, step 7).
     bust=0.3,
     skin_tone="#f3d6bd",

@@ -2340,6 +2340,28 @@ def test_the_lash_renders_across_its_range(lash):
     assert FaceStyle().lash == 1.0
 
 
+@pytest.mark.parametrize("age", [0.0, 1.0, 2.0])
+@pytest.mark.parametrize("preset", sorted(PRESETS))
+def test_the_eye_stays_inside_the_face(preset, age):
+    """An eye running over the face's edge reads as creepy (the owner, on the
+    age study's "none" row, 2026-09-27). At every face age, and at the top of
+    the web tool's eye size and width, the eye's outer corner stays well inside
+    the face at the eye's height and the lash's flick inside it."""
+    for size, width in ((None, None), (1.05, 1.10)):
+        p = replace(PRESETS[preset], face_age=age)
+        if size:
+            p = replace(p, face=replace(p.face, eye_size=size, eye_width=width))
+        sk = character.skeleton_for(p)
+        dx, ey, er, f = character._eye_placement(sk, p)
+        edge = character._head_edge_x((ey - sk.head_cy) / sk.head_r, sk.face_build) * sk.head_r
+        corner = max(q[2][0] for q in character._eye_quads(er, f))
+        assert edge - (dx + corner) > 0.04 * sk.head_r
+        edge_w = character._outline_w(character._stroke_w(sk), character._EYE_OUTLINE_W)
+        reach = edge - dx - character._EYE_EDGE_CLEAR * sk.head_r
+        lash = character._eye_lash(er, f, edge_w, reach)
+        assert max(x for x, _ in lash) < edge - dx
+
+
 def test_the_limbs_taper_with_the_height():
     """`docs/detail-plan.md`, D4b: none at 0.8, half the adult taper from 1.3,
     linear between, carried on the skeleton the figure is drawn on."""
