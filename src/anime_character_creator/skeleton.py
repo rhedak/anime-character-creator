@@ -230,11 +230,20 @@ _KEEP_WS = (
 )
 
 
+# How much the body's widths follow the height: `1 + _WIDTH_FOLLOW * (h - 1)`,
+# 18% wider at 1.3 and 12% narrower at 0.8. The neck stays with the head. Kept
+# as it was, every width, a tall figure read lanky, a head on a long pole; the
+# owner's pick from `harness/detail/width_study.py` (0, 0.3, 0.6), 2026-09-27
+# (`docs/detail-plan.md`, D4a).
+_WIDTH_FOLLOW = 0.6
+
+
 def stretched(
     sk: Skeleton, h: float, refit: Callable[[float], Skeleton], legs_share: float = 2 / 3
 ) -> Skeleton:
     """`sk` standing `h` times as tall from the shoulder line to the sole, with
-    the head, the shoulders and every width kept: the height slider
+    the head kept and the body's widths following a little (`_WIDTH_FOLLOW`):
+    the height slider
     (`docs/tall-chibi-plan.md`, R4b). Of the extra (or missing) length,
     `legs_share` goes to the legs, hip to sole, the rest to the torso, shoulder
     to hip: the owner's pick, two thirds, from a study of evenly, legs only and
@@ -268,8 +277,10 @@ def stretched(
         changes[name] = fit.head_cy + y(hr(getattr(sk, name))) * fit.head_r
     for name in _KEEP_YS:
         changes[name] = fit.head_cy + hr(getattr(sk, name)) * fit.head_r
+    grow = 1.0 + _WIDTH_FOLLOW * (h - 1.0)
     for name in _KEEP_WS:
-        changes[name] = getattr(sk, name) / sk.head_r * fit.head_r
+        follow = 1.0 if name == "neck_half_w" else grow
+        changes[name] = getattr(sk, name) / sk.head_r * fit.head_r * follow
     return replace(fit, **changes)
 
 

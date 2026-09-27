@@ -2344,9 +2344,12 @@ def test_the_lash_renders_across_its_range(lash):
 def test_the_height_stretches_below_the_shoulders_only(h):
     """`height` stretches the tall chibi below the shoulder line, two thirds of
     the difference in the legs (`docs/tall-chibi-plan.md`, R4b): against the
-    head, the shoulders and every width stay, the torso changes by a third of
-    what the legs do, and the knee stays half way down the leg. 1.0 is the
-    tall chibi exactly."""
+    head, the shoulder line stays, the body's widths follow the height by
+    `_WIDTH_FOLLOW` and the neck's does not (`docs/detail-plan.md`, D4a), the
+    torso changes by a third of what the legs do, and the knee stays half way
+    down the leg. 1.0 is the tall chibi exactly."""
+    from anime_character_creator.skeleton import _WIDTH_FOLLOW
+
     p = PRESETS["satoko"]
     base, tall = character.skeleton_for(p), character.skeleton_for(replace(p, height=h))
     assert character.skeleton_for(replace(p, height=1.0)) == base
@@ -2355,8 +2358,12 @@ def test_the_height_stretches_below_the_shoulders_only(h):
         return (getattr(sk, name) - sk.head_cy) / sk.head_r
 
     assert hr(tall, "shoulder_y") == pytest.approx(hr(base, "shoulder_y"))
-    for w in ("shoulder_half_w", "waist_half_w", "hip_half_w", "arm_half_w", "leg_half_w"):
-        assert getattr(tall, w) / tall.head_r == pytest.approx(getattr(base, w) / base.head_r)
+    grow = 1.0 + _WIDTH_FOLLOW * (h - 1.0)
+    for w in ("shoulder_half_w", "waist_half_w", "hip_half_w", "arm_half_w", "leg_half_w", "arm_x"):
+        assert getattr(tall, w) / tall.head_r == pytest.approx(
+            getattr(base, w) / base.head_r * grow
+        )
+    assert tall.neck_half_w / tall.head_r == pytest.approx(base.neck_half_w / base.head_r)
     run = lambda sk: hr(sk, "foot_y") - hr(sk, "shoulder_y")  # noqa: E731
     assert run(tall) == pytest.approx(run(base) * h)
     torso = lambda sk: hr(sk, "hip_y") - hr(sk, "shoulder_y")  # noqa: E731

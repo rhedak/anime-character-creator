@@ -26,11 +26,22 @@ through the plan. The baseline is
 | D1 line weights | done |
 | D2 eyes | done |
 | D3 face maturity | done |
-| D4 body at height | D4a study with the owner |
+| D4 body at height | D4a done; D4b next |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D4a: the widths follow the height (2026-09-27)
+
+The owner's pick, k = 0.6: `stretched` scales the body's widths (shoulders,
+waist, hips, hem, arms and where they hang, legs) by `1 + _WIDTH_FOLLOW *
+(h - 1)`, the neck kept. **Predicted:** every preset byte-identical (all at
+height 1.0, where the stretch is not applied). **Measured:** 0 of 105
+snapshot renders differ from the committed tree's (taken with `git stash`;
+an older snapshot, from before the ages, gave a false 60); the height test
+restated (the widths grow by the rule, the neck does not); the web tool
+restaged. 489 passed, 1 skipped.
 
 ### D4a: the widths at height, the study (2026-09-27)
 
