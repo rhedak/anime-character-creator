@@ -1,6 +1,9 @@
 """D3 of `docs/detail-plan.md`: the chibi's moustache, lowered toward the grown
 face's. The owner: the chibi beard has always sat a bit high.
 
+A record: the owner picked "one rule" (2026-09-27) and `_BEARD_TASH_Y`, which
+this patches, went with it, so it no longer runs as written.
+
 At face age 0 the moustache's top edge is `_BEARD_TASH_Y` (0.36 head radii
 below the head's centre, where a nose would be). On a grown face it sits
 `_BEARD_NOSE_GAP` under the nose (`_nose_y`). Variants at age 0: today's 0.36;

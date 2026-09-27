@@ -31,6 +31,24 @@ through the plan. The baseline is
 
 ## Findings, newest first
 
+### D3: one moustache rule at every face age (2026-09-27)
+
+The owner: the chibi's beard has always sat a bit high; match it to the
+grown face's. `harness/detail/beard_height.py` put the moustache's top at
+today's 0.36 head radii, at 0.40, and at the grown face's rule applied at age
+0 too (under the nose's line, about 0.43); the owner picked the one rule. Now
+`tash_y = _nose_y(sk) + _BEARD_NOSE_GAP` at every face age, nose drawn or
+not; `_BEARD_TASH_Y` and the settling blend (`_BEARD_NOSE_ONSET`) are gone.
+The band of hair over the lip comes out the same on the chibi face and the
+grown one (about 0.087 head radii, some 2.7 times the drawn outline), and
+still reads at the smallest insert size.
+
+**Predicted:** only the three bearded men change, in all four states each.
+**Measured:** exactly those 12 of 105 snapshot renders; `ref-out/` refreshed
+(5 changed: Gero, Daizen, Reinhard and the two sheets); the moustache test
+restated against the rule and the drawn outline, at face ages 0 and 1. 489
+passed, 1 skipped.
+
 ### D3: the moustache ends under the nose (2026-09-27)
 
 The moustache's outer corner now drops with the mouth

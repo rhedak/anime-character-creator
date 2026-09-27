@@ -5144,12 +5144,15 @@ _BEARD_SIDEBURN_W_EASE = 2.0
 # 0.36 it is 0.137, about a seventh of a head, which is a moustache. The other end
 # is close: 0.31 was rendered too and the lobe starts climbing toward the nose and
 # reads as a snout.
-_BEARD_TASH_Y = 0.36
-_BEARD_TASH_HALF = 0.28
-# On a grown face the moustache's top sits this far under the nose, in head
-# radii, reached by this face maturity (`_beard`).
+#
+# That was 0.36 head radii at the old, heavier line. On 2026-09-27 the owner found
+# it had always sat a bit high, and the grown face (`docs/detail-plan.md`, D3)
+# needed the edge under its nose anyway: so the top is now `_BEARD_NOSE_GAP` under
+# the nose's line (`_nose_y`) at every face age, about 0.43 on the chibi face. The
+# band over the lip is thinner, and at the lighter line of D1 it still reads as a
+# moustache at the smallest insert size (`harness/detail/beard_height.py`).
 _BEARD_NOSE_GAP = 0.05
-_BEARD_NOSE_ONSET = 0.25
+_BEARD_TASH_HALF = 0.28
 # The lips, showing through. Both as multiples of the mouth's own half width, so
 # the lozenge keeps its proportions on a character whose mouth is narrow; zero
 # draws none.
@@ -5240,15 +5243,13 @@ def _beard(sk: Skeleton, p: CharacterParams) -> str:
     # on a face.
     x_join = inner[-1][0]
     # Both follow the grown face down (`docs/detail-plan.md`, D3): the corner with
-    # the mouth, and the top edge to just under the nose, since a beard ends
-    # between the nose and the mouth rather than growing round the nose. It
-    # settles there by `_BEARD_NOSE_ONSET`, while the nose is still faint, so the
-    # edge never jumps; at face maturity 0 both terms are nothing.
+    # the mouth, and the top edge sits under the nose's line at every face age,
+    # a nose drawn or not, since a beard ends between the nose and the mouth
+    # rather than growing round the nose.
     grown = sk.face_build - sk.build
     corner_y = _MOUTH_Y + 0.02 + _MOUTH_REALISTIC_DROP * grown
     tash_half = _BEARD_TASH_HALF
-    settle = min(1.0, sk.face_maturity / _BEARD_NOSE_ONSET)
-    tash_y = _BEARD_TASH_Y + settle * (_nose_y(sk) + _BEARD_NOSE_GAP - _BEARD_TASH_Y)
+    tash_y = _nose_y(sk) + _BEARD_NOSE_GAP
 
     def line(pts: list[Point], s: int) -> str:
         return "".join(f"L {cx + s * x * r:.1f} {cy + y * r:.1f} " for x, y in pts)

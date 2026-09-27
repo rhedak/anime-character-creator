@@ -1442,8 +1442,9 @@ def test_the_beard_reaches_over_the_mouth_and_the_mouth_survives_it(preset: str)
     )
 
 
+@pytest.mark.parametrize("age", [0.0, 1.0])
 @pytest.mark.parametrize("preset", ["reinhard", "daizen"])
-def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str) -> None:
+def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str, age: float) -> None:
     """There has to be more hair above the lip than there is ink round it.
 
     The moustache is not a number anybody sets. It is what is left between the
@@ -1462,12 +1463,18 @@ def test_the_moustache_is_thicker_than_the_line_that_draws_it(preset: str) -> No
     There is an upper end too and it is not far away, but it is a judgement
     rather than a threshold, so it is recorded and not asserted: at a lobe of
     0.31 the shape climbs toward the nose and reads as a snout.
+
+    The lobe now sits under the nose's line at every face age (`_BEARD_NOSE_GAP`),
+    so the band is checked on the chibi face and the grown one, against the line
+    as drawn since D1 (`_outline_w`).
     """
-    p = PRESETS[preset]
+    p = replace(PRESETS[preset], face_age=age)
     sk = character.skeleton_for(p)
-    lip_top = character._MOUTH_Y - character._BEARD_LIP_H * 0.12 * p.face.mouth_width
-    band = (lip_top - character._BEARD_TASH_Y) * sk.head_r
-    stroke = character._stroke_w(sk)
+    mouth_y = character._MOUTH_Y + character._MOUTH_REALISTIC_DROP * sk.face_build
+    lip_top = mouth_y - character._BEARD_LIP_H * 0.12 * p.face.mouth_width
+    tash_y = character._nose_y(sk) + character._BEARD_NOSE_GAP
+    band = (lip_top - tash_y) * sk.head_r
+    stroke = character._outline_w(character._stroke_w(sk))
     assert band >= stroke * 2, (
         f"{preset} has {band:.1f}px of moustache between the lobe and the "
         f"lip, against a {stroke:.1f}px outline, so it reads as a line above the mouth"

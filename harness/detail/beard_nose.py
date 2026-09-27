@@ -2,7 +2,8 @@
 
 The moustache's top edge and outer corner now follow the grown face: the
 corner with the mouth, the top edge to just under the nose (`_BEARD_NOSE_GAP`),
-settled by face maturity `_BEARD_NOSE_ONSET`. Top row: Gero across the face
+settled by face maturity `_BEARD_NOSE_ONSET` (since replaced by one rule at
+every face age, `beard_height.py`). Top row: Gero across the face
 age range, to look for a jump; bottom row: the three bearded men at their
 proposed ages (`age_lineup.PROPOSED`, the aged ones counted from 1). Faces at
 3x. Writes `out/detail/beard_nose.png`.
