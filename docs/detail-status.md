@@ -5,11 +5,11 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 ## RESUME
 
 D0 and D1 done (2026-09-27; D1 approved), and the second eye style
-retired. D2 done, with `FaceStyle.lash` (the men at 0.4). D3 in progress:
-the face maturity mechanism is in (`CharacterParams.face_maturity`, not yet
-in the web tool); a longer chin and a lid crease are prototypes with the
-owner (`harness/detail/maturity_proto.py`); then maturity and `aged()`
-become one "Age" slider (the owner's point, below).
+retired. D2 done, with `FaceStyle.lash` (the men at 0.4). D3: one Age
+slider (`CharacterParams.face_age`, 0 to 2) in the web tool; the chin and
+the crease deferred (the owner's call). Open in D3: which presets state an
+age (the aged four move from `aged()` onto `face_age`, the adults take
+maturity), a lineup for the owner first.
 The owner does not want `../valley_of_mist` regenerated for now: work
 through the plan. The baseline is
 `harness/detail/baseline.py` (writes `out/detail/`); the height range is
@@ -23,12 +23,34 @@ through the plan. The baseline is
 | D0 inventory and baseline | done |
 | D1 line weights | done |
 | D2 eyes | done |
-| D3 face maturity | mechanism in; chin, crease, one Age slider open |
+| D3 face maturity | Age slider in; presets' ages open |
 | D4 body at height | not started |
 | D5 hair | not started |
 | D6 garment line work | not started |
 
 ## Findings, newest first
+
+### D3: one Age slider (2026-09-27)
+
+The owner's calls on the prototypes: **as built**, no longer chin and no
+crease; the chin deferred and not touched. And, from a user's side, child to
+adult to old is one slider: `CharacterParams.face_age`, 0 to 2, replaces
+`face_maturity`. 0 to 1 is maturity (`Skeleton.face_maturity = min(1,
+face_age)`); 1 to 2 applies `aged_face` at render time (in
+`_eye_placement`, the one place that reads the fields it scales).
+`presets.aged` keeps its name and now calls `character.aged_face`, the
+numbers in one place. Web tool: "Age (child, adult, old)", 0 to 2, beside
+the height.
+
+**Measured:** all 105 snapshot renders identical to before the rename; a
+test that `face_age = 1 + years` renders the same as `aged(face, years)` at
+1; checked in the browser (the slider there, the face older at 1.5, the link
+carrying `face_age`). 487 passed, 1 skipped.
+
+**Not yet:** Chiyo, Daizen, Tenno and Gero still bake `aged()` into their
+face at age 0; moved onto `face_age` they would also take the grown face.
+The web tool ages them twice if a visitor slides their age up. That is the
+presets step, with the owner.
 
 ### D3: the face maturity mechanism (2026-09-27)
 

@@ -73,7 +73,7 @@ def eye(ex, ey, er, side, f, eye_color, sw, pupil_ratio=0.40):
 
 
 def face(p: c.CharacterParams, label: str) -> Image.Image:
-    STATE["maturity"] = p.face_maturity
+    STATE["maturity"] = min(1.0, p.face_age)
     sk = c.skeleton_for(p)
     svg = c.render_character(p, sk, background="#ffffff")
     im = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), scale=3))).convert("RGB")
@@ -88,11 +88,11 @@ def main() -> None:
     k = PRESETS["katherina"]
     k = replace(k, outfit=replace(k.outfit, hat_color=None))
     cols = [
-        ("satoko 0.5", replace(PRESETS["satoko"], face_maturity=0.5)),
-        ("satoko 1", replace(PRESETS["satoko"], face_maturity=1.0)),
-        ("katherina 1", replace(k, face_maturity=1.0)),
-        ("satoshi 1", replace(PRESETS["satoshi"], face_maturity=1.0)),
-        ("gero 1", replace(PRESETS["gero"], face_maturity=1.0)),
+        ("satoko 0.5", replace(PRESETS["satoko"], face_age=0.5)),
+        ("satoko 1", replace(PRESETS["satoko"], face_age=1.0)),
+        ("katherina 1", replace(k, face_age=1.0)),
+        ("satoshi 1", replace(PRESETS["satoshi"], face_age=1.0)),
+        ("gero 1", replace(PRESETS["gero"], face_age=1.0)),
     ]
     rows_spec = (("as built", 0.0, False), ("chin +0.10", 0.10, False), ("chin +0.20", 0.20, False), ("chin +0.10, crease", 0.10, True))
     c._head_pt, c._eye = head_pt, eye

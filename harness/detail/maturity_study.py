@@ -1,6 +1,6 @@
 """D3 of `docs/detail-plan.md`: the face maturity slider, for the owner to judge.
 
-`CharacterParams.face_maturity` (0 the chibi face) moves everything welded to
+`CharacterParams.face_age` (0 the chibi face, up to 1 maturity) moves everything welded to
 the skull onto `Skeleton.face_build`, the retired adult build's face terms
 (the skull's taper to a jaw, the eye's shape, size and spacing, the mouth),
 plus its own: the eyes a little lower (`_MATURE_EYE_DROP`) and a nose growing
@@ -60,7 +60,7 @@ def main() -> None:
     k = replace(k, outfit=replace(k.outfit, hat_color=None))
     people = [("satoko", PRESETS["satoko"]), ("katherina", k), ("satoshi", PRESETS["satoshi"]), ("gero", PRESETS["gero"])]
     grid(
-        [[face(replace(p, face_maturity=m), f"{n} maturity {m}") for n, p in people] for m in (0.0, 0.5, 1.0)],
+        [[face(replace(p, face_age=m), f"{n} maturity {m}") for n, p in people] for m in (0.0, 0.5, 1.0)],
         f"{OUT}/maturity_faces.png",
     )
 
@@ -70,7 +70,7 @@ def main() -> None:
         row = []
         for n in ("satoko", "satoshi"):
             for h in (0.8, 1.0, 1.3):
-                im, sk = render(replace(PRESETS[n], face_maturity=m, height=h), 1.0)
+                im, sk = render(replace(PRESETS[n], face_age=m, height=h), 1.0)
                 s = ref_r / sk.head_r
                 im = im.resize((int(im.width * s), int(im.height * s)), Image.LANCZOS)
                 foot, cx = sk.foot_y * s, sk.head_cx * s
@@ -82,7 +82,7 @@ def main() -> None:
         rows.append(row)
     grid(rows, f"{OUT}/maturity_grid.png")
 
-    sweep = [face(replace(PRESETS["satoko"], face_maturity=i / 10), f"{i / 10:.1f}") for i in range(11)]
+    sweep = [face(replace(PRESETS["satoko"], face_age=i / 10), f"{i / 10:.1f}") for i in range(11)]
     grid([sweep[:6], sweep[6:] + [Image.new("RGB", sweep[0].size, (190, 190, 190))]], f"{OUT}/maturity_sweep.png")
 
 

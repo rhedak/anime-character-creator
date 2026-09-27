@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from .character import CharacterParams, Expression, FaceStyle, Outfit
+from .character import CharacterParams, Expression, FaceStyle, Outfit, aged_face
 
 # The men's upper lash (`FaceStyle.lash`): the full flick read as winged
 # eyeliner on their narrow, sharp-cornered eyes; at this it is a firm upper line
@@ -321,15 +321,11 @@ def aged(face: FaceStyle, years: float = 1.0) -> FaceStyle:
     to `eye_size` and `iris_size`, which are the fields `Expression` is forbidden
     to move because they are who the face is. Same shape of idea, opposite half
     of the dataclass, so it stays a separate thing.
+
+    The numbers live in `character.aged_face`, which `CharacterParams.face_age`
+    also applies at render time, above 1.
     """
-    return replace(
-        face,
-        eye_size=face.eye_size * (1 - 0.14 * years),
-        eye_openness=face.eye_openness * (1 - 0.16 * years),
-        eye_lower_lid=face.eye_lower_lid * (1 - 0.07 * years),
-        iris_size=face.iris_size * (1 - 0.09 * years),
-        brow_weight=face.brow_weight * (1 + 0.18 * years),
-    )
+    return aged_face(face, years)
 
 
 UNIFORM = "#55636d"

@@ -77,7 +77,7 @@ class Skeleton:
     # a waist shift that moves those carries the bust with them. Stored as
     # values they went stale under both (`docs/bust-status.md`).
     bust: float = 0.0
-    # How grown-up the face reads, 0 to 1 (`CharacterParams.face_maturity`).
+    # How grown-up the face reads, 0 to 1 (`CharacterParams.face_age` up to 1).
     # Stored here because everything welded to the skull reads it through
     # `face_build`, not only the face.
     face_maturity: float = 0.0

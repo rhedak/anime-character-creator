@@ -482,6 +482,10 @@ SKIN_SWATCHES: tuple[tuple[str, str], ...] = (
 # the range the owner picked from the study, young at 0.8 to adult at 1.3.
 HEIGHT = RangeField("height", "Height", 0.8, 1.3)
 assert HEIGHT.field in _CHARACTER_FIELDS
+# One axis from child to old (`CharacterParams.face_age`): 0 to 1 the face
+# growing up, 1 to 2 it ageing.
+AGE = RangeField("face_age", "Age (child, adult, old)", 0.0, 2.0)
+assert AGE.field in _CHARACTER_FIELDS
 BUST = RangeField("bust", "Bust", 0.0, 1.0)
 assert BUST.field in _CHARACTER_FIELDS
 # Chest definition bare, 0 for none (`docs/bare-body-plan.md`, step 6): the
@@ -639,6 +643,7 @@ def build_catalogue() -> dict[str, object]:
         },
         "bodies": [{"id": name, "label": BODY_LABELS[name]} for name in sorted(BODY_TYPES)],
         "height": _range_json(HEIGHT),
+        "face_age": _range_json(AGE),
         "colors": [_color_json(c) for c in COLORS],
         "hairstyles": [
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)

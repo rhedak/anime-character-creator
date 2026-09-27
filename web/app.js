@@ -271,6 +271,14 @@ function buildBuildControls() {
     scheduleRender();
   });
 
+  // `catalogue.face_age`: one axis from child to old, beside the height since
+  // the two together say how old a figure reads (`docs/detail-plan.md`, D3).
+  const age = catalogue.face_age;
+  rangeRow(buildControls, age.field, age.label, age.min, age.max, fieldValue(age.field), (v) => {
+    setField(age.field, v);
+    scheduleRender();
+  });
+
   // `catalogue.waist_shift`: where the belt sits, up or down from the build's
   // own. A plain CharacterParams range like `hair_tail`, so no bridge change.
   const ws = catalogue.waist_shift;

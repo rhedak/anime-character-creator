@@ -488,11 +488,13 @@ class CharacterParams:
     # to adult inside the one style; on its own canvas a taller figure has a
     # smaller head, the canvas being a fixed size.
     height: float = 1.0
-    # How grown-up the face reads, 0 (the chibi face) to 1: the skull narrows to
-    # a jaw, the eyes grow smaller, narrower and lower, the mouth drops, a nose
-    # grows in. Its own slider rather than following `height`, since short
-    # adults and tall teenagers both exist (`docs/detail-plan.md`, D3).
-    face_maturity: float = 0.0
+    # How old the face reads, one axis from child to old (`docs/detail-plan.md`,
+    # D3). 0 to 1 is face maturity, the chibi face growing up: the skull narrows
+    # to a jaw, the eyes grow smaller, narrower and lower, the mouth drops, a
+    # nose grows in (`Skeleton.face_maturity`). 1 to 2 ages the grown face the
+    # way `aged_face` says. Its own slider rather than following `height`, since
+    # short adults and tall teenagers both exist.
+    face_age: float = 0.0
     # A bat familiar in flight beside the figure's left shoulder: his fur (and
     # membranes, which the reference draws in the same tone) and his eyes.
     # `None` draws nothing. Two fields rather than one because the book's two
@@ -3960,8 +3962,8 @@ def _skeleton_at(p: CharacterParams) -> Skeleton:
             p.height,
             lambda h: build_skeleton(heads=h, frame=p.frame, bust=p.bust, min_hair_margin=margin),
         )
-    if p.face_maturity:
-        sk = replace(sk, face_maturity=p.face_maturity)
+    if p.face_age > 0.0:
+        sk = replace(sk, face_maturity=min(1.0, p.face_age))
     return sk
 
 
@@ -9062,6 +9064,21 @@ def _scar(sk: Skeleton, side: int) -> str:
     return line(0.52, 0.56, 0.65, 0.35, sw * 0.6) + line(0.55, 0.44, 0.63, 0.49, sw * 0.45)
 
 
+def aged_face(face: FaceStyle, years: float = 1.0) -> FaceStyle:
+    """A face read older, as a scaling of the fields that already exist:
+    `years` 0 leaves it alone, 1 is the cast's oldest. `presets.aged` says why
+    the eye carries almost all of it; `CharacterParams.face_age` applies it at
+    render time above 1."""
+    return replace(
+        face,
+        eye_size=face.eye_size * (1 - 0.14 * years),
+        eye_openness=face.eye_openness * (1 - 0.16 * years),
+        eye_lower_lid=face.eye_lower_lid * (1 - 0.07 * years),
+        iris_size=face.iris_size * (1 - 0.09 * years),
+        brow_weight=face.brow_weight * (1 + 0.18 * years),
+    )
+
+
 def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, float, FaceStyle]:
     """Where an eye sits and how big it is: `(eye_dx, eye_y, eye_r, face)`.
 
@@ -9080,7 +9097,7 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     """
     r = sk.head_r
     cy = sk.head_cy
-    f = p.face
+    f = p.face if p.face_age <= 1.0 else aged_face(p.face, min(1.0, p.face_age - 1.0))
     # Tuned for the realistic build, now retired, and still applied at the
     # tall chibi's pinned `sk.build` (about 0.1): every figure's eyes are open
     # 4% less and their lower lid 2% less than the face asks for. It is how the

@@ -2299,15 +2299,27 @@ def test_an_old_link_with_an_eye_style_loads_with_the_one_eye(style):
 
 
 @pytest.mark.parametrize("m", [0.25, 0.5, 1.0])
-def test_face_maturity_moves_only_the_head(m):
-    """`face_maturity` draws an older face through `Skeleton.face_build`; at 0
-    the face build is the figure's own, and the body does not move with it."""
+def test_face_age_up_to_one_matures_only_the_head(m):
+    """`face_age` up to 1 draws a grown face through `Skeleton.face_build`; at
+    0 the face build is the figure's own, and the body does not move with it."""
     p = PRESETS["satoko"]
-    sk0, sk = character.skeleton_for(p), character.skeleton_for(replace(p, face_maturity=m))
+    sk0, sk = character.skeleton_for(p), character.skeleton_for(replace(p, face_age=m))
     assert sk0.face_build == sk0.build
     assert sk.face_build > sk.build
     assert replace(sk, face_maturity=0.0) == sk0
-    ET.fromstring(render_character(replace(p, face_maturity=m)))
+    ET.fromstring(render_character(replace(p, face_age=m)))
+
+
+@pytest.mark.parametrize("years", [0.3, 1.0])
+def test_face_age_above_one_is_aged_on_the_grown_face(years):
+    """Above 1, `face_age` applies `aged_face` at render time: the same face as
+    one written with `presets.aged` and set at 1."""
+    from anime_character_creator.presets import aged
+
+    p = PRESETS["satoko"]
+    by_age = replace(p, face_age=1.0 + years)
+    by_hand = replace(p, face=aged(p.face, years), face_age=1.0)
+    assert render_character(by_age) == render_character(by_hand)
 
 
 @pytest.mark.parametrize("lash", [0.0, 0.5, 1.0])
