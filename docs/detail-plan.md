@@ -161,9 +161,83 @@ In three parts, each studied first:
   views (the base layer shows it best). Changes every figure; looks right
   at 1.0 as well.
 - **D4c. Finger hints.** A thumb split and one or two creases on the fist
-  and the gripping hand, not full articulation.
+  and the gripping hand, not full articulation. **Superseded, 2026-09-27:**
+  the study (`harness/detail/hand_study.py`) found that lines inside the
+  mitten read as stitches or a paw whatever their number; a hand reads by its
+  silhouette first (`docs/detail-inventory/hands-research.md`). Replaced by
+  D4d.
 
 **Acceptance per part:** before and after at the three heights; the suite
+green.
+
+### D4d. Traced hands, and a registry of hand poses
+
+The owner's call, 2026-09-27: trace the reference's two hands, an exception
+to decision 4 (the reference is otherwise never traced), since a hand is the
+shape eyeballed coordinates get wrong; keep the mitten as the fallback; build
+it so more ways of holding the hand can follow. The method is the
+`trace-reference` skill's (`.claude/skills/trace-reference/SKILL.md`,
+`trace_lib.py`), the way the hat and the staff were done, with its scripts in
+`harness/trace_hands/` and its output in the ignored `out/trace_hands/`.
+
+**The poses to trace**, both on `ref-local/katherina_grok_real/`:
+
+- **relaxed**: her left hand, hanging open beside the dress, fingers slightly
+  curled, the thumb along the front;
+- **grip**: her right hand round the staff, four finger rolls stacked in
+  front of the pole, the thumb over them.
+
+The reference is 1264 x 1568 and each hand about 100 px tall, its outline
+about 3 px, so the silhouettes trace cleanly and the finer creases need a
+looser fit and a look.
+
+**The architecture: a registry, like `HAIRSTYLES`.** `HAND_POSES: dict[str,
+HandPose]`, each pose its outline (a closed chain), its interior lines (open
+chains), the pieces drawn in front of a held prop (a grip's fingers and thumb
+in front of the staff, the palm behind it) and, for a holding pose, the grip
+point a prop passes through. Every chain lives in the pose's own **hand
+frame**: the origin at the wrist's centre, x across the wrist in wrist
+half-widths (positive away from the thumb), y down the hand in the same unit,
+so a pose maps onto any figure's wrist by one uniform scale (never per axis:
+the skill's rule) and mirrors per side. `mitten` becomes a pose too, today's
+path unchanged. Which pose a hand takes is decided in one place: a hand on a
+held staff grips, any other hangs relaxed; later a `CharacterParams` field per
+side can name a pose, and new poses (open, pointing, waving, holding a cup or
+a book) join the registry the same way, traced or constructed.
+
+**The steps:**
+
+- **H0. Calibrate** (read-only). On the reference, each hand's wrist: its
+  centre, width and direction (the forearm's line where it meets the sleeve),
+  so the trace lands in the hand frame; on our figure, the same from `_arms`
+  (the wrist's centre and `w_wrist`). The traced hand's length against its
+  wrist decides its size on ours: measured, the traced proportion is kept, and
+  the owner judges whether the result is too big for a chibi.
+- **H1. Segment and trace**: label the skin components, separate each hand
+  from the sleeve, the staff and the dress; walk the silhouette, grown by half
+  the outline so it lands on the stroke's centre; pick the interior lines out
+  as open chains (the finger separations, the finger rolls, the thumb crease);
+  draw each chain back over the reference, zoomed, until it rides the
+  reference's lines.
+- **H2. Emit**: a script writes the `HAND_POSES` block into `character.py`
+  from the fitted chains, the chains as `Point` and `Segment` constants with a
+  comment on where and how they were traced; `ruff format`.
+- **H3. Draw them**: `_hand` draws the chosen pose, mapped and mirrored, at the
+  usual weights; the staff passes through the grip's grip point
+  (`_staff_placement`), and a grip's fingers go over the staff while its palm
+  stays under.
+- **H4. Check**: side by side with the reference at one hand size; on our
+  figure at 4x and at the smallest insert size; both sides; an arm swung out;
+  the joins at the cuff and sleeve; a very different skin tone; heights 0.8 to
+  1.3. The owner signs off.
+
+**Decisions for the owner along the way:** the traced hand's size against the
+chibi's (H0); and where the mitten stays: a switch per character or per story
+(recommended, since a pose change is a switch, not a slider, and would jump
+if it followed the height), or small figures only.
+
+**Acceptance:** the traced hands side by side with the reference; every preset
+at 4x and at the insert size; the mitten byte-identical when chosen; the suite
 green.
 
 ### D5. Hair
