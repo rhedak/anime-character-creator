@@ -9350,7 +9350,10 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     # chin it is not: the throat stands in front of the underside of the jaw, so a
     # full-weight line there reads as the whole jaw seen edge-on instead of as the
     # front of it. Splitting at the two lower corners of the shape is what lets
-    # the same point data carry both.
+    # the same point data carry both. It is an outline at 0.6 of the silhouette's
+    # weight, the ratio it had before D1's split: drawn as an interior line it
+    # fell to 0.44 and read as a different pen (the owner, 2026-09-27,
+    # `harness/detail/chin_weight.py`).
     anchors = [start] + [end for _, end in segments]
     chin_from, chin_to = 3, 5  # the two segments either side of the chin
     silhouette = _curve(
@@ -9363,7 +9366,7 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
         f'stroke-linecap="round" />'
     )
     parts.append(
-        f'<path d="{under_chin}" fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.6):.2f}" '
+        f'<path d="{under_chin}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.6):.2f}" '
         f'stroke-linecap="round" />'
     )
     return "".join(parts)

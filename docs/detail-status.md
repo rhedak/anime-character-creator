@@ -30,6 +30,18 @@ catalogue change; the local server may still be running on port 8000.
 
 ## Findings, newest first
 
+### D1 follow-up: the line under the chin (2026-09-27)
+
+The owner: the chin reads as a different weight from the rest of the face.
+`_head` draws the line under the chin thinner than the jaw on purpose (the
+throat stands in front of it), at `_interior_w(sw, 0.6)`. Before D1 that was
+0.60 of the silhouette's weight; D1's split took it to 0.44, a visible step at
+the jaw's corners. Compared at 0.44, 0.60, 0.8 and 1.0 on Satoshi, Katherina,
+Reinhard and Chiyo (`harness/detail/chin_weight.py`); at 1.0 the chin read
+heavier than the sides, probably because the hair covers the side lines'
+outer edge (not measured). The owner picked 0.60: now `_outline_w(sw, 0.6)`.
+All 20 `ref-out/` renders and both bases changed; the catalogue did not.
+
 ### D4d: the hands locked in for now (2026-09-27)
 
 The owner: keep the best recommendation, defer the rest (another pass on the
