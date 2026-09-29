@@ -253,6 +253,11 @@ reference), then the other five one at a time.
 **Acceptance per hairstyle:** before and after on every preset wearing it,
 and under a hat.
 
+**The owner's call, 2026-09-29, on the study (`harness/detail/hair_study.py`):
+no strand lines.** The flat mass reads as a choice; lines added inside it read
+as weird, not as detail. What is left of D5 is the fringe's outline parted
+into locks, with no new lines, if the owner wants it.
+
 ### D6. Garment line work
 
 Cuff gathers, seams and folds, one garment at a time. Last, because it
