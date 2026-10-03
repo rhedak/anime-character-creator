@@ -4,18 +4,27 @@ The record for `detail-plan.md`. Procedure: `detail-strategy.md`.
 
 ## RESUME
 
-D0 to D4 done. **D5, the hair**: the study on `long_traced`
-(`harness/detail/hair_study.py`, 2026-09-29, below) ended with the owner
-dropping strand lines and asking for the reference's own hair traced instead
-(`harness/trace_hair/`, then the hair-only reference in `harness/hair_only/`,
-below). The head part transfers; the front/back split and the two locks over
-the shoulders came out messy and cut off. The owner's call: try both a narrow
-straight fall like `katherina_grok_real` and the fuller flare of the hair-only
-reference, and pick by eye. The step list is **D5 todo** below. Nothing in
-`src/` has changed for it. Open, all the owner's to decide later: which presets take which `hand_style` (all "mitten", the owner's
+D0 to D5 done. Next is **D6, garment line work**. **D5, the hair**, for the
+record: after the study on `long_traced` and two traces of realistic
+references (2026-09-29, below), an audit (2026-10-03, below) found why the
+traces did not work: both references draw the hair on a
+realistic body, and below the chin that hair's shape is mostly the body's, so
+no mapping puts it on ours (three were tried). The owner's call: get the
+hairstyle drawn again on the tall-chibi body (`katherina_grok` with only the
+hair changed, the prompt is in the plan below), check it with
+`harness/hair_audit/gate.py` before tracing anything, then trace it the way
+`long_traced` was and build it as a new hairstyle on the `Hairstyle` contract,
+which is what carries a cut to the other presets. The reference
+(`ref-local/katherina_grok_nohat/`) passed, was traced and built as
+`long_parted`, its tips reworked (findings), and Katherina (no side tail) and
+Reika wear it; everyone else keeps their cut. The step list is **D5 plan
+(2026-10-03)** below; the 2026-09-29 todo it replaced is kept after it as a
+record. Open, all the owner's to decide later: a hair clip for Katherina where
+the tail's band was (deferred, the owner, 2026-10-03); which presets take which `hand_style` (all "mitten", the owner's
 call on 2026-09-27 until the traced hands get another pass); a relaxed hand pose of its own; the chin and the
 lid crease (deferred); `../valley_of_mist` not regenerated since the detail
-pass began (the owner: not for now; the Everglow and Katherina covers were).
+pass began (the owner: not for now; the Everglow and Katherina covers were,
+before Katherina's new hair, so they show her old cut and tail).
 Tools: the baseline `harness/detail/baseline.py`, the byte guard
 `harness/tall_chibi/snapshot.py` (take the before from the committed tree with
 `git stash`), and restage the web tool (`./web-stage.sh`) after any preset or
@@ -30,10 +39,178 @@ catalogue change; the local server may still be running on port 8000.
 | D2 eyes | done |
 | D3 face maturity | done |
 | D4 body at height | done (the hands good enough for now; another pass deferred) |
-| D5 hair | strand lines dropped (the owner); the locks alone with the owner |
+| D5 hair | done: `long_parted`, traced off a tall-chibi reference, worn by Katherina and Reika (2026-10-03) |
 | D6 garment line work | not started |
 
-## D5 todo (2026-09-29)
+## D5 plan (2026-10-03)
+
+The audit's recommendation (findings, below), the owner's call. The reference
+is drawn on our body so that nothing below the chin has to be mapped, and the
+`Hairstyle` contract, not the trace, is what makes the cut work on the other
+presets: `long_traced` serves seven of them at `hair_length` 0.16 to 0.95 that
+way.
+
+- [x] 0. The target, pinned: a centre parting; the fringe parted into pointed
+  locks sweeping off it toward the temples; a curtain each side over the face
+  down to the jaw; one lock each side forward over the shoulder, about 0.36
+  head radii wide, ending in a point above the belt; the rest behind the
+  shoulders and arms, ending in pointed tips; the underside behind the neck a
+  darker tone (the owner's call, 2026-09-29). The fall narrow and straight, as
+  on `katherina_grok_real`: on a chibi body the hair falls free, so the
+  hair-only reference's flare was its arms; a flare can be a knob later.
+- [x] 1. The owner generates the reference: `katherina_grok.jpg` edited with
+  the prompt below, a few candidates, one picked by eye for the style. Then the
+  hair cut out with the tool that made `katherina_grok_real/segments/`
+  (`harness/trace_hair/locate.py` found those exact pixel cuts; check the new
+  one the same way). Saved under `ref-local/katherina_hair_chibi/`.
+  **First image** (2026-10-03, `ref-local/katherina_grok_real_nohat/`): made
+  from `katherina_grok_real`, not `katherina_grok`, so the realistic body with
+  the hat and bat removed. Fails the check: soles 14.88 against 5.94, hem 8.98
+  against 4.23, the head scales 12% apart. Not traced below the jaw; kept as
+  the head's source for the fallback, since its crown and right side are no
+  longer hidden. **Second image** (2026-10-03, `ref-local/katherina_grok_nohat/`,
+  made from `katherina_grok`): the one taken forward. Grok also dropped the
+  staff and drew small ears, neither of which touches the hair. Its
+  `segments/` are exact cuts (`harness/hair_audit/segments.py`: the hair's mean
+  colour difference 0.31, none over 20; jacket, dress and collar likewise).
+- [x] 2. The check, before any tracing:
+  `./harness/run.sh harness/hair_audit/gate.py PATH`. The two head scales
+  within 5%, the skirt hem, soles and skirt width within 0.1 head radii of
+  `katherina_grok`'s, by the same code. A failure means regenerate, not map.
+  **`katherina_grok_nohat` passes:** soles +0.062, hem +0.039, skirt
+  half-width +0.007, the head scales 1.0% apart; its eye band lies on
+  `katherina_grok`'s 2 px off (0.012 head radii, correlation 0.945). The first
+  run read the scales 18% apart, which was the check, not the head: the face
+  is at full width for some fifty rows, so "the widest row" moved 49 rows on a
+  one-pixel difference. The vertical scale is now the jaw's run, from the
+  lowest row at 90% of the face's width to the chin, and both controls still
+  hold. Placed on our figures by that calibration alone
+  (`harness/hair_audit/preview_ref.py`), the hair sits on Katherina at 0.8, 1.0
+  and 1.3 and on Satoko and Linnea with no cape and no pinch, ending near the
+  belt at 1.0, below it at 0.8 and above it at 1.3, which is `_hair_fall`'s to
+  even out. **What it shows against the target:** the parting, the fringe locks
+  and their V of forehead, the curtains, a narrow straight fall and pointed
+  tips, flat colour. A second tone at 0.6 of the main one (the owner's 0.65)
+  marks what lies behind: the wedges behind the neck and the back hair seen
+  between the front locks and the arm. The front layer is lighter locks over
+  each shoulder and down the jacket to about the belt. Read by eye as 0.5 to
+  0.7 head radii wide; measured row by row in step 3 it is about 0.27 at the
+  shoulder, narrowing to its point, near `katherina_grok_real`'s 0.36. The
+  owner took it as the style.
+- [x] 3. Trace with the trace-reference skill: the mass, the hairline (the face
+  opening, the curtains and each front lock's inner edge) and the tip edge;
+  0.012 to 0.018 head radii; no edge under two stroke widths (the crop's rule);
+  no holes or islands; the constants emitted by a script.
+  **Done** (`harness/hair_parted/`). `regions.py` splits the exact hair segment
+  by tone (line under 18, dark 18 to 32, light above) into the mass (each row
+  filled between the innermost hair either side, holes filled), the front and
+  the outer falls. The line between each front lock and its outer fall starts
+  inside the hair beside the temple, at (-1.113, -0.198) and (1.113, -0.221),
+  so a seam straight out from there to the silhouette cuts the front from the
+  outer fall above it. `trace.py` walks each region, cuts it at the named
+  points and fits at 0.012, then drops marks until no segment is under 0.0854
+  (two strokes; `_stroke_w` is 0.0427 head radii at every height): the mass 46
+  segments, the hairline 30, the lock edges 10 and 6, the outer falls' inner
+  edges 4 and 3. Each inner edge starts where the dark strip is 0.08 across
+  (at 1.11 and 0.94); above that it is a sliver about 0.04 wide, and two lines
+  that close draw as one heavy one. Overlaid on the reference
+  (`overlay*.png`) every chain rides its line. Two corrections on the way: the
+  segment's alpha takes in only about a pixel of the outline, so the mass is
+  moved a pixel out, not half a line in; and the reference's ear, a hole
+  beside the left lock edge at 0.14 to 0.43, first passed for the strip's top.
+  `emit.py --write` puts the block between markers in `character.py`.
+- [x] 4. A new `Hairstyle` (say `long_parted`), `long_traced` untouched so every
+  other preset stays byte-identical: above `_HAIR_CHEEK_Y` pinned to the skull,
+  below it y a fraction of `_hair_fall` and x as traced (`_long_scaled`'s
+  rule); the front locks through the hairline and `_hair_front`; the underside
+  a `shade()` patch behind the neck; pale tips through `tip_edge`; no strand
+  lines. **Done:** `long_parted`, labelled "Long, front locks". Its mass
+  closes behind the body as `long_traced`'s does; the hairline's closing edge
+  runs up the right lock's edge, out along the seam, over the crown on the
+  mass's own segments and back down the left, so the front cannot paint past
+  the mass; `fall_edge` strokes the lock edges and the silhouette above the
+  seams. `Hairstyle` has a new optional `underside`: a region of the mass
+  painted `shade(hair, 0.65)` (`_HAIR_UNDERSIDE_VALUE`), its tip tone likewise,
+  and the lines bounding it where it shows, each outer fall's inner edge, led
+  in from one anchor up the lock's edge so it splits off that line. The region
+  runs up the lock edges and along the seams lifted 0.03 into the front, so
+  where it is not a drawn line it is under the front, the head or the body.
+  `_long_traced_tip_edge`'s construction moved into `_lifted_tip_edge`,
+  unchanged, for both cuts. Every existing render byte-identical
+  (`./refresh-ref-out.sh --check`); `ref-out/catalogue.json` refreshed for the
+  new option and the web tool restaged.
+- [x] 5. Verify, each prediction written first: the outer edge within 0.2 head
+  radii of the reference's at matched heights (`proportions.py`); every
+  `long_traced` preset switched over in a harness at its own `hair_length`, at
+  heights 0.8, 1.0 and 1.3, with and without hats (Katherina's, Chiyo's
+  scarf), Satoko's pale tips, a blonde and a near-black palette, the insert
+  size; `ruff check`, `ruff format`, `pytest`, `./refresh-ref-out.sh --check`.
+  **Done** (`harness/hair_parted/compare.py`, groups `katherina`, `cast`,
+  `heights`, `palettes`, `small`). The outer edge, rendered through
+  `_hair_mass` at the trace's own length, lies a median 0.02 outside the
+  segment's (most 0.036): the stroke's outer half and the pixel the mass was
+  moved out, against the 0.2 predicted. On Katherina it reads as the
+  reference: the taller crown, the parted fringe and its V, the curtains, a
+  lock each side over the shoulder to points above the belt, the outer falls
+  behind the arms, the darker hair by the neck and in the strip; at 4x the
+  seam does not show and the inner edges leave the lock lines cleanly. Heights
+  0.8 to 1.3 hold, the locks ending above the belt at each. Every `long_traced`
+  wearer at its own `hair_length` takes it; at Chiyo's 0.16 the fall squeezes
+  into a short fan of points under her scarf. Blonde and near black work (on
+  near black the underside and lines barely show, as every line on dark hair
+  does). Satoko's tips turn at about eye height, level across the curtains,
+  higher than on `long_traced` because the tone turns at half the hair's height
+  and this crown is taller. The insert size reads at 1x; on the cast sheet
+  every crown is whole. The tightest headroom, Katherina hat-less at 1.3, is
+  5.9 px. Two things the cut does not do but show with it: Katherina's
+  `hair_tail` still hangs on the right, and her raised staff arm uncovers more
+  of the dark hair behind than the reference's lowered arms. 552 tests pass.
+- [x] 6. The owner picks which presets wear it; then the docs (this file, the
+  plan's D5, `CLAUDE.md`'s note on the reference exceptions). **Katherina and
+  Reika** (the owner, 2026-10-03), Katherina without her side tail; the rest
+  keep theirs. `./refresh-ref-out.sh` moved exactly four renders: the two of
+  them and the two cast sheets they are on. A clip in place of the tail's band
+  is deferred.
+
+**Fallback**, if two or three generations fail the check or lose the style:
+D5's traced head part (it fits within 0.1 to 0.2 head radii), the chibi fall
+below it, and the front lock designed on body landmarks (the old todo's steps
+8 to 10).
+
+**The prompt**, for grok's image edit with `katherina_grok.jpg` as the input:
+
+> Edit this image. Keep everything exactly the same except the hair and the
+> hat: the same character, the same chibi proportions, face, pose, outfit,
+> hands and staff, the same thick black outlines and flat colours, the same
+> framing and the same plain black background.
+>
+> Remove the witch hat completely, so the whole top of her head shows.
+>
+> Give her this hairstyle, in the same dark purple, drawn flat with no shine
+> highlights:
+> - a centre parting at the top of the head;
+> - the fringe split at the parting into several pointed locks that sweep
+>   outward toward the temples, their tips around eyebrow height, with a
+>   narrow V of forehead showing under the parting;
+> - one side lock on each side of the face, over the cheek, down to the jaw;
+> - one long lock on each side that falls forward over the shoulder and down
+>   the front of the jacket, ending in a point a little above the belt;
+> - all the rest of the hair hangs straight down behind the shoulders and the
+>   arms, close to the body and not flaring outward, to just below the belt,
+>   ending in several pointed tips;
+> - the underside of the hair, seen behind the neck between the side locks,
+>   a slightly darker purple.
+>
+> No hair clip. Only a few dark lines between the locks, no strand texture.
+
+Why no hat, clip or sheen: the last traces had to fill in hair the brim and
+the bat hid, the clip's ring was traced as hair, and the sheen's zigzags made
+false lines. Our renderer draws its own hat and clip.
+
+## D5 todo (2026-09-29), superseded
+
+Superseded on 2026-10-03 by the plan above (the audit, in the findings, says
+why); kept as the record of what was tried. Steps 6 to 19 were not done.
 
 Why: the front locks are a fixed-width pixel band (`shoulders.py`, `LOCK_W`)
 that ends in a flat cut, not at the lock's tip. The hair-only reference is a
@@ -162,6 +339,120 @@ Emit, the chosen variant only
   note on the reference exceptions. No commit unless asked.
 
 ## Findings, newest first
+
+### D5: the parted cut's tips (2026-10-03)
+
+The owner: switch Katherina's side tail off with this cut, and the tips still
+look slightly off; then, "the reference has a hairline after the edge", which
+makes it look more natural. `harness/hair_parted/tips.py` paints our drawn ink
+over the reference in its own frame at each tip (Katherina at the trace's own
+length, so nothing is stretched).
+
+- **The shapes were right, the ends were not.** Our lines ride the
+  reference's at every tip. But at each tip the reference's two side lines
+  meet and run on as one line tapering to nothing, 0.09 to 0.16 head radii past
+  where its colour stops (measured on the front locks over the jacket; over the
+  black page line and page are one colour). The trace stops with the colour,
+  since the segment's alpha takes in only about a pixel of line, and our
+  outline closed each tip with its round join: a blunt end. Now
+  `Hairstyle.tip_lines` draws that line, from each tip's apex along its
+  bisector for `_HAIR_TIP_LINE` (0.12), as wide as the outline at the apex and
+  thinning to a point, with the mass for tips behind the body and with the
+  front for those over it. `tips_find.py` finds the tips, corners sharper than
+  62 degrees pointing out of the hair: the four outer-fall points, each front
+  lock's lowest point and the right one's second, and a fringe lock's point on
+  the forehead. Over the reference each new line follows the reference's.
+- **Short falls squashed the tips into hooks**, which the owner's sheets
+  showed as well: the stretch below the cheek line was one linear squash,
+  harmless for long straight sides, but a point at 0.56 of its height (Linnea)
+  curls outward. Holding the last head radius rigid was tried and was worse:
+  the run above it took the whole change, collapsed to a sixth on Linnea, and
+  the silhouette stepped out as a shelf. `_parted_q` now ramps the scale from
+  strongest at the cheek line to lightest at the tips (the square root of the
+  overall scale there), which keeps Linnea's and Satoko's tips upright and
+  pointed with no kink. Chiyo's 1.36, barely below the chin, still curls: the
+  cut has nowhere to put its locks at that length.
+- **Satoko's pale tips** left a sliver of gold down the outside of the left
+  outer fall, which widens downward away from the lifted edge; the edge is
+  pushed out (`_PARTED_TONE_WIDEN`, 1.15) before it is lifted. The level pale
+  line at eye height remains, as noted.
+- **The tail.** Katherina's oval on the right of her head was never a clip: it
+  is `_hair_tie`, the tail's band, so it goes with the tail. With the owner
+  whether to add a clip of its own.
+
+Every existing render byte-identical; 552 tests pass.
+
+### D5: `long_parted` built (2026-10-03)
+
+The reference's hairstyle, drawn by grok on `katherina_grok` with only the hair
+changed (`ref-local/katherina_grok_nohat/`), passed the body check and was
+traced and built as `long_parted`. The detail is under the D5 plan's steps 1
+to 5 above. In short: on our figures with no body mapping at all it reads as
+the reference; its silhouette lands within 0.036 head radii of the reference's;
+it holds from height 0.8 to 1.3 and on every `long_traced` wearer at its own
+length, the shortest (Chiyo) the weakest; no preset wears it yet, so nothing
+already drawn moved. With the owner: who wears it, Katherina's side tail with
+it, and Satoko's tip line if she is one.
+
+### D5: the hair-trace audit (2026-10-03)
+
+The owner: why has the hair trace not worked, tested as hypotheses. Scripts in
+`harness/hair_audit/`, sheets in `out/hair_audit/`; widths below are
+half-widths in head radii, on each image's existing calibration.
+
+- **H1, the hair is drawn on a different body: confirmed, the root cause.**
+  At one head radius (`lineup.py`) the realistic reference runs 3.17 head
+  radii from chin to belt, ours 1.38 at height 1.0 and 1.72 at 1.3; at the
+  belt its body (arms included) is 2.18 wide, ours 1.17 (`proportions.py`).
+  The hair-only reference's outer edge stays 0.26 to 0.53 outside
+  `katherina_grok_real`'s body all the way down, so below the chin its shape
+  is that body's. The deciding fact: there the body (1.75 to 2.18) is wider
+  than the hair at the chin (1.51) and pushes the hair out; ours (0.88 to 1.17)
+  is narrower than our hair at the chin (1.26 to 1.51), so on our body the hair
+  falls free, which the reference never shows. **Control** (`chibi_control.py`):
+  `katherina_grok`'s hair, drawn on a chibi body, placed by one uniform scale
+  and no body mapping, fits Katherina at 0.8, 1.0 and 1.3 and Satoko and
+  Linnea, with no cape and no pinch; only its length is off, which is
+  `_hair_fall`'s job.
+- **H2, the mapping makes the cape, and no remapping rescues it: confirmed.**
+  `retarget.py` warps the hair-only reference onto our landmarks three ways.
+  As traced (D5's: y squeezed onto our belt, x kept) gives the cape. Scaled
+  with the body (`_garment_placement`'s rule; 0.52 at height 1.0, 0.62 at 1.3)
+  hides the fall behind the body and reads as a bob. Body plus a kept
+  thickness leaves a shelf at the shoulder. None looks like `katherina_grok`.
+  Any map that gives a free fall has to bring the fall from somewhere else.
+- **H3, too many segments: confirmed, secondary.** D5's shapes have 276 to 334
+  segments, 18% to 51% of their edges under two stroke widths (0.085 head
+  radii at 1.3), fitted at 0.008 against the skill's 0.012 to 0.018, with 60
+  lines on top; `long_traced` has 28 segments, none that short. That is the
+  stair-steps and the thick short strokes, not the cape.
+- **H4, the front/back split came from an image that cannot carry it:
+  confirmed.** `hair_with_human_shape.png` cuts out only the body that shows
+  (0.73 wide), so all hair outside it counts as front, the falls over the
+  shoulders and arms; `katherina_grok_real` and the owner's red trace have one
+  lock a side in front, 0.36 wide, the jacket showing either side. The
+  shoulder cut, the funnel and the owner's lock turned one layout into the
+  other by cutting pixels, which is where the ledges and hooks came from.
+- **H5, two references, two hairstyles: confirmed.** One a narrow straight
+  fall, one a pear to 2.58; part of the pear is the realistic arms (H1).
+- **Not a cause: the head.** The fringe, parting and curtains sit on our face
+  in every variant, as D5 measured (0.1 to 0.2).
+- **The process:** `detail-strategy.md`'s rule 1 has `katherina_grok_real`
+  never traced, and D5's first finding already measured its body at about twice
+  ours below the shoulders. That was a stop signal; the work went on patching
+  below the jaw instead (now an anti-pattern there).
+
+Limits: the warps are three families of width map, not every map; the control
+used `katherina_grok`'s own hairstyle, so it shows a chibi-drawn reference
+transfers, not that grok will draw the new style well at chibi proportions,
+which is the plan's main risk; the chibi reference's hair was picked by colour
+(checked by eye, `chibi_masks.png`) and its dark underside missed.
+
+**The owner's call:** a new reference, the hairstyle drawn on the tall-chibi
+body, checked by `gate.py`, then traced; the D5 plan above. The check's
+controls: `katherina_grok` against itself passes, and off it the check reads
+the soles at 5.941 and the hem at 4.231 against the 5.94 and 4.26
+`tall_chibi` records; `katherina_grok_real` fails, its soles at 14.57.
 
 ### D5: the owner's hair-only reference traced (2026-09-29)
 

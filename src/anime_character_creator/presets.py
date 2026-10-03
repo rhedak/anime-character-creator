@@ -707,7 +707,8 @@ REIKA = CharacterParams(
     # comes from faith rather than warmth. Same violet family as Keiko above,
     # cool where hers is warm.
     hair_color="#2a2438",
-    hairstyle="long_traced",
+    # The parted cut, the owner's pick for her (2026-10-03, `docs/detail-status.md`, D5).
+    hairstyle="long_parted",
     hair_length=0.95,
     eye_color="#b7abc4",
     # Waiting on: a trailing outer robe and the jewelled headpiece.
@@ -967,9 +968,10 @@ KATHERINA = CharacterParams(
     bust=0.2,
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
-    hairstyle="long_traced",
+    # The parted cut, traced off her own reference redrawn (`docs/detail-status.md`,
+    # D5), and no side tail with it: the owner's calls on 2026-10-03.
+    hairstyle="long_parted",
     hair_length=0.83,
-    hair_tail=0.7,
     eye_color="#c98a3e",
     outfit=Outfit(
         tunic_color="#29213b",

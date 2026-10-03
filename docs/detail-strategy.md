@@ -39,6 +39,15 @@ raising the detail level.
   above the orchestrator skill's ~100k signal. Both read `character.py`
   (10k lines) broadly. Next time split by region of the file, or by one
   question per delegate.
+- **Tracing below the chin off a reference drawn on another body.** D5
+  (2026-09-29) traced `katherina_grok_real`, then a hair-only reference made
+  for the same realistic figure. Below the chin their hair is the shape of
+  shoulders and arms about twice ours in head radii, and five rounds of
+  mapping and cutting (a squeeze, a shoulder cut, a funnel, the owner's lock,
+  a dark patch) never got it onto ours; the first finding had already
+  measured the difference (the 2026-10-03 audit). Check a reference's body
+  with `harness/hair_audit/gate.py` before tracing anything below the chin,
+  and if it fails, get a reference on our body rather than map one.
 - **A web tool staged before a preset change.** The ages were applied after
   the last `./web-stage.sh`, so the tool opened every preset at age 0 (the
   owner spotted it). Restage after any change to `presets.py` or the

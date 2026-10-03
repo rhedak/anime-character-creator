@@ -32,7 +32,12 @@ no AI reference at all and are designed directly in `presets.py`), and
 polish on what exists. The one place they still earned their keep,
 closing measured gaps in the realistic build, went with that build on
 2026-09-26; they are not consulted any more (`docs/gap-analysis.md` and
-`harness/gap_analysis_skill/` stay as records).
+`harness/gap_analysis_skill/` stay as records). The exceptions are the
+owner's, one part at a time: Katherina's hands (D4d) and the `long_parted`
+hair (D5, a reference regenerated on the tall-chibi body for it,
+`docs/detail-status.md`). The lesson of the second: trace nothing below the
+chin off a reference whose body is not ours; `harness/hair_audit/gate.py`
+checks that first.
 
 Since 2026-08-10, `../valley_of_mist` (the novel this cast is written
 for) consumes this repo's output directly: `render.sh`/`cover.sh`/`sheet.sh`

@@ -159,6 +159,10 @@
       "label": "Long, center part"
     },
     {
+      "id": "long_parted",
+      "label": "Long, front locks"
+    },
+    {
       "id": "long_traced",
       "label": "Long"
     },

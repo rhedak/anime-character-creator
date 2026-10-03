@@ -581,6 +581,15 @@ def _curve(
 _HAIR_CHEEK_Y = 0.72
 _HAIR_TIP_CLIP_ID = "hair-tips"
 _HAIR_FRONT_CLIP_ID = "hair-front"
+_HAIR_UNDERSIDE_CLIP_ID = "hair-underside"
+# How far a lock's line runs on past its tip (`Hairstyle.tip_lines`), in head
+# radii: the parted cut's reference carries it 0.09 to 0.16 past where its
+# colour stops, on the front locks, the one place it shows against its page.
+_HAIR_TIP_LINE = 0.12
+# A cut's underside tone (`Hairstyle.underside`) against its hair colour, as
+# `shade`'s value factor: the parted cut's reference measures 0.6, and 0.65 is
+# the owner's value from 2026-09-29.
+_HAIR_UNDERSIDE_VALUE = 0.65
 
 # Where a two-tone head of hair changes tone, as a fraction of its own height
 # from the crown down to its lowest tips. Half and half is the owner's ratio.
@@ -1377,7 +1386,15 @@ def _long_traced_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
     of each fall.
     """
     start, edge = _long_scaled(fall)
-    lift = _LONG_TONE_LIFT * (fall / _LONG_BASE_TIP)
+    return _lifted_tip_edge(start, edge, _LONG_TONE_LIFT * (fall / _LONG_BASE_TIP))
+
+
+def _lifted_tip_edge(
+    start: Point, edge: list[Segment], lift: float
+) -> list[tuple[Point, list[Segment]]]:
+    """The tip-toned region under a long cut's mass edge: the edge pushed up by
+    `lift` and held at the fade line, the construction `_long_traced_tip_edge`
+    describes, shared by the traced long cuts."""
     top = min(e[1] for _, e in edge)
     bottom = max(e[1] for _, e in edge)
     fade = _fade_y(top, bottom)
@@ -1422,6 +1439,383 @@ def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
             )
         )
     return out
+
+
+# The parted cut (`docs/detail-status.md`, D5 plan).
+#
+# Traced off `ref-local/katherina_grok_nohat/`: `katherina_grok`, the reference
+# `BODY_TYPES["tall_chibi"]` was measured off, redrawn with only the hair changed.
+# So the body under the hair is ours and nothing below the chin is mapped, which
+# is where the two traces of realistic references failed (the 2026-10-03 audit).
+# It passed `harness/hair_audit/gate.py` and its hair segment is an exact cut of
+# it; `harness/hair_parted/regions.py` and `trace.py` measure it in head radii on
+# that check's calibration, 172.5 px per head radius, and `emit.py` writes the
+# block between the markers below.
+#
+# The reference draws the hair in three layers and so does this cut: the mass,
+# the whole silhouette, behind the body; the front, the crown, the fringe, the
+# curtains and one lock a side down over the shoulder to a point near the belt,
+# over the body; and between each lock and the outer fall, darker hair behind,
+# beside the neck and in a strip that opens below the shoulder (the underside).
+# Each lock's outer edge starts inside the hair beside the temple, not on the
+# silhouette, so above it the curtain and the outer fall are one surface. The
+# front is cut from it by a seam straight out from the edge's top to the
+# silhouette: a fill boundary with no line, beside the skull, where no part of
+# the body reaches at any height.
+#
+# Every chain was fitted at 0.012 head radii with no segment under two stroke
+# widths (0.0854), the rule the crop and `long_traced` were cut by. Nothing is
+# mirrored: the reference's right side stands 0.15 head radii further out.
+# BEGIN parted trace (harness/hair_parted/emit.py)
+# The silhouette, from the left outer fall's inner tip up the left side, over the crown and down to the right's.
+_PARTED_EDGE: Chain = (
+    (-1.223, 2.804),
+    [
+        ((-1.281, 2.749), (-1.316, 2.694)),
+        ((-1.369, 2.581), (-1.414, 2.468)),
+        ((-1.444, 2.300), (-1.461, 2.132)),
+        ((-1.461, 2.028), (-1.461, 1.923)),
+        ((-1.540, 2.094), (-1.553, 2.294)),
+        ((-1.553, 2.439), (-1.536, 2.584)),
+        ((-1.600, 2.509), (-1.617, 2.404)),
+        ((-1.628, 2.277), (-1.640, 2.149)),
+        ((-1.633, 2.071), (-1.629, 1.993)),
+        ((-1.595, 1.865), (-1.576, 1.738)),
+        ((-1.500, 1.471), (-1.432, 1.205)),
+        ((-1.411, 1.066), (-1.379, 0.926)),
+        ((-1.359, 0.735), (-1.339, 0.544)),
+        ((-1.343, 0.173), (-1.304, -0.198)),
+        ((-1.287, -0.357), (-1.252, -0.517)),
+        ((-1.212, -0.653), (-1.171, -0.789)),
+        ((-1.134, -0.864), (-1.101, -0.940)),
+        ((-1.029, -1.056), (-0.945, -1.172)),
+        ((-0.872, -1.244), (-0.800, -1.316)),
+        ((-0.652, -1.430), (-0.504, -1.502)),
+        ((-0.397, -1.535), (-0.290, -1.566)),
+        ((-0.235, -1.569), (-0.180, -1.577)),
+        ((0.087, -1.584), (0.354, -1.566)),
+        ((0.464, -1.536), (0.574, -1.496)),
+        ((0.623, -1.468), (0.672, -1.444)),
+        ((0.765, -1.385), (0.858, -1.305)),
+        ((0.954, -1.205), (1.037, -1.114)),
+        ((1.074, -1.047), (1.119, -0.980)),
+        ((1.170, -0.861), (1.223, -0.743)),
+        ((1.265, -0.606), (1.304, -0.470)),
+        ((1.320, -0.346), (1.345, -0.221)),
+        ((1.377, 0.185), (1.403, 0.590)),
+        ((1.428, 0.709), (1.443, 0.828)),
+        ((1.491, 1.048), (1.547, 1.268)),
+        ((1.638, 1.532), (1.727, 1.796)),
+        ((1.769, 1.976), (1.785, 2.155)),
+        ((1.783, 2.274), (1.768, 2.393)),
+        ((1.741, 2.465), (1.716, 2.538)),
+        ((1.679, 2.481), (1.692, 2.184)),
+        ((1.648, 2.045), (1.611, 1.906)),
+        ((1.585, 1.831), (1.553, 1.784)),
+        ((1.569, 1.941), (1.582, 2.097)),
+        ((1.591, 2.251), (1.565, 2.404)),
+        ((1.543, 2.457), (1.542, 2.509)),
+        ((1.509, 2.590), (1.472, 2.671)),
+        ((1.431, 2.752), (1.362, 2.804)),
+    ],
+)
+# Which segments of `_PARTED_EDGE` end on the left seam's outer end, the crown's apex and the right seam's.
+_PARTED_SEAM_L = 13
+_PARTED_CROWN_AT = 21
+_PARTED_SEAM_R = 30
+# The lowest point of the trace, which `fall` scales against.
+_PARTED_BASE_TIP = 2.804
+# The hairline, from the left front lock's lowest tip up past the face and down to the right's.
+_PARTED_LINE: Chain = (
+    (-0.707, 2.242),
+    [
+        ((-0.641, 2.096), (-0.672, 1.935)),
+        ((-0.769, 1.384), (-0.852, 0.834)),
+        ((-0.873, 0.596), (-0.893, 0.359)),
+        ((-0.893, 0.182), (-0.893, 0.005)),
+        ((-0.782, 0.054), (-0.591, -0.140)),
+        ((-0.479, -0.244), (-0.383, -0.354)),
+        ((-0.272, -0.499), (-0.185, -0.644)),
+        ((-0.187, -0.528), (-0.226, -0.412)),
+        ((-0.263, -0.302), (-0.319, -0.192)),
+        ((-0.244, -0.218), (-0.185, -0.314)),
+        ((-0.116, -0.421), (-0.064, -0.528)),
+        ((-0.041, -0.595), (-0.012, -0.662)),
+        ((0.015, -0.783), (0.046, -0.905)),
+        ((0.094, -0.760), (0.162, -0.615)),
+        ((0.242, -0.470), (0.365, -0.325)),
+        ((0.432, -0.260), (0.498, -0.198)),
+        ((0.563, -0.193), (0.452, -0.349)),
+        ((0.414, -0.444), (0.371, -0.540)),
+        ((0.415, -0.537), (0.487, -0.395)),
+        ((0.559, -0.305), (0.632, -0.215)),
+        ((0.747, -0.093), (0.858, 0.017)),
+        ((0.911, 0.109), (0.893, 0.330)),
+        ((0.881, 0.524), (0.869, 0.718)),
+        ((0.843, 0.906), (0.823, 1.095)),
+        ((0.766, 1.408), (0.713, 1.721)),
+        ((0.698, 1.863), (0.701, 2.004)),
+        ((0.714, 2.080), (0.736, 2.155)),
+        ((0.755, 2.103), (0.742, 2.022)),
+        ((0.791, 2.061), (0.806, 2.173)),
+        ((0.830, 2.249), (0.893, 2.283)),
+    ],
+)
+# The left front lock's outer edge, from the seam's inner end to its tip.
+_PARTED_LOCK_L: Chain = (
+    (-1.113, -0.192),
+    [
+        ((-1.123, -0.050), (-1.130, 0.092)),
+        ((-1.127, 0.330), (-1.124, 0.567)),
+        ((-1.112, 0.840), (-1.090, 1.112)),
+        ((-1.076, 1.303), (-1.049, 1.494)),
+        ((-1.026, 1.605), (-1.003, 1.715)),
+        ((-0.973, 1.805), (-0.939, 1.894)),
+        ((-0.906, 1.955), (-0.875, 2.016)),
+        ((-0.829, 2.017), (-0.910, 1.796)),
+        ((-0.830, 1.878), (-0.759, 2.074)),
+        ((-0.732, 2.158), (-0.707, 2.242)),
+    ],
+)
+# The right front lock's outer edge, from the seam's inner end to its tip.
+_PARTED_LOCK_R: Chain = (
+    (1.119, -0.221),
+    [
+        ((1.140, 0.217), (1.136, 0.654)),
+        ((1.127, 0.802), (1.119, 0.950)),
+        ((1.112, 1.051), (1.107, 1.153)),
+        ((1.082, 1.422), (1.026, 1.692)),
+        ((0.982, 1.831), (0.927, 1.970)),
+        ((0.849, 2.090), (0.893, 2.283)),
+    ],
+)
+# Which segment of each lock's edge ends where the dark strip opens beside it.
+_PARTED_APEX_L = 2
+_PARTED_APEX_R = 1
+# The left outer fall's inner edge, from the dark strip's top to its tip.
+_PARTED_UNDER_L: Chain = (
+    (-1.177, 1.112),
+    [
+        ((-1.221, 1.468), (-1.275, 1.825)),
+        ((-1.288, 2.002), (-1.304, 2.178)),
+        ((-1.305, 2.346), (-1.287, 2.515)),
+        ((-1.249, 2.659), (-1.194, 2.804)),
+    ],
+)
+# The right outer fall's inner edge, from the dark strip's top to its tip.
+_PARTED_UNDER_R: Chain = (
+    (1.200, 0.944),
+    [
+        ((1.290, 1.555), (1.385, 2.167)),
+        ((1.393, 2.300), (1.391, 2.433)),
+        ((1.342, 2.626), (1.362, 2.804)),
+    ],
+)
+# The outer falls' tips (`tips_find.py`), drawn with the mass: apex and direction.
+_PARTED_TIPS_BEHIND: list[tuple[Point, Point]] = [
+    ((-1.536, 2.584), (0.399, 0.917)),
+    ((1.716, 2.538), (0.114, 0.994)),
+    ((-1.223, 2.804), (0.555, 0.832)),
+    ((1.362, 2.804), (-0.392, 0.920)),
+]
+# The front's tips, drawn with it: apex and direction.
+_PARTED_TIPS_FRONT: list[tuple[Point, Point]] = [
+    ((-0.319, -0.192), (-0.752, 0.659)),
+    ((0.736, 2.155), (-0.030, 1.000)),
+    ((-0.707, 2.242), (-0.068, 0.998)),
+    ((0.893, 2.283), (0.604, 0.797)),
+]
+# END parted trace
+# How far the underside's region runs up into the front's fill along the seam,
+# so the two fill edges never land on the same pixels and leave a seam line.
+_PARTED_SEAM_LIFT = 0.03
+# `_LONG_TONE_LIFT` for this cut: how far above the mass's lower edge a two-tone
+# head of hair turns, at the traced length.
+_PARTED_TONE_LIFT = 0.62
+# How far the two-tone edge is pushed out from the centre line before it is
+# lifted (`_parted_tip_edge`).
+_PARTED_TONE_WIDEN = 1.15
+
+
+def _parted_q(fall: float) -> Callable[[Point], Point]:
+    """A traced point at `fall`. Above the cheek line pinned to the skull, as on
+    every long cut, and x as traced. Below it the vertical scale ramps
+    smoothly, from its strongest at the cheek line to its lightest at the
+    tips, rather than one linear squash (`_long_scaled`'s rule).
+
+    That squash flattened the tips into hooks curling outward on a short fall
+    (Linnea's 1.89 is 0.56 of the trace, Chiyo's 1.36 is 0.31), where long
+    straight sides take the same squash unharmed. Holding the tips' last head
+    radius rigid was tried next and made it worse elsewhere: the run above them
+    had to take the whole change, collapsed to a sixth of itself on Linnea, and
+    the silhouette stepped out to the tips' width as a shelf. So the tips keep
+    the square root of the overall scale (`k`), the cheek line takes what is
+    left (`2k` less that, never under a fifth of `k`), and the scale in between
+    is linear in depth, so the tips land on `fall` exactly and nothing kinks. A
+    longer fall than the trace's stretches the run above the tips and leaves
+    the tips as traced. At the traced length it is the identity."""
+    span = _PARTED_BASE_TIP - _HAIR_CHEEK_Y
+    k = (fall - _HAIR_CHEEK_Y) / span
+    kz = min(1.0, math.sqrt(k), 1.8 * k)
+    km = 2 * k - kz
+
+    def q(pt: Point) -> Point:
+        x, y = pt
+        u = y - _HAIR_CHEEK_Y
+        if u <= 0:
+            return pt
+        if u <= span:
+            return (x, _HAIR_CHEEK_Y + km * u + (kz - km) * u * u / (2 * span))
+        return (x, _HAIR_CHEEK_Y + k * span + kz * (u - span))
+
+    return q
+
+
+def _parted(chain: Chain, fall: float) -> Chain:
+    """A traced chain at `fall` (`_parted_q`)."""
+    q = _parted_q(fall)
+    start, segs = chain
+    return q(start), [(q(c), q(e)) for c, e in segs]
+
+
+def _anchor(chain: Chain, i: int) -> Point:
+    """A chain's `i`th anchor: 0 its start, `i + 1` the end of segment `i`."""
+    return chain[0] if i == 0 else chain[1][i - 1][1]
+
+
+def _sub_chain(chain: Chain, a: int, b: int) -> Chain:
+    """The run of `chain` from anchor `a` to anchor `b`, `a < b`."""
+    return _anchor(chain, a), chain[1][a:b]
+
+
+def _straight(a: Point, b: Point) -> Segment:
+    """A straight segment from `a` to `b`, its control at the middle."""
+    return ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), b
+
+
+def _parted_mass(fall: float) -> tuple[Point, list[Segment]]:
+    """The whole silhouette, closed behind the body where it is never seen."""
+    start, edge = _parted(_PARTED_EDGE, fall)
+    end = edge[-1][1]
+    return start, [*edge, (((end[0] + start[0]) / 2, max(end[1], start[1]) + 0.16), start)]
+
+
+def _parted_hairline(fall: float) -> tuple[Point, list[Segment], list[Segment]]:
+    """The face opening and each front lock's inner edge, and the front's
+    closing edge: up the right lock's outer edge to the top of it, the seam out
+    to the silhouette, the mass's own segments over the crown, the left seam,
+    and down the left lock's outer edge to where the line started. The
+    stretch over the crown is the mass's, so the front can never paint past it."""
+    edge = _parted(_PARTED_EDGE, fall)
+    start, line = _parted(_PARTED_LINE, fall)
+    lock_l = _parted(_PARTED_LOCK_L, fall)
+    _, up_right = _reverse(*_parted(_PARTED_LOCK_R, fall))
+    q_r, over = _reverse(*_sub_chain(edge, _PARTED_SEAM_L + 1, _PARTED_SEAM_R + 1))
+    back = [
+        *up_right,
+        _straight(up_right[-1][1], q_r),
+        *over,
+        _straight(over[-1][1], lock_l[0]),
+        *lock_l[1],
+    ]
+    return start, line, back
+
+
+def _parted_fall_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """What the front strokes besides its hairline: each lock's outer edge, and
+    the silhouette from each seam to the crown, which the front's fill covers
+    half of and so draws again."""
+    edge = _parted(_PARTED_EDGE, fall)
+    return [
+        _parted(_PARTED_LOCK_L, fall),
+        _sub_chain(edge, _PARTED_SEAM_L + 1, _PARTED_CROWN_AT + 1),
+        _sub_chain(edge, _PARTED_CROWN_AT + 1, _PARTED_SEAM_R + 1),
+        _parted(_PARTED_LOCK_R, fall),
+    ]
+
+
+def _parted_tip_edge(fall: float) -> list[tuple[Point, list[Segment]]]:
+    """`_lifted_tip_edge` on this cut's silhouette, pushed out sideways by
+    `_PARTED_TONE_WIDEN` first. The outer falls widen downward, so the edge
+    lifted straight up lies inside the silhouette, and a sliver down the
+    outside of each fall kept the top colour (Satoko's pale tips). The region
+    only clips the hair, so running past the silhouette costs nothing."""
+    start, edge = _parted(_PARTED_EDGE, fall)
+
+    def out(pt: Point) -> Point:
+        return (pt[0] * _PARTED_TONE_WIDEN, pt[1])
+
+    edge = [(out(c), out(e)) for c, e in edge]
+    return _lifted_tip_edge(out(start), edge, _PARTED_TONE_LIFT * (fall / _PARTED_BASE_TIP))
+
+
+def _parted_tip_lines(fall: float) -> tuple[list[tuple[Point, Point]], list[tuple[Point, Point]]]:
+    """Each tip's line, behind and in front, from its apex `_HAIR_TIP_LINE`
+    along the tip's bisector, both ends stretched with the fall."""
+    q = _parted_q(fall)
+
+    def lines(tips: list[tuple[Point, Point]]) -> list[tuple[Point, Point]]:
+        out = []
+        for (ax, ay), (dx, dy) in tips:
+            out.append((q((ax, ay)), q((ax + dx * _HAIR_TIP_LINE, ay + dy * _HAIR_TIP_LINE))))
+        return out
+
+    return lines(_PARTED_TIPS_BEHIND), lines(_PARTED_TIPS_FRONT)
+
+
+def _parted_underside(fall: float) -> tuple[Chain, list[Chain]]:
+    """The darker hair behind: a region the mass is painted over in the second
+    tone, and the two lines that bound it where it shows.
+
+    Each line is an outer fall's inner edge, from where the dark strip is two
+    strokes across down to the fall's tip, led in from one anchor up the lock's
+    edge, so it leaves that line rather than starting beside it: the reference's
+    one line that splits in two. The region runs from those lines up each lock's
+    edge to its top, out along the seam lifted into the front's fill, and is
+    closed far outside the mass, which clips it, so wherever its boundary is not
+    a drawn line it is under the front, the head or the body."""
+    edge = _parted(_PARTED_EDGE, fall)
+    lines: list[Chain] = []
+    sides = []
+    for lock, apex, under in (
+        (_PARTED_LOCK_L, _PARTED_APEX_L, _PARTED_UNDER_L),
+        (_PARTED_LOCK_R, _PARTED_APEX_R, _PARTED_UNDER_R),
+    ):
+        lock = _parted(lock, fall)
+        u_start, u_segs = _parted(under, fall)
+        merge = _anchor(lock, apex)
+        lines.append((merge, [_straight(merge, u_start), *u_segs]))
+        sides.append((lock, apex))
+    (lock_l, apex_l), (lock_r, apex_r) = sides
+    q_l = _anchor(edge, _PARTED_SEAM_L + 1)
+    q_r = _anchor(edge, _PARTED_SEAM_R + 1)
+    t_l, t_r = lock_l[0], lock_r[0]
+    far = max(abs(e[0]) for _, e in edge[1]) + 1.0
+    top = min(e[1] for _, e in edge[1]) - 1.0
+    floor = fall + 1.0
+    lift = _PARTED_SEAM_LIFT
+
+    # Down the left line reversed, up the left lock, out and over, down the
+    # right lock and line, and round underneath.
+    down_l_start, down_l = _reverse(*lines[0])
+    _, up_lock_l = _reverse(*_sub_chain(lock_l, 0, apex_l))
+    path: list[Segment] = [*down_l, *up_lock_l]
+    for q in [
+        (t_l[0], t_l[1] - lift),
+        (q_l[0] - far, q_l[1] - lift),
+        (-far, top),
+        (far, top),
+        (q_r[0] + far, q_r[1] - lift),
+        (t_r[0], t_r[1] - lift),
+        t_r,
+    ]:
+        path.append(_straight(path[-1][1], q))
+    path += _sub_chain(lock_r, 0, apex_r)[1]
+    path += lines[1][1]
+    end = path[-1][1]
+    for q in [(end[0], floor), (down_l_start[0], floor), down_l_start]:
+        path.append(_straight(path[-1][1], q))
+    return (down_l_start, path), lines
 
 
 # Satoshi's traced crop.
@@ -2237,6 +2631,20 @@ class Hairstyle:
     # between lock and jaw that the ear would show through. The short cuts
     # show their ears.
     covers_ears: bool = False
+    # Hair behind in a second, darker tone: a region of the mass to paint in it
+    # (clipped by the mass, so it may run outside), and the lines bounding it
+    # where it shows, drawn with the mass behind the body. A darker tone on a
+    # small part of the hair that lies behind, the owner's call under the
+    # flat-colour rule (2026-09-29). None paints the mass in one tone.
+    underside: Callable[[float], tuple[Chain, list[Chain]]] | None = None
+    # The line that runs on past each lock's tip, tapering to nothing, as the
+    # drawn line does in the reference rather than stopping with the colour:
+    # (apex, end) pairs, those behind drawn with the mass, those in front with
+    # the front. Without it the tip is closed by the outline's round join, a
+    # blunt end. None draws none.
+    tip_lines: (
+        Callable[[float], tuple[list[tuple[Point, Point]], list[tuple[Point, Point]]]] | None
+    ) = None
 
 
 def _long_fall_edges(length: float) -> list[tuple[Point, list[Segment]]]:
@@ -2292,6 +2700,18 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         # a head-relative range would freeze her hair at one length and it would
         # ride up the adult's back.
         covers_ears=True,
+    ),
+    # Body-relative like `long_traced`, and no strands: the owner's call on
+    # 2026-09-29 was no strand lines, and the lock edges and the underside's
+    # lines are the reference's own line work at its main divisions.
+    "long_parted": Hairstyle(
+        _parted_mass,
+        _parted_hairline,
+        _parted_fall_edge,
+        _parted_tip_edge,
+        covers_ears=True,
+        underside=_parted_underside,
+        tip_lines=_parted_tip_lines,
     ),
     "short_crop": Hairstyle(
         _crop_mass_shape,
@@ -2365,6 +2785,10 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
         start, line, back = style.hairline(fall)
         d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, line + back)
         clips.append(f'<clipPath id="{_HAIR_FRONT_CLIP_ID}"><path d="{d}" /></clipPath>')
+    if style.underside is not None:
+        region, _ = style.underside(fall)
+        d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *region)
+        clips.append(f'<clipPath id="{_HAIR_UNDERSIDE_CLIP_ID}"><path d="{d}" /></clipPath>')
     return f"<defs>{''.join(clips)}</defs>" if clips else ""
 
 
@@ -2380,13 +2804,73 @@ def _two_tone_hair(d: str, p: CharacterParams) -> list[str]:
 
 
 def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
-    start, segments = HAIRSTYLES[p.hairstyle].mass(_hair_fall(sk, p))
+    style = HAIRSTYLES[p.hairstyle]
+    fall = _hair_fall(sk, p)
+    start, segments = style.mass(fall)
     d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
     parts = _two_tone_hair(d, p)
+    if style.underside is not None:
+        parts.append(_hair_underside(sk, p, d, style.underside(fall)[1]))
     parts.append(
         f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
     )
+    if style.tip_lines is not None:
+        parts.append(_hair_tip_lines(sk, style.tip_lines(fall)[0]))
+    return "".join(parts)
+
+
+def _hair_tip_lines(sk: Skeleton, tips: list[tuple[Point, Point]]) -> str:
+    """A tapered line from each apex to its end: as wide as the hair's outline at
+    the apex, so the outline's round join runs into it, and to a point at the
+    end, its sides drawn slightly in so it reads as a pen line thinning out."""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    half = _outline_w(_stroke_w(sk)) / 2
+    parts = []
+    for (ax, ay), (ex, ey) in tips:
+        a = (cx + ax * r, cy + ay * r)
+        e = (cx + ex * r, cy + ey * r)
+        length = math.hypot(e[0] - a[0], e[1] - a[1])
+        if length == 0:
+            continue
+        ux, uy = (e[0] - a[0]) / length, (e[1] - a[1]) / length
+        nx, ny = -uy, ux
+        mid = (a[0] + (e[0] - a[0]) * 0.45, a[1] + (e[1] - a[1]) * 0.45)
+        pts = [
+            (a[0] + nx * half, a[1] + ny * half),
+            (mid[0] + nx * half * 0.36, mid[1] + ny * half * 0.36),
+            e,
+            (mid[0] - nx * half * 0.36, mid[1] - ny * half * 0.36),
+            (a[0] - nx * half, a[1] - ny * half),
+        ]
+        (p0, c1, p1, c2, p2) = pts
+        parts.append(
+            f'<path d="M {p0[0]:.1f} {p0[1]:.1f} Q {c1[0]:.1f} {c1[1]:.1f} {p1[0]:.1f} {p1[1]:.1f} '
+            f'Q {c2[0]:.1f} {c2[1]:.1f} {p2[0]:.1f} {p2[1]:.1f} Z" fill="{OUTLINE}" />'
+        )
+    return "".join(parts)
+
+
+def _hair_underside(sk: Skeleton, p: CharacterParams, d: str, lines: list[Chain]) -> str:
+    """The mass `d` again in the underside tone, inside the cut's underside
+    region (`_hair_defs`), and the lines bounding that region where it shows.
+    A two-tone head of hair takes the underside of its tip tone at the tips."""
+    parts = [f'<g clip-path="url(#{_HAIR_UNDERSIDE_CLIP_ID})">']
+    parts.append(
+        f'<path d="{d}" fill="{shade(p.hair_color, value_factor=_HAIR_UNDERSIDE_VALUE)}" />'
+    )
+    tips = _hair_tip_tone(p)
+    if tips is not None:
+        tone = shade(tips, value_factor=_HAIR_UNDERSIDE_VALUE)
+        parts.append(f'<path d="{d}" fill="{tone}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />')
+    parts.append("</g>")
+    w = _outline_w(_stroke_w(sk))
+    for chain in lines:
+        line_d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *chain, close=False)
+        parts.append(
+            f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{w:.2f}" '
+            f'stroke-linecap="round" stroke-linejoin="round" />'
+        )
     return "".join(parts)
 
 
@@ -10028,6 +10512,8 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
             f'<path d="{edge_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
             f'stroke-linecap="round" />'
         )
+    if style.tip_lines is not None:
+        parts.append(_hair_tip_lines(sk, style.tip_lines(fall)[1]))
     # Interior strands last, so they sit over the fill and the hairline both.
     # Lighter than the silhouette, the same relation the jaw line has to the head
     # outline: these divide one surface, they do not bound it.

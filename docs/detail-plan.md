@@ -258,6 +258,18 @@ no strand lines.** The flat mass reads as a choice; lines added inside it read
 as weird, not as detail. What is left of D5 is the fringe's outline parted
 into locks, with no new lines, if the owner wants it.
 
+**The owner's call, 2026-10-03, after the audit (`detail-status.md`): the
+reference's hairstyle is drawn again on the tall-chibi body and traced from
+that.** The two traces of 2026-09-29 (`katherina_grok_real` and the hair-only
+reference) failed below the chin because both draw the hair on a realistic
+body, whose shoulders shape it; no mapping puts that on ours. The new
+reference is checked (`harness/hair_audit/gate.py`) before anything is
+traced, and becomes a new hairstyle on the `Hairstyle` contract, `long_traced`
+untouched. Steps: `detail-status.md`, D5 plan. Built as `long_parted` the same
+day, with an optional darker `underside` and a line past each tip
+(`tip_lines`) on `Hairstyle`, and worn by Katherina, without her side tail,
+and Reika (the owner's picks).
+
 ### D6. Garment line work
 
 Cuff gathers, seams and folds, one garment at a time. Last, because it
@@ -275,6 +287,8 @@ change shows.
 
 ## Deferred
 
+- **A hair clip for Katherina** where her side tail's band sat (the owner,
+  2026-10-03): the band went with the tail when she took `long_parted`.
 - **Small skin shadows** (under the chin, hair on the forehead): an
   optional polish pass after the plan, owner's decision 2.
 - **An elbow** (the owner, 2026-09-27): the arm drawn as an upper and a lower
