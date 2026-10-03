@@ -36,6 +36,7 @@ from .character import (
     BODY_TYPES,
     COAT_CUTS,
     COLLAR_CUTS,
+    HAIR_CLIPS,
     HAIRSTYLES,
     HAND_STYLES,
     SKIRT_CUTS,
@@ -319,6 +320,22 @@ HAKAMA = GarmentSlot(
 HEADSCARF = GarmentSlot("headscarf", "Headscarf", _color("headscarf_color", "Headscarf"))
 GOGGLES = GarmentSlot("goggles", "Goggles", _color("goggle_color", "Goggles"))
 HAT = GarmentSlot("hat", "Witch hat", _color("hat_color", "Witch hat"))
+# The shape is a choice rather than a fixed part: all five candidates were drawn
+# for Katherina's and the owner kept them (2026-10-03).
+HAIR_CLIP_LABELS: dict[str, str] = {
+    "bar": "Bar",
+    "crescent": "Crescent moon",
+    "crossed": "Crossed pins",
+    "snap": "Snap clip",
+    "star": "Star",
+}
+assert set(HAIR_CLIP_LABELS) == set(HAIR_CLIPS)
+HAIR_CLIP = GarmentSlot(
+    "hair_clip",
+    "Hair clip",
+    _color("hair_clip_color", "Hair clip"),
+    selects=(SelectField("hair_clip", "Shape", tuple(HAIR_CLIP_LABELS.items())),),
+)
 # A separate slot rather than a `ranges`/`bools` companion on `HAT`, because
 # the band carries its own color, not a toggle or a number: the crystal rig's
 # four independently-colored slots are the existing precedent for "more than
@@ -401,6 +418,7 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     COAT,
     HEADSCARF,
     GOGGLES,
+    HAIR_CLIP,
     HAT,
     HAT_BAND,
     STAFF,

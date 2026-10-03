@@ -287,8 +287,10 @@ change shows.
 
 ## Deferred
 
-- **A hair clip for Katherina** where her side tail's band sat (the owner,
-  2026-10-03): the band went with the tail when she took `long_parted`.
+- ~~**A hair clip for Katherina**~~ where her side tail's band sat (the owner,
+  2026-10-03): done the same day. Five shapes drawn in gold
+  (`harness/hair_clip/sheet.py`), all kept as `HAIR_CLIPS` and offered in the
+  web tool as the "Hair clip" slot; Katherina wears the crescent.
 - **Small skin shadows** (under the chin, hair on the forehead): an
   optional polish pass after the plan, owner's decision 2.
 - **An elbow** (the owner, 2026-09-27): the arm drawn as an upper and a lower

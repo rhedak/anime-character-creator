@@ -365,6 +365,12 @@ class Outfit:
     # to `tunic_color`. `None` with `hat_color` set would draw a hat with no
     # band, which nothing currently asks for but costs nothing to allow.
     hat_band_color: str | None = None
+    # A clip worn in the hair at the right temple (the viewer's right), below a
+    # hat's brim: its colour, `None` for none, and its shape from `HAIR_CLIPS`.
+    # Katherina's took the place of the band her side tail was tied with (the
+    # owner, 2026-10-03).
+    hair_clip_color: str | None = None
+    hair_clip: str = "bar"
     # A wizard's staff, held in the character's own right hand (the viewer's
     # left): the wood, and the crystal set in its prongs. Only a shape and two
     # colours, not a general prop: it is placed by `_hand_centre`, so it wants
@@ -5287,6 +5293,110 @@ def _hair_tie(sk: Skeleton, p: CharacterParams) -> str:
         f'L {x + w * 0.72:.1f} {y - h * 0.30:.1f}" fill="none" stroke="{OUTLINE}" '
         f'stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
     )
+
+
+# Where a hair clip sits, in head radii from the head's centre: about where the
+# side tail's band was (`_tail_tie`), just under a hat's brim, so it shows with
+# the hat on.
+_HAIR_CLIP_AT = (0.78, -0.40)
+# How far inside the silhouette the clip's centre stays: half the widest clip
+# and a little hair beyond it. The long blunt cuts are only 1.0 head radii wide
+# at that height, against 1.2 to 1.3 for the rest, and at 0.78 a crescent stuck
+# out past their outline.
+_HAIR_CLIP_INSET = 0.27
+# The tilt of a long clip, degrees clockwise from level: along the lock it is
+# pinned to, which falls steeply from the parting toward the temple.
+_HAIR_CLIP_TILT = 62.0
+
+
+def _clip_bar(r: float, line: float, fold: float, color: str) -> str:
+    """A plain bar clip: a rounded bar, with a line along it for the fold."""
+    length, w = r * 0.45, r * 0.11
+    return (
+        f'<rect x="{-length / 2:.2f}" y="{-w / 2:.2f}" width="{length:.2f}" height="{w:.2f}" '
+        f'rx="{w / 2:.2f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{line:.2f}" />'
+        f'<path d="M {-length * 0.36:.2f} 0 L {length * 0.36:.2f} 0" stroke="{OUTLINE}" '
+        f'stroke-width="{fold:.2f}" stroke-linecap="round" />'
+    )
+
+
+def _clip_crossed(r: float, line: float, fold: float, color: str) -> str:
+    """Two thin pins crossed in an X."""
+    length, w = r * 0.45, r * 0.075
+    return "".join(
+        f'<rect x="{-length / 2:.2f}" y="{-w / 2:.2f}" width="{length:.2f}" height="{w:.2f}" '
+        f'rx="{w / 2:.2f}" fill="{color}" stroke="{OUTLINE}" stroke-width="{line:.2f}" '
+        f'transform="rotate({a})" />'
+        for a in (-24, 24)
+    )
+
+
+def _clip_snap(r: float, line: float, fold: float, color: str) -> str:
+    """A snap clip: a long narrow triangle with a slot along it."""
+    length, w = r * 0.48, r * 0.15
+    return (
+        f'<path d="M {-length / 2:.2f} {-w / 2:.2f} L {length / 2:.2f} 0 L {-length / 2:.2f} {w / 2:.2f} Z" '
+        f'fill="{color}" stroke="{OUTLINE}" stroke-width="{line:.2f}" stroke-linejoin="round" />'
+        f'<path d="M {-length * 0.36:.2f} 0 L {length * 0.12:.2f} 0" stroke="{OUTLINE}" '
+        f'stroke-width="{fold:.2f}" stroke-linecap="round" />'
+    )
+
+
+def _clip_crescent(r: float, line: float, fold: float, color: str) -> str:
+    """A crescent moon: the outer disc less a smaller one shifted toward its
+    opening, as one path between the two circles' crossings."""
+    big, small, off = r * 0.195, r * 0.158, r * 0.098
+    x = (big * big - small * small + off * off) / (2 * off)
+    y = math.sqrt(big * big - x * x)
+    d = (
+        f"M {x:.2f} {-y:.2f} A {big:.2f} {big:.2f} 0 1 0 {x:.2f} {y:.2f} "
+        f"A {small:.2f} {small:.2f} 0 0 1 {x:.2f} {-y:.2f} Z"
+    )
+    return f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" stroke-width="{line:.2f}" stroke-linejoin="round" />'
+
+
+def _clip_star(r: float, line: float, fold: float, color: str) -> str:
+    """A five-pointed star."""
+    pts = " ".join(
+        f"{(0.195 if i % 2 == 0 else 0.083) * r * math.cos(math.radians(-90 + i * 36)):.2f},"
+        f"{(0.195 if i % 2 == 0 else 0.083) * r * math.sin(math.radians(-90 + i * 36)):.2f}"
+        for i in range(10)
+    )
+    return (
+        f'<polygon points="{pts}" fill="{color}" stroke="{OUTLINE}" stroke-width="{line:.2f}" '
+        f'stroke-linejoin="round" />'
+    )
+
+
+# The shapes a hair clip comes in (`harness/hair_clip/sheet.py` has them side by
+# side), each drawn about its own centre, and the tilt it takes: a long clip
+# lies along the lock (`None`), while a moon or a star reads the right way up
+# and only leans a little. At the insert size (head radius 21 px) the crescent
+# and the bar read best, the star as a dot and the crossed pins hardly at all.
+HAIR_CLIPS: dict[str, tuple[Callable[[float, float, float, str], str], float | None]] = {
+    "bar": (_clip_bar, None),
+    "crescent": (_clip_crescent, -15.0),
+    "crossed": (_clip_crossed, None),
+    "snap": (_clip_snap, None),
+    "star": (_clip_star, -10.0),
+}
+
+
+def _hair_clip(sk: Skeleton, p: CharacterParams) -> str:
+    """A clip worn in the hair, over the hair and the fringe, under anything
+    worn on the head: goggles' strap, a scarf or a hat's brim covers it."""
+    color = p.outfit.hair_clip_color
+    if color is None:
+        return ""
+    shape, tilt = HAIR_CLIPS[p.outfit.hair_clip]
+    r = sk.head_r
+    sw = _stroke_w(sk)
+    at_y = _HAIR_CLIP_AT[1]
+    at_x = min(_HAIR_CLIP_AT[0], _hair_edge_x(at_y, sk, p) - _HAIR_CLIP_INSET)
+    x, y = sk.head_cx + at_x * r, sk.head_cy + at_y * r
+    angle = _HAIR_CLIP_TILT if tilt is None else tilt
+    body = shape(r, _outline_w(sw), _interior_w(sw, 0.7), color)
+    return f'<g transform="translate({x:.1f} {y:.1f}) rotate({angle:.1f})">{body}</g>'
 
 
 def _hair_knot(sk: Skeleton, p: CharacterParams) -> str:
@@ -11234,6 +11344,7 @@ def render_character(
         # the fringe it is invisible too, because the fringe covers the crown.
         _hair_knot(sk, p),
         _hair_tie(sk, p),
+        _hair_clip(sk, p),
         # After the fringe, like the scarf: the lenses and the bridge cross
         # the bare forehead and sit over whatever hair reaches that far.
         _goggles(sk, p),

@@ -673,6 +673,43 @@
       }
     },
     {
+      "id": "hair_clip",
+      "label": "Hair clip",
+      "color": {
+        "field": "hair_clip_color",
+        "label": "Hair clip",
+        "optional": true
+      },
+      "selects": [
+        {
+          "field": "hair_clip",
+          "label": "Shape",
+          "options": [
+            {
+              "value": "bar",
+              "label": "Bar"
+            },
+            {
+              "value": "crescent",
+              "label": "Crescent moon"
+            },
+            {
+              "value": "crossed",
+              "label": "Crossed pins"
+            },
+            {
+              "value": "snap",
+              "label": "Snap clip"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "hat",
       "label": "Witch hat",
       "color": {

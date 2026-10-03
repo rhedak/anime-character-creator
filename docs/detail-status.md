@@ -19,8 +19,9 @@ which is what carries a cut to the other presets. The reference
 `long_parted`, its tips reworked (findings), and Katherina (no side tail) and
 Reika wear it; everyone else keeps their cut. The step list is **D5 plan
 (2026-10-03)** below; the 2026-09-29 todo it replaced is kept after it as a
-record. Open, all the owner's to decide later: a hair clip for Katherina where
-the tail's band was (deferred, the owner, 2026-10-03); which presets take which `hand_style` (all "mitten", the owner's
+record. Katherina's hair clip, deferred that morning, followed the same day: a gold
+crescent where the tail's band was, the shape one of five (`HAIR_CLIPS`) the
+web tool offers. Open, all the owner's to decide later: which presets take which `hand_style` (all "mitten", the owner's
 call on 2026-09-27 until the traced hands get another pass); a relaxed hand pose of its own; the chin and the
 lid crease (deferred). The consumers were regenerated on 2026-10-03 for D5
 (`regenerate-consumers`): `../valley_of_mist` (Reika's reference and her 23

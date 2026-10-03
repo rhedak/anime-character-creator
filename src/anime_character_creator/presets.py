@@ -989,6 +989,10 @@ KATHERINA = CharacterParams(
         sleeve_cut="wide",
         hat_color="#201e29",
         hat_band_color="#3c2456",
+        # A gold crescent where her side tail's band was, in her collar's colour
+        # (the owner, 2026-10-03).
+        hair_clip_color="#c4903c",
+        hair_clip="crescent",
         staff_color="#4e3a2c",
         staff_crystal_color="#f79e43",
     ),
