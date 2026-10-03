@@ -22,9 +22,11 @@ Reika wear it; everyone else keeps their cut. The step list is **D5 plan
 record. Open, all the owner's to decide later: a hair clip for Katherina where
 the tail's band was (deferred, the owner, 2026-10-03); which presets take which `hand_style` (all "mitten", the owner's
 call on 2026-09-27 until the traced hands get another pass); a relaxed hand pose of its own; the chin and the
-lid crease (deferred); `../valley_of_mist` not regenerated since the detail
-pass began (the owner: not for now; the Everglow and Katherina covers were,
-before Katherina's new hair, so they show her old cut and tail).
+lid crease (deferred). The consumers were regenerated on 2026-10-03 for D5
+(`regenerate-consumers`): `../valley_of_mist` (Reika's reference and her 23
+Book 1 inserts) and `../time_slider_katherina` (the cover and Katherina's
+reference); the Everglow cover came out byte-identical, Gero and Linnea being
+unchanged. Committed there, not pushed.
 Tools: the baseline `harness/detail/baseline.py`, the byte guard
 `harness/tall_chibi/snapshot.py` (take the before from the committed tree with
 `git stash`), and restage the web tool (`./web-stage.sh`) after any preset or
