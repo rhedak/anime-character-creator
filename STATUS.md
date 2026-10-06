@@ -1713,6 +1713,25 @@ and `height`, 0.8 to 1.3, stretching the figure below the shoulders with
 two thirds in the legs. Heights in sheets, covers and the book's inserts
 (one head size, feet on one line) are deferred.
 
+## Story props, 2026-10-06
+
+Four small props added for the cover of a short story in `../short_stories`
+(`stories/bureaucracy_of_blood`, `cover_plan.md` there), each an `Outfit` field that
+draws nothing at its default, with a catalogue slot and a test, and no existing
+render changed (`./refresh-ref-out.sh` reported 0 changed each time):
+
+- `blindfold_color`: a cloth band pushed up onto the forehead, over the fringe, under
+  a scarf or hat (`_blindfold`, after `_goggles` in the draw order).
+- `mask_color`: a pleated face mask pulled down under the chin, drawn before the head
+  so the jaw tucks its top edge, with ear loops (`_mask`).
+- `wristband_color`, `wristband_text`, `wristband_side`: a band round one wrist, with a
+  short print (`_wristband`, inside `_arms`, so it turns with a swung arm).
+- `sleeve_bars_color`, `sleeve_bars`, `sleeve_bars_side`: one to four rank bars on one
+  plain sleeve (`_sleeve_bars`, inside `_arms`; not drawn on a traced sleeve).
+
+Looked at on a long cut, a short cut, a swung arm and a hat; the cross-check is in that
+story's `cover_plan.md`.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.
