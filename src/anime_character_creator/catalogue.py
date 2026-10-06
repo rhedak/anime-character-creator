@@ -319,6 +319,7 @@ HAKAMA = GarmentSlot(
 )
 HEADSCARF = GarmentSlot("headscarf", "Headscarf", _color("headscarf_color", "Headscarf"))
 GOGGLES = GarmentSlot("goggles", "Goggles", _color("goggle_color", "Goggles"))
+BLINDFOLD = GarmentSlot("blindfold", "Blindfold", _color("blindfold_color", "Blindfold"))
 HAT = GarmentSlot("hat", "Witch hat", _color("hat_color", "Witch hat"))
 # The shape is a choice rather than a fixed part: all five candidates were drawn
 # for Katherina's and the owner kept them (2026-10-03).
@@ -418,6 +419,7 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     COAT,
     HEADSCARF,
     GOGGLES,
+    BLINDFOLD,
     HAIR_CLIP,
     HAT,
     HAT_BAND,

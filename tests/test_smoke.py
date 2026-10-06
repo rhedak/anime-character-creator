@@ -2482,3 +2482,27 @@ def test_the_traced_hands_draw_and_the_mitten_is_the_default(preset):
 
     assert across in outlines(bare)
     assert across not in outlines(replace(bare, hand_style="traced"))
+
+
+def test_the_blindfold_is_off_by_default_and_sits_above_the_eyes() -> None:
+    """A cloth pushed up onto the forehead, clear of the eyes, drawn only when asked.
+
+    Nothing is drawn without `blindfold_color`; with it the band's lowest point,
+    the centre of its sagging lower edge, stays above the eye, so it reads as
+    pushed up rather than as worn across the face.
+    """
+    p = PRESETS["linnea"]
+    sk = character.skeleton_for(p)
+    assert character._blindfold(sk, p) == ""
+    worn = replace(p, outfit=replace(p.outfit, blindfold_color="#2a2628"))
+    svg = character._blindfold(sk, worn)
+    assert 'fill="#2a2628"' in svg
+    _dx, eye_y, eye_r, _f = character._eye_placement(sk, worn)
+    # The path's own numbers: the bottom edge's control point is twice the sag
+    # below the edge, so the curve's lowest point is half the way to it.
+    nums = [
+        float(v) for v in re.findall(r"-?\d+\.\d+", re.search(r'<path d="([^"]+)"', svg).group(1))
+    ]
+    ys = nums[1::2]
+    lowest = max(ys) - (max(ys) - sorted(ys)[-3]) / 2
+    assert lowest < eye_y - eye_r * 1.2, f"band reaches {lowest:.1f}, eye at {eye_y:.1f}"

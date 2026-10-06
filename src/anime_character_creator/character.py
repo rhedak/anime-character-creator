@@ -354,6 +354,12 @@ class Outfit:
     # it with `shade()` the same way a shadow tone is, lighter rather than
     # darker, so a goggle color always ships with a glass that reads against it.
     goggle_color: str | None = None
+    # A strip of cloth worn pushed up onto the forehead, a blindfold put by once
+    # it is done with: a loose band across the brow over the fringe, with the
+    # fold a pushed-up cloth takes. Worn over the hair like a headband and under
+    # a scarf or a hat, so it is the same slot in the draw order as the goggles
+    # it is the alternative to; a character does not wear both.
+    blindfold_color: str | None = None
     # A pointed witch's hat: crown, brim and the band at the crown's base. Its
     # own color rather than reusing `hair_color`/`coat_color`, because a hat
     # is not necessarily dyed to match either, and the reference this shipped
@@ -6141,6 +6147,63 @@ def _goggles(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# How far above the eye's centre the band's centreline rests, in eye radii: above
+# the brow, clear of the goggles' own 2.6, so a band reads as pushed up onto the
+# forehead rather than worn across the eyes.
+_BLINDFOLD_LIFT = 2.45
+# The band's half height in eye radii, and how far its two edges sag toward the
+# face in the middle: a band round a head seen from the front dips at the centre,
+# where level across it reads as a flat strip painted on.
+_BLINDFOLD_HALF_H = 0.72
+_BLINDFOLD_SAG = 0.35
+# How far outside the hair the cloth stands, the headscarf's own reasoning: a
+# band over hair is slightly proud of it, and at exactly the cut's width the
+# two outlines land on each other.
+_BLINDFOLD_CLEAR = 1.03
+
+
+def _blindfold(sk: Skeleton, p: CharacterParams) -> str:
+    """A band of cloth pushed up onto the forehead, over the fringe.
+
+    Placed off `_eye_placement` like the goggles, so it keeps its place over the
+    face at every build, and sized to the hair's own width with `_hair_edge_x`
+    like the headscarf, so it clears a long cut rather than sitting inside it.
+    Over the hair and under a scarf or hat. Two fold lines in a deeper tone of
+    the cloth say it is cloth and not a stripe; the band is otherwise one flat
+    colour, and the ends are straight where it goes round the head out of sight.
+    """
+    if p.outfit.blindfold_color is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    color = p.outfit.blindfold_color
+    sw = _stroke_w(sk)
+    _dx, eye_y, eye_r, _f = _eye_placement(sk, p)
+    mid_y = eye_y - eye_r * _BLINDFOLD_LIFT
+    half_h = eye_r * _BLINDFOLD_HALF_H
+    sag = eye_r * _BLINDFOLD_SAG
+    top_y, bot_y = mid_y - half_h, mid_y + half_h
+    x_edge = _hair_edge_x((mid_y - cy) / r, sk, p) * r * _BLINDFOLD_CLEAR
+    left_x, right_x = cx - x_edge, cx + x_edge
+    d = (
+        f"M {left_x:.1f} {top_y:.1f} "
+        f"Q {cx:.1f} {top_y + sag * 2:.1f} {right_x:.1f} {top_y:.1f} "
+        f"L {right_x:.1f} {bot_y:.1f} "
+        f"Q {cx:.1f} {bot_y + sag * 2:.1f} {left_x:.1f} {bot_y:.1f} Z"
+    )
+    fold = shade(color)
+    lines = "".join(
+        f'<path d="M {cx + dx * x_edge:.1f} {mid_y + sag * (1 - dx * dx) - half_h * 0.55:.1f} '
+        f"Q {cx + (dx + 0.06) * x_edge:.1f} {mid_y + sag * (1 - dx * dx):.1f} "
+        f'{cx + dx * x_edge:.1f} {mid_y + sag * (1 - dx * dx) + half_h * 0.55:.1f}" '
+        f'fill="none" stroke="{fold}" stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
+        for dx in (-0.34, 0.30)
+    )
+    return (
+        f'<path d="{d}" fill="{color}" stroke="{OUTLINE}" '
+        f'stroke-width="{_outline_w(sw):.2f}" stroke-linejoin="round" />{lines}'
+    )
+
+
 def _mock_collar(sk: Skeleton, p: CharacterParams, color: str, sw: float) -> str:
     """A mock neck: the collar takes the neck's own silhouette.
 
@@ -11380,6 +11443,9 @@ def render_character(
         # After the fringe, like the scarf: the lenses and the bridge cross
         # the bare forehead and sit over whatever hair reaches that far.
         _goggles(sk, p),
+        # Over the hair and the fringe like the goggles it stands in for, and under
+        # a scarf or a hat, which cover whatever is worn on the head below them.
+        _blindfold(sk, p),
         # Last of all the head: a scarf covers the hair it is tied over.
         _headscarf(sk, p),
         # After the scarf, for the same reason a hat goes on over one: whatever

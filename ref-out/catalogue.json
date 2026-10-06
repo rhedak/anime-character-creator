@@ -673,6 +673,15 @@
       }
     },
     {
+      "id": "blindfold",
+      "label": "Blindfold",
+      "color": {
+        "field": "blindfold_color",
+        "label": "Blindfold",
+        "optional": true
+      }
+    },
+    {
       "id": "hair_clip",
       "label": "Hair clip",
       "color": {
