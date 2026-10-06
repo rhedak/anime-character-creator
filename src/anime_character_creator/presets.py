@@ -1159,8 +1159,10 @@ DRITAN = CharacterParams(
     face_age=1.0,
     skin_tone="#d8ae8a",
     hair_color="#16131a",
-    hairstyle="short_layered",
-    hair_length=0.20,
+    # Satoshi's cut (the owner's pick, 2026-10-06), in black: no tip color, so no
+    # fade to a lighter tone half way down.
+    hairstyle="short_crop",
+    hair_length=0.65,
     eye_color="#a3202c",
     outfit=Outfit(
         tunic_color="#2b2a30",
@@ -1195,7 +1197,7 @@ DRITAN = CharacterParams(
 )
 
 # Lindita: about twenty at the story's first scene, a human donor in the Blood
-# Service, plainly dressed in muted teal and cream, copper hair to the shoulder
+# Service, plainly dressed in muted teal and cream, copper hair in Satoko's long cut
 # and amber eyes, awake and a little tired. The cover draws her as she was at
 # the feeding: the blindfold pushed up onto her forehead, the surgical mask
 # pulled down under her chin, a paper wristband on her left wrist (the viewer's
@@ -1207,8 +1209,9 @@ LINDITA = CharacterParams(
     bust=0.4,
     skin_tone="#f0d3bc",
     hair_color="#b5602b",
-    hairstyle="long_blunt",
-    hair_length=0.30,
+    # Satoko's cut at her own length (the owner's pick, 2026-10-06), without her
+    # tip color, so the copper runs through unshaded.
+    hairstyle="long_traced",
     eye_color="#c9892b",
     outfit=Outfit(
         tunic_color="#4d6f70",
