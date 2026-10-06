@@ -365,6 +365,21 @@ class Outfit:
     # mouth. The one garment here drawn before the head, so the jaw covers the
     # mask's top edge and it reads as tucked under the chin.
     mask_color: str | None = None
+    # A band of paper or cloth round one wrist, over the sleeve's end: its color,
+    # `None` for none, the side it is worn on (-1 the viewer's left, 1 the
+    # viewer's right, as `_arms` loops it), and a short text printed across it,
+    # a number or a name, in a deeper tone of the band. At cover scale the text
+    # is a few pixels, so a band is a band first and the text a bonus.
+    wristband_color: str | None = None
+    wristband_text: str | None = None
+    wristband_side: int = 1
+    # Rank bars across one sleeve above the cuff: their color (`None` for none),
+    # how many (one to four read at chibi scale), and the side they are worn on,
+    # as for the wristband. Drawn on a plain sleeve only; a traced sleeve has
+    # its own cuff and no room for them.
+    sleeve_bars_color: str | None = None
+    sleeve_bars: int = 3
+    sleeve_bars_side: int = 1
     # A pointed witch's hat: crown, brim and the band at the crown's base. Its
     # own color rather than reusing `hair_color`/`coat_color`, because a hat
     # is not necessarily dyed to match either, and the reference this shipped
@@ -8030,6 +8045,13 @@ def _arms(
             limb.append(_cuff_line(sk, x(centre_wrist), wrist_y, w_wrist))
         elif cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
+        if cut is None:
+            limb.append(
+                _sleeve_bars(
+                    sk, p, s, x, centre_elbow, centre_wrist, elbow_y, wrist_y, w_elbow, w_wrist
+                )
+            )
+        limb.append(_wristband(sk, p, s, x(centre_wrist), wrist_y, w_wrist))
         hand = _hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s)
         if hands is None and _hand_traced(p, s):
             # Under the arm, so a sleeve's cuff lies over the wrist as a sleeve
@@ -8073,6 +8095,80 @@ def _arms(
             # drawing the limb straight into `parts`, which is deliberate so
             # every preset that never touches this knob renders unchanged.
             parts.extend(limb)
+    return "".join(parts)
+
+
+def _wristband(
+    sk: Skeleton, p: CharacterParams, side: int, cx: float, wrist_y: float, w: float
+) -> str:
+    """A band round the wrist, just above the hand, with optional text on it.
+
+    Drawn inside `_arms`' limb, so it turns with a swung arm. Slightly wider at
+    the top than the bottom, as `_wrist_cuff` is, because the arm still tapers
+    across the band's own height. The text is a deeper tone of the band's colour,
+    centred, sized to the band's height and kept inside the arm's width.
+    """
+    color = p.outfit.wristband_color
+    if color is None or p.outfit.wristband_side != side:
+        return ""
+    r = sk.head_r
+    sw = _stroke_w(sk)
+    h = r * 0.24
+    y1 = wrist_y - r * 0.03
+    y0 = y1 - h
+    top_w, bot_w = w * 1.0, w * 0.97
+    band = (
+        f'<path d="M {cx - top_w:.1f} {y0:.1f} L {cx + top_w:.1f} {y0:.1f} '
+        f'L {cx + bot_w:.1f} {y1:.1f} L {cx - bot_w:.1f} {y1:.1f} Z" '
+        f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.85):.2f}" stroke-linejoin="round" />'
+    )
+    text = p.outfit.wristband_text
+    if not text:
+        return band
+    ink = shade(color, value_factor=0.30)
+    size = min(h * 0.66, (2 * w * 0.92) / (0.62 * len(text)))
+    return band + (
+        f'<text x="{cx:.1f}" y="{y1 - h * 0.22:.1f}" font-family="Helvetica, Arial, sans-serif" '
+        f'font-weight="bold" font-size="{size:.1f}" text-anchor="middle" fill="{ink}">{text}</text>'
+    )
+
+
+def _sleeve_bars(
+    sk: Skeleton,
+    p: CharacterParams,
+    side: int,
+    x: Callable[[float], float],
+    centre_elbow: float,
+    centre_wrist: float,
+    elbow_y: float,
+    wrist_y: float,
+    w_elbow: float,
+    w_wrist: float,
+) -> str:
+    """Rank bars across the forearm, above the cuff, on one sleeve.
+
+    Each bar is a thin strip across the arm at its own height, as wide as the
+    arm there (read off the same elbow-to-wrist taper `_arms` draws) and a
+    little inside it so the outline stays the arm's. The first bar sits clear of
+    the cuff line and the rest stack up the arm.
+    """
+    color = p.outfit.sleeve_bars_color
+    if color is None or p.outfit.sleeve_bars_side != side or p.outfit.sleeve_bars < 1:
+        return ""
+    r = sk.head_r
+    sw = _stroke_w(sk)
+    h = r * 0.09
+    pitch = r * 0.17
+    parts = []
+    for i in range(min(4, p.outfit.sleeve_bars)):
+        y = wrist_y - r * 0.50 - i * pitch
+        t = (y - elbow_y) / (wrist_y - elbow_y)
+        centre = centre_elbow + (centre_wrist - centre_elbow) * t
+        half = (w_elbow + (w_wrist - w_elbow) * t) * 0.90
+        parts.append(
+            f'<rect x="{x(centre) - half:.1f}" y="{y - h / 2:.1f}" width="{half * 2:.1f}" height="{h:.1f}" '
+            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.7):.2f}" />'
+        )
     return "".join(parts)
 
 

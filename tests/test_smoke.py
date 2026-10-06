@@ -2525,3 +2525,35 @@ def test_the_mask_hangs_from_under_the_chin_and_is_off_by_default() -> None:
     chin_y = sk.head_cy + sk.head_r
     assert min(ys) < chin_y, "the mask's top edge is not tucked above the chin"
     assert max(ys) > chin_y + sk.head_r * 0.25, "the mask does not hang below the chin"
+
+
+def test_the_wristband_is_worn_on_one_wrist_only_and_carries_its_text() -> None:
+    """One band, on the side asked for, with the text on it; nothing without a color."""
+    p = PRESETS["linnea"]
+    sk = character.skeleton_for(p)
+    assert "4417" not in character._arms(sk, p)
+    worn = replace(
+        p,
+        outfit=replace(
+            p.outfit, wristband_color="#f2efe6", wristband_text="4417", wristband_side=1
+        ),
+    )
+    svg = character._arms(sk, worn)
+    assert svg.count("4417") == 1, "the text should appear once, on one wrist"
+    assert svg.count('fill="#f2efe6"') == 1
+    other = replace(worn, outfit=replace(worn.outfit, wristband_side=-1))
+    assert character._arms(sk, other).count("4417") == 1
+    assert character._arms(sk, other) != svg, "the two sides should not draw the same band"
+
+
+def test_the_sleeve_bars_are_counted_on_one_sleeve() -> None:
+    """Three bars asked for are three bars drawn, on one arm, in the color given."""
+    p = PRESETS["gero"]
+    sk = character.skeleton_for(p)
+    assert 'fill="#b79a52"' not in character._arms(sk, p)
+    worn = replace(
+        p, outfit=replace(p.outfit, sleeve_bars_color="#b79a52", sleeve_bars=3, sleeve_bars_side=1)
+    )
+    assert character._arms(sk, worn).count('fill="#b79a52"') == 3
+    one = replace(worn, outfit=replace(worn.outfit, sleeve_bars=1))
+    assert character._arms(sk, one).count('fill="#b79a52"') == 1

@@ -321,6 +321,26 @@ HEADSCARF = GarmentSlot("headscarf", "Headscarf", _color("headscarf_color", "Hea
 GOGGLES = GarmentSlot("goggles", "Goggles", _color("goggle_color", "Goggles"))
 BLINDFOLD = GarmentSlot("blindfold", "Blindfold", _color("blindfold_color", "Blindfold"))
 MASK = GarmentSlot("mask", "Face mask", _color("mask_color", "Face mask"))
+WRISTBAND = GarmentSlot(
+    "wristband",
+    "Wristband",
+    _color("wristband_color", "Wristband"),
+    selects=(
+        SelectField("wristband_side", "Side", ((-1, "Viewer's left"), (1, "Viewer's right"))),
+        # The field holds any short text; the web tool offers a plain band or a
+        # numbered one, and a preset may carry whatever it prints.
+        SelectField("wristband_text", "Print", ((None, "Plain"), ("0000", "Numbered"))),
+    ),
+)
+SLEEVE_BARS = GarmentSlot(
+    "sleeve_bars",
+    "Sleeve bars",
+    _color("sleeve_bars_color", "Sleeve bars"),
+    ranges=(RangeField("sleeve_bars", "Bars", 1, 4),),
+    selects=(
+        SelectField("sleeve_bars_side", "Side", ((-1, "Viewer's left"), (1, "Viewer's right"))),
+    ),
+)
 HAT = GarmentSlot("hat", "Witch hat", _color("hat_color", "Witch hat"))
 # The shape is a choice rather than a fixed part: all five candidates were drawn
 # for Katherina's and the owner kept them (2026-10-03).
@@ -422,6 +442,8 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     GOGGLES,
     BLINDFOLD,
     MASK,
+    WRISTBAND,
+    SLEEVE_BARS,
     HAIR_CLIP,
     HAT,
     HAT_BAND,

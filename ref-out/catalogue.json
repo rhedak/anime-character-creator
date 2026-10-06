@@ -691,6 +691,78 @@
       }
     },
     {
+      "id": "wristband",
+      "label": "Wristband",
+      "color": {
+        "field": "wristband_color",
+        "label": "Wristband",
+        "optional": true
+      },
+      "selects": [
+        {
+          "field": "wristband_side",
+          "label": "Side",
+          "options": [
+            {
+              "value": -1,
+              "label": "Viewer's left"
+            },
+            {
+              "value": 1,
+              "label": "Viewer's right"
+            }
+          ]
+        },
+        {
+          "field": "wristband_text",
+          "label": "Print",
+          "options": [
+            {
+              "value": null,
+              "label": "Plain"
+            },
+            {
+              "value": "0000",
+              "label": "Numbered"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sleeve_bars",
+      "label": "Sleeve bars",
+      "color": {
+        "field": "sleeve_bars_color",
+        "label": "Sleeve bars",
+        "optional": true
+      },
+      "ranges": [
+        {
+          "field": "sleeve_bars",
+          "label": "Bars",
+          "min": 1,
+          "max": 4
+        }
+      ],
+      "selects": [
+        {
+          "field": "sleeve_bars_side",
+          "label": "Side",
+          "options": [
+            {
+              "value": -1,
+              "label": "Viewer's left"
+            },
+            {
+              "value": 1,
+              "label": "Viewer's right"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "hair_clip",
       "label": "Hair clip",
       "color": {
