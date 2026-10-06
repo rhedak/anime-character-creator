@@ -738,16 +738,16 @@
       ]
     },
     {
-      "id": "sleeve_bars",
-      "label": "Sleeve bars",
+      "id": "shoulder_bars",
+      "label": "Shoulder bars",
       "color": {
-        "field": "sleeve_bars_color",
-        "label": "Sleeve bars",
+        "field": "shoulder_bars_color",
+        "label": "Shoulder bars",
         "optional": true
       },
       "ranges": [
         {
-          "field": "sleeve_bars",
+          "field": "shoulder_bars",
           "label": "Bars",
           "min": 1,
           "max": 4
@@ -755,7 +755,7 @@
       ],
       "selects": [
         {
-          "field": "sleeve_bars_side",
+          "field": "shoulder_bars_side",
           "label": "Side",
           "options": [
             {
@@ -768,7 +768,8 @@
             }
           ]
         }
-      ]
+      ],
+      "requires": "coat"
     },
     {
       "id": "hair_clip",

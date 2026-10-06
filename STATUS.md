@@ -1726,8 +1726,11 @@ render changed (`./refresh-ref-out.sh` reported 0 changed each time):
   so the jaw tucks its top edge, with ear loops (`_mask`).
 - `wristband_color`, `wristband_text`, `wristband_side`: a band round one wrist, with a
   short print (`_wristband`, inside `_arms`, so it turns with a swung arm).
-- `sleeve_bars_color`, `sleeve_bars`, `sleeve_bars_side`: one to four rank bars on one
-  plain sleeve (`_sleeve_bars`, inside `_arms`; not drawn on a traced sleeve).
+- `shoulder_bars_color`, `shoulder_bars`, `shoulder_bars_side`: a shoulder board with one
+  to four rank bars on one shoulder of a plain coat (`_shoulder_bars`, after the arms and
+  before the collar; needs a coat, not drawn on a traced cut). First drawn as bars across
+  the forearm and moved to the shoulder the same day, on the owner's note that rank sits
+  on the shoulder.
 
 Looked at on a long cut, a short cut, a swung arm and a hat; the cross-check is in that
 story's `cover_plan.md`.

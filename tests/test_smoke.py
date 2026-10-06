@@ -2546,14 +2546,29 @@ def test_the_wristband_is_worn_on_one_wrist_only_and_carries_its_text() -> None:
     assert character._arms(sk, other) != svg, "the two sides should not draw the same band"
 
 
-def test_the_sleeve_bars_are_counted_on_one_sleeve() -> None:
-    """Three bars asked for are three bars drawn, on one arm, in the color given."""
+def test_the_shoulder_bars_are_counted_on_one_shoulder_of_a_coat() -> None:
+    """Three bars asked for are three bars drawn, on a plain coat's shoulder.
+
+    Nothing without a coat or a color; the side picks the mirror image; the board
+    is a tilted group, so the bars are read off the group's own rects.
+    """
     p = PRESETS["gero"]
     sk = character.skeleton_for(p)
-    assert 'fill="#b79a52"' not in character._arms(sk, p)
+    assert p.outfit.coat_color is not None
+    assert character._shoulder_bars(sk, p) == ""
     worn = replace(
-        p, outfit=replace(p.outfit, sleeve_bars_color="#b79a52", sleeve_bars=3, sleeve_bars_side=1)
+        p,
+        outfit=replace(
+            p.outfit, shoulder_bars_color="#b79a52", shoulder_bars=3, shoulder_bars_side=1
+        ),
     )
-    assert character._arms(sk, worn).count('fill="#b79a52"') == 3
-    one = replace(worn, outfit=replace(worn.outfit, sleeve_bars=1))
-    assert character._arms(sk, one).count('fill="#b79a52"') == 1
+    svg = character._shoulder_bars(sk, worn)
+    assert svg.count('fill="#b79a52"') == 3
+    one = replace(worn, outfit=replace(worn.outfit, shoulder_bars=1))
+    assert character._shoulder_bars(sk, one).count('fill="#b79a52"') == 1
+    other = replace(worn, outfit=replace(worn.outfit, shoulder_bars_side=-1))
+    assert character._shoulder_bars(sk, other) != svg, (
+        "the two sides should not draw the same board"
+    )
+    coatless = replace(worn, outfit=replace(worn.outfit, coat_color=None))
+    assert character._shoulder_bars(sk, coatless) == ""

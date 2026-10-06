@@ -373,13 +373,13 @@ class Outfit:
     wristband_color: str | None = None
     wristband_text: str | None = None
     wristband_side: int = 1
-    # Rank bars across one sleeve above the cuff: their color (`None` for none),
-    # how many (one to four read at chibi scale), and the side they are worn on,
-    # as for the wristband. Drawn on a plain sleeve only; a traced sleeve has
-    # its own cuff and no room for them.
-    sleeve_bars_color: str | None = None
-    sleeve_bars: int = 3
-    sleeve_bars_side: int = 1
+    # A shoulder board with rank bars on one shoulder of the coat: the bars' color
+    # (`None` for none), how many (one to four read at chibi scale), and the side
+    # it is worn on, as for the wristband. Needs a coat (the parametric one, not a
+    # traced cut), the way the pouches need a belt.
+    shoulder_bars_color: str | None = None
+    shoulder_bars: int = 3
+    shoulder_bars_side: int = 1
     # A pointed witch's hat: crown, brim and the band at the crown's base. Its
     # own color rather than reusing `hair_color`/`coat_color`, because a hat
     # is not necessarily dyed to match either, and the reference this shipped
@@ -8045,12 +8045,6 @@ def _arms(
             limb.append(_cuff_line(sk, x(centre_wrist), wrist_y, w_wrist))
         elif cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
-        if cut is None:
-            limb.append(
-                _sleeve_bars(
-                    sk, p, s, x, centre_elbow, centre_wrist, elbow_y, wrist_y, w_elbow, w_wrist
-                )
-            )
         limb.append(_wristband(sk, p, s, x(centre_wrist), wrist_y, w_wrist))
         hand = _hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s)
         if hands is None and _hand_traced(p, s):
@@ -8133,43 +8127,56 @@ def _wristband(
     )
 
 
-def _sleeve_bars(
-    sk: Skeleton,
-    p: CharacterParams,
-    side: int,
-    x: Callable[[float], float],
-    centre_elbow: float,
-    centre_wrist: float,
-    elbow_y: float,
-    wrist_y: float,
-    w_elbow: float,
-    w_wrist: float,
-) -> str:
-    """Rank bars across the forearm, above the cuff, on one sleeve.
+def _shoulder_bars(sk: Skeleton, p: CharacterParams) -> str:
+    """A shoulder board with rank bars, on the coat's shoulder.
 
-    Each bar is a thin strip across the arm at its own height, as wide as the
-    arm there (read off the same elbow-to-wrist taper `_arms` draws) and a
-    little inside it so the outline stays the arm's. The first bar sits clear of
-    the cuff line and the rest stack up the arm.
+    The board lies along the coat's own shoulder line, between the lapel point
+    and the shoulder point (the two `_coat` draws its panel through), tilted to
+    that slope, a darker tone of the coat with the bars across it, perpendicular
+    to its length the way a board's bars run. Drawn after the arms and the coat,
+    so nothing covers it, and before the collar and the head, which are over the
+    neck either way. Nothing without a plain coat: the formula is the coat's.
     """
-    color = p.outfit.sleeve_bars_color
-    if color is None or p.outfit.sleeve_bars_side != side or p.outfit.sleeve_bars < 1:
+    color = p.outfit.shoulder_bars_color
+    if color is None or p.outfit.coat_color is None or _traced_coat(sk, p):
         return ""
-    r = sk.head_r
+    if p.outfit.shoulder_bars < 1:
+        return ""
+    side = p.outfit.shoulder_bars_side
+    cx, r = sk.head_cx, sk.head_r
     sw = _stroke_w(sk)
-    h = r * 0.09
-    pitch = r * 0.17
-    parts = []
-    for i in range(min(4, p.outfit.sleeve_bars)):
-        y = wrist_y - r * 0.50 - i * pitch
-        t = (y - elbow_y) / (wrist_y - elbow_y)
-        centre = centre_elbow + (centre_wrist - centre_elbow) * t
-        half = (w_elbow + (w_wrist - w_elbow) * t) * 0.90
-        parts.append(
-            f'<rect x="{x(centre) - half:.1f}" y="{y - h / 2:.1f}" width="{half * 2:.1f}" height="{h:.1f}" '
-            f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.7):.2f}" />'
-        )
-    return "".join(parts)
+    sy = sk.shoulder_y
+    shoulder_w = _sleeve_half_w(sk) * 0.92
+    lapel_x = sk.neck_half_w * _COAT_LAPEL_OUT
+    lapel_y = sy - sk.neck_half_w * _COAT_LAPEL_UP
+    shoulder_y = sy + (sk.waist_y - sy) * 0.16
+    dx, dy = shoulder_w - lapel_x, shoulder_y - lapel_y
+    length = math.hypot(dx, dy)
+    angle = math.degrees(math.atan2(dy, dx))
+    # Centred on the outer part of the slope, a little proud of the cloth it sits on.
+    t = 0.62
+    half_l, half_w = length * 0.34, r * 0.115
+    # Pushed in from the line by about its own half width, along the slope's normal
+    # toward the body, so it lies on the cloth and not along its outline.
+    nx, ny = -dy / length, dx / length
+    bx = cx + side * (lapel_x + dx * t + nx * half_w * 1.1)
+    by = lapel_y + dy * t + ny * half_w * 1.1
+    n = min(4, p.outfit.shoulder_bars)
+    bar_w = half_l * 2 * 0.13
+    span = half_l * 1.30
+    bars = "".join(
+        f'<rect x="{(-span / 2 + (span * i / (n - 1) if n > 1 else span / 2)) - bar_w / 2:.1f}" '
+        f'y="{-half_w:.1f}" width="{bar_w:.1f}" height="{half_w * 2:.1f}" fill="{color}" />'
+        for i in range(n)
+    )
+    board = (
+        f'<rect x="{-half_l:.1f}" y="{-half_w:.1f}" width="{half_l * 2:.1f}" height="{half_w * 2:.1f}" '
+        f'rx="{half_w * 0.3:.1f}" fill="{shade(p.outfit.coat_color)}" stroke="{OUTLINE}" '
+        f'stroke-width="{_outline_w(sw, 0.85):.2f}" stroke-linejoin="round" />'
+    )
+    return (
+        f'<g transform="translate({bx:.1f} {by:.1f}) rotate({side * angle:.2f})">{board}{bars}</g>'
+    )
 
 
 def _hands_after_coat(sk: Skeleton, p: CharacterParams) -> bool:
@@ -11548,6 +11555,8 @@ def render_character(
         _traced_coat_and_belt(sk, p),
         # The hands over a coat worn over the arms; see the function.
         _arms(sk, p, hands=True) if _hands_after_coat(sk, p) else "",
+        # On the coat's shoulder, over the arms and the coat and under the collar.
+        _shoulder_bars(sk, p),
         # After the arms and before the ear: a standing collar wraps the throat,
         # so it belongs over the neck and the tunic's V, and it is the one
         # garment high enough that the head has to be drawn after it. A mock

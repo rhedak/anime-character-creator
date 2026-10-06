@@ -1151,8 +1151,8 @@ LINNEA = CharacterParams(
 # that sets him apart from the pale nobles he was raised among. Garnet eyes: his
 # kind's eyes show red under the white lamps they build for themselves and read
 # brown by day, and a cover is lit like a lamp. A long gray coat worn closed
-# over a dark tunic, the coat's own sleeves, and three brass rank bars on the
-# left sleeve (the viewer's right), so `coat_sleeves` and `sleeve_bars` carry
+# over a dark tunic, the coat's own sleeves, and three brass rank bars on a
+# shoulder board on the left shoulder (the viewer's right), so `coat_sleeves` and `shoulder_bars` carry
 # most of his silhouette, the way the coat carries Gero's. Level and watchful,
 # a little dry: no blush, a mouth that neither smiles nor frowns.
 DRITAN = CharacterParams(
@@ -1174,9 +1174,9 @@ DRITAN = CharacterParams(
         coat_color="#6f747b",
         coat_length=0.72,
         coat_sleeves=True,
-        sleeve_bars_color="#b79a52",
-        sleeve_bars=3,
-        sleeve_bars_side=1,
+        shoulder_bars_color="#b79a52",
+        shoulder_bars=3,
+        shoulder_bars_side=1,
     ),
     # Lean, not broad: a noble's frame rather than a soldier's.
     frame=0.3,

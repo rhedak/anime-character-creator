@@ -332,14 +332,15 @@ WRISTBAND = GarmentSlot(
         SelectField("wristband_text", "Print", ((None, "Plain"), ("0000", "Numbered"))),
     ),
 )
-SLEEVE_BARS = GarmentSlot(
-    "sleeve_bars",
-    "Sleeve bars",
-    _color("sleeve_bars_color", "Sleeve bars"),
-    ranges=(RangeField("sleeve_bars", "Bars", 1, 4),),
+SHOULDER_BARS = GarmentSlot(
+    "shoulder_bars",
+    "Shoulder bars",
+    _color("shoulder_bars_color", "Shoulder bars"),
+    ranges=(RangeField("shoulder_bars", "Bars", 1, 4),),
     selects=(
-        SelectField("sleeve_bars_side", "Side", ((-1, "Viewer's left"), (1, "Viewer's right"))),
+        SelectField("shoulder_bars_side", "Side", ((-1, "Viewer's left"), (1, "Viewer's right"))),
     ),
+    requires="coat",
 )
 HAT = GarmentSlot("hat", "Witch hat", _color("hat_color", "Witch hat"))
 # The shape is a choice rather than a fixed part: all five candidates were drawn
@@ -443,7 +444,7 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     BLINDFOLD,
     MASK,
     WRISTBAND,
-    SLEEVE_BARS,
+    SHOULDER_BARS,
     HAIR_CLIP,
     HAT,
     HAT_BAND,
