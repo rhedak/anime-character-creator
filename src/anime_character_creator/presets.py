@@ -1224,7 +1224,7 @@ LINDITA = CharacterParams(
         blindfold_color="#2a2628",
         mask_color="#cfe3e6",
         wristband_color="#f2efe6",
-        wristband_text="4417",
+        wristband_text="1272",
         wristband_side=1,
     ),
     frame=-0.1,
