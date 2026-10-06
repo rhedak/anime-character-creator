@@ -292,7 +292,12 @@ change shows.
   (`harness/hair_clip/sheet.py`), all kept as `HAIR_CLIPS` and offered in the
   web tool as the "Hair clip" slot; Katherina wears the crescent.
 - **Small skin shadows** (under the chin, hair on the forehead): an
-  optional polish pass after the plan, owner's decision 2.
+  optional polish pass after the plan, owner's decision 2. The chin's was
+  built on 2026-10-03 as `FaceStyle.chin_shadow` ("Shadow under the chin" in
+  the web tool's face controls): the jaw's shape dropped 0.16 head radii in
+  skin at 0.88 of its value, inside the neck (`harness/chin_shadow/sheet.py`
+  compares depths and tones). Off for every preset, the owner's call the same
+  day. The forehead's stays deferred: it would have to follow seven fringes.
 - **An elbow** (the owner, 2026-09-27): the arm drawn as an upper and a lower
   arm rotating about an elbow, so a hand can come in from the side the way the
   reference's grip does; not now. Until then the traced grip keeps its fist as

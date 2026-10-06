@@ -592,7 +592,10 @@ FACE_RANGES: tuple[RangeField, ...] = (
 for _fr in FACE_RANGES:
     assert _fr.field in _FACE_FIELDS
 
-FACE_BOOLS: tuple[BoolField, ...] = (_face_bool("glasses", "Glasses"),)
+FACE_BOOLS: tuple[BoolField, ...] = (
+    _face_bool("glasses", "Glasses"),
+    _face_bool("chin_shadow", "Shadow under the chin"),
+)
 for _fb in FACE_BOOLS:
     assert _fb.field in _FACE_FIELDS
 

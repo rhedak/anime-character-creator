@@ -105,6 +105,10 @@ class FaceStyle:
     # part of a face the way a scar is: nobody in this cast is drawn once with
     # them and once without, and an expression must not be able to remove them.
     glasses: bool = False
+    # The cel shadow the head casts on the neck: a band of darker skin under
+    # the jaw, following it. Off by default, the owner's call that skin stays
+    # flat (`docs/detail-plan.md`, decision 2) with this as an option.
+    chin_shadow: bool = False
     # Both eyes shut: each drawn as one lash line instead of an aperture. Not a
     # mood, so not on `Expression`: it is a moment (a blink, a frame of an
     # animation built from stills) rather than a face someone wears, and a
@@ -2880,6 +2884,26 @@ def _hair_underside(sk: Skeleton, p: CharacterParams, d: str, lines: list[Chain]
     return "".join(parts)
 
 
+# The chin's shadow on the neck (`FaceStyle.chin_shadow`): the jaw's own shape
+# moved down by `_CHIN_SHADOW_DROP` head radii, in skin shaded to
+# `_CHIN_SHADOW_VALUE`, inside the neck. The head drawn over it covers all but
+# a band as deep as the drop, which follows the jaw because it is the jaw.
+_CHIN_SHADOW_CLIP_ID = "chin-shadow"
+_CHIN_SHADOW_DROP = 0.16
+_CHIN_SHADOW_VALUE = 0.88
+
+
+def _chin_shadow(sk: Skeleton, p: CharacterParams, neck: str) -> str:
+    """The band of shadow under the jaw, clipped to the neck's skin `neck`."""
+    start, segments = _head_shape(sk.face_build)
+    d = _curve(sk.head_cx, sk.head_cy + _CHIN_SHADOW_DROP * sk.head_r, sk.head_r, start, segments)
+    tone = shade(p.skin_tone, value_factor=_CHIN_SHADOW_VALUE)
+    return (
+        f'<clipPath id="{_CHIN_SHADOW_CLIP_ID}">{neck}</clipPath>'
+        f'<path d="{d}" fill="{tone}" clip-path="url(#{_CHIN_SHADOW_CLIP_ID})" />'
+    )
+
+
 def _neck(sk: Skeleton, p: CharacterParams) -> str:
     # Plain skin, not a shadow tone. The head's own outline already separates the
     # jaw from the neck, so darkening it only made the throat look grubby; flat
@@ -2893,6 +2917,14 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
     parts = [
         f'<rect x="{x:.1f}" y="{sk.neck_y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx:.1f}" fill="{p.skin_tone}" />'
     ]
+    if p.face.chin_shadow:
+        parts.append(
+            _chin_shadow(
+                sk,
+                p,
+                f'<rect x="{x:.1f}" y="{sk.neck_y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx:.1f}" />',
+            )
+        )
     # The throat's own contour, which is silhouette between the jaw and the
     # shoulder and so carries full weight. Each line starts up inside the skull
     # and is covered by the head drawn over it, so the throat comes out from under

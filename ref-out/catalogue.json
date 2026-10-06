@@ -824,6 +824,10 @@
       {
         "field": "glasses",
         "label": "Glasses"
+      },
+      {
+        "field": "chin_shadow",
+        "label": "Shadow under the chin"
       }
     ],
     "selects": [
