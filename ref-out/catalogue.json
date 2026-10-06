@@ -682,6 +682,15 @@
       }
     },
     {
+      "id": "mask",
+      "label": "Face mask",
+      "color": {
+        "field": "mask_color",
+        "label": "Face mask",
+        "optional": true
+      }
+    },
+    {
       "id": "hair_clip",
       "label": "Hair clip",
       "color": {

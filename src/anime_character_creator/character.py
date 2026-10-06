@@ -360,6 +360,11 @@ class Outfit:
     # a scarf or a hat, so it is the same slot in the draw order as the goggles
     # it is the alternative to; a character does not wear both.
     blindfold_color: str | None = None
+    # A pleated face mask worn pulled down under the chin, hanging at the throat
+    # with its ear loops running up behind the jaw: put by, not worn over the
+    # mouth. The one garment here drawn before the head, so the jaw covers the
+    # mask's top edge and it reads as tucked under the chin.
+    mask_color: str | None = None
     # A pointed witch's hat: crown, brim and the band at the crown's base. Its
     # own color rather than reusing `hair_color`/`coat_color`, because a hat
     # is not necessarily dyed to match either, and the reference this shipped
@@ -6147,6 +6152,57 @@ def _goggles(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# The mask's half width, drop below the chin and height, in head radii. Narrow
+# enough to hang at the throat, wide enough that it reads as a mask and not a
+# scarf; its top edge starts above the chin so the jaw drawn over it hides the
+# seam.
+_MASK_HALF_W = 0.50
+_MASK_TOP = 0.10
+_MASK_H = 0.46
+_MASK_PLEATS = 3
+
+
+def _mask(sk: Skeleton, p: CharacterParams) -> str:
+    """A face mask pulled down under the chin.
+
+    Drawn before the head: the jaw then covers the mask's top edge, which is
+    what tucks it under the chin, and the ear loops run from its top corners up
+    behind the jaw, so only the part outside the head's outline shows. Pleats
+    are a deeper tone of the mask's own colour, line work and no plane across it,
+    in keeping with the flat-colour rule.
+    """
+    if p.outfit.mask_color is None:
+        return ""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    color = p.outfit.mask_color
+    sw = _stroke_w(sk)
+    chin_y = cy + r
+    top = chin_y - r * _MASK_TOP
+    bot = top + r * _MASK_H
+    hw_top = r * _MASK_HALF_W
+    hw_bot = hw_top * 0.90
+    crease = shade(color, value_factor=0.78)
+    loops = "".join(
+        f'<path d="M {cx + side * hw_top:.1f} {top + r * 0.04:.1f} '
+        f'Q {cx + side * r * 0.98:.1f} {top + r * 0.10:.1f} {cx + side * r * 0.92:.1f} {cy + r * 0.30:.1f}" '
+        f'fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
+        for side in (-1, 1)
+    )
+    body = (
+        f'<path d="M {cx - hw_top:.1f} {top:.1f} L {cx + hw_top:.1f} {top:.1f} '
+        f"L {cx + hw_bot:.1f} {bot - r * 0.06:.1f} Q {cx + hw_bot:.1f} {bot:.1f} {cx + hw_bot - r * 0.06:.1f} {bot:.1f} "
+        f'L {cx - hw_bot + r * 0.06:.1f} {bot:.1f} Q {cx - hw_bot:.1f} {bot:.1f} {cx - hw_bot:.1f} {bot - r * 0.06:.1f} Z" '
+        f'fill="{color}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" stroke-linejoin="round" />'
+    )
+    pleats = "".join(
+        f'<path d="M {cx - hw_top * (1 - 0.1 * (i / _MASK_PLEATS)) + r * 0.05:.1f} {top + (bot - top) * i / (_MASK_PLEATS + 1):.1f} '
+        f'L {cx + hw_top * (1 - 0.1 * (i / _MASK_PLEATS)) - r * 0.05:.1f} {top + (bot - top) * i / (_MASK_PLEATS + 1):.1f}" '
+        f'fill="none" stroke="{crease}" stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
+        for i in range(1, _MASK_PLEATS + 1)
+    )
+    return loops + body + pleats
+
+
 # How far above the eye's centre the band's centreline rests, in eye radii: above
 # the brow, clear of the goggles' own 2.6, so a band reads as pushed up onto the
 # forehead rather than worn across the eyes.
@@ -11401,6 +11457,9 @@ def render_character(
         # garment high enough that the head has to be drawn after it. A mock
         # neck is drawn earlier, under the coat; see above.
         _collar(sk, p) if not p.outfit.collar_mock else "",
+        # Before the head, so the jaw covers the mask's top edge and it reads as
+        # tucked under the chin; after the collar, which it hangs over.
+        _mask(sk, p),
         # The ear goes under the head and over the back hair: the canon runs the
         # face's outline unbroken across the ear and hangs the hair behind it.
         _ears(sk, p),

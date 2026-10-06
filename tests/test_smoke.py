@@ -2506,3 +2506,22 @@ def test_the_blindfold_is_off_by_default_and_sits_above_the_eyes() -> None:
     ys = nums[1::2]
     lowest = max(ys) - (max(ys) - sorted(ys)[-3]) / 2
     assert lowest < eye_y - eye_r * 1.2, f"band reaches {lowest:.1f}, eye at {eye_y:.1f}"
+
+
+def test_the_mask_hangs_from_under_the_chin_and_is_off_by_default() -> None:
+    """Pulled down under the chin: tucked up behind the jaw, hanging below it.
+
+    Nothing is drawn without `mask_color`. With it the body's top edge starts
+    above the chin line, so the head drawn over it hides the seam, and its hem
+    hangs a clear fraction of a head radius below.
+    """
+    p = PRESETS["linnea"]
+    sk = character.skeleton_for(p)
+    assert character._mask(sk, p) == ""
+    worn = replace(p, outfit=replace(p.outfit, mask_color="#cfe3e6"))
+    svg = character._mask(sk, worn)
+    body = next(m for m in re.findall(r'<path d="([^"]+)" fill="#cfe3e6"', svg))
+    ys = [float(v) for v in re.findall(r"-?\d+\.\d+", body)][1::2]
+    chin_y = sk.head_cy + sk.head_r
+    assert min(ys) < chin_y, "the mask's top edge is not tucked above the chin"
+    assert max(ys) > chin_y + sk.head_r * 0.25, "the mask does not hang below the chin"
