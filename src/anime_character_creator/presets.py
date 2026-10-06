@@ -1138,10 +1138,114 @@ LINNEA = CharacterParams(
     ),
 )
 
+# Dritan and Lindita are the two leads of "The Bureaucracy of Blood"
+# (../short_stories/stories/bureaucracy_of_blood), a story with no reference art
+# of its own, designed directly like Gero and Linnea. The briefs are in that
+# story's `notes.md` ("Cover appearance briefs"); the cover they are drawn for is
+# planned in its `cover_plan.md`.
+
+# Dritan: a young vampire by his kind's count, born into an old bloodline and
+# now a Commander of the Blood Guard, whose coat is the gray of the one rank he
+# did not earn. Black hair, barbered short (a man comes to the house), and a
+# tan from the sun conditioning the Guard goes through, which is the one thing
+# that sets him apart from the pale nobles he was raised among. Garnet eyes: his
+# kind's eyes show red under the white lamps they build for themselves and read
+# brown by day, and a cover is lit like a lamp. A long gray coat worn closed
+# over a dark tunic, the coat's own sleeves, and three brass rank bars on the
+# left sleeve (the viewer's right), so `coat_sleeves` and `sleeve_bars` carry
+# most of his silhouette, the way the coat carries Gero's. Level and watchful,
+# a little dry: no blush, a mouth that neither smiles nor frowns.
+DRITAN = CharacterParams(
+    face_age=1.0,
+    skin_tone="#d8ae8a",
+    hair_color="#16131a",
+    hairstyle="short_layered",
+    hair_length=0.20,
+    eye_color="#a3202c",
+    outfit=Outfit(
+        tunic_color="#2b2a30",
+        boot_color="#1c1a1c",
+        belt_color="#3a3236",
+        trouser_color="#26252a",
+        skirt_color=None,
+        tunic_tucked=True,
+        coat_color="#6f747b",
+        coat_length=0.72,
+        coat_sleeves=True,
+        sleeve_bars_color="#b79a52",
+        sleeve_bars=3,
+        sleeve_bars_side=1,
+    ),
+    # Lean, not broad: a noble's frame rather than a soldier's.
+    frame=0.3,
+    chest=1.0,
+    face=FaceStyle(
+        lash=MAN_LASH,
+        eye_size=0.95,
+        eye_width=1.0,
+        eye_tilt=0.05,
+        eye_corner=0.5,
+        iris_size=1.0,
+        brow_tilt=0.2,
+        brow_weight=0.9,
+        mouth_curve=0.0,
+        mouth_width=0.7,
+        blush=0.0,
+    ),
+)
+
+# Lindita: about twenty at the story's first scene, a human donor in the Blood
+# Service, plainly dressed in muted teal and cream, copper hair to the shoulder
+# and amber eyes, awake and a little tired. The cover draws her as she was at
+# the feeding: the blindfold pushed up onto her forehead, the surgical mask
+# pulled down under her chin, a paper wristband on her left wrist (the viewer's
+# right) printed with her donor number. A direct smile, wider than the cast's
+# usual neutral mouth. The gap between her front teeth and the ink callus on
+# her finger are below this tool's resolution and are not drawn.
+LINDITA = CharacterParams(
+    face_age=0.7,
+    bust=0.4,
+    skin_tone="#f0d3bc",
+    hair_color="#b5602b",
+    hairstyle="long_blunt",
+    hair_length=0.30,
+    eye_color="#c9892b",
+    outfit=Outfit(
+        tunic_color="#4d6f70",
+        boot_color="#4a3a2e",
+        undersleeve_color="#ecdfc6",
+        belt_color="#3a3028",
+        trouser_color="#3d3a38",
+        skirt_color=None,
+        tunic_tucked=True,
+        blindfold_color="#2a2628",
+        mask_color="#cfe3e6",
+        wristband_color="#f2efe6",
+        wristband_text="4417",
+        wristband_side=1,
+    ),
+    frame=-0.1,
+    face=FaceStyle(
+        eye_size=1.0,
+        eye_width=1.05,
+        eye_openness=1.0,
+        eye_tilt=0.05,
+        eye_corner=0.40,
+        iris_size=1.05,
+        brow_tilt=0.15,
+        brow_weight=0.85,
+        mouth_curve=0.9,
+        mouth_width=0.85,
+        blush=0.1,
+    ),
+)
+
 PRESETS: dict[str, CharacterParams] = {
     "katherina": KATHERINA,
     "gero": GERO,
     "linnea": LINNEA,
+    "dritan": DRITAN,
+    "lindita": LINDITA,
     "satoko": SATOKO,
     "satoshi": SATOSHI,
     "kyoko": KYOKO,
@@ -1168,6 +1272,8 @@ DISPLAY_NAMES: dict[str, str] = {
     "katherina": "Katherina Beaumont",
     "gero": "Gero",
     "linnea": "Linnea",
+    "dritan": "Dritan",
+    "lindita": "Lindita",
     "satoko": "Satoko",
     "satoshi": "Satoshi",
     "kyoko": "Kyoko",
@@ -1229,6 +1335,9 @@ ROSTERS["katherina"] = ("katherina",)
 # "The Hunt for the Everglow Crystals"), same as Katherina: a separate work,
 # no overlap with the Valley of Mist cast, its own roster.
 ROSTERS["everglow"] = ("gero", "linnea")
+# Dritan and Lindita, the leads of another short story (../short_stories,
+# "The Bureaucracy of Blood"): a separate work, its own roster.
+ROSTERS["bureaucracy"] = ("dritan", "lindita")
 
 # ---------------------------------------------------------------------------
 # Neutral bases, for the web tool rather than the novel.
