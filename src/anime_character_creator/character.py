@@ -524,10 +524,18 @@ class CharacterParams:
     # to adult inside the one style; on its own canvas a taller figure has a
     # smaller head, the canvas being a fixed size.
     height: float = 1.0
-    # Which hands the figure is drawn with (`HAND_STYLES`, `docs/detail-plan.md`,
-    # D4d): "mitten", the chibi's own; "grip", the traced fist on a held staff and
-    # the mitten otherwise; "traced", the traced hands on both sides.
+    # Which relaxed hand the figure is drawn with (`HAND_STYLES`, `docs/hands-plan.md`):
+    # "mitten", the chibi's own and the default; "notched", the mitten with its tip
+    # cut into three fingers; "stroked", its silhouette with two finger strokes;
+    # "curled", a half-closed hand; "traced", the open hand taken off the reference
+    # (`docs/detail-plan.md`, D4d), widened and squared at the wrist. "grip" is the
+    # old name for a mitten with a fist on a held staff, kept so a saved character
+    # still reads: it means `hand_style="mitten"` with `grip_style="fist"`.
     hand_style: str = "mitten"
+    # How the hand that holds a staff is drawn (`GRIP_STYLES`): "mitten", the same
+    # hand as the other (the default), or "fist", the canon's rounded fist with its
+    # finger rolls on the pole side.
+    grip_style: str = "mitten"
     # How old the face reads, one axis from child to old (`docs/detail-plan.md`,
     # D3). 0 to 1 is face maturity, the chibi face growing up: the skull narrows
     # to a jaw, the eyes grow smaller, narrower and lower, the mouth drops, a
@@ -6964,8 +6972,8 @@ def _hand_centre(sk: Skeleton, p: CharacterParams, s: int) -> Point:
     hx, hy = _mitten_placement(sk, p, s, sk.head_cx + s * centre_wrist, wrist_y)(
         0.0, _hand_length(sk) * 0.5
     )
-    if _hand_traced(p, s) and s == -1 and p.outfit.staff_color is not None:
-        # A traced grip holds the staff in its channel (`_grip_channel`).
+    if _fist_grips(p, s):
+        # A fist holds the staff in its channel (`_grip_channel`).
         hx, hy = _traced_placement(sk, p, s)(_grip_channel())
     swing = p.right_arm_out if s == -1 else p.left_arm_out
     a = math.radians(-s * swing)
@@ -8358,157 +8366,87 @@ _HAND_RELAXED: tuple[HandPiece, ...] = (
 # The direction the reference's forearm ran into the relaxed hand, wrist to hand.
 _HAND_RELAXED_INTO: Point = (0.0441, 0.9990)
 
-_HAND_GRIP: tuple[HandPiece, ...] = (
-    (
-        (
-            (-0.6285, -0.0946),
-            [
-                ((-0.6504, -0.0946), (-0.6724, -0.0946)),
-                ((-0.7675, -0.1323), (-0.8625, -0.1677)),
-                ((-0.9284, -0.2148), (-0.9942, -0.2847)),
-                ((-1.0156, -0.3359), (-1.0088, -0.3871)),
-                ((-0.9869, -0.4237), (-0.9649, -0.4603)),
-                ((-0.8991, -0.4858), (-0.8333, -0.5041)),
-                ((-0.8113, -0.5133), (-0.7894, -0.4895)),
-                ((-0.7993, -0.4603), (-0.7748, -0.4310)),
-                ((-0.7894, -0.4164), (-0.8040, -0.4017)),
-                ((-0.6943, -0.3372), (-0.5846, -0.2555)),
-                ((-0.6060, -0.2116), (-0.6285, -0.1677)),
-                ((-0.6384, -0.1384), (-0.6139, -0.1092)),
-                ((-0.6212, -0.1019), (-0.6285, -0.0946)),
-            ],
-        ),
-        (),
-        (),
-    ),
-    (
-        (
-            (-0.9649, -0.2408),
-            [
-                ((-0.8698, -0.1717), (-0.7748, -0.1238)),
-                ((-0.6870, -0.1070), (-0.5992, -0.0653)),
-                ((-0.5188, -0.0546), (-0.4383, -0.0360)),
-                ((-0.4091, -0.0068), (-0.3798, 0.0225)),
-                ((-0.3798, 0.0444), (-0.3798, 0.0663)),
-                ((-0.4017, 0.0883), (-0.4237, 0.1102)),
-                ((-0.4190, 0.1395), (-0.3798, 0.1687)),
-                ((-0.3798, 0.1980), (-0.3798, 0.2273)),
-                ((-0.4017, 0.2492), (-0.4237, 0.2711)),
-                ((-0.4456, 0.2620), (-0.4676, 0.2858)),
-                ((-0.5627, 0.2973), (-0.6577, 0.3004)),
-                ((-0.6651, 0.3077), (-0.6724, 0.3150)),
-                ((-0.7382, 0.3137), (-0.8040, 0.3004)),
-                ((-0.8625, 0.2746), (-0.9210, 0.2419)),
-                ((-0.9609, 0.2053), (-0.9796, 0.1687)),
-                ((-0.9796, 0.1029), (-0.9796, 0.0371)),
-                ((-0.9576, 0.0225), (-0.9649, 0.0078)),
-                ((-1.0047, -0.0287), (-1.0234, -0.0653)),
-                ((-1.0234, -0.1092), (-1.0234, -0.1531)),
-                ((-1.0023, -0.1970), (-0.9649, -0.2408)),
-            ],
-        ),
-        (),
-        (
+# The grip is constructed, not traced (`docs/hands-plan.md`, H4). The hand traced off
+# the realistic reference read as a skinny thumb and angular rolls on a chibi's arm;
+# the canon's own staff hand (`ref/katherina/katherina_grok.jpg`) is a chunky fist:
+# four short rounded finger rolls stacked on the pole side with three crease strokes,
+# and a big rounded back of the hand with the thumb folded into it. This draws that,
+# in the hand frame the traced grip used (origin at the wrist's centre, x in hand
+# lengths with the fingers toward -x, y down), so the placement, the cuff fit and the
+# staff channel work as they did.
+
+
+def _bspline_closed(pts: list[Point]) -> Chain:
+    """A smooth closed chain through a rough polygon: the quadratic B-spline whose
+    control points are `pts`, its anchors the midpoints of the polygon's edges."""
+    n = len(pts)
+    mid = [
+        ((pts[i][0] + pts[(i + 1) % n][0]) / 2, (pts[i][1] + pts[(i + 1) % n][1]) / 2)
+        for i in range(n)
+    ]
+    return (mid[0], [(pts[(i + 1) % n], mid[(i + 1) % n]) for i in range(n)])
+
+
+def _rounded_box(cx: float, cy: float, a: float, b: float, e: float, n: int = 16) -> list[Point]:
+    """`n` points round a rounded rectangle of half-sizes `a` and `b`: exponent `e` is 2
+    for an ellipse and squarer above it."""
+    pts: list[Point] = []
+    for i in range(n):
+        t = 2 * math.pi * i / n
+        ct, st = math.cos(t), math.sin(t)
+        pts.append(
             (
-                (-0.9043, 0.0475),
-                [
-                    ((-0.8719, 0.0653), (-0.8395, 0.0831)),
-                    ((-0.7604, 0.1032), (-0.6765, 0.1186)),
-                    ((-0.6142, 0.1209), (-0.4773, 0.1224)),
-                ],
-            ),
-        ),
-    ),
-    (
-        (
-            (-0.4237, 0.3150),
-            [
-                ((-0.4237, 0.3443), (-0.4237, 0.3735)),
-                ((-0.4822, 0.4187), (-0.5407, 0.4467)),
-                ((-0.5992, 0.4532), (-0.6577, 0.4759)),
-                ((-0.7089, 0.4759), (-0.7601, 0.4759)),
-                ((-0.8186, 0.4531), (-0.8772, 0.4174)),
-                ((-0.9051, 0.3443), (-0.9210, 0.2711)),
-                ((-0.9064, 0.2492), (-0.8918, 0.2565)),
-                ((-0.8260, 0.2972), (-0.7601, 0.3150)),
-                ((-0.7089, 0.3150), (-0.6577, 0.3150)),
-                ((-0.5919, 0.3004), (-0.5261, 0.2858)),
-                ((-0.4895, 0.2858), (-0.4529, 0.2858)),
-                ((-0.4383, 0.3004), (-0.4237, 0.3150)),
-            ],
-        ),
-        (),
-        (),
-    ),
-    (
-        (
-            (-0.3067, 0.4174),
-            [
-                ((-0.3213, 0.3589), (-0.3359, 0.3004)),
-                ((-0.3359, 0.1980), (-0.3359, 0.0956)),
-                ((-0.3432, 0.0883), (-0.3506, 0.0810)),
-                ((-0.3428, -0.0580), (-0.3652, -0.1970)),
-                ((-0.3725, -0.2043), (-0.3798, -0.2116)),
-                ((-0.4269, -0.1458), (-0.4968, -0.0799)),
-                ((-0.5188, -0.0891), (-0.5407, -0.0653)),
-                ((-0.5700, -0.0795), (-0.5992, -0.0799)),
-                ((-0.6139, -0.1019), (-0.6285, -0.1238)),
-                ((-0.6285, -0.1458), (-0.6285, -0.1677)),
-                ((-0.6074, -0.2116), (-0.5700, -0.2555)),
-                ((-0.5460, -0.3286), (-0.5115, -0.4017)),
-                ((-0.4822, -0.4383), (-0.4529, -0.4749)),
-                ((-0.4091, -0.4872), (-0.3652, -0.5188)),
-                ((-0.3067, -0.5265), (-0.2482, -0.5041)),
-                ((-0.1970, -0.4529), (-0.1458, -0.4017)),
-                ((-0.1238, -0.3506), (-0.1019, -0.2994)),
-                ((-0.0946, -0.2920), (-0.0872, -0.2847)),
-                ((-0.0799, -0.2920), (-0.0726, -0.2994)),
-                ((-0.0580, -0.2847), (-0.0434, -0.2701)),
-                ((-0.0311, -0.2262), (0.0005, -0.1823)),
-                ((0.0006, -0.1238), (0.0298, -0.0653)),
-                ((0.0298, -0.0068), (0.0298, 0.0517)),
-                ((0.0371, 0.0590), (0.0444, 0.0663)),
-                ((0.0444, 0.1102), (0.0444, 0.1541)),
-                ((0.0225, 0.1761), (0.0005, 0.1980)),
-                ((-0.0434, 0.2208), (-0.0872, 0.2273)),
-                ((-0.1405, 0.3004), (-0.2189, 0.3735)),
-                ((-0.2628, 0.4001), (-0.3067, 0.4174)),
-            ],
-        ),
-        (),
-        (
-            (
-                (-0.3310, -0.2701),
-                [
-                    ((-0.3140, -0.2725), (-0.2969, -0.2750)),
-                ],
-            ),
-            (
-                (-0.0814, -0.2438),
-                [
-                    ((-0.0770, -0.2204), (-0.0726, -0.1970)),
-                ],
-            ),
-        ),
-    ),
-)
-# The direction the reference's forearm ran into the grip hand, wrist to hand.
-_HAND_GRIP_INTO: Point = (-0.9972, 0.0749)
+                cx + a * math.copysign(abs(ct) ** (2 / e), ct),
+                cy + b * math.copysign(abs(st) ** (2 / e), st),
+            )
+        )
+    return pts
+
+
+def _fist() -> tuple[HandPiece, ...]:
+    """The fist's two pieces in drawing order: the finger block with its three creases,
+    then the back of the hand (last, which `_grip_channel` reads) with the thumb's
+    crease. Rounded shapes from a few numbers, so a change is one number."""
+    block = _bspline_closed(_rounded_box(-0.67, 0.03, 0.33, 0.39, 3.4))
+    creases = tuple(((-0.99, y), [((-0.82, y + 0.015), (-0.60, y))]) for y in (-0.165, 0.03, 0.225))
+    back = _bspline_closed(_rounded_box(-0.30, 0.0, 0.40, 0.46, 2.7))
+    thumb = (((-0.52, -0.30), [((-0.60, -0.02), (-0.40, 0.14))]),)
+    return ((block, (), creases), (back, (), thumb))
+
+
+_HAND_FIST: tuple[HandPiece, ...] = _fist()
+# The direction the fist's forearm runs into it, wrist to hand: the traced grip's,
+# fingers toward -x.
+_HAND_FIST_INTO: Point = (-0.9972, 0.0749)
+# Where the staff runs through the fist: against the finger block's near edge, so the
+# pole shows on the pole side of the rolls and above and below the fist.
+_HAND_FIST_CHANNEL: Point = (-0.95, 0.0)
+# The share of the arm's swing the fist turns back against it, so the finger rolls stay
+# level as the canon's do: 0.85 of Katherina's 36 degrees is about 31. An arm that hangs
+# straight turns it not at all.
+_HAND_FIST_UPRIGHT = 0.85
+
 
 # (end of the traced hands)
 
 
-# The ways a figure's hands can be drawn (`CharacterParams.hand_style`,
-# `docs/detail-plan.md`, D4d): the chibi's mitten; "grip", the traced fist on a
-# held staff and the mitten otherwise (the recommended one: the traced open hand
-# reads thin beside a chibi's body); "traced", both traced hands.
-HAND_STYLES = ("mitten", "grip", "traced")
+# The ways a figure's relaxed hands can be drawn (`CharacterParams.hand_style`,
+# `docs/hands-plan.md`): the chibi's mitten, the default; the mitten with its tip cut
+# into three fingers ("notched"), with two finger strokes ("stroked"), or half closed
+# ("curled"); and "traced", the open hand taken off the reference. All are options the
+# owner keeps, each judged by eye; none is tied to the height.
+HAND_STYLES = ("mitten", "notched", "stroked", "curled", "traced")
+# How a hand that holds a staff is drawn (`CharacterParams.grip_style`).
+GRIP_STYLES = ("mitten", "fist")
 
-# A traced hand's length, head radii. The reference's hand is an adult's, about
-# the face's length: fitted to our wrist it reached mid-thigh; 0.65 read as a hand
-# on a hanging arm; beside Katherina's staff, 0.50 matched the chibi reference's
-# fist (`harness/trace_hands/size_mock.py`, `grip_study.py`, the owner's picks).
-_HAND_TRACED_LENGTH = 0.50
+# The open hand's length, head radii. The reference's hand is an adult's, about the
+# face's length; at 0.50 on our wrist it hung to mid-thigh and read as thin. 0.36
+# brings its box to the mitten's height; `_HAND_OPEN_STRETCH` then gives it the
+# mitten's width (a per-axis scale, on purpose: the target is a chibi's proportions,
+# not the reference's). The fist, built here, is 0.50, the size the canon's matches.
+_HAND_OPEN_LENGTH = 0.36
+_HAND_OPEN_STRETCH = 2.0
+_HAND_FIST_LENGTH = 0.50
 # How far a traced hand's wrist sits under its cuff, head radii: the hand is drawn
 # under its arm, so the cuff's edge lies over the wrist.
 _HAND_CUFF_TUCK = 0.04
@@ -8516,7 +8454,7 @@ _HAND_CUFF_TUCK = 0.04
 # line: over it the hand widens from its traced width to `_HAND_WRIST_FILL` of the
 # cuff's opening, so it fills the sleeve or runs on from a bare forearm.
 _HAND_WRIST_STRETCH = 0.30
-_HAND_WRIST_FILL = 0.9
+_HAND_WRIST_FILL = 1.1
 
 
 def _chain_points(ch: Chain, per: int = 8) -> list[Point]:
@@ -8530,17 +8468,35 @@ def _chain_points(ch: Chain, per: int = 8) -> list[Point]:
     return pts
 
 
+def _square_wrist(chain: Chain, top: float = -0.033, y_cut: float = 0.06) -> Chain:
+    """The traced open hand's outline with its wrist end squared off. The trace followed
+    the reference's forearm meeting the hand at an angle, so the top edge is bevelled on
+    the left and its stroke corners drew as ticks below a cuff or on a bare arm. Every
+    point above `y_cut` goes; each side is carried straight up from its own point to a
+    flat top at `top`."""
+    pts = _chain_points(chain, per=4)[:-1]  # closed: the last point is the first
+    n = len(pts)
+    inside = {i for i, (_, y) in enumerate(pts) if y < y_cut}
+    first_out = next(i for i in range(n) if i not in inside and (i - 1) % n in inside)
+    keep = [q for q in pts[first_out:] + pts[:first_out] if q[1] >= y_cut]
+    a, b = keep[0], keep[-1]
+    ring = [*keep, (b[0], top), (a[0], top)]
+    nxt = ring[1:] + ring[:1]
+    return (
+        ring[0],
+        [(((p[0] + q[0]) / 2, (p[1] + q[1]) / 2), q) for p, q in zip(ring, nxt, strict=True)],
+    )
+
+
+# The open hand: the traced relaxed hand's outline alone, squared at the wrist. Its two
+# fingertip slivers and its interior lines are left out: they overlapped into one dark
+# knot at the fingertips at this size (`docs/hands-status.md`, W3).
+_HAND_OPEN: tuple[HandPiece, ...] = ((_square_wrist(_HAND_RELAXED[0][0]), (), ()),)
+
+
 def _grip_channel() -> Point:
-    """Where the staff runs through the traced grip, in its own units: between the
-    finger rolls and the back of the hand, half way down the rolls."""
-    *fingers, back = _HAND_GRIP
-    finger_pts = [q for piece in fingers for q in _chain_points(piece[0])]
-    finger_x = max(x for x, _ in finger_pts)
-    back_pts = _chain_points(back[0])
-    lo = min(y for _, y in finger_pts)
-    hi = max(y for _, y in finger_pts)
-    back_x = min(x for x, y in back_pts if lo <= y <= hi)
-    return ((finger_x + back_x) / 2, (lo + hi) / 2)
+    """Where the staff runs through the fist, in its own units (`_HAND_FIST_CHANNEL`)."""
+    return _HAND_FIST_CHANNEL
 
 
 def _traced_wrist_half(pieces: tuple[HandPiece, ...]) -> float:
@@ -8549,10 +8505,25 @@ def _traced_wrist_half(pieces: tuple[HandPiece, ...]) -> float:
     return (max(top) - min(top)) / 2
 
 
+def _hand_pose(p: CharacterParams) -> str:
+    """The relaxed hand's style, with the old "grip" read as the mitten it meant."""
+    return "mitten" if p.hand_style == "grip" else p.hand_style
+
+
+def _fist_grips(p: CharacterParams, side: int) -> bool:
+    """Whether the hand on `side` is a fist round a held staff: the character's own right
+    hand (the viewer's left), with a staff, in a fist grip."""
+    return (
+        side == -1
+        and p.outfit.staff_color is not None
+        and (p.grip_style == "fist" or p.hand_style == "grip")
+    )
+
+
 def _hand_traced(p: CharacterParams, side: int) -> bool:
-    """Whether the hand on `side` is drawn traced rather than as the mitten."""
-    grip = side == -1 and p.outfit.staff_color is not None
-    return p.hand_style == "traced" or (p.hand_style == "grip" and grip)
+    """Whether the hand on `side` is drawn by `_traced_hand`, under its arm, rather than as
+    one of the mitten's family over it."""
+    return _fist_grips(p, side) or _hand_pose(p) == "traced"
 
 
 def _principal(pts: list[Point]) -> tuple[Point, Point]:
@@ -8606,16 +8577,23 @@ def _traced_placement(sk: Skeleton, p: CharacterParams, side: int) -> Callable[[
     2026-09-27, `harness/trace_hands/cuff_fit.py`); the open hand's wrist
     widened to the opening. Mirrored per side: the open hand was traced on the
     viewer's right, the grip on the left."""
-    grip = side == -1 and p.outfit.staff_color is not None
+    grip = _fist_grips(p, side)
     mirror = (side == 1) if grip else (side == -1)
-    ix, iy = _HAND_GRIP_INTO if grip else _HAND_RELAXED_INTO
+    ix, iy = _HAND_FIST_INTO if grip else _HAND_RELAXED_INTO
     if mirror:
         ix = -ix
     (mx, my), half, (ox, oy) = _cuff_opening(sk, p, side)
     theta = math.atan2(oy, ox) - math.atan2(iy, ix)
+    if grip:
+        # Turn the fist back against the arm's swing so its rolls stay level.
+        swing = p.right_arm_out if side == -1 else p.left_arm_out
+        theta += math.radians(_HAND_FIST_UPRIGHT * swing)
     cos, sin = math.cos(theta), math.sin(theta)
-    k = _HAND_TRACED_LENGTH * sk.head_r
-    widen = 1.0 if grip else _HAND_WRIST_FILL * half / (_traced_wrist_half(_HAND_RELAXED) * k)
+    k = (_HAND_FIST_LENGTH if grip else _HAND_OPEN_LENGTH) * sk.head_r
+    stretch = 1.0 if grip else _HAND_OPEN_STRETCH
+    widen = (
+        1.0 if grip else _HAND_WRIST_FILL * half / (_traced_wrist_half(_HAND_OPEN) * stretch * k)
+    )
     bx, by = mx - ox * _HAND_CUFF_TUCK * sk.head_r, my - oy * _HAND_CUFF_TUCK * sk.head_r
 
     def place(q: Point) -> Point:
@@ -8623,7 +8601,7 @@ def _traced_placement(sk: Skeleton, p: CharacterParams, side: int) -> Callable[[
         if not grip and y < _HAND_WRIST_STRETCH:
             t = 1.0 - max(0.0, y) / _HAND_WRIST_STRETCH
             x *= 1.0 + (widen - 1.0) * t * t
-        x = (-x if mirror else x) * k
+        x = (-x if mirror else x) * stretch * k
         y *= k
         return (bx + x * cos - y * sin, by + x * sin + y * cos)
 
@@ -8631,9 +8609,9 @@ def _traced_placement(sk: Skeleton, p: CharacterParams, side: int) -> Callable[[
 
 
 def _traced_hand(sk: Skeleton, p: CharacterParams, side: int) -> str:
-    """A traced hand on `side`: gripping the staff when this is the hand holding
-    it, hanging open otherwise, fitted to its cuff (`_traced_placement`)."""
-    grip = side == -1 and p.outfit.staff_color is not None
+    """A drawn hand on `side`: the fist when this is the hand holding a staff in a
+    fist grip, the open hand otherwise, fitted to its cuff (`_traced_placement`)."""
+    grip = _fist_grips(p, side)
     place = _traced_placement(sk, p, side)
     sw = _stroke_w(sk)
 
@@ -8647,7 +8625,7 @@ def _traced_hand(sk: Skeleton, p: CharacterParams, side: int) -> str:
         return d + " Z" if closed else d
 
     parts = []
-    for outline, holes, lines in _HAND_GRIP if grip else _HAND_RELAXED:
+    for outline, holes, lines in _HAND_FIST if grip else _HAND_OPEN:
         d = " ".join(path(ch, True) for ch in (outline, *holes))
         parts.append(
             f'<path d="{d}" fill="{p.skin_tone}" fill-rule="evenodd" stroke="{OUTLINE}" '
@@ -8686,13 +8664,14 @@ def _mitten_placement(
 def _hand(
     sk: Skeleton, p: CharacterParams, cx: float, wrist_y: float, w_wrist: float, side: int
 ) -> str:
-    """A mitten hand hanging at the side, thumb on the inner edge.
+    """A hand hanging at the side, thumb on the inner edge: the mitten unless
+    `hand_style` says otherwise.
 
     The canon's chibi hand is a mitten with one visible thumb, which is what
     separates a hand from the featureless stub this used to be. Still no
-    fingers: the canon suggests them with a crease at most at the realistic
-    build, and at this size separate digits read as noise rather than as a
-    hand.
+    fingers by default: the canon suggests them with a crease at most, and at
+    this size separate digits read as noise rather than as a hand. The other
+    styles (`HAND_STYLES`) are the owner's options, kept side by side.
     """
     if _hand_traced(p, side):
         return _traced_hand(sk, p, side)
@@ -8707,7 +8686,20 @@ def _hand(
         x, y = place(offset, down)
         return f"{x:.1f} {y:.1f}"
 
-    d = (
+    style = _hand_pose(p)
+    sw = _stroke_w(sk)
+    if style in _HAND_BUILDERS:
+        return _HAND_BUILDERS[style](p, sw, hw, length, tip, pt)
+    d = _mitten_path(hw, length, tip, pt)
+    parts = [
+        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.85):.2f}" />'
+    ]
+    return "".join(parts)
+
+
+def _mitten_path(hw: float, length: float, tip: float, pt: Callable[[float, float], str]) -> str:
+    """The mitten's outline, in the hand's own frame (`pt(offset, down)`)."""
+    return (
         f"M {pt(hw, 0.0)} "
         f"Q {pt(hw * 1.14, length * 0.55)} {pt(tip * 0.74, length)} "
         f"Q {pt(0.0, length * 1.16)} {pt(-tip * 0.70, length * 0.97)} "
@@ -8716,11 +8708,85 @@ def _hand(
         f"Q {pt(-hw * 0.98, length * 0.16)} {pt(-hw, 0.0)} "
         f"Z"
     )
-    sw = _stroke_w(sk)
-    parts = [
-        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.85):.2f}" />'
-    ]
+
+
+def _hand_shape(p: CharacterParams, sw: float, d: str) -> str:
+    return (
+        f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
+        f'stroke-width="{_outline_w(sw, 0.85):.2f}" stroke-linejoin="round" />'
+    )
+
+
+def _hand_stroke(sw: float, d: str) -> str:
+    return (
+        f'<path d="{d}" fill="none" stroke="{OUTLINE}" '
+        f'stroke-width="{_interior_w(sw, 0.8):.2f}" stroke-linecap="round" />'
+    )
+
+
+def _hand_notched(p, sw, hw, length, tip, pt) -> str:
+    """The mitten with its tip cut into three fingers, the middle the longest. Each notch
+    is a V about two outline widths across, so it reads as a notch and not a hairline.
+    The thumb side is the mitten's own."""
+    d = (
+        f"M {pt(hw, 0.0)} "
+        f"Q {pt(hw * 1.14, length * 0.55)} {pt(tip * 0.74, length * 0.90)} "
+        f"Q {pt(tip * 0.62, length * 1.10)} {pt(tip * 0.34, length * 1.01)} "
+        f"L {pt(tip * 0.27, length * 0.84)} "
+        f"L {pt(tip * 0.20, length * 1.03)} "
+        f"Q {pt(tip * 0.02, length * 1.20)} {pt(-tip * 0.14, length * 1.04)} "
+        f"L {pt(-tip * 0.20, length * 0.86)} "
+        f"L {pt(-tip * 0.27, length * 1.01)} "
+        f"Q {pt(-tip * 0.48, length * 1.12)} {pt(-tip * 0.70, length * 0.96)} "
+        f"Q {pt(-hw * 1.02, length * 0.80)} {pt(-hw * 0.86, length * 0.60)} "
+        f"Q {pt(-hw * 1.32, length * 0.50)} {pt(-hw * 1.12, length * 0.28)} "
+        f"Q {pt(-hw * 0.98, length * 0.16)} {pt(-hw, 0.0)} "
+        f"Z"
+    )
+    return _hand_shape(p, sw, d)
+
+
+def _hand_stroked(p, sw, hw, length, tip, pt) -> str:
+    """The mitten's silhouette exactly, with two finger strokes rising from the tip."""
+    parts = [_hand_shape(p, sw, _mitten_path(hw, length, tip, pt))]
+    for x, dx in ((tip * 0.27, 0.03), (-tip * 0.20, -0.03)):
+        parts.append(
+            _hand_stroke(
+                sw,
+                f"M {pt(x, length * 1.02)} Q {pt(x * 1.04 + dx * hw, length * 0.85)} {pt(x, length * 0.66)}",
+            )
+        )
     return "".join(parts)
+
+
+def _hand_curled(p, sw, hw, length, tip, pt) -> str:
+    """A half-closed hand: the mitten's silhouette (so it joins and fits as the mitten
+    does), the thumb's crease running down the front and two parallel curled-finger
+    arcs across the lower body. A first version with a closed thumb shape of its own
+    read as a ring at the cuff and crowded the fingers, so the thumb stays the
+    mitten's bump."""
+    parts = [_hand_shape(p, sw, _mitten_path(hw, length, tip, pt))]
+    parts.append(
+        _hand_stroke(
+            sw,
+            f"M {pt(-hw * 0.62, length * 0.36)} Q {pt(-hw * 0.50, length * 0.46)} {pt(-hw * 0.30, length * 0.50)}",
+        )
+    )
+    for x in (tip * 0.40, -tip * 0.04):
+        parts.append(
+            _hand_stroke(
+                sw,
+                f"M {pt(x + hw * 0.08, length * 0.62)} Q {pt(x - hw * 0.08, length * 0.80)} {pt(x, length * 1.00)}",
+            )
+        )
+    return "".join(parts)
+
+
+_HAND_BUILDERS: dict[str, Callable[..., str]] = {
+    "notched": _hand_notched,
+    "stroked": _hand_stroked,
+    "curled": _hand_curled,
+}
 
 
 def _leg_gap_and_top(sk: Skeleton, trousers: bool) -> tuple[float, float]:

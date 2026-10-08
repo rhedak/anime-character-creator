@@ -263,8 +263,8 @@ function buildBuildControls() {
   row.append(lbl, select);
   buildControls.appendChild(row);
 
-  // `catalogue.hand_styles`: the chibi's mitten or the drawn (traced) hands,
-  // a choice per character (`docs/detail-plan.md`, D4d).
+  // `catalogue.hand_styles`: the chibi's mitten, three variations on it, or the
+  // open drawn hand, a choice per character (`docs/hands-plan.md`).
   const handRow = document.createElement("div");
   handRow.className = "control-row";
   const handLbl = document.createElement("label");
@@ -285,6 +285,29 @@ function buildBuildControls() {
   });
   handRow.append(handLbl, handSelect);
   buildControls.appendChild(handRow);
+
+  // `catalogue.grip_styles`: how a hand that holds a staff is drawn, the same hand
+  // as the other or the canon's fist (`docs/hands-plan.md`).
+  const gripRow = document.createElement("div");
+  gripRow.className = "control-row";
+  const gripLbl = document.createElement("label");
+  gripLbl.htmlFor = "field-grip-style";
+  gripLbl.textContent = "Staff grip";
+  const gripSelect = document.createElement("select");
+  gripSelect.id = "field-grip-style";
+  for (const style of catalogue.grip_styles) {
+    const opt = document.createElement("option");
+    opt.value = style.id;
+    opt.textContent = style.label;
+    if (style.id === (state.grip_style ?? "mitten")) opt.selected = true;
+    gripSelect.appendChild(opt);
+  }
+  gripSelect.addEventListener("input", () => {
+    setField("grip_style", gripSelect.value);
+    scheduleRender();
+  });
+  gripRow.append(gripLbl, gripSelect);
+  buildControls.appendChild(gripRow);
 
   // `catalogue.height`: how tall the figure stands against its head, the
   // tall chibi stretched below the shoulders (`docs/tall-chibi-plan.md`, R4b).

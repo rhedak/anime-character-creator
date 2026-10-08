@@ -105,12 +105,30 @@
       "label": "Mitten (chibi)"
     },
     {
-      "id": "grip",
-      "label": "Drawn grip on a staff"
+      "id": "notched",
+      "label": "Mitten, notched fingers"
+    },
+    {
+      "id": "stroked",
+      "label": "Mitten, finger strokes"
+    },
+    {
+      "id": "curled",
+      "label": "Half-closed hand"
     },
     {
       "id": "traced",
-      "label": "Drawn hands"
+      "label": "Open hand (drawn)"
+    }
+  ],
+  "grip_styles": [
+    {
+      "id": "mitten",
+      "label": "Same hand as the other"
+    },
+    {
+      "id": "fist",
+      "label": "Fist round the staff"
     }
   ],
   "height": {

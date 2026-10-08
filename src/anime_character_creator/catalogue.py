@@ -36,6 +36,7 @@ from .character import (
     BODY_TYPES,
     COAT_CUTS,
     COLLAR_CUTS,
+    GRIP_STYLES,
     HAIR_CLIPS,
     HAIRSTYLES,
     HAND_STYLES,
@@ -572,16 +573,25 @@ assert set(BODY_LABELS) == set(BODY_TYPES), (
 )
 assert "body" in _CHARACTER_FIELDS
 
-# How the hands are drawn (`docs/detail-plan.md`, D4d): the chibi's mitten, or the
-# hands traced off the reference, hanging relaxed and gripping a held staff. A
-# choice per character, the owner's call, not tied to the height.
+# How the hands are drawn (`docs/hands-plan.md`): the chibi's mitten, three small
+# variations on it, or the open hand taken off the reference, and separately how a
+# hand that holds a staff is drawn. A choice per character, the owner's call, not
+# tied to the height.
 HAND_LABELS: dict[str, str] = {
     "mitten": "Mitten (chibi)",
-    "grip": "Drawn grip on a staff",
-    "traced": "Drawn hands",
+    "notched": "Mitten, notched fingers",
+    "stroked": "Mitten, finger strokes",
+    "curled": "Half-closed hand",
+    "traced": "Open hand (drawn)",
 }
 assert set(HAND_LABELS) == set(HAND_STYLES)
+GRIP_LABELS: dict[str, str] = {
+    "mitten": "Same hand as the other",
+    "fist": "Fist round the staff",
+}
+assert set(GRIP_LABELS) == set(GRIP_STYLES)
 assert "hand_style" in _CHARACTER_FIELDS
+assert "grip_style" in _CHARACTER_FIELDS
 
 # `FaceStyle` carries fourteen floats, and `docs/web-gui-plan.md` calls the
 # whole set "a mixing desk, not a limited set of choices" and keeps it out of
@@ -704,6 +714,7 @@ def build_catalogue() -> dict[str, object]:
         },
         "bodies": [{"id": name, "label": BODY_LABELS[name]} for name in sorted(BODY_TYPES)],
         "hand_styles": [{"id": name, "label": HAND_LABELS[name]} for name in HAND_STYLES],
+        "grip_styles": [{"id": name, "label": GRIP_LABELS[name]} for name in GRIP_STYLES],
         "height": _range_json(HEIGHT),
         "face_age": _range_json(AGE),
         "colors": [_color_json(c) for c in COLORS],

@@ -2447,11 +2447,11 @@ def test_the_height_stretches_below_the_shoulders_only(h):
 
 @pytest.mark.parametrize("preset", ["katherina", "krista", "gero"])
 def test_the_traced_hands_draw_and_the_mitten_is_the_default(preset):
-    """`docs/detail-plan.md`, D4d: `hand_style="traced"` draws the reference's
-    hands (a grip on a held staff, relaxed otherwise); "mitten" stays the default
-    and draws as it did. A bare arm under a traced hand leaves its wrist open;
-    "grip" draws the traced fist on a held staff and the mitten otherwise, and the
-    staff then runs through the fist's channel."""
+    """`docs/detail-plan.md`, D4d, and `docs/hands-plan.md`: `hand_style="traced"` draws the
+    open hand taken off the reference; "mitten" stays the default and draws as it did. A
+    bare arm under a drawn hand leaves its wrist open. The old `hand_style="grip"` still
+    reads: a fist on a held staff and the mitten otherwise, and the staff then runs
+    through the fist's channel."""
     p = PRESETS[preset]
     assert p.hand_style == "mitten"
     traced = render_character(replace(p, hand_style="traced"))
@@ -2482,6 +2482,96 @@ def test_the_traced_hands_draw_and_the_mitten_is_the_default(preset):
 
     assert across in outlines(bare)
     assert across not in outlines(replace(bare, hand_style="traced"))
+
+
+def _hand_numbers(p, side: int):
+    """The `(x, y)` pairs in a drawn hand's SVG, in head radii from the skeleton's head centre.
+    Control points count, so the box is a little generous, the same for every style."""
+    sk = character.skeleton_for(p)
+    _t, _e, centre_wrist, wrist_y = character._arm_line(sk)
+    w_wrist = sk.arm_half_w * (1.0 - 0.34 * character._limb_build(sk))
+    svg = character._hand(sk, p, sk.head_cx + side * centre_wrist, wrist_y, w_wrist, side)
+    nums = [float(v) for v in re.findall(r"-?\d+\.?\d*", " ".join(re.findall(r'd="([^"]+)"', svg)))]
+    xs, ys = nums[0::2], nums[1::2]
+    return sk, xs, ys
+
+
+@pytest.mark.parametrize("style", character.HAND_STYLES)
+@pytest.mark.parametrize("preset", ["krista", "gero", "satoko"])
+def test_every_relaxed_hand_keeps_a_hands_footprint(style: str, preset: str) -> None:
+    """`docs/hands-plan.md`, the footprint gate: whichever hand a figure is given, it is the
+    chibi's size, not the thin adult hand the first traced one was (0.56 tall and 1.6 times
+    as tall as wide). Height 0.28 to 0.46 head radii and height over width 0.6 to 1.3;
+    control points inflate the box a little, the same for every style. The mitten's own box
+    is the reference these bounds were set from (0.34 tall, 0.78)."""
+    p = replace(PRESETS[preset], hand_style=style)
+    sk, xs, ys = _hand_numbers(p, 1)
+    height = (max(ys) - min(ys)) / sk.head_r
+    width = (max(xs) - min(xs)) / sk.head_r
+    assert 0.28 <= height <= 0.46, (style, height)
+    assert 0.6 <= height / width <= 1.3, (style, height / width)
+
+
+@pytest.mark.parametrize("style", [s for s in character.HAND_STYLES if s != "mitten"])
+@pytest.mark.parametrize("preset", ["krista", "gero", "katherina"])
+def test_each_hand_style_draws_and_differs_from_the_mitten(style: str, preset: str) -> None:
+    """`docs/hands-plan.md`: the options are kept side by side. Each is well-formed SVG and
+    draws something the mitten does not; the default stays the mitten."""
+    p = PRESETS[preset]
+    assert p.hand_style == "mitten" and p.grip_style == "mitten"
+    svg = render_character(replace(p, hand_style=style))
+    ET.fromstring(svg)
+    assert svg != render_character(p)
+
+
+def test_the_fist_grips_a_held_staff_only_and_the_old_grip_name_still_reads() -> None:
+    """`grip_style="fist"` changes the hand that holds a staff and nothing else: with no
+    staff it draws as the default, and on Katherina the other hand is the same as ever.
+    The old `hand_style="grip"` means a mitten with the fist."""
+    krista = PRESETS["krista"]
+    assert render_character(replace(krista, grip_style="fist")) == render_character(krista)
+    kat = PRESETS["katherina"]
+    fist = replace(kat, grip_style="fist")
+    ET.fromstring(render_character(fist))
+    assert render_character(fist) != render_character(kat)
+    sk = character.skeleton_for(kat)
+    assert character._fist_grips(fist, -1) and not character._fist_grips(fist, 1)
+    assert character._hand_centre(sk, fist, 1) == character._hand_centre(sk, kat, 1)
+    assert render_character(replace(kat, hand_style="grip")) == render_character(fist)
+    # the staff runs through the fist: the hand's centre moves to the channel
+    assert character._hand_centre(sk, fist, -1) != character._hand_centre(sk, kat, -1)
+
+
+def test_the_fist_stays_level_as_the_arm_swings() -> None:
+    """`docs/hands-plan.md`, G2: the fist turns back against the arm's swing by
+    `_HAND_FIST_UPRIGHT` of it, so its finger rolls stay level; an arm that hangs straight
+    turns it not at all. The mapping's own angle changes with the swing by exactly that."""
+    kat = replace(PRESETS["katherina"], grip_style="fist")
+
+    def angle(swing: float) -> float:
+        p = replace(kat, right_arm_out=swing)
+        place = character._traced_placement(character.skeleton_for(p), p, -1)
+        (x0, y0), (x1, y1) = place((0.0, 0.0)), place((-1.0, 0.0))
+        return math.degrees(math.atan2(y1 - y0, x1 - x0))
+
+    for swing in (20.0, 36.0, 50.0):
+        assert angle(swing) - angle(0.0) == pytest.approx(
+            character._HAND_FIST_UPRIGHT * swing, abs=1e-6
+        )
+
+
+def test_the_open_hand_is_squared_at_the_wrist() -> None:
+    """`docs/hands-status.md`, W3: the traced open hand's wrist end is a flat cross-cut as wide
+    as the sides below it, not the reference forearm's bevel (whose top edge ran flat for
+    little more than half the wrist, its left corner cut away diagonally, and whose stroke
+    corners drew as ticks)."""
+    outline = character._HAND_OPEN[0][0]
+    pts = character._chain_points(outline, per=2)
+    top = min(y for _x, y in pts)
+    flat = [x for x, y in pts if abs(y - top) < 1e-6]
+    wrist = [x for x, y in pts if y <= 0.07]
+    assert min(flat) == pytest.approx(min(wrist), abs=0.02)
+    assert max(flat) == pytest.approx(max(wrist), abs=0.02)
 
 
 def test_the_blindfold_is_off_by_default_and_sits_above_the_eyes() -> None:
