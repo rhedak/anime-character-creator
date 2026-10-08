@@ -50,6 +50,7 @@ tidying them would be editing the evidence.
 | `variants/` | the hair and leg variant sweep, which regenerates a whole tree of candidates |
 | `head/` | head taper candidates at the realistic build |
 | `scar/` | the three heads cropped to a common box so a four-pixel scar is legible |
+| `hands/` | the hands campaign (`docs/hands-plan.md`): the owner's standard sheet and the footprint gate; its own README is the index |
 
 Each of `trace/`, `ear2/`, `trousers/` and `variants/` carries its own README
 with the per-script table and, more usefully, what the measurement said. Read
