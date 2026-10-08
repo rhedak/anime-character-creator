@@ -5,9 +5,7 @@ The record for `hands-plan.md`. Procedure: `detail-strategy.md`.
 ## RESUME
 
 H0 to H5 are built, and **the options are in `src/`** (2026-10-08, after the owner
-chose G2 and to keep every hand as an option). Left: **V8, the preset assignment**
-(which preset takes which hand and grip, the owner's call; every preset still wears
-the mitten) and H6 (docs, a roster look, and a regeneration of the consumers only if
+chose G2 and to keep every hand as an option). Left: H6 (docs, a roster look, and a regeneration of the consumers only if
 asked). Sheets for the shipped styles: `out/hands/v8/` (A mitten, B notched, C
 stroked, D curled, E open, F fist).
 
@@ -51,13 +49,21 @@ the traced hand taken off the realistic reference.
 | H2 candidate K, constructed hands | done: shipped as notched, stroked, curled |
 | H3 candidate T, traced from a chibi reference | not needed: the owner kept the options and fixed the fist by construction |
 | H4 candidate G, the grip | done: G2 chosen, shipped as `grip_style="fist"` |
-| H5 R, the options in `src/` and a guard | done (no registry class, see RESUME); V8 the assignment, open |
+| H5 R, the options in `src/` and a guard | done (no registry class, see RESUME); V8 answered: keep the mittens as the default |
 | H6 close | not started |
 
 ## Owner's answers
 
 One line per checkpoint, dated, as the owner answers.
 
+- **V8, 2026-10-08.** Keep the mittens as the default for now: no preset is
+  assigned another hand or the fist. The options stay available per character
+  (`hand_style`, `grip_style`, the web tool's "Hands" and "Staff grip").
+- **V5, 2026-10-08.** G2 (the fist kept upright against the arm's swing), on the
+  recommendation; "ok".
+- **V1 and V2, 2026-10-08.** Wider, not smaller: W2, "yes it looks better", then
+  keep all the hands as options. K1 "looks odd" and the constructed hands "kind of
+  look like 3 fingers each", both kept as options regardless.
 - **V0, 2026-10-08.** The traced hands "look too thin, almost skeletal". They
   "don't connect to the arms well (we'd probably see this better with clothes
   off)". "For katherina they don't even fit and have parts missing (the fist)."
