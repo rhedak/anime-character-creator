@@ -1735,6 +1735,16 @@ render changed (`./refresh-ref-out.sh` reported 0 changed each time):
 Looked at on a long cut, a short cut, a swung arm and a hat; the cross-check is in that
 story's `cover_plan.md`.
 
+## Hands options, 2026-10-08
+
+Every preset still wears the mitten, but the hand is now a choice per character.
+`CharacterParams.hand_style` picks the relaxed hand (`HAND_STYLES`: mitten, the default,
+notched, stroked, curled, traced) and `grip_style` picks the hand that holds a staff
+(`GRIP_STYLES`: mitten, the default, or fist, the canon's rounded fist kept level against the
+arm's swing). The web tool has a control for each. Nothing was assigned to a preset; that is
+the owner's call (`docs/hands-status.md`, V8). The record is `docs/hands-plan.md` and
+`docs/hands-status.md`, the tools `harness/hands/`. No existing render changed.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.
