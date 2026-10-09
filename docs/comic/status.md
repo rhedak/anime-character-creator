@@ -296,3 +296,34 @@ for the open questions, not changes to the canon strip. Built by
 **Not done, deliberately:** the elbow bend. A read-only trace of how to add it was delegated
 (Sonnet, in the background) and its result is to be read before deciding; the finding above
 means panel 10 does not need it, so only panels 7 and 9 might.
+
+### The elbow trace, 2026-10-10
+
+A read-only trace was delegated (Sonnet, background, 127k tokens: a little over the 100k at which
+the next one should be split) on how to give an arm an elbow bend with every existing render
+byte-identical. **Not built**: panel 10 turned out not to need it (see the samples), so only panels 7
+and 9 might. Its findings, kept for when a panel asks:
+
+- **What `_arms` emits** for one side (`character.py` 7903 to 8115): the sleeve or undersleeve
+  tube (fill and outline), the cuff, a wristband, the hand, all inside one
+  `<g transform="rotate(-s*swing, pivot)">`, plus `_arm_joint_cap` outside it. There are no shadow shapes. The
+  elbow is already a vertex of the outline, at `(centre_elbow, waist_y)`.
+- **Clip the arm twice** (a clipPath at the elbow line, the lower piece in a second rotate) was
+  prototyped and works on satoko, dritan, keiko and katherina, with flaws: the forearm's inner outline
+  crosses the upper arm (draw the forearm first), a disc is needed for a round elbow, the bust lobe
+  repaints a strip over the forearm at large bends on characters with a bust, and a traced wide sleeve
+  (katherina) has no elbow. **A cleaner route (INFERRED):** split the existing path at its elbow
+  vertices into two fills and two open strokes, one group per piece, no clipPath.
+- **Proposed fields:** `right_elbow_bend`, `left_elbow_bend`, degrees, default 0.0, guarded by
+  `if bend:` like the swing so defaults are byte-identical. **Sign: additive with the swing**
+  (the forearm's absolute angle is swing plus bend); surrender is swing 90 with bend 90, a hand at
+  the belly is swing 0 with bend minus 90. `_hand_centre` rotates by the bend about the elbow
+  first. Predicted on satoko: at bend minus 90 and swing 0 the forearm runs level at belt height and
+  the hand lands on the pouch, about 9 px past the midline, which the prototype rendered.
+- **Also depends on it:** `_bust_over_arms` (its mask calls `_arms(silhouette=True)`), the staff grip
+  (a raised hand rescales the staff), Katherina's jacket order (hands drawn after it), the fist's
+  upright counter-rotation (becomes swing minus bend).
+- **Test set when built:** satoko (plain, bust), lindita (wristband), keiko (traced coat, bust), katherina
+  (staff, traced wide sleeve, worst case). Also satoko with `sleeve_long`.
+- **A documentation gap found:** `docs/api.md` never listed `right_arm_out` and `left_arm_out`.
+  Added 2026-10-10.

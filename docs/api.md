@@ -98,6 +98,7 @@ angry_satoko = replace(SATOKO, face=replace(SATOKO.face, brow_tilt=0.8))
 | `chest` | `0.0` | Chest definition shown bare, 0 to 1: two soft arcs under the pectorals, drawn only with the tunic off and no bust. See `docs/bare-body-plan.md`, step 6. |
 | `waist_shift` | `0.0` | Moves the waist and hip lines together, in head radii: negative up, positive down. Ignored when a skeleton is passed. |
 | `shaded` | `True` | `False` drops every shadow shape, leaving flat silhouettes. |
+| `right_arm_out`, `left_arm_out` | `0.0` | Swings that whole arm out from the body about the shoulder, in degrees, positive away from the body. `right_arm_out` is the character's own right arm, which is the viewer's left. Past 90 degrees the arm rises above the shoulder: about 115 to 140 reads as hands raised. The elbow does not bend. |
 | `hand_style` | `"mitten"` | The relaxed hand, one of `HAND_STYLES`: `mitten` (the default), `notched`, `stroked`, `curled`, `traced`. Every preset wears the mitten. See `docs/hands-status.md`. |
 | `grip_style` | `"mitten"` | The hand that holds a staff, one of `GRIP_STYLES`: `mitten` (the default) or `fist`, the canon's rounded fist kept level against the arm's swing. |
 
