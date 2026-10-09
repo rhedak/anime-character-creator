@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import itertools
 import math
+import re
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
 
@@ -11489,11 +11490,23 @@ def _familiar(sk: Skeleton, p: CharacterParams) -> str:
 # (end of the traced familiar)
 
 
+def _namespace_ids(body: str, prefix: str) -> str:
+    """Every id defined in `body`, and every reference to one, under `prefix`.
+
+    The three places an id is spoken: the definition (`id="x"`), a paint or clip
+    that points at it (`url(#x)`) and a link (`href="#x"`).
+    """
+    body = re.sub(r'\bid="([^"]+)"', rf'id="{prefix}-\1"', body)
+    body = re.sub(r"url\(#([^)]+)\)", rf"url(#{prefix}-\1)", body)
+    return re.sub(r'href="#([^"]+)"', rf'href="#{prefix}-\1"', body)
+
+
 def render_character(
     p: CharacterParams | None = None,
     sk: Skeleton | None = None,
     background: str | None = None,
     metadata: bool = False,
+    id_prefix: str = "",
 ) -> str:
     """Draw one character and return the whole SVG document as a string.
 
@@ -11517,6 +11530,13 @@ def render_character(
     figure by looking for near-white background need the alpha flattened onto
     white first, or every transparent pixel reads as black and the whole canvas
     counts as ink. `probe.py` and the `harness/` scripts do that on load.
+
+    `id_prefix` namespaces every id the drawing defines (`hair-front`, `eye-l`)
+    and every reference to one, as `<prefix>-hair-front`. Empty, the default, is
+    the document exactly as it always was. Set it when two figures share one
+    SVG: a repeated id makes a viewer pick one definition for both, so the
+    figures clip each other's hair. A page with several figures gives each its
+    own prefix.
 
     Nothing is written to disk and nothing is rasterized here. The document is
     deterministic: the same arguments give the same bytes, which is what lets
@@ -11689,6 +11709,8 @@ def render_character(
     ]
 
     body = "\n  ".join(layer for layer in layers if layer)
+    if id_prefix:
+        body = _namespace_ids(body, id_prefix)
     # Emitted only when asked for, rather than always drawn and sometimes
     # painted over: an absent rect is the transparency, there is no other way to
     # say it in SVG.

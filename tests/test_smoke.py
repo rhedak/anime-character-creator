@@ -89,6 +89,32 @@ def test_render_is_deterministic() -> None:
     assert render_character(p) == render_character(p)
 
 
+def test_id_prefix_default_leaves_the_render_unchanged() -> None:
+    """An empty `id_prefix` is the document as it always was."""
+    for name in ("satoshi", "chiyo", "katherina"):
+        assert render_character(PRESETS[name], id_prefix="") == render_character(PRESETS[name])
+
+
+def test_id_prefix_namespaces_every_id_and_reference() -> None:
+    """Two figures in one SVG must not share a clip id, or one clips the other.
+
+    Every defined id gains the prefix and so does every `url(#...)` that points
+    at one, so nothing is left dangling and nothing is left shared.
+    """
+    import re
+
+    for name in ("satoshi", "chiyo"):
+        plain = render_character(PRESETS[name])
+        doc = render_character(PRESETS[name], id_prefix="f1")
+        defined = re.findall(r'\bid="([^"]+)"', plain)
+        assert defined, "the control needs ids to namespace"
+        assert re.findall(r'\bid="([^"]+)"', doc) == [f"f1-{i}" for i in defined]
+        assert re.findall(r"url\(#([^)]+)\)", doc) == [
+            f"f1-{i}" for i in re.findall(r"url\(#([^)]+)\)", plain)
+        ]
+        assert doc.replace("f1-", "") == plain
+
+
 def test_arm_out_default_leaves_the_render_unchanged() -> None:
     """`right_arm_out`/`left_arm_out` default to 0, both hanging as before.
 
