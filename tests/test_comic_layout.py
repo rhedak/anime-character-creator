@@ -133,3 +133,13 @@ def test_a_gap_is_a_number_or_a_name_and_the_first_panel_has_none() -> None:
     assert height(tall(None, "scene")) == 900
     with pytest.raises(ValueError, match="no gap called"):
         render_strip(tall(None, "nope"))
+
+
+def test_a_placement_may_be_a_layer_of_svg_between_two_figures() -> None:
+    marker = '<rect id="between-layer" x="0" y="0" width="5" height="5"/>'
+    a, b = Placement(PRESETS["satoko"], 100, 200, 150), Placement(PRESETS["satoko"], 200, 200, 150)
+    panel = Panel(300, 220, placements=(a, marker, b))
+    svg = render_panel(panel)
+    first, second = svg.index("p0f0"), svg.index("p0f2")
+    assert first < svg.index("between-layer") < second
+    assert len(panel.heads()) == 2

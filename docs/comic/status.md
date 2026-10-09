@@ -8,7 +8,8 @@ The record for `plan.md`. Procedure: `../detail-strategy.md`.
 confirmed (C0b), with R1 to R4 built for it: a camera and named shot sizes, named gaps, gaze,
 and lettering checks. `valley_of_mist/books/book1_hero_of_the_mist_tragedy/build/comic/ch01.png`
 (proof one is `ch01_v1.png`, kept for comparison; build either with `build_comic.sh ch01`
-or `ch01_v1`). **Waiting on the owner: C1**, proof two beside proof one, and what still hurts.
+or `ch01_v1`). **C1 answered in part (2026-10-10, see Owner's answers): the samples' choices are applied to `ch01.py`.**
+Still open: panels 7 and 9 and the elbow bend.
 That answer decides what is built next, by the principle that nothing is built until a panel
 needs it: poses (R7), background depth (R6), or beats B to D. Marks (R5) are deferred. All
 committed in both repos.
@@ -67,6 +68,14 @@ One line per checkpoint, dated, as the owner answers.
 - **After the research, 2026-10-09.** (1) The reordered plan is accepted, R0 next. (2) Font: "we
   can try some free fonts", then after the trial: "Keep Gelasio." Closed. (3) Marks: "for now I would defer it, the principle is
   only build something if we need it." The principle applies to everything below, not just marks.
+- **The samples, 2026-10-10.** Panel 10: hands up with the arm swing, set to 135 degrees. The
+  close shots go taller (752x300, 640x460, 640x400). The scene gap is 400 px, "doesn't need
+  to be more". The opening panel: "standing at the window is good but the person / window
+  ratios need to be fixed", so the window is now sized from the figure (sill at his hip, top a
+  little above his head, feet on the floor line, he looks toward it), panel 2 likewise. Applied
+  in `ch01.py`; the elbow bend stays unbuilt for now, panels 7 and 9 still undecided.
+  A panel's `placements` may now hold a string of SVG between figures (a layer in front of one
+  person and behind another), which the counter needs.
 
 ## Findings
 

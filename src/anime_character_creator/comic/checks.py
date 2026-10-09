@@ -46,13 +46,17 @@ def _touches_ellipse(e1, e2) -> bool:
 
 
 def _hits_head(e, head) -> bool:
-    """Whether the ellipse covers the face: any of a ring and the centre of the head, inside it."""
+    """Whether the ellipse covers the face: the head's centre, or its ring from the brows down.
+
+    The top of the head is hair or a hat, which a bubble may overlap; the face is what
+    it must not.
+    """
     hx, hy, hr = head
     pts = [(hx, hy)] + [
         (hx + 0.85 * hr * math.cos(t * math.pi / 8), hy + 0.85 * hr * math.sin(t * math.pi / 8))
         for t in range(16)
     ]
-    return any(_inside(x, y, e) for x, y in pts)
+    return any(_inside(x, y, e) for x, y in pts if y >= hy - 0.45 * hr)
 
 
 def _cross(p1, p2, p3, p4) -> bool:

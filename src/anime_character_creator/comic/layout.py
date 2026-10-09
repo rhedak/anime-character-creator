@@ -114,12 +114,14 @@ class Panel:
     `backdrop` is SVG drawn first, under the figures; `overlay` is drawn last,
     over them, for text and effects. Both are in panel coordinates and are
     clipped to the frame along with the figures. Figures are drawn in the order
-    given, so a later one stands in front of an earlier one.
+    given, so a later one stands in front of an earlier one. An entry in `placements` may be
+    a string of SVG instead of a figure: a layer slotted between two of them, such as a
+    counter in front of the person behind it and behind the person at it.
     """
 
     width: float
     height: float
-    placements: tuple[Placement, ...] = ()
+    placements: tuple[Placement | str, ...] = ()
     backdrop: str = ""
     overlay: str = ""
     border: float = 3.0
@@ -145,6 +147,8 @@ class Panel:
         zoom = self.view.zoom if self.view else 1.0
         out = []
         for pl in self.placements:
+            if not isinstance(pl, Placement):
+                continue
             hx, hy, hr = pl.head()
             x, y = self.to_panel(hx, hy)
             out.append((x, y, hr * zoom))
@@ -214,7 +218,10 @@ def _panel(panel: Panel, index: int, x: float, y: float, ink: str) -> str:
     """One panel at (x, y) on the page, clipped to its frame."""
     clip = f"panel-{index}"
     w, h = panel.width, panel.height
-    figures = "\n".join(_figure(pl, f"p{index}f{j}") for j, pl in enumerate(panel.placements))
+    figures = "\n".join(
+        _figure(pl, f"p{index}f{j}") if isinstance(pl, Placement) else pl
+        for j, pl in enumerate(panel.placements)
+    )
     scene = f"{panel.backdrop}\n{figures}\n{panel.foreground}"
     if panel.view is not None:
         v = panel.view
