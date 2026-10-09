@@ -13,6 +13,7 @@ top of it.
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 from ..character import OUTLINE
 from . import text
@@ -140,3 +141,32 @@ def _outline(
             )
             return f'<path d="{d}" {style} />'
     return f'<ellipse cx="{cx:.2f}" cy="{cy:.2f}" rx="{a:.2f}" ry="{b:.2f}" {style} />'
+
+
+@dataclass(frozen=True)
+class Bubble:
+    """A speech bubble as an object: what it says, where it sits, whom it points at.
+
+    `svg()` draws it with `bubble_svg`; the same numbers give `shape()`, so a check can
+    know where it lies without parsing the drawing. Coordinates are the panel's own.
+    """
+
+    text: str
+    cx: float
+    cy: float
+    max_width: float
+    tail_to: tuple[float, float] | None = None
+    size: float = 19.0
+    style: str = "regular"
+
+    def svg(self) -> str:
+        return bubble_svg(
+            self.text, self.cx, self.cy, self.max_width, self.tail_to, self.size, self.style
+        )
+
+    def shape(self, pad: float = 9.0) -> tuple[float, float, float, float]:
+        """The ellipse as (cx, cy, rx, ry), the same one `bubble_svg` draws."""
+        lines = _lines(self.text, self.size, self.max_width, self.style)
+        tw = max(text.measure(line, self.size, self.style) for line in lines)
+        th = self.size * 1.28 * len(lines) - self.size * 0.28
+        return self.cx, self.cy, (tw / 2 + pad) * math.sqrt(2), (th / 2 + pad) * math.sqrt(2)

@@ -134,6 +134,21 @@ class Panel:
     # `Strip.gaps` ("beat", "pause", "scene"). None takes `Strip.gutter`. Ignored for the
     # first panel. The gap is the pacing: how far a reader scrolls before the next panel.
     gap_before: float | str | None = None
+    # Speech bubbles and captions as objects, drawn last of all, in the panel's own
+    # coordinates. Each has an `svg()` method (see `bubbles.Bubble`); kept as objects
+    # rather than strings so `checks` can read where they are. Typed loosely so this
+    # module does not import the text code, which needs the optional `comic` extra.
+    bubbles: tuple = ()
+
+    def heads(self) -> list[tuple[float, float, float]]:
+        """Every figure's head as (x, y, radius) in the panel's own coordinates."""
+        zoom = self.view.zoom if self.view else 1.0
+        out = []
+        for pl in self.placements:
+            hx, hy, hr = pl.head()
+            x, y = self.to_panel(hx, hy)
+            out.append((x, y, hr * zoom))
+        return out
 
     def to_panel(self, x: float, y: float) -> tuple[float, float]:
         """A point of the scene in the panel's own coordinates, for aiming a bubble's tail."""
@@ -216,7 +231,7 @@ def _panel(panel: Panel, index: int, x: float, y: float, ink: str) -> str:
     return (
         f'<g transform="translate({x:.2f} {y:.2f})">\n'
         f'<clipPath id="{clip}"><rect x="0" y="0" width="{w:.2f}" height="{h:.2f}" /></clipPath>\n'
-        f'<g clip-path="url(#{clip})">\n{scene}\n{panel.overlay}\n</g>\n'
+        f'<g clip-path="url(#{clip})">\n{scene}\n{panel.overlay}\n{"".join(b.svg() for b in panel.bubbles)}\n</g>\n'
         f"{border}\n</g>"
     )
 
