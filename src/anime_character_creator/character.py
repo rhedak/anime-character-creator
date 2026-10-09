@@ -105,6 +105,12 @@ class FaceStyle:
     # mouth about as deep as it is wide. The upper edge is the same curve as the
     # shut mouth, so a face moves between the two without the lip jumping.
     mouth_open: float = 0.0
+    # Where the eyes look, sideways: 0 straight at the viewer, 1 as far to the
+    # viewer's right as the aperture lets the iris go, -1 to the left. Both eyes
+    # move together. A figure that cannot turn can still look at the person it is
+    # talking to, which is what this is for; it is a moment more than a mood, so
+    # like `eyes_closed` it is not on `Expression`.
+    gaze: float = 0.0
     blush: float = 1.0
     # Fine wire spectacles. On `FaceStyle` rather than `Outfit` because they are
     # part of a face the way a scar is: nobody in this cast is drawn once with
@@ -10517,31 +10523,34 @@ def _eye(
     # of 2026-09-27.
     parts.append(f'<path d="{d}" fill="white" stroke="none" />')
     parts.append(f'<g clip-path="url(#{clip_id})">')
+    # Looking sideways moves the iris and everything drawn on it, and nothing else:
+    # the lids and lashes stay put, and the aperture's clip crops what overhangs.
+    ix = ex + f.gaze * er * 0.34
     # Canon iris: a rim of the eye color's own darker tone around the color,
     # with a distinct near-dark pupil inside that. Three flat tones, which is
     # what makes the eye read at a glance where a single disc read as a bead.
     parts.append(
-        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(eye_color, 0.45)}" />'
+        f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(eye_color, 0.45)}" />'
     )
     parts.append(
-        f'<circle cx="{ex:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{eye_color}" />'
+        f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{eye_color}" />'
     )
     band_r = iris_r * 0.84
     cut = band_r * _IRIS_BAND_CUT
     half = math.sqrt(band_r * band_r - cut * cut)
     parts.append(
-        f'<path d="M {ex - half:.2f} {iris_cy - cut:.2f} A {band_r:.2f} {band_r:.2f} 0 0 1 '
-        f'{ex + half:.2f} {iris_cy - cut:.2f} Z" fill="{shade(eye_color, _IRIS_BAND_SHADE)}" />'
+        f'<path d="M {ix - half:.2f} {iris_cy - cut:.2f} A {band_r:.2f} {band_r:.2f} 0 0 1 '
+        f'{ix + half:.2f} {iris_cy - cut:.2f} Z" fill="{shade(eye_color, _IRIS_BAND_SHADE)}" />'
     )
     parts.append(
-        f'<circle cx="{ex:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * pupil_ratio:.1f}" '
+        f'<circle cx="{ix:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * pupil_ratio:.1f}" '
         f'fill="{shade(eye_color, 0.18)}" />'
     )
     parts.append(
-        f'<circle cx="{ex - iris_r * 0.42:.1f}" cy="{iris_cy - iris_r * 0.48:.1f}" r="{iris_r * 0.34:.1f}" fill="white" />'
+        f'<circle cx="{ix - iris_r * 0.42:.1f}" cy="{iris_cy - iris_r * 0.48:.1f}" r="{iris_r * 0.34:.1f}" fill="white" />'
     )
     parts.append(
-        f'<circle cx="{ex + iris_r * 0.35:.1f}" cy="{iris_cy + iris_r * 0.42:.1f}" r="{iris_r * 0.16:.1f}" '
+        f'<circle cx="{ix + iris_r * 0.35:.1f}" cy="{iris_cy + iris_r * 0.42:.1f}" r="{iris_r * 0.16:.1f}" '
         f'fill="white" opacity="0.85" />'
     )
     parts.append("</g>")

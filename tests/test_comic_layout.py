@@ -89,3 +89,47 @@ def test_props_are_flat_shapes_where_they_are_put() -> None:
     assert "<rect" in tray and "<path" in mug
     assert props.tray(200, 300, 2.0) != tray  # scale changes the drawing
     assert props.tray(200, 300) == tray  # and nothing else does
+
+
+def test_a_shot_frames_the_figure_it_names() -> None:
+    from anime_character_creator.comic import SHOTS, Camera, frame, frame_point
+
+    pl = Placement(PRESETS["chiyo"], 0, 400, 340)
+    hx = pl.head()[0]
+    close = frame(pl, "close", 200)
+    assert isinstance(close, Camera) and close.x == hx
+    # Closer shots zoom further in, in the order the table lists them.
+    zooms = [frame(pl, s, 200).zoom for s in ("full", "medium", "close", "choker")]
+    assert zooms == sorted(zooms) and len(set(zooms)) == 4
+    assert set(SHOTS) == {"full", "medium", "close", "choker"}
+    # A detail shot shows exactly the span asked for.
+    assert frame_point(10, 20, 80, 200).zoom == 200 / 80
+
+
+def test_a_view_moves_the_scene_and_leaves_the_overlay_alone() -> None:
+    from anime_character_creator.comic import Camera
+
+    plain = Panel(300, 200, backdrop="<rect />", overlay="<circle />")
+    seen = Panel(300, 200, backdrop="<rect />", overlay="<circle />", view=Camera(50, 60, 2.0))
+    assert "scale(2.00000)" in render_panel(seen) and "scale(2.00000)" not in render_panel(plain)
+    assert seen.to_panel(50, 60) == (150, 100)  # the camera's own point is the panel's centre
+    assert seen.to_panel(60, 60) == (170, 100)  # and the zoom magnifies the distance
+    assert plain.to_panel(7, 9) == (7, 9)
+    # The overlay is drawn outside the scene's transform, so type keeps its size.
+    svg = render_panel(seen)
+    assert svg.index("<circle />") > svg.index("</g>\n<circle />") - 1
+
+
+def test_a_gap_is_a_number_or_a_name_and_the_first_panel_has_none() -> None:
+    def tall(*gaps):
+        return Strip(tuple(Panel(700, 100, gap_before=g) for g in gaps), margin=0, gutter=20)
+
+    def height(strip):
+        return float(re.search(r'<svg[^>]*height="(\d+)"', render_strip(strip)).group(1))
+
+    assert height(tall(None, None)) == 220  # the strip's own gutter
+    assert height(tall(500, 33)) == 233  # the first panel's gap is ignored
+    assert height(tall(None, "pause")) == 400  # a named gap
+    assert height(tall(None, "scene")) == 900
+    with pytest.raises(ValueError, match="no gap called"):
+        render_strip(tall(None, "nope"))

@@ -9,6 +9,28 @@ stays as small as it was.
 
 from __future__ import annotations
 
-from .layout import Panel, Placement, Strip, render_panel, render_strip, write_strip
+from .layout import (
+    SHOTS,
+    Camera,
+    Panel,
+    Placement,
+    Strip,
+    frame,
+    frame_point,
+    render_panel,
+    render_strip,
+    write_strip,
+)
 
-__all__ = ["Panel", "Placement", "Strip", "render_panel", "render_strip", "write_strip"]
+__all__ = [
+    "SHOTS",
+    "Camera",
+    "Panel",
+    "Placement",
+    "Strip",
+    "frame",
+    "frame_point",
+    "render_panel",
+    "render_strip",
+    "write_strip",
+]

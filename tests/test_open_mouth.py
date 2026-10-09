@@ -33,3 +33,14 @@ def test_the_comic_expressions_exist_and_each_changes_the_face() -> None:
     p = PRESETS["satoshi"]
     for name in ("startled", "exasperated", "alert", "smile"):
         assert render_character(EXPRESSIONS[name].applied_to(p)) != render_character(p), name
+
+
+def test_gaze_defaults_to_straight_ahead_and_moves_only_the_eyes() -> None:
+    p = PRESETS["satoshi"]
+    straight = render_character(p)
+    assert straight == render_character(replace(p, face=replace(p.face, gaze=0.0)))
+    right = render_character(replace(p, face=replace(p.face, gaze=1.0)))
+    left = render_character(replace(p, face=replace(p.face, gaze=-1.0)))
+    assert len({straight, right, left}) == 3
+    # Nothing but the eyes changes: the same shapes, only the iris's own circles move.
+    assert straight.count("<circle") == right.count("<circle") == left.count("<circle")
