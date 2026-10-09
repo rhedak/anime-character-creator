@@ -29,3 +29,9 @@ and the orchestrator skill; this file holds what this campaign taught.
   (four or five panels at once). The phone crop is now a standing view.
 - **Delegate budget:** one trace used 127k tokens. Narrow the scope next time (one function, one
   outfit) so a report stays under about 100k.
+
+## Faces carry the thoughts (owner, 2026-10-10)
+
+The strip has no interior monologue, so expressions are pushed further than the prose implies: a script
+line that says "still" or "undecided" may still get a hard, readable face. Judge a panel by reading only
+the pictures. Chapter 1 panel 8 is the case (`menacing` for "he has not decided to do anything").
