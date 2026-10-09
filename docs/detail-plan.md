@@ -172,6 +172,11 @@ green.
 
 ### D4d. Traced hands, and a registry of hand poses
 
+**Superseded, 2026-10-08.** The hands campaign (`hands-plan.md`, `hands-status.md`) replaced this
+plan: the traced hands read too thin on the chibi, so the hand is now a per-character choice
+(`hand_style`, `grip_style`) and the mitten stays the default. No `HAND_POSES` registry was built.
+What follows is the record of the original plan.
+
 The owner's call, 2026-09-27: trace the reference's two hands, an exception
 to decision 4 (the reference is otherwise never traced), since a hand is the
 shape eyeballed coordinates get wrong; keep the mitten as the fallback; build

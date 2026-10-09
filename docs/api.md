@@ -33,7 +33,9 @@ what they are.
 ```python
 render_character(p: CharacterParams | None = None,
                  sk: Skeleton | None = None,
-                 background: str | None = None) -> str
+                 background: str | None = None,
+                 metadata: bool = False,
+                 id_prefix: str = "") -> str
 ```
 
 Draws one character and returns the whole SVG document as a string.
@@ -47,6 +49,12 @@ out on transparency and composites straight onto a scene. Pass
 measuring a render: a tool that finds the figure by looking for near-white
 background has to flatten the alpha onto white first, or every transparent
 pixel reads as black and the whole canvas counts as ink.
+
+`id_prefix` puts every id the drawing defines, and every reference to one,
+under a prefix (`hair-front` becomes `f1-hair-front`). Empty is the document
+as it always was. Give each figure its own when several share one SVG, or a
+viewer resolves a repeated id to a single definition and they clip each
+other's hair.
 
 ```python
 svg = render_character(PRESETS["satoko"])
@@ -90,6 +98,8 @@ angry_satoko = replace(SATOKO, face=replace(SATOKO.face, brow_tilt=0.8))
 | `chest` | `0.0` | Chest definition shown bare, 0 to 1: two soft arcs under the pectorals, drawn only with the tunic off and no bust. See `docs/bare-body-plan.md`, step 6. |
 | `waist_shift` | `0.0` | Moves the waist and hip lines together, in head radii: negative up, positive down. Ignored when a skeleton is passed. |
 | `shaded` | `True` | `False` drops every shadow shape, leaving flat silhouettes. |
+| `hand_style` | `"mitten"` | The relaxed hand, one of `HAND_STYLES`: `mitten` (the default), `notched`, `stroked`, `curled`, `traced`. Every preset wears the mitten. See `docs/hands-status.md`. |
+| `grip_style` | `"mitten"` | The hand that holds a staff, one of `GRIP_STYLES`: `mitten` (the default) or `fist`, the canon's rounded fist kept level against the arm's swing. |
 
 Anything a character needs to differ on belongs here, on `Outfit` or on
 `FaceStyle`, with a neutral default. Nothing character-specific belongs

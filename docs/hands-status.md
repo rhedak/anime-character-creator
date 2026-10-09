@@ -4,10 +4,13 @@ The record for `hands-plan.md`. Procedure: `detail-strategy.md`.
 
 ## RESUME
 
-H0 to H5 are built, and **the options are in `src/`** (2026-10-08, after the owner
-chose G2 and to keep every hand as an option). Left: H6 (docs, a roster look, and a regeneration of the consumers only if
-asked). Sheets for the shipped styles: `out/hands/v8/` (A mitten, B notched, C
-stroked, D curled, E open, F fist).
+**Closed, 2026-10-08.** H0 to H6 are done. The options are in `src/` and every preset
+keeps the mitten (V8: "keep the mittens as the default for now"). `ruff check`,
+`ruff format` and `pytest` are green (624 passed, 1 skipped); no render changed, so
+`refresh-ref-out.sh` was not run, V9 (the roster look) had nothing to show, and the
+sibling repos were not regenerated. To use another hand, set `hand_style` or
+`grip_style` on a preset, or pick it in the web tool. Sheets for the shipped styles:
+`out/hands/v8/` (A mitten, B notched, C stroked, D curled, E open, F fist).
 
 What shipped: `CharacterParams.hand_style` is the relaxed hand, one of `HAND_STYLES`
 = mitten (the default), notched, stroked, curled, traced; the new
@@ -50,7 +53,7 @@ the traced hand taken off the realistic reference.
 | H3 candidate T, traced from a chibi reference | not needed: the owner kept the options and fixed the fist by construction |
 | H4 candidate G, the grip | done: G2 chosen, shipped as `grip_style="fist"` |
 | H5 R, the options in `src/` and a guard | done (no registry class, see RESUME); V8 answered: keep the mittens as the default |
-| H6 close | not started |
+| H6 close | done: docs updated, suite green, no render changed (V9 moot) |
 
 ## Owner's answers
 
