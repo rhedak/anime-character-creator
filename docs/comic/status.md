@@ -274,6 +274,7 @@ for the open questions, not changes to the canon strip. Built by
 | `s3_backgrounds.png` | background mood and depth | panels 4 and 5 on the current inn, one with softer seams and a paler wall, one cooler, duller and darker. |
 | `s4_opening.png` | panel 1 without a back view | the current silhouette; a small far figure in a big dark room; a figure between curtains. |
 | `s6_hands_up_existing.png` | panel 10's raised hands | both arms swung 58, 90, 115, 140 and 165 degrees. |
+| `s7_panel_shape.png` | panel shape on a phone | panels 5 to 10 with the close shots as they are, and again taller (752x300, 640x460, 640x400). Taller: three panels half visible against four, and the face has presence instead of sitting small in a ribbon. |
 
 **Findings.**
 
