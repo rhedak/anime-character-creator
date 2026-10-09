@@ -4,13 +4,14 @@ The record for `plan.md`. Procedure: `../detail-strategy.md`.
 
 ## RESUME
 
-**K1, K2 and K3 are done** (2026-10-09). **Next is K4, the backdrops**: the generic
-flat-shape helpers here, then the places (the night window, the inn, the mist wall) in
-`valley_of_mist`. K5 (props) and K6 (the driver, Kenzo, Dieter) follow, which finishes
-what A1 to A4 need. C0 is confirmed, so the script in
-`valley_of_mist/books/book1_hero_of_the_mist_tragedy/docs/comic_design.md` stands. The plan
-is capability-driven and placed by the owner's principle, functionality here and
-application in `../valley_of_mist` (`plan.md`). Nothing is committed.
+**Beat A (six panels) is drawn end to end** (2026-10-09), the first proof of concept:
+`valley_of_mist/books/book1_hero_of_the_mist_tragedy/build/comic/ch01.png`, built by
+`shell_scripts/build_comic.sh ch01` in `valley_of_mist`. K1 to K7 and K9 are done; **K8
+(poses) and turning characters are deliberately left for after this first proof of
+concept**, on the owner's word. The stand-ins are listed under "Beat A, first build" below.
+Waiting on the owner: **C2** (the look of Kenzo, Dieter and the driver) and **C1** (what
+hurts most in the six panels), which decide what comes next: beats B to D, or poses.
+All committed in both repos.
 
 ## Scoreboard
 
@@ -20,12 +21,12 @@ application in `../valley_of_mist` (`plan.md`). Nothing is committed.
 | K1 figure ids | done: `render_character(..., id_prefix=)`, default unchanged |
 | K2 the strip and the panel | done: `comic/layout.py` |
 | K3 text | done: `comic/text.py` (copied), `comic/bubbles.py` |
-| K4 backdrops | not started |
-| K5 props | not started |
+| K4 backdrops | done: generic helpers in `comic/scenery.py`, the places in `valley_of_mist` |
+| K5 props | done: `comic/props.py` (tray, mug), `Placement.hand` |
 | K6 new characters (driver, Kenzo, Dieter) | drafted, waiting on the owner's look (C2) |
-| K7 acting range | not started |
-| K8 poses, the reflex first | not started |
-| K9 seen from behind (a silhouette first) | not started (silhouette exists in the trailer, to copy) |
+| K7 acting range | done for beat A: an open mouth, startled, exasperated, alert, smile |
+| K8 poses, the reflex first | deferred by the owner until after the first proof of concept |
+| K9 seen from behind (a silhouette first) | done: `Placement.tone`, a flat one-tone silhouette |
 | K10 effects | not started, needed by beat C |
 | later: a second strip, the web tool, an angle study | deferred |
 
@@ -176,3 +177,36 @@ resentful in grey-blue; the driver broad and brown. A first draft showed the dri
 default pink cheeks, wrong on him, so `blush` is 0. **Not checked:** other palettes, as `CLAUDE.md`
 asks of colour work. These three are fixed colours with no parametrised derivation of their own.
 Waiting on the owner's look before a page uses them (C2).
+
+### K4, K5, K7, K9 and beat A, first build, 2026-10-09
+
+**Built here:** `comic/scenery.py` (rect, planks, window with a clipped view, table, the cover's
+mist banks), `Placement.tone` (a one-tone silhouette: every fill and stroke replaced, opacity
+dropped), `comic/props.py` (tray, mug), `Placement.hand(side)` (a hand in panel coordinates with
+the arm's swing and a flip applied, over `character._hand_centre`), `FaceStyle.mouth_open` (0 is
+the shut line, so every existing render is unchanged; the suite's `ref-out/` comparison passes) and
+four expressions in `presets.py`: `startled`, `exasperated`, `alert`, `smile`. 730 tests pass.
+Two redraws taught something: the open mouth first drew as a pointed wedge that read as a tongue,
+so its lower edge became a fuller cubic; and a bubble placed over its speaker's head draws no tail,
+so the caller leaves headroom.
+
+**Built in `valley_of_mist`:** `valley_of_mist_tools/comic/` (`places.py`: the common room by day,
+the room at night, the mist wall; `ch01.py`: panels A1 to A6; `build.py`) and
+`shell_scripts/build_comic.sh`.
+
+**Found while drawing:** Satoshi's preset carries his katana, and the beat is that his hand closes on
+nothing at his hip. The chapter's Satoshi is the preset with `katana_color=None`, set in `ch01.py`,
+not in the preset.
+
+**Stand-ins, to be replaced by poses (K8) and a turn:**
+- **A1:** Satoshi is a flat silhouette facing us, not seen from behind. It reads as a figure against
+  the dark room, but it is front-on.
+- **A5, the reflex:** an alert face, one arm swung out near the hip, the driver close at his
+  shoulder. It does not show weight dropped low or a hand closed on air. **The weakest panel.**
+- **A6:** the driver's raised hands are both arms swung out 58 degrees, which reads as a T. It is a
+  surrender in the sense of the beat and looks stiff.
+- **A4:** the tray handoff is two swung arms and a tray between them, hands under it.
+- **Flip:** Chiyo is flipped in A4; Satoshi is never flipped yet, so the scar fix is not built.
+
+**Not done:** C2 and C1 (the owner's look), the ids on body-part groups, beats B to D, and a pass at
+the font.
