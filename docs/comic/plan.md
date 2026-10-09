@@ -211,8 +211,8 @@ order the comparison suggests; if it reads, poses wait for the beats that need t
 
 **Open questions for the owner:**
 
-**Answered 2026-10-09:** the order is accepted; fonts, try free ones (a trial of four open-licence
-fonts was drawn); marks deferred, on the principle that nothing is built until a panel needs it.
+**Answered 2026-10-09:** the order is accepted; font: a trial of four free open-licence fonts was drawn and the owner
+said to keep Gelasio, so the question is closed; marks deferred, on the principle that nothing is built until a panel needs it.
 
 1. **Font.** Gelasio is a serif, which reads as narration more than speech. Comic lettering
    fonts exist (Blambot is the standard source, paid, with licences to check). Keep it, try a

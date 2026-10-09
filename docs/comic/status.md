@@ -8,10 +8,8 @@ The record for `plan.md`. Procedure: `../detail-strategy.md`.
 `valley_of_mist/books/book1_hero_of_the_mist_tragedy/docs/comic_design.md`. It waits on the owner
 (**C0b**): the ten panels and their order, the cuts, the two captions. Nothing is built from it
 until then. After C0b: R1 (a scene and a camera), R2 (pacing), R3 (gaze), R4 (lettering checks),
-then proof two beside the first (C1). A font trial was sent to the owner (Gelasio against Comic
-Neue, Patrick Hand, Kalam and Gochi Hand, the last four free OFL fonts that cover the German
-umlauts); the pick is pending, with Patrick Hand for speech and Gelasio italic for the narrator's
-captions as the recommendation. Everything is committed in both repos.
+then proof two beside the first (C1). The font question is closed: the owner looked at a trial of four free OFL fonts and said
+"keep Gelasio". Everything is committed in both repos.
 
 ## Scoreboard
 
@@ -65,7 +63,7 @@ One line per checkpoint, dated, as the owner answers.
   and zoom level, I guess." The counter and other details "can be addressed later." Asked
   for web research first, to refine the plan. Done: `research.md`.
 - **After the research, 2026-10-09.** (1) The reordered plan is accepted, R0 next. (2) Font: "we
-  can try some free fonts" (trial sent). (3) Marks: "for now I would defer it, the principle is
+  can try some free fonts", then after the trial: "Keep Gelasio." Closed. (3) Marks: "for now I would defer it, the principle is
   only build something if we need it." The principle applies to everything below, not just marks.
 
 ## Findings
