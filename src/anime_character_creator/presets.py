@@ -1423,4 +1423,15 @@ EXPRESSIONS: dict[str, Expression] = {
     # kept because that is worth knowing before anyone tries the combination
     # again.
     "resolute": Expression(brow_tilt=0.50, mouth_curve=0.0, eye_openness=1.0, mouth_width=0.80),
+    # The comic's first additions, 2026-10-09 (`docs/comic/plan.md`, K7), all deltas like the
+    # rest. Startled is the one that needed new shape code: the mouth hangs open, and
+    # the lid rides high with the brow raised, so it reads as surprise and not as fear.
+    "startled": Expression(
+        eye_openness=1.22, brow_tilt=-0.55, mouth_curve=0.4, mouth_width=0.8, mouth_open=0.8
+    ),
+    # Half-lidded and flat, the look of someone who has had this argument before.
+    "exasperated": Expression(eye_openness=0.8, brow_tilt=0.15, mouth_curve=-0.35, mouth_width=0.8),
+    # Awake and watching: a little wider than rest, the brow not yet decided.
+    "alert": Expression(eye_openness=1.1, brow_tilt=0.15, mouth_curve=-0.05),
+    "smile": Expression(eye_openness=0.95, brow_tilt=-0.1, mouth_curve=2.0, mouth_width=1.1),
 }

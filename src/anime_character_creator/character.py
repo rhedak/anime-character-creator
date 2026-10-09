@@ -101,6 +101,10 @@ class FaceStyle:
     # 1.0 is the stock smile, 0 is a flat line, negative frowns.
     mouth_curve: float = 1.0
     mouth_width: float = 1.0
+    # How far the mouth hangs open: 0 is the shut line it has always been, 1 a
+    # mouth about as deep as it is wide. The upper edge is the same curve as the
+    # shut mouth, so a face moves between the two without the lip jumping.
+    mouth_open: float = 0.0
     blush: float = 1.0
     # Fine wire spectacles. On `FaceStyle` rather than `Outfit` because they are
     # part of a face the way a scar is: nobody in this cast is drawn once with
@@ -161,6 +165,7 @@ class Expression:
     eye_lower_lid: float | None = None
     mouth_curve: float | None = None
     mouth_width: float | None = None
+    mouth_open: float | None = None
 
     def on(self, face: FaceStyle) -> FaceStyle:
         """This mood, over one face, leaving everything unnamed as it was."""
@@ -5690,6 +5695,9 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# The inside of an open mouth, one flat dark red (`FaceStyle.mouth_open`).
+_MOUTH_INSIDE = "#6b2f2f"
+
 # Where `_face` draws the mouth, in head radii below the head's centre. Shared
 # rather than copied, because the beard is built around the mouth: the moustache
 # has to clear the lip and the jaw run has to meet it at the corner, and a beard
@@ -10887,11 +10895,25 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
 
     mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.face_build)
     mouth_half = r * 0.12 * f.mouth_width * (1.0 + _MOUTH_REALISTIC_WIDEN * sk.face_build)
-    parts.append(
-        f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
-        f'Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f}" '
-        f'fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.85):.2f}" stroke-linecap="round" />'
-    )
+    if f.mouth_open > 0.0:
+        # Open: the shut mouth's curve is the upper lip, and a second curve below it
+        # closes the shape. Filled one flat dark tone, outlined like the rest of the
+        # face, with no teeth or tongue drawn.
+        depth = mouth_half * 2.0 * f.mouth_open
+        parts.append(
+            f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
+            f"Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f} "
+            f"C {cx + mouth_half * 0.95:.1f} {mouth_y + depth * 1.35:.1f} "
+            f'{cx - mouth_half * 0.95:.1f} {mouth_y + depth * 1.35:.1f} {cx - mouth_half:.1f} {mouth_y:.1f} Z" '
+            f'fill="{_MOUTH_INSIDE}" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.85):.2f}" '
+            f'stroke-linecap="round" stroke-linejoin="round" />'
+        )
+    else:
+        parts.append(
+            f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
+            f'Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f}" '
+            f'fill="none" stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.85):.2f}" stroke-linecap="round" />'
+        )
 
     if f.blush > 0:
         for side in (-1, 1):
