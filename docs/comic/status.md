@@ -1,25 +1,33 @@
 # Webcomic status
 
-The record for `webcomic-plan.md`. Procedure: `detail-strategy.md`.
+The record for `plan.md`. Procedure: `../detail-strategy.md`.
 
 ## RESUME
 
-The plan is written; nothing is built. Next is **W0, C0**: the owner chooses the scene,
-the format and the language of the first page, and I turn it into a panel-by-panel
-script and a gap list. Nothing is drawn before the owner confirms the script.
+**K1, K2 and K3 are done** (2026-10-09). **Next is K4, the backdrops**: the generic
+flat-shape helpers here, then the places (the night window, the inn, the mist wall) in
+`valley_of_mist`. K5 (props) and K6 (the driver, Kenzo, Dieter) follow, which finishes
+what A1 to A4 need. C0 is confirmed, so the script in
+`valley_of_mist/books/book1_hero_of_the_mist_tragedy/docs/comic_design.md` stands. The plan
+is capability-driven and placed by the owner's principle, functionality here and
+application in `../valley_of_mist` (`plan.md`). Nothing is committed.
 
 ## Scoreboard
 
 | step | state |
 |---|---|
-| W0 the slice | waiting on the owner (C0) |
-| W1 the page, with what exists | not started |
-| W2 acting range | not started, provisional |
-| W3 poses | not started, provisional |
-| W4 the scene layer in `src/` | not started, provisional |
-| W5 a second page | not started, provisional |
-| W6 the web tool | not started, provisional |
-| W7 a study in angles | not started, provisional |
+| C0 the script | confirmed 2026-10-09 |
+| K1 figure ids | done: `render_character(..., id_prefix=)`, default unchanged |
+| K2 the strip and the panel | done: `comic/layout.py` |
+| K3 text | done: `comic/text.py` (copied), `comic/bubbles.py` |
+| K4 backdrops | not started |
+| K5 props | not started |
+| K6 new characters (driver, Kenzo, Dieter) | not started |
+| K7 acting range | not started |
+| K8 poses, the reflex first | not started |
+| K9 seen from behind (a silhouette first) | not started (silhouette exists in the trailer, to copy) |
+| K10 effects | not started, needed by beat C |
+| later: a second strip, the web tool, an angle study | deferred |
 
 ## Owner's answers
 
@@ -28,6 +36,25 @@ One line per checkpoint, dated, as the owner answers.
 - **Direction, 2026-10-08.** Webcomic first, animation later. "Start with what works
   and then iterate": the cast stays the tall chibi, front-facing, and more angles come
   later by iteration.
+- **C0, 2026-10-09.** The scene is `../valley_of_mist` book 1 from chapter 1 on, the
+  prologue skipped for now. Format: a vertical scroll strip. Language: English.
+  The script itself is not yet confirmed.
+- **K2 follow-up, 2026-10-09.** The flip problem (a flipped Satoshi moves his scar), answered
+  "ok" to the two options as the first, the one recommended: keep the scar on the same
+  cheek of the face when a figure is flipped. Not built; it waits for the first panel that
+  flips him (A4).
+- **C0, 2026-10-09, confirmed.** The beat order with A as the first slice, the cuts (the
+  Brandt boy, the old-new-year paragraph, most of the inner commentary), the beat A text
+  as written, and designing the driver, Kenzo and Dieter from the book's descriptions
+  with the owner looking at each first. **Condition:** keep them out of the presets the
+  web tool exposes, "there's already enough". The tool lists `sorted(PRESETS)`
+  (`catalogue.py`), so they go in a separate registry and not in `PRESETS` (K6).
+- **Placement, 2026-10-09.** "In principle functionality should be here and application
+  in vom." The generic comic engine goes in this repo, the book's script, strips and
+  scenery in `valley_of_mist`.
+- **Order, 2026-10-09.** Start from the missing capabilities and build them as the
+  panels need them, instead of drawing a rough page first. Simplifying the script is
+  fine.
 
 ## Findings
 
@@ -48,4 +75,88 @@ Observed by reading, not measured:
 
 **Not verified.** Whether the mouth can draw an open mouth or teeth, which decides
 how much of the acting range is parameters and how much is new shape code. The first
-study in W2 answers it.
+study in K7 answers it.
+
+### Code reading, 2026-10-09
+
+The trailer in `../valley_of_mist` has already built the id prefix, a silhouette, a
+placement, outline text and mist backdrops (`plan.md`). 
+Seen in `character.py` and `cover.py`; the experiments are still to do. Two figures in
+one document repeat the ids `hair-front`, `eye-l` and `eye-r` (checked on satoshi and
+chiyo), and there are no stable layer ids. The mouth is a single quadratic stroke. An
+arm is one rigid rotation with a fixed elbow. **Not verified:** that the repeated ids
+change how a sheet draws, which K1's control answers.
+
+### K1, 2026-10-09
+
+**Control, predicted first:** that two figures in one document would draw the first one
+wrongly. **Not held in the form predicted.** A positive control with two different clip
+paths under one id confirms cairosvg resolves a repeated id to the **last** definition
+(the first rectangle took the later, larger clip). But on four pairs of real figures
+(satoshi and chiyo both ways, katherina and gero, daizen and keiko) the first figure
+came out pixel-identical to the same figure alone, with duplicated ids and namespaced
+alike. The definitions do differ between characters (the hair-front clip's markup
+differs); the clipped content evidently does not reach the edge of either clip. Browsers
+resolve a repeated id to the **first** definition and were not tested, so a web tool or
+an SVG viewed in a browser may still show it. The trailer's author reports the clash.
+
+**Built:** `render_character(..., id_prefix="")`. Every defined id, every `url(#x)` and
+every `href="#x"` in the body gains the prefix. Empty is byte-identical to before: the
+suite's `ref-out/` comparison passes unchanged. Two tests: the default is unchanged, and
+with a prefix every id and reference is prefixed and removing the prefix gives the plain
+document back. `ruff` clean, 626 passed, 1 skipped.
+
+**Not done:** stable ids on the body-part groups, which the plan's invariant promises
+and an animation will need. The figure has two `<g>` elements today. That is the next
+step of K1's second half and is left until a panel or the animation asks for it.
+
+### K2, 2026-10-09
+
+**Built:** `anime_character_creator.comic` (`layout.py`): `Placement` (character, x, feet,
+height, flip), `Panel` (frame, backdrop, figures, overlay, border), `Strip` (panels
+stacked, margin, gutter, paper), `render_panel`, `render_strip`, `write_strip` (SVG, and
+PNG when cairosvg is there). A figure stands on `feet_y` and is sized by its whole canvas,
+as the cover does; a panel clips its contents, so a figure can be cropped by the frame.
+Each figure takes its own id prefix (K1) and each panel its own clip id. The package
+itself does not import `comic`. Eight tests (determinism, no id defined twice on a page,
+every reference defined, flip, clipping, strip height, an oversized panel refused, an
+empty strip); `ruff` clean, 634 passed, 1 skipped. The look, `harness/comic/k2_check.py`
+-> `out/comic/k2.png`: two figures facing each other, a cropped close-up, a narrow centred
+panel with a figure at its edge. All three draw as intended.
+
+**Found: a flip mirrors the character's asymmetries.** Satoshi's sword moved to the other
+hip in the test strip, and his scar moves to the other cheek, which breaks the one fixed
+fact about his face. Two ways out, both small and not built: set `scar_side` opposite on a
+flipped figure so the scar stays on the same cheek of the face (the book says the left jaw,
+`presets.py`), or avoid flipping Satoshi and turn the other speaker. The same applies to
+hair partings and a held staff. To be decided when a panel flips him, which beat A's
+two-shots will (A4 to A6).
+
+**Left out on purpose:** reading direction and page numbers (a strip has neither), a
+sound-effect layer (K10), a panel's own palette (the backdrop is the caller's).
+
+### K3, 2026-10-09
+
+**Built.** `comic/text.py` is the trailer's `text.py` copied (HarfBuzz shapes the bundled
+Gelasio font and each glyph is drawn as a path, so the same bytes come out on any
+machine); the trailer is to switch to this copy as a change of its own. `comic/bubbles.py`
+is new: `caption_svg` (the narrator's box, wrapped, returns its height) and `bubble_svg`
+(an ellipse sized to its wrapped text, with a tail to a target point or without). The tail
+is **part of the bubble's outline**, one path: the ellipse's arc the long way round between
+two points either side of the line to the target, then out to the tip. A first version laid
+a triangle against the ellipse and painted over the join; on a short tail the patch poked out
+as a white notch, so it was replaced rather than tuned. `Placement.head()` gives a figure's
+head in panel coordinates (mirrored under a flip) for aiming a tail. The `comic` extra
+(`uharfbuzz`, `fonttools`) is in `pyproject.toml` and in the `dev` group, so a bare `uv sync`
+runs the tests; the font and its licence (`comic/fonts/OFL.txt`) are bundled. Nine tests;
+`ruff` clean, 643 passed, 1 skipped.
+
+**The look**, `harness/comic/k3_check.py` -> `out/comic/k3.png`: beat A's real text on a
+caption (A2), Chiyo's line (A3) and the two lines of A4. It reads. Two things the look
+showed: a bubble needs headroom, and with the target too close to the ellipse no tail is
+drawn (a guard, on purpose, so a bubble cannot grow a stump). **Open, taste:** the font is a
+serif (Gelasio) in every bubble. Comic lettering is usually a sans or a hand face; a serif
+reads as narration. Left alone until the owner says.
+
+**Not built:** thought bubbles, shouted or whispered text, a bubble that is not an ellipse, and
+placing bubbles automatically (the caller gives the centre).
