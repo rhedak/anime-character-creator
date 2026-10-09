@@ -4,12 +4,14 @@ The record for `plan.md`. Procedure: `../detail-strategy.md`.
 
 ## RESUME
 
-**R0 is drafted: beat A re-scripted as a ten-panel shot list**, in
-`valley_of_mist/books/book1_hero_of_the_mist_tragedy/docs/comic_design.md`. It waits on the owner
-(**C0b**): the ten panels and their order, the cuts, the two captions. Nothing is built from it
-until then. After C0b: R1 (a scene and a camera), R2 (pacing), R3 (gaze), R4 (lettering checks),
-then proof two beside the first (C1). The font question is closed: the owner looked at a trial of four free OFL fonts and said
-"keep Gelasio". Everything is committed in both repos.
+**Proof two is built** (2026-10-09): beat A redrawn as the ten-panel shot list the owner
+confirmed (C0b), with R1 to R4 built for it: a camera and named shot sizes, named gaps, gaze,
+and lettering checks. `valley_of_mist/books/book1_hero_of_the_mist_tragedy/build/comic/ch01.png`
+(proof one is `ch01_v1.png`, kept for comparison; build either with `build_comic.sh ch01`
+or `ch01_v1`). **Waiting on the owner: C1**, proof two beside proof one, and what still hurts.
+That answer decides what is built next, by the principle that nothing is built until a panel
+needs it: poses (R7), background depth (R6), or beats B to D. Marks (R5) are deferred. All
+committed in both repos.
 
 ## Scoreboard
 
@@ -20,12 +22,12 @@ expressions, K9 silhouettes. All done. K8 and K10 are replaced by R7 and R5.
 | step | state |
 |---|---|
 | C2 the supporting cast's look | waiting on the owner |
-| R0 re-script beat A as a shot list (C0b) | drafted, waiting on the owner |
-| R1 a scene and a camera | not started |
-| R2 pacing controls | not started |
-| R3 eyelines (gaze) | not started |
-| R4 lettering checks | not started |
-| proof two, beat A redrawn, beside the first (C1) | after R0 to R4 |
+| R0 re-script beat A as a shot list (C0b) | done, confirmed 2026-10-09 |
+| R1 a camera on a scene | done: `Camera`, `SHOTS`, `frame`, `frame_point`, `Panel.view` and `foreground` |
+| R2 pacing controls | done for the gaps (`gap_before`, `Strip.gaps`); export in slices deferred, no panel needs it |
+| R3 eyelines (gaze) | done: `FaceStyle.gaze` |
+| R4 lettering checks | done: `Bubble`, `comic/checks.py` |
+| proof two, beat A redrawn, beside the first (C1) | built, waiting on the owner |
 | R5 marks (sweat drop, anger vein, gloom, speed lines) | deferred by the owner: build only what a panel needs |
 | R6 depth and mood in the places | not started |
 | R7 poses, silhouette first, then turning | deferred by the owner, now after proof two |
@@ -219,3 +221,40 @@ not in the preset.
 
 **Not done:** C2 and C1 (the owner's look), the ids on body-part groups, beats B to D, and a pass at
 the font.
+
+### R1 to R4 and proof two, 2026-10-09
+
+**Built here.** `Camera` (a scene point and a zoom) with `SHOTS` (full, medium, close, choker,
+framed from the head: a head radius is 0.135 of a figure's height), `frame(placement, shot,
+panel_height)` and `frame_point(x, y, span, panel_height)` for a detail; `Panel.view`,
+`Panel.foreground`, `Panel.to_panel`, `Panel.heads`, and figures in `Panel.placements` may be
+interleaved with raw SVG layers (a counter between two people). `Panel.gap_before` and
+`Strip.gaps` (beat 40, pause 200, scene 700 px, defaults to try on a phone). `FaceStyle.gaze`,
+which shifts the iris and its marks inside the aperture; at 0 every render is byte-identical
+(the suite's `ref-out/` comparison passes) and at the extremes it reads clearly. `Bubble`
+(a speech bubble as an object) and `comic/checks.py`: a bubble over the face (from the brows
+down, so hair and a hat may be covered), at the frame, overlapping another, a tail crossing or
+running through one, reading order (top left first), more than three bubbles, more than four
+sentences, type under 17 px. 742 tests pass here, 3 more in `valley_of_mist`.
+
+**Built in `valley_of_mist`.** `places.bed`, `places.village`, `ch01.py` (ten panels) and
+`ch01_v1.py` (proof one), `tests/test_comic_ch01.py` (ten panels, lettering clean, no id
+twice), and `build.py` prints the lettering problems as sentences.
+
+**What the checks caught on the first draw:** a bubble over Chiyo's eye (panel 4), another
+over Satoshi's forehead (panel 5), a bubble past the frame, two bubbles overlapping. All four
+were real and visible, and were fixed by moving them, not by loosening a check.
+
+**What the research changes show, by eye** (to be confirmed by the owner at C1): panels 3
+(establishing), 4 (counter in front, depth), 6 (a choker on the eyes), 8 (close-up with the
+eyes aside) and 9 (the empty hip) are different pictures where proof one had one. The gaps
+now set a rhythm: the 700 px scene change is a long empty scroll.
+
+**Still wrong, as I see it.** Panel 10's raised hands are the arm swing and read as a T. Panel 9
+shows an empty belt and a hand beside it, not a hand closing on air. Panel 1's silhouette faces
+us. The planks are heavy against the figures (R6). The tray in panel 5 floats at the counter's
+edge. Satoshi looks the same in every close crop except for the eyes: head tilt and a body that
+leans are poses (R7).
+
+**Two departures from the shot list** (both in `comic_design.md`): Chiyo's reply moved from
+panel 6 to panel 5, so panel 6 is silent; and panel 10 keeps the arm swing as a stand-in.
