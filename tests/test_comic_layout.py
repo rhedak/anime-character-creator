@@ -66,3 +66,26 @@ def test_a_panel_too_wide_for_the_strip_is_refused() -> None:
 
 def test_an_empty_strip_is_just_paper() -> None:
     assert "<g" not in render_strip(Strip(()))
+
+
+def test_a_hand_is_on_the_characters_own_side_and_mirrors_with_a_flip() -> None:
+    from dataclasses import replace
+
+    ch = PRESETS["satoshi"]
+    plain = Placement(ch, 300, 400, 300)
+    flipped = Placement(ch, 300, 400, 300, flip=True)
+    # A figure faces the viewer, so its left hand is on the viewer's right.
+    assert plain.hand("left")[0] > 300 > plain.hand("right")[0]
+    assert flipped.hand("left")[0] < 300 < flipped.hand("right")[0]
+    swung = Placement(replace(ch, left_arm_out=35), 300, 400, 300)
+    assert swung.hand("left")[0] > plain.hand("left")[0]
+    assert swung.hand("right") == plain.hand("right")
+
+
+def test_props_are_flat_shapes_where_they_are_put() -> None:
+    from anime_character_creator.comic import props
+
+    tray, mug = props.tray(200, 300), props.mug(200, 300)
+    assert "<rect" in tray and "<path" in mug
+    assert props.tray(200, 300, 2.0) != tray  # scale changes the drawing
+    assert props.tray(200, 300) == tray  # and nothing else does

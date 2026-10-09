@@ -19,7 +19,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ..character import OUTLINE, CharacterParams, render_character, skeleton_for
+from ..character import OUTLINE, CharacterParams, _hand_centre, render_character, skeleton_for
 
 
 @dataclass(frozen=True)
@@ -49,6 +49,23 @@ class Placement:
         hx = sk.head_cx * k
         hx = left + sk.canvas_w * k - hx if self.flip else left + hx
         return hx, self.feet_y - sk.foot_y * k + sk.head_cy * k, sk.head_r * k
+
+    def hand(self, side: str) -> tuple[float, float]:
+        """Where a hand is, in panel coordinates, with its arm's swing applied.
+
+        `side` is `"left"` or `"right"` as the **character** has it, so Satoshi's left
+        hand is on the viewer's right until the figure is flipped, and then it is on the
+        viewer's left. What a held prop is placed by.
+        """
+        sk = skeleton_for(self.character)
+        k = self.height / sk.canvas_h
+        left = self.x - sk.canvas_w * k / 2
+        # `_hand_centre`'s own side is the viewer's, -1 the left: the character's right.
+        hx, hy = _hand_centre(sk, self.character, -1 if side == "right" else 1)
+        px = sk.head_cx + hx * sk.head_r
+        py = sk.head_cy + hy * sk.head_r
+        x = left + sk.canvas_w * k - px * k if self.flip else left + px * k
+        return x, self.feet_y - sk.foot_y * k + py * k
 
 
 @dataclass(frozen=True)
