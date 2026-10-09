@@ -258,3 +258,40 @@ leans are poses (R7).
 
 **Two departures from the shot list** (both in `comic_design.md`): Chiyo's reply moved from
 panel 6 to panel 5, so panel 6 is silent; and panel 10 keeps the arm swing as a stand-in.
+
+### Samples for the owner, prepared 2026-10-10
+
+The owner said it was better and asked for samples to look at together. They are option sheets
+for the open questions, not changes to the canon strip. Built by
+`valley_of_mist_tools/comic/samples.py`, in `valley_of_mist/books/book1_hero_of_the_mist_tragedy/build/comic/samples/`
+(ignored by git, rebuilt with `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib uv run python
+-m valley_of_mist_tools.comic.samples` in `valley_of_mist`).
+
+| sheet | question | what it shows |
+|---|---|---|
+| `s1_hand_styles.png` | panel 9, a hand closing on nothing | the five existing hand styles at the hip. All five hang at the sides; notched and curled read most closed. None shows a hand reaching to the belt, which needs the elbow. |
+| `s2_phone_scene_gap.png`, `s2_visible_panels.txt` | the scene gap, and panel size | the same strip on a 390 by 844 phone at scene gaps of 400, 700 and 1000 px. At 400 the next scene is already on screen; at 700 the screen is mostly empty paper; at 1000 it is blank. |
+| `s3_backgrounds.png` | background mood and depth | panels 4 and 5 on the current inn, one with softer seams and a paler wall, one cooler, duller and darker. |
+| `s4_opening.png` | panel 1 without a back view | the current silhouette; a small far figure in a big dark room; a figure between curtains. |
+| `s6_hands_up_existing.png` | panel 10's raised hands | both arms swung 58, 90, 115, 140 and 165 degrees. |
+
+**Findings.**
+
+- **Hands up needs no new code.** The swing works past horizontal, and 115 to 140 degrees reads as
+  hands raised (a V), where the 58 degrees used now reads as a T. Panel 10 can use it today.
+  **Measured by eye, one character**, not checked on other outfits.
+- **The strip is dense on a phone.** Scrolling the proof at a 390 by 844 phone, at the middle of the
+  strip four or five panels are at least half visible at once (the scroll positions every 300 px: two
+  at the top, four to five from the third panel on), where the research says at most two. The
+  cause is panel shape: ten wide, short panels of 190 to 480 px. A mobile strip wants fewer,
+  taller panels, or gaps that separate them. Type at 19 px on a 752 px panel is about 10 px on
+  that phone, which reads but is small.
+- **The 700 px scene gap is a real pause on a phone,** an almost empty screen, not a hole.
+  400 px keeps both scenes on screen, which weakens the break.
+- **Background B and C differ subtly from A.** C (cooler, duller) reads as the tense one; B pushes
+  the wall back a little. All are flat shapes and need no code.
+- **Panel 1 option 2 (small and far)** says the loneliness best of the three, in my reading.
+
+**Not done, deliberately:** the elbow bend. A read-only trace of how to add it was delegated
+(Sonnet, in the background) and its result is to be read before deciding; the finding above
+means panel 10 does not need it, so only panels 7 and 9 might.
