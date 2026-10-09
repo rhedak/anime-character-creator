@@ -22,7 +22,7 @@ application in `../valley_of_mist` (`plan.md`). Nothing is committed.
 | K3 text | done: `comic/text.py` (copied), `comic/bubbles.py` |
 | K4 backdrops | not started |
 | K5 props | not started |
-| K6 new characters (driver, Kenzo, Dieter) | not started |
+| K6 new characters (driver, Kenzo, Dieter) | drafted, waiting on the owner's look (C2) |
 | K7 acting range | not started |
 | K8 poses, the reflex first | not started |
 | K9 seen from behind (a silhouette first) | not started (silhouette exists in the trailer, to copy) |
@@ -160,3 +160,19 @@ reads as narration. Left alone until the owner says.
 
 **Not built:** thought bubbles, shouted or whispered text, a bubble that is not an ellipse, and
 placing bubbles automatically (the caller gives the centre).
+
+### K6, 2026-10-09
+
+**Built:** `supporting.py`, a `SUPPORTING` registry of `kenzo`, `dieter` and `driver`, with
+`DISPLAY_NAMES`, kept out of `PRESETS` on the owner's condition. A test checks they render, have
+names, and are neither presets nor offered by the web tool (`catalogue._cast_points`,
+`_base_points`). Built only from the book's lines (`continuity_reference.md`): Kenzo "weathered the
+color of an old oak sill", Dieter "thin, perpetually damp about the collar" in the occupiers' cooler
+tones, the driver unnamed and plain. No reference exists and none is traced.
+
+**The look**, `harness/comic/k6_check.py` -> `out/comic/k6.png`, all five at one scale. Kenzo
+reads old (the oldest face, a short grey beard, a faded blue tunic); Dieter thin, pale and
+resentful in grey-blue; the driver broad and brown. A first draft showed the driver with the
+default pink cheeks, wrong on him, so `blush` is 0. **Not checked:** other palettes, as `CLAUDE.md`
+asks of colour work. These three are fixed colours with no parametrised derivation of their own.
+Waiting on the owner's look before a page uses them (C2).

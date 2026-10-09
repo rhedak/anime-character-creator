@@ -62,7 +62,11 @@ def window(
     ) + "".join(
         rect(gx, gy + gh * j / rows - border / 4, gw, border / 2, frame) for j in range(1, rows)
     )
-    ledge = rect(x - border * 0.6, y + h - border * 0.2, w + border * 1.2, border * 0.9, frame, OUTLINE) if sill else ""
+    ledge = (
+        rect(x - border * 0.6, y + h - border * 0.2, w + border * 1.2, border * 0.9, frame, OUTLINE)
+        if sill
+        else ""
+    )
     return (
         f'<clipPath id="{clip}"><rect x="{gx:.2f}" y="{gy:.2f}" width="{gw:.2f}" height="{gh:.2f}" /></clipPath>'
         + rect(x, y, w, h, frame, OUTLINE)
@@ -92,6 +96,8 @@ def mist(width: float, y: float, tones: tuple[str, ...], depth: float, scale: fl
     """
     step = depth / max(len(tones), 1)
     return "".join(
-        mist_band(width, y + i * step * 0.6, depth - i * step * 0.5, tone, seed=3 + 5 * i, scale=scale)
+        mist_band(
+            width, y + i * step * 0.6, depth - i * step * 0.5, tone, seed=3 + 5 * i, scale=scale
+        )
         for i, tone in enumerate(tones)
     )
