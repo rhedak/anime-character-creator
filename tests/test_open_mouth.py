@@ -31,7 +31,7 @@ def test_startled_opens_the_mouth_and_leaves_what_it_does_not_name() -> None:
 
 def test_the_comic_expressions_exist_and_each_changes_the_face() -> None:
     p = PRESETS["satoshi"]
-    for name in ("startled", "exasperated", "alert", "smile"):
+    for name in ("startled", "exasperated", "alert", "smile", "menacing"):
         assert render_character(EXPRESSIONS[name].applied_to(p)) != render_character(p), name
 
 

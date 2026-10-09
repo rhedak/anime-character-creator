@@ -76,6 +76,11 @@ One line per checkpoint, dated, as the owner answers.
   in `ch01.py`; the elbow bend stays unbuilt for now, panels 7 and 9 still undecided.
   A panel's `placements` may now hold a string of SVG between figures (a layer in front of one
   person and behind another), which the counter needs.
+- **A threatening look, 2026-10-10.** Asked what makes Satoshi read as crouching or threatening;
+  tried narrowed eyes first. Of six looks the owner chose C: `eye_openness` 0.55, `eye_lower_lid`
+  0.6, `brow_tilt` 0.65, `brow_weight` 1.5, a small flat mouth. Now `EXPRESSIONS["menacing"]`.
+  The lid alone read as tired. Not yet used by a panel. A crouch itself still needs the
+  poses (R7): bent knees, a lean, a lowered head, ideally turned.
 
 ## Findings
 

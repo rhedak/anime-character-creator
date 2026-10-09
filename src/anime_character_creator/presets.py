@@ -1433,5 +1433,16 @@ EXPRESSIONS: dict[str, Expression] = {
     "exasperated": Expression(eye_openness=0.8, brow_tilt=0.15, mouth_curve=-0.35, mouth_width=0.8),
     # Awake and watching: a little wider than rest, the brow not yet decided.
     "alert": Expression(eye_openness=1.1, brow_tilt=0.15, mouth_curve=-0.05),
+    # A threat, chosen by the owner from a sheet of six on 2026-10-10. The lid alone reads as
+    # tired (`hollow`'s trouble); it takes the lid, the lower lid pushed up into a squint and a
+    # heavy steep brow together, with the mouth small and flat.
+    "menacing": Expression(
+        eye_openness=0.55,
+        eye_lower_lid=0.6,
+        brow_tilt=0.65,
+        brow_weight=1.5,
+        mouth_curve=-0.25,
+        mouth_width=0.7,
+    ),
     "smile": Expression(eye_openness=0.95, brow_tilt=-0.1, mouth_curve=2.0, mouth_width=1.1),
 }
