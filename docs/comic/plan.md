@@ -156,7 +156,9 @@ is the source of the needs. The owner has said simplifying it is fine, so a capa
 dear is a reason to change a panel, and that is raised with the owner, not patched
 around.
 
-### The capabilities, in build order
+### The capabilities as first planned (K1 to K10)
+
+K1 to K7 and K9 are built. K8 and K10 are replaced by R7 and R5 below.
 
 Cheapest and most reused first; each names the beat A panel that forces it.
 
@@ -178,6 +180,43 @@ they come first and can be checked without the owner. K4 to K6 then make A1 to A
 with the faces that already exist, which gives the owner the first look early. K7 to K9
 are the three gaps predicted to hurt most (the reflex and the startled face), done after
 the owner has seen the rest and can say which of them matters most.
+
+### Revised after the research, 2026-10-09
+
+The proof of concept (beat A, panels A1 to A6) built K1 to K7 and K9 and showed what the
+owner saw: the characters look static. `research.md` says why and what to do. The cause is
+less the missing poses than **how the page was shot**: every panel is full-length figures at
+the same size, standing in a row facing the viewer, between identical 20 px gaps. Shot size,
+gap, eyeline and staging are all cheaper to vary than a body, and the renderer already gives
+two of them for free: it is vector, so any zoom costs nothing, and a crop is a new shot.
+
+So the remaining work is reordered by what costs least first. K1 to K7 and K9 stand as built;
+K8 (poses) and K10 (effects) are renumbered below, and K8 is no longer next.
+
+| # | step | what it is | needs new art? |
+|---|---|---|---|
+| R0 | **Re-script beat A as a shot list** | No code. For every panel: the shot size, the transition to it (moment, action, subject, scene or aspect), what each figure does, where they look, the gap before it, how many bubbles it carries, and where each interior thought goes (an expression, an action, an object, a detail, one caption, or silence). Rules to hold it to: at most three bubbles a panel and four sentences a bubble, one to three captions per six panels, and the reflex in three panels (anticipation, action, outcome). The owner confirms the shot list before anything is built (**C0b**). | no |
+| R1 | **A scene and a camera** | A panel becomes a camera on a scene. A scene (the inn, with its figures) is defined once in its own coordinates; a camera is a centre and a zoom, named by shot size: wide, full, medium, medium close-up, close-up, extreme close-up, detail. The same set then gives A3 to A6 from different distances without being redrawn. Aims the bubble tails by the figure's head as now. | no |
+| R2 | **Pacing controls** | A gap before each panel (named: beat, pause, scene change, in pixels on an 800 px canvas), panel heights that vary, a full-bleed option, and an export that cuts the strip into slices no taller than a platform allows (WEBTOON: 1280 px) at the gaps. The numbers in `research.md` disagree, so they are defaults to try on a phone. | no |
+| R3 | **Eyelines** | `gaze`, a horizontal look direction on the face (the iris and its marks shift inside the aperture, clipped by it), default 0 so existing renders are unchanged. Characters that cannot turn can still look at each other. Close-ups also test the faces at a size they have not been seen at. Head tilt is not cheap (the hair mass is drawn before the neck and the head's layers are not adjacent), so it waits for R7. | no |
+| R4 | **Lettering checks** | A check over a panel, in `comic/`: a bubble over a head or face, a bubble tangent to a border or to another bubble, crossing tails, a first bubble that is not top-left, more than three bubbles, more than four sentences, type below a size floor. Plus the font question below. | no |
+| R5 | **Marks (formerly K10)** | Flat vector emanata: sweat drop, anger vein, gloom lines, blush marks, sparkle, speed lines; and beat C's gust of air and the scar's flare. Tone is the owner's: this is a tragedy, so likely sparing. | no |
+| R6 | **Depth and mood in the places** | Three zones (a large foreground that frames the shot, the figures, a soft low-contrast background), mood carried by palette (night cool and dark, tension desaturated), and the counter redrawn. The places in `valley_of_mist` get named camera presets. | no |
+| R7 | **Poses (formerly K8)** | Silhouette-changing poses first (a lean, arms crossed, hands on hips, pointing, hands up, a braced crouch), then sitting, then the head tilt. A pose earns its place by changing the silhouette at panel size, not by a different face. **Turning the characters** (three-quarter, profile) and the flipped-scar fix follow, as the owner said. | yes |
+| R8 | Beats B to D, and a second strip | With all of the above. | |
+
+**Proof two.** After R0 to R4 beat A is redrawn from the new shot list and set beside
+`ch01.png` as it is now (**C1**). If it still looks static the next work is R5 to R7, in the
+order the comparison suggests; if it reads, poses wait for the beats that need them.
+
+**Open questions for the owner:**
+
+1. **Font.** Gelasio is a serif, which reads as narration more than speech. Comic lettering
+   fonts exist (Blambot is the standard source, paid, with licences to check). Keep it, try a
+   free sans or hand-lettered face, or pay for one?
+2. **Marks.** Is a sweat drop or an anger vein ever right in this book, or does the tone rule
+   them out?
+3. **Gaps.** Defaults to try on a phone: 40 px a beat, 200 px a pause, 700 px a scene change.
 
 ### Checkpoints
 

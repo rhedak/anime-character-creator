@@ -4,31 +4,35 @@ The record for `plan.md`. Procedure: `../detail-strategy.md`.
 
 ## RESUME
 
-**Beat A (six panels) is drawn end to end** (2026-10-09), the first proof of concept:
-`valley_of_mist/books/book1_hero_of_the_mist_tragedy/build/comic/ch01.png`, built by
-`shell_scripts/build_comic.sh ch01` in `valley_of_mist`. K1 to K7 and K9 are done; **K8
-(poses) and turning characters are deliberately left for after this first proof of
-concept**, on the owner's word. The stand-ins are listed under "Beat A, first build" below.
-Waiting on the owner: **C2** (the look of Kenzo, Dieter and the driver) and **C1** (what
-hurts most in the six panels), which decide what comes next: beats B to D, or poses.
-All committed in both repos.
+**Research done (2026-10-09)** after the first proof of concept (`research.md`), and the plan
+reordered by it (`plan.md`, "Revised after the research"). The owner's reading of the proof:
+the characters look static, and details like the counter are off. The research says the cause
+is mainly how the page was shot (one distance, one pose, figures in a row facing us, equal
+gaps), which is cheaper to fix than bodies. **Next is R0: re-script beat A as a shot list**,
+with no code, for the owner to confirm (C0b), then R1 (a scene and a camera), R2 (pacing),
+R3 (eyelines), R4 (lettering checks), then proof two beside the first (C1). Poses, now R7,
+wait for that comparison. K1 to K7 and K9 are built and committed in both repos; nothing
+else is pending.
 
 ## Scoreboard
 
+Built for the first proof of concept (K steps, `plan.md`): K1 figure ids, K2 strip and panel,
+K3 text and bubbles, K4 scenery, K5 props, K6 the supporting cast, K7 an open mouth and four
+expressions, K9 silhouettes. All done. K8 and K10 are replaced by R7 and R5.
+
 | step | state |
 |---|---|
-| C0 the script | confirmed 2026-10-09 |
-| K1 figure ids | done: `render_character(..., id_prefix=)`, default unchanged |
-| K2 the strip and the panel | done: `comic/layout.py` |
-| K3 text | done: `comic/text.py` (copied), `comic/bubbles.py` |
-| K4 backdrops | done: generic helpers in `comic/scenery.py`, the places in `valley_of_mist` |
-| K5 props | done: `comic/props.py` (tray, mug), `Placement.hand` |
-| K6 new characters (driver, Kenzo, Dieter) | drafted, waiting on the owner's look (C2) |
-| K7 acting range | done for beat A: an open mouth, startled, exasperated, alert, smile |
-| K8 poses, the reflex first | deferred by the owner until after the first proof of concept |
-| K9 seen from behind (a silhouette first) | done: `Placement.tone`, a flat one-tone silhouette |
-| K10 effects | not started, needed by beat C |
-| later: a second strip, the web tool, an angle study | deferred |
+| C2 the supporting cast's look | waiting on the owner |
+| R0 re-script beat A as a shot list (C0b) | next |
+| R1 a scene and a camera | not started |
+| R2 pacing controls | not started |
+| R3 eyelines (gaze) | not started |
+| R4 lettering checks | not started |
+| proof two, beat A redrawn, beside the first (C1) | after R0 to R4 |
+| R5 marks (sweat drop, anger vein, gloom, speed lines) | not started |
+| R6 depth and mood in the places | not started |
+| R7 poses, silhouette first, then turning | deferred by the owner, now after proof two |
+| R8 beats B to D, a second strip | not started |
 
 ## Owner's answers
 
@@ -56,6 +60,11 @@ One line per checkpoint, dated, as the owner answers.
 - **Order, 2026-10-09.** Start from the missing capabilities and build them as the
   panels need them, instead of drawing a rough page first. Simplifying the script is
   fine.
+
+- **Research, 2026-10-09.** "For a first POC it's not so bad, but we really should look into
+  what makes a proper webcomic work." Static characters: "a consequence of reusing the same pose
+  and zoom level, I guess." The counter and other details "can be addressed later." Asked
+  for web research first, to refine the plan. Done: `research.md`.
 
 ## Findings
 
