@@ -200,7 +200,7 @@ K8 (poses) and K10 (effects) are renumbered below, and K8 is no longer next.
 | R2 | **Pacing controls** | A gap before each panel (named: beat, pause, scene change, in pixels on an 800 px canvas), panel heights that vary, a full-bleed option, and an export that cuts the strip into slices no taller than a platform allows (WEBTOON: 1280 px) at the gaps. The numbers in `research.md` disagree, so they are defaults to try on a phone. | no |
 | R3 | **Eyelines** | `gaze`, a horizontal look direction on the face (the iris and its marks shift inside the aperture, clipped by it), default 0 so existing renders are unchanged. Characters that cannot turn can still look at each other. Close-ups also test the faces at a size they have not been seen at. Head tilt is not cheap (the hair mass is drawn before the neck and the head's layers are not adjacent), so it waits for R7. | no |
 | R4 | **Lettering checks** | A check over a panel, in `comic/`: a bubble over a head or face, a bubble tangent to a border or to another bubble, crossing tails, a first bubble that is not top-left, more than three bubbles, more than four sentences, type below a size floor. Plus the font question below. | no |
-| R5 | **Marks (formerly K10)** | Flat vector emanata: sweat drop, anger vein, gloom lines, blush marks, sparkle, speed lines; and beat C's gust of air and the scar's flare. Tone is the owner's: this is a tragedy, so likely sparing. | no |
+| R5 | **Marks (formerly K10), deferred** | Flat vector emanata: sweat drop, anger vein, gloom lines, blush marks, sparkle, speed lines; and beat C's gust of air and the scar's flare. Tone is the owner's: this is a tragedy, so likely sparing. | no |
 | R6 | **Depth and mood in the places** | Three zones (a large foreground that frames the shot, the figures, a soft low-contrast background), mood carried by palette (night cool and dark, tension desaturated), and the counter redrawn. The places in `valley_of_mist` get named camera presets. | no |
 | R7 | **Poses (formerly K8)** | Silhouette-changing poses first (a lean, arms crossed, hands on hips, pointing, hands up, a braced crouch), then sitting, then the head tilt. A pose earns its place by changing the silhouette at panel size, not by a different face. **Turning the characters** (three-quarter, profile) and the flipped-scar fix follow, as the owner said. | yes |
 | R8 | Beats B to D, and a second strip | With all of the above. | |
@@ -210,6 +210,9 @@ K8 (poses) and K10 (effects) are renumbered below, and K8 is no longer next.
 order the comparison suggests; if it reads, poses wait for the beats that need them.
 
 **Open questions for the owner:**
+
+**Answered 2026-10-09:** the order is accepted; fonts, try free ones (a trial of four open-licence
+fonts was drawn); marks deferred, on the principle that nothing is built until a panel needs it.
 
 1. **Font.** Gelasio is a serif, which reads as narration more than speech. Comic lettering
    fonts exist (Blambot is the standard source, paid, with licences to check). Keep it, try a

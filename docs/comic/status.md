@@ -4,15 +4,14 @@ The record for `plan.md`. Procedure: `../detail-strategy.md`.
 
 ## RESUME
 
-**Research done (2026-10-09)** after the first proof of concept (`research.md`), and the plan
-reordered by it (`plan.md`, "Revised after the research"). The owner's reading of the proof:
-the characters look static, and details like the counter are off. The research says the cause
-is mainly how the page was shot (one distance, one pose, figures in a row facing us, equal
-gaps), which is cheaper to fix than bodies. **Next is R0: re-script beat A as a shot list**,
-with no code, for the owner to confirm (C0b), then R1 (a scene and a camera), R2 (pacing),
-R3 (eyelines), R4 (lettering checks), then proof two beside the first (C1). Poses, now R7,
-wait for that comparison. K1 to K7 and K9 are built and committed in both repos; nothing
-else is pending.
+**R0 is drafted: beat A re-scripted as a ten-panel shot list**, in
+`valley_of_mist/books/book1_hero_of_the_mist_tragedy/docs/comic_design.md`. It waits on the owner
+(**C0b**): the ten panels and their order, the cuts, the two captions. Nothing is built from it
+until then. After C0b: R1 (a scene and a camera), R2 (pacing), R3 (gaze), R4 (lettering checks),
+then proof two beside the first (C1). A font trial was sent to the owner (Gelasio against Comic
+Neue, Patrick Hand, Kalam and Gochi Hand, the last four free OFL fonts that cover the German
+umlauts); the pick is pending, with Patrick Hand for speech and Gelasio italic for the narrator's
+captions as the recommendation. Everything is committed in both repos.
 
 ## Scoreboard
 
@@ -23,13 +22,13 @@ expressions, K9 silhouettes. All done. K8 and K10 are replaced by R7 and R5.
 | step | state |
 |---|---|
 | C2 the supporting cast's look | waiting on the owner |
-| R0 re-script beat A as a shot list (C0b) | next |
+| R0 re-script beat A as a shot list (C0b) | drafted, waiting on the owner |
 | R1 a scene and a camera | not started |
 | R2 pacing controls | not started |
 | R3 eyelines (gaze) | not started |
 | R4 lettering checks | not started |
 | proof two, beat A redrawn, beside the first (C1) | after R0 to R4 |
-| R5 marks (sweat drop, anger vein, gloom, speed lines) | not started |
+| R5 marks (sweat drop, anger vein, gloom, speed lines) | deferred by the owner: build only what a panel needs |
 | R6 depth and mood in the places | not started |
 | R7 poses, silhouette first, then turning | deferred by the owner, now after proof two |
 | R8 beats B to D, a second strip | not started |
@@ -65,6 +64,9 @@ One line per checkpoint, dated, as the owner answers.
   what makes a proper webcomic work." Static characters: "a consequence of reusing the same pose
   and zoom level, I guess." The counter and other details "can be addressed later." Asked
   for web research first, to refine the plan. Done: `research.md`.
+- **After the research, 2026-10-09.** (1) The reordered plan is accepted, R0 next. (2) Font: "we
+  can try some free fonts" (trial sent). (3) Marks: "for now I would defer it, the principle is
+  only build something if we need it." The principle applies to everything below, not just marks.
 
 ## Findings
 
