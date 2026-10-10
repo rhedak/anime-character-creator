@@ -12,6 +12,7 @@ import math
 import re
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
+from xml.sax.saxutils import escape
 
 from .colorutil import hex_to_rgb01, rgb01_to_hex, shade
 from .skeleton import (
@@ -8146,7 +8147,7 @@ def _wristband(
     size = min(h * 0.66, (2 * w * 0.92) / (0.62 * len(text)))
     return band + (
         f'<text x="{cx:.1f}" y="{y1 - h * 0.22:.1f}" font-family="Helvetica, Arial, sans-serif" '
-        f'font-weight="bold" font-size="{size:.1f}" text-anchor="middle" fill="{ink}">{text}</text>'
+        f'font-weight="bold" font-size="{size:.1f}" text-anchor="middle" fill="{ink}">{escape(text)}</text>'
     )
 
 

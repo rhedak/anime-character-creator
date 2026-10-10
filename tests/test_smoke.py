@@ -2662,6 +2662,23 @@ def test_the_wristband_is_worn_on_one_wrist_only_and_carries_its_text() -> None:
     assert character._arms(sk, other) != svg, "the two sides should not draw the same band"
 
 
+def test_the_wristband_text_is_text_and_never_markup() -> None:
+    """Hostile text is drawn as letters: the SVG stays well-formed and gains no elements."""
+    p = PRESETS["linnea"]
+    hostile = '</text><script>alert(1)</script><text a="&'
+    worn = replace(
+        p,
+        outfit=replace(
+            p.outfit, wristband_color="#f2efe6", wristband_text=hostile, wristband_side=1
+        ),
+    )
+    svg = character.render_character(worn)
+    assert "<script" not in svg
+    root = ET.fromstring(svg)
+    assert not [e for e in root.iter() if e.tag.endswith("script")]
+    assert hostile in "".join(root.itertext()), "the text should still be drawn, as letters"
+
+
 def test_the_shoulder_bars_are_counted_on_one_shoulder_of_a_coat() -> None:
     """Three bars asked for are three bars drawn, on a plain coat's shoulder.
 
