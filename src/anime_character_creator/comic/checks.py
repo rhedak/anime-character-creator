@@ -1,4 +1,4 @@
-"""Checks on a panel's lettering, from the conventions in `docs/comic/research.md`.
+"""Checks on a panel's lettering and on the figures' sizes, from `docs/comic/research.md`.
 
 Each check returns plain sentences naming what is wrong and where, and an empty list
 means nothing was found. They are conventions, not laws: a panel may break one on
@@ -7,6 +7,10 @@ they catch is the ordinary accident, a bubble drawn over the face it belongs to.
 
 Looks only at `Panel.bubbles` and the figures' heads, so a bubble written straight into
 `Panel.overlay` as SVG is invisible to it.
+
+The size check reads `Placement.height` and `Placement.feet_y`, so a figure that is drawn
+bigger than the ground it stands on allows (a person at the back as large as one at the
+front) is named. It assumes every head is one real size, which holds for the cast so far.
 """
 
 from __future__ import annotations
@@ -15,8 +19,9 @@ import math
 import re
 
 from .bubbles import Bubble
-from .layout import Panel, Strip
+from .layout import Panel, Placement, Strip
 
+SCALE_TOLERANCE = 0.12  # how far a head may be from the size its depth gives it
 MAX_BUBBLES = 3
 MAX_SENTENCES = 4
 MIN_TYPE = 17.0
@@ -68,10 +73,40 @@ def _cross(p1, p2, p3, p4) -> bool:
     return side(p1, p2, p3) * side(p1, p2, p4) < 0 and side(p3, p4, p1) * side(p3, p4, p2) < 0
 
 
-def check_panel(panel: Panel) -> list[str]:
-    """What is wrong with this panel's lettering, as sentences. Empty when nothing is."""
-    bubbles = [b for b in panel.bubbles if isinstance(b, Bubble)]
+def check_scale(panel: Panel) -> list[str]:
+    """Whether the figures' sizes agree with where they stand, as sentences.
+
+    Two figures at one depth are drawn with one head size, which makes a taller or shorter
+    character taller or shorter and not just bigger. With `Panel.horizon` set, a figure's
+    size follows its feet: the head's size is proportional to how far the feet are below the
+    horizon, as in a camera at that eye line. Without it, depth is not allowed to differ.
+    """
+    figs = [(k, pl) for k, pl in enumerate(panel.placements, 1) if isinstance(pl, Placement)]
+    h = panel.horizon
     out: list[str] = []
+    for i, (ka, a) in enumerate(figs):
+        for kb, b in figs[i + 1 :]:
+            ra, rb = a.head()[2], b.head()[2]
+            if h is None:
+                want = 1.0
+            elif a.feet_y <= h or b.feet_y <= h:
+                out.append(f"figures {ka} and {kb}: a pair of feet is above the horizon")
+                continue
+            else:
+                want = (a.feet_y - h) / (b.feet_y - h)
+            got = ra / rb
+            if abs(got / want - 1.0) > SCALE_TOLERANCE:
+                out.append(
+                    f"figures {ka} and {kb}: head sizes are {got:.2f} to 1 but their feet "
+                    f"({a.feet_y:.0f} and {b.feet_y:.0f}) say {want:.2f} to 1"
+                )
+    return out
+
+
+def check_panel(panel: Panel) -> list[str]:
+    """What is wrong with this panel's lettering and figure sizes, as sentences."""
+    bubbles = [b for b in panel.bubbles if isinstance(b, Bubble)]
+    out: list[str] = check_scale(panel)
     if len(bubbles) > MAX_BUBBLES:
         out.append(f"{len(bubbles)} bubbles in one panel, more than {MAX_BUBBLES}")
     shapes = [b.shape() for b in bubbles]

@@ -141,6 +141,11 @@ class Panel:
     # rather than strings so `checks` can read where they are. Typed loosely so this
     # module does not import the text code, which needs the optional `comic` extra.
     bubbles: tuple = ()
+    # The scene's horizon: the y, in scene coordinates, of the eye line the camera shares with
+    # the viewer. With it a figure whose feet stand higher in the picture is read as further
+    # back and drawn smaller in proportion (`checks.check_scale`). None says the figures all
+    # stand at one depth, so their heads must be one size.
+    horizon: float | None = None
 
     def heads(self) -> list[tuple[float, float, float]]:
         """Every figure's head as (x, y, radius) in the panel's own coordinates."""

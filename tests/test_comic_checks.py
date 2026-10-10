@@ -83,3 +83,36 @@ def test_the_shape_is_the_one_the_drawing_uses() -> None:
     # An ellipse centred on the bubble, drawn with a tail, so the path starts and ends on it.
     assert (cx, cy) == (300, 120) and rx > ry > 0
     assert re.search(r'<path d="M', b.svg())
+
+
+def _two(
+    h_a: float, h_b: float, feet_a: float, feet_b: float, horizon: float | None = None
+) -> Panel:
+    a = Placement(PRESETS["chiyo"], 200, feet_a, h_a)
+    b = Placement(PRESETS["satoshi"], 500, feet_b, h_b)
+    return Panel(752, 460, placements=(a, b), horizon=horizon)
+
+
+def test_two_figures_at_one_depth_must_be_one_size() -> None:
+    assert check_panel(_two(340, 340, 440, 440)) == []
+    assert _says(check_panel(_two(300, 430, 440, 440)), "head sizes")
+
+
+def test_a_figure_further_back_may_be_smaller_by_what_the_horizon_says() -> None:
+    # Feet 90 and 190 below a horizon at y 250: the one at the back is 190/290 as large.
+    far, near = 440, 540
+    ok = _two(340 * 190 / 290, 340, 440, 540, horizon=250)
+    assert far - 250 == 190 and near - 250 == 290
+    assert check_panel(ok) == []
+    # The same pair drawn at the back's feet but the front's size is named.
+    assert _says(check_panel(_two(340, 340, 440, 540, horizon=250)), "head sizes")
+
+
+def test_feet_above_the_horizon_are_named() -> None:
+    assert _says(check_panel(_two(300, 340, 200, 440, horizon=250)), "above the horizon")
+
+
+def test_a_lone_figure_has_nothing_to_compare() -> None:
+    assert (
+        check_panel(Panel(752, 460, placements=(Placement(PRESETS["chiyo"], 200, 440, 300),))) == []
+    )

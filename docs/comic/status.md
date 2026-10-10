@@ -84,6 +84,11 @@ One line per checkpoint, dated, as the owner answers.
 - **Panels 6 and 7, 2026-10-10.** Same rule, the faces pushed: Chiyo's eyes in panel 6 take
   `EXPRESSIONS["unyielding"]` (G of the sheet), Satoshi in panel 7 takes `at_ease` (H). Both were the
   recommended ones, "proceed with your recommendations".
+- **Heights, 2026-10-10.** Owner, from a screenshot of the reader on their phone: "we need to establish
+  a process to check character heights relative to each other. Unless it is apparent that one is
+  further in the back we should make sure all relative sizes match. Here it looks like Chiyo is a
+  dwarf." Built `Panel.horizon` and `checks.check_scale` (see `strategy.md`). Panel 5 redrawn:
+  Chiyo's head 0.89 of Satoshi's, her feet higher, his arm reaching to the counter.
 
 ## Findings
 
