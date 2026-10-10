@@ -1444,5 +1444,17 @@ EXPRESSIONS: dict[str, Expression] = {
         mouth_curve=-0.25,
         mouth_width=0.7,
     ),
+    # Chapter 1 panel 6 (a choker on Chiyo's eyes): she does not let go of his. `menacing`'s
+    # parts at a lower dose, the brow steep and heavy, the mouth set small and flat.
+    "unyielding": Expression(
+        eye_openness=0.8,
+        eye_lower_lid=0.75,
+        brow_tilt=0.6,
+        brow_weight=1.5,
+        mouth_curve=-0.4,
+        mouth_width=0.65,
+    ),
+    # Chapter 1 panel 7: calm, before anything happens. Soft lids, a faint smile.
+    "at_ease": Expression(eye_openness=0.8, brow_tilt=-0.1, mouth_curve=0.6, mouth_width=0.9),
     "smile": Expression(eye_openness=0.95, brow_tilt=-0.1, mouth_curve=2.0, mouth_width=1.1),
 }

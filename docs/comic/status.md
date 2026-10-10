@@ -81,6 +81,9 @@ One line per checkpoint, dated, as the owner answers.
   0.6, `brow_tilt` 0.65, `brow_weight` 1.5, a small flat mouth. Now `EXPRESSIONS["menacing"]`.
   The lid alone read as tired. Not yet used by a panel. A crouch itself still needs the
   poses (R7): bent knees, a lean, a lowered head, ideally turned.
+- **Panels 6 and 7, 2026-10-10.** Same rule, the faces pushed: Chiyo's eyes in panel 6 take
+  `EXPRESSIONS["unyielding"]` (G of the sheet), Satoshi in panel 7 takes `at_ease` (H). Both were the
+  recommended ones, "proceed with your recommendations".
 
 ## Findings
 
