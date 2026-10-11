@@ -690,10 +690,30 @@ read; the blazer separates from her black hair by its outline on black.
   inner edge, are texture and not ported (decision 6).
 - The hands are still the shared mitten; the reference draws fingers. Not in this plan's
   scope unless the owner asks.
-- The collar wings' outline and the opening wall sit a pixel or two apart and read as one
-  slightly heavy line beside the neck.
+- Her neck's colour: the reference's visible neck is a warm, darker skin tone under the
+  chin (about #d9a589 against the face's #f6dbc2). `FaceStyle.chin_shadow` was tried and
+  came out a dull grey-tan, since `shade()` darkens without warming, so it is off and the
+  neck stays flat skin (the owner's rule on the throat, `_neck`). Open for M9 or M10.
 
-Tests: 851 pass, `ruff` green; `refresh-ref-out.sh --check` and `refresh-catalogue.sh`
+**The neck, after the owner looked at the side-by-side** (`harness/mio/side_by_side.py`
+writes hers, ours and the blend). Three differences were real and are fixed:
+
+- *Width.* Ours was 0.40 head radii a half, the chibi's neck; hers is 0.151 on the skull's
+  radius (25 px). `BodyProfile.neck_half_w` is a new opt-in anchor, set only on
+  `tall_slender`, carried through `head_scaled` and `applied`; `stretched` already keeps the
+  neck's width. A test holds that only that body sets it.
+- *The double line beside the collar.* The opening's walls were read at the white's edge
+  and sat three or four pixels outside the wing's own outline, so the two strokes read as
+  one heavy, doubled line. Above row 470 the wall now lies on the wing's outline
+  (`collar_trace.json`), so the two coincide.
+- *Skin round the ribbon's knot.* The tunic starts at the shoulder line, 27 px below where
+  the wings cross, and the neck's skin showed in the gap. `COLLAR_CUTS["shirt"]` has a
+  first fill, the shirt front under the crossing, drawn under the wings. A thin white
+  sliver with the fill's outline still shows round the knot's top.
+
+The knot also sits about 4 px lower than hers (M6, not moved).
+
+Tests: 852 pass, `ruff` green; `refresh-ref-out.sh --check` and `refresh-catalogue.sh`
 changed only Mio's render and the catalogue, every other character byte-identical. Seven
 new tests hold the cut's shape, the two opt-in parts and that only Mio wears them, the
 shirt's arm without a band, the wrist anchors (set only on her body) and their stretch.

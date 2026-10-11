@@ -2842,12 +2842,12 @@ def test_underwear_never_hangs_below_a_skirts_hem() -> None:
 def test_the_shirt_collar_is_two_open_wings_on_her_own_body() -> None:
     cut = character.COLLAR_CUTS["shirt"]
     assert cut.ref_body == "tall_slender" and not cut.per_leg
-    assert len(cut.fills) == 1
+    assert len(cut.fills) == 2, "the shirt front under the crossing, then the wings"
     p = PRESETS["mio"]
     assert p.outfit.collar_cut == "shirt"
     sk = character.skeleton_for(p)
     svg = character._collar(sk, p)
-    assert svg.count("<path") == 1, "wings only: no closed band and no notch line"
+    assert svg.count("<path") == 2, "no closed band and no notch line"
     assert f'fill="{p.outfit.collar_color}"' in svg
 
 
@@ -2952,6 +2952,20 @@ def test_a_body_profile_that_measures_the_wrist_moves_the_hand_and_the_rest_do_n
             assert (wrist_y, centre_wrist) == (sk.wrist_y, sk.wrist_x)
         else:
             assert wrist_y == pytest.approx(sk.hip_y + sk.arm_half_w * 0.8)
+
+
+def test_only_a_profile_that_measured_the_neck_narrows_it() -> None:
+    """`neck_half_w` on a profile is opt-in too: her neck is a third narrower than the chibi's, and every
+    other body keeps the build's own."""
+    chibi = (
+        character.skeleton_for(CharacterParams()).neck_half_w
+        / character.skeleton_for(CharacterParams()).head_r
+    )
+    for name, profile in character.BODY_TYPES.items():
+        sk = character.skeleton_for(CharacterParams(body=name))
+        assert (profile.neck_half_w is not None) == (name == "tall_slender"), name
+        if name == "tall_slender":
+            assert sk.neck_half_w / sk.head_r < chibi * 0.75
 
 
 def test_a_stretched_body_carries_its_measured_wrist_with_it() -> None:

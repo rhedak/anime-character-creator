@@ -164,6 +164,8 @@ class BodyProfile:
     # `None` keeps the arm line's own derivation from the hip (`Skeleton.wrist_y`).
     wrist_y: float | None = None
     wrist_x: float | None = None
+    # Half the neck's width. `None` keeps the build's own (a chibi's thick one).
+    neck_half_w: float | None = None
 
     def head_scaled(self, s: float) -> BodyProfile:
         """The same body under a head `s` times as big.
@@ -200,6 +202,7 @@ class BodyProfile:
             leg_half_w=w(self.leg_half_w),
             wrist_y=y(self.wrist_y),
             wrist_x=w(self.wrist_x),
+            neck_half_w=w(self.neck_half_w),
         )
 
     def applied(self, sk: Skeleton, build: float) -> Skeleton:
@@ -213,6 +216,7 @@ class BodyProfile:
             "arm_x",
             "leg_half_w",
             "wrist_x",
+            "neck_half_w",
         )
         changes: dict[str, float] = {"build": build}
         for name in ys:

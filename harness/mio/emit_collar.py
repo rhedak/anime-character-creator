@@ -21,6 +21,22 @@ def chain(c, indent):
     return "\n".join(out)
 
 
+# The shirt front between the wings' lower edges, under their crossing: in her reference
+# it is shirt up to the collar, and ours draws the tunic only from the shoulder line, so a
+# patch of the neck's skin showed round the ribbon's knot. A polygon on those edges
+# (pixels on her composite, from `collar_trace.json`), drawn under the wings.
+R, CHIN = 140.25, 399
+CY = CHIN - 1.02 * R
+FRONT_PX = [(629, 435), (645, 442), (660, 466), (601, 466), (613, 447)]
+front_pts = [((x - data["axis_x"]) / R, (y - CY) / R) for x, y in FRONT_PX]
+front = (
+    front_pts[0],
+    [
+        (((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), b)
+        for a, b in zip(front_pts, front_pts[1:] + front_pts[:1])
+    ],
+)
+
 lines = [
     BEGIN,
     "# Traced by `harness/mio/trace_collar.py` off `segments/white-collared-shirt.png`: the",
@@ -30,6 +46,11 @@ lines = [
     "# own centre line.",
     'COLLAR_CUTS["shirt"] = GarmentCut(',
     "    fills=(",
+    "        # the shirt front under the crossing",
+    "        (",
+    chain(front, 12),
+    "        ),",
+    "        # the wings",
     "        (",
     chain(data["collar"], 12),
     "        ),",

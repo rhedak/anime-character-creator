@@ -31,7 +31,7 @@ import json
 import sys
 
 import numpy as np
-from common import CY, R, RGB, median_colour, segment
+from common import CY, H, R, RGB, W, median_colour, segment
 from PIL import Image, ImageDraw
 from scipy import ndimage as ndi
 
@@ -133,6 +133,22 @@ lo_s, hi_s = lo.copy(), hi.copy()
 # so the tip stays a point.
 lo_s[sel] = smooth(lo[sel])
 hi_s[sel] = smooth(hi[sel])
+# Beside the collar the wall is the wing's own outer edge: the shirt is under the blazer and
+# its outline is drawn already, so a wall a few pixels outside it (where the white ends and
+# the ink begins) made a doubled, heavy line. The wing's outline is the centre line of its
+# stroke (`collar_trace.json`), so the opening's wall is put on it.
+COLLAR_TO = 470
+_col = json.load(open("out/mio/collar_trace.json"))
+_cs, _csegs = _col["collar"]
+_cpts = [(_col["axis_x"] + x * R, CY + y * R) for x, y in [_cs] + [e for _, e in _csegs]]
+_poly = Image.new("L", (W, H), 0)
+ImageDraw.Draw(_poly).polygon(_cpts, fill=255)
+_poly = np.asarray(_poly) > 0
+for i, y in enumerate(rows):
+    if y <= COLLAR_TO and _poly[y].any():
+        xs = np.nonzero(_poly[y])[0]
+        # Only the wing's outer sides: the polygon's own left and right edges.
+        lo_s[i], hi_s[i] = xs.min() + HALF, xs.max() - HALF
 opening = np.zeros_like(opening)
 for y, a, b in zip(rows, lo_s, hi_s):
     opening[y, int(round(a)) : int(round(b)) + 1] = True
