@@ -829,20 +829,32 @@ head scale (`BOX` is the face, 3x) and takes each variant as a dict of `FaceStyl
 `CharacterParams` fields, so a sweep is a list of dicts. Several rounds, each changing a few
 fields, picked by eye against the blend and not by a number.
 
-**What her eyes are against ours.** Hers are tall ovals, about 1.15 wide for each unit of height,
-where ours were 1.43; the iris is as tall as the aperture, clipped by the upper lid, with white
-only at the outer side; the upper lash is heavy; they sit wider apart than a narrow eye's
-proportionate gap puts them. The fields that did it, on `MIO.face`: `eye_width` 0.68 and
-`eye_size` 1.18 (taller, not wider), `iris_size` 1.12 with `eye_openness` 0.95 and
-`eye_lower_lid` 0.75 (the iris fills the aperture and the white crescent under it is gone),
-`eye_tilt` -0.05 and `lash` 1.2.
+**What her eyes are against ours: measured, then solved.** The two eye layers
+(`segments/large-black-eyes/`) are true crops of the composite, at (518, 255) and (663, 257), so
+the eye can be read in her own pixels (`harness/mio/measure_eyes.py`, `eye_metrics.py`). Each
+aperture is 63.5 wide and 66.5 tall, so a tall oval, nearly round, where ours was 1.43 wide for
+each unit of height. Her iris is 48.5 wide, 76% of the aperture, **as tall as the aperture**
+(an oval about 1.37 tall for its width, clipped by the lids), set **against the inner
+corner**: the white shows on the outer side only, a crescent 15 px at its widest. The two
+apertures' centres are 137 px apart, a gap of 75 px between the eyes, about one eye (1.16 of the
+aperture's width).
 
-**Three new opt-in `FaceStyle` fields**, since no existing one reached them (every other face
+A first pass by eye (a sweep of `eye_size`, `eye_width`, `iris_size`...) had the iris at 60 px,
+1.25 times hers, and read as filled only because it was clipped by a small aperture. Solving for
+her numbers, `eye_metrics.py` against `MIO.face`: `eye_size` 1.009, `eye_width` 0.729,
+`iris_size` 0.978, `eye_gap` 1.157, the lids even (`eye_openness` and `eye_lower_lid` 1.0),
+`eye_corner` 0.2 for the round oval and `lash` 1.2. That was a variant the owner asked for, and it is the one in
+the preset now. The first pass's values are in the commit before it, `6023132`.
+
+**Five new opt-in `FaceStyle` fields**, since no existing one reached them (every other face
 renders as before, `refresh-ref-out.sh --check`):
 
 - `eye_gap` (None keeps `_EYE_GAP`): the gap between the eyes as a share of an eye's half-width.
   A narrow eye keeps its gap proportionate to itself, which put her tall pair too close;
-  hers is 0.75.
+  hers is 1.157.
+- `iris_inset` (0.0) and `iris_aspect` (1.0): the iris against the inner corner, by a share of
+  the room it has, and a tall oval iris. `gaze` sends both eyes the same way and cannot do the
+  first; a circle cannot fill a tall aperture without growing too wide for it.
 - `mouth_drop` (0.0): the mouth lower in the face, in head radii. Hers is 0.06 lower and about
   two thirds as wide (`mouth_width` 0.45).
 - `brows_over_hair` (False) and `brow_length` (1.0): her brows are drawn through the fringe, as
@@ -860,15 +872,15 @@ for the owner's call on going lower.
 - Her jaw and chin are wider and rounder than any of ours: the skull's shape is the build's and
   not a `FaceStyle` field (`_head_shape`), and the head's width was already matched at one
   scale in M2. Only a lower `face_age` brings it nearer, and the owner set the range.
-- Her iris is grey with a lighter lower half, a softer look than our flat band; the highlight
-  pair is at the same places.
+- Her iris is grey with a lighter lower half, a softer look than our flat band and a darker
+  rim; the highlight pair is at the same places.
 - Her nose is one dot where ours is two small ticks (`face_maturity`).
 - The eyes' lash wing droops down and out at hers and flicks up at ours.
 - The web tool's ranges (`FACE_RANGES`) do not reach these values (`eye_width` 0.85 to 1.10,
   `iris_size` 0.60 to 0.80). Mio is not a web starting point until M11 decides whether to widen
   them.
 
-Tests: 861 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
+Tests: 862 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
 
 ### M10. Colours and finish
 

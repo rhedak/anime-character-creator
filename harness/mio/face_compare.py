@@ -16,12 +16,18 @@ BOX = (500, 215, 760, 420)
 K = 3
 
 # (label, {FaceStyle field: value}, {CharacterParams field: value})
-BASE = {}  # her face as the preset has it now
+# Solved against her measurements (`eye_metrics.py`, `measure_eyes.py`): the aperture, the iris's
+# diameter, the distance between the eyes and the white on the outer side only.
+MATCHED = {
+    "eye_size": 1.009, "eye_width": 0.729, "eye_openness": 1.0, "eye_lower_lid": 1.0,
+    "iris_size": 0.978, "eye_gap": 1.157, "iris_inset": 1.0, "eye_tilt": -0.05,
+}
+TALL = dict(MATCHED, iris_aspect=1.37)
 VARIANTS = [
-    ("face_age 0.50", {}, {"face_age": 0.50}),
-    ("face_age 0.65", {}, {"face_age": 0.65}),
-    ("face_age 0.75 (now)", {}, {"face_age": 0.75}),
-    ("face_age 0.85", {}, {"face_age": 0.85}),
+    ("now", {}, {}),
+    ("matched, tall iris", dict(TALL, eye_corner=0.0), {}),
+    ("matched, tall iris, lash 1.2", dict(TALL, eye_corner=0.0, lash=1.2), {}),
+    ("matched, tall iris, corner 0.2, lash 1.2", dict(TALL, eye_corner=0.2, lash=1.2), {}),
 ]
 
 

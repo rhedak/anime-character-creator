@@ -3078,3 +3078,25 @@ def test_eyes_set_wide_apart_a_mouth_set_low_and_brows_over_the_hair() -> None:
         return float(svg.split('d="M ')[-1].split(" Q")[0].split()[1])
 
     assert mouth_y(p) > mouth_y(flat)
+
+
+def test_an_iris_set_against_the_inner_corner_and_stretched_tall_only_on_mio() -> None:
+    stock = FaceStyle()
+    assert stock.iris_inset == 0.0 and stock.iris_aspect == 1.0
+    for name, p in PRESETS.items():
+        assert (p.face.iris_inset, p.face.iris_aspect) != (0.0, 1.0) or name != "mio", name
+        if name != "mio":
+            assert (p.face.iris_inset, p.face.iris_aspect) == (0.0, 1.0), name
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    eye_dx, eye_y, eye_r, f = character._eye_placement(sk, p)
+    left = character._eye(sk.head_cx - eye_dx, eye_y, eye_r, -1, f, p.eye_color, 2.0)
+    right = character._eye(sk.head_cx + eye_dx, eye_y, eye_r, 1, f, p.eye_color, 2.0)
+    assert "scale(1 1.370)" in left and "scale(1 1.370)" in right
+
+    def iris_x(svg: str) -> float:
+        return float(svg.split('<circle cx="')[1].split('"')[0])
+
+    # Each iris is nearer the nose than its eye's centre.
+    assert iris_x(left) > sk.head_cx - eye_dx
+    assert iris_x(right) < sk.head_cx + eye_dx

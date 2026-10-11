@@ -95,6 +95,15 @@ class FaceStyle:
     # Iris against the aperture's smaller half-axis. Below 1 leaves white
     # sclera showing all the way around it.
     iris_size: float = 0.72
+    # How far each iris sits toward the nose, as a share of the room it has in the
+    # aperture (its half-width less its radius): 0 centred, 1 against the inner corner.
+    # The white then shows on the outer side only, as a face drawn with the iris
+    # tucked in draws it. Both eyes move toward the nose, which `gaze` cannot do: it
+    # sends both the same way.
+    iris_inset: float = 0.0
+    # The iris's height against its width: 1 a circle, above 1 a tall oval, which fills a
+    # tall aperture from lid to lid without growing wider than the eye has room for.
+    iris_aspect: float = 1.0
     # How far the upper lash thickens toward the outer corner and how long its
     # flick runs past it: 1 the full lash (`_LASH_OUTER`, `_LASH_FLICK`), 0 a
     # lash of even, inner-corner weight with no flick. The men draw less of it,
@@ -11955,9 +11964,20 @@ def _eye(
     # Looking sideways moves the iris and everything drawn on it, and nothing else:
     # the lids and lashes stay put, and the aperture's clip crops what overhangs.
     ix = ex + f.gaze * er * 0.34
+    if f.iris_inset:
+        room = max(0.0, er * f.eye_width * _EYE_ASPECT - iris_r)
+        ix -= side * f.iris_inset * room
     # Canon iris: a rim of the eye color's own darker tone around the color,
     # with a distinct near-dark pupil inside that. Three flat tones, which is
     # what makes the eye read at a glance where a single disc read as a bead.
+    stretch = f.iris_aspect != 1.0
+    if stretch:
+        # Scaled about the iris's own centre, so the rim, the band and the pupil are
+        # stretched together. The highlights are drawn after it, round.
+        parts.append(
+            f'<g transform="translate(0 {iris_cy:.2f}) scale(1 {f.iris_aspect:.3f}) '
+            f'translate(0 {-iris_cy:.2f})">'
+        )
     parts.append(
         f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(eye_color, 0.45)}" />'
     )
@@ -11975,11 +11995,14 @@ def _eye(
         f'<circle cx="{ix:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * pupil_ratio:.1f}" '
         f'fill="{shade(eye_color, 0.18)}" />'
     )
+    if stretch:
+        parts.append("</g>")
+    up = f.iris_aspect
     parts.append(
-        f'<circle cx="{ix - iris_r * 0.42:.1f}" cy="{iris_cy - iris_r * 0.48:.1f}" r="{iris_r * 0.34:.1f}" fill="white" />'
+        f'<circle cx="{ix - iris_r * 0.42:.1f}" cy="{iris_cy - iris_r * 0.48 * up:.1f}" r="{iris_r * 0.34:.1f}" fill="white" />'
     )
     parts.append(
-        f'<circle cx="{ix + iris_r * 0.35:.1f}" cy="{iris_cy + iris_r * 0.42:.1f}" r="{iris_r * 0.16:.1f}" '
+        f'<circle cx="{ix + iris_r * 0.35:.1f}" cy="{iris_cy + iris_r * 0.42 * up:.1f}" r="{iris_r * 0.16:.1f}" '
         f'fill="white" opacity="0.85" />'
     )
     parts.append("</g>")

@@ -1295,13 +1295,20 @@ MIO = CharacterParams(
     # tall oval eyes with an iris that fills them, set wide apart, a short mouth low in
     # the face and brows drawn through the fringe.
     face=FaceStyle(
-        eye_size=1.18,
-        eye_width=0.68,
-        eye_openness=0.95,
-        eye_lower_lid=0.75,
+        # The eye, solved against her measurements (`harness/mio/eye_metrics.py`): an
+        # aperture 63 by 67 px, a tall iris 48 wide filling it from lid to lid and set against
+        # the inner corner so the white shows on the outer side only, and the two eyes
+        # about one eye apart.
+        eye_size=1.009,
+        eye_width=0.729,
+        eye_openness=1.0,
+        eye_lower_lid=1.0,
         eye_tilt=-0.05,
-        eye_gap=0.75,
-        iris_size=1.12,
+        eye_corner=0.2,
+        eye_gap=1.157,
+        iris_size=0.978,
+        iris_inset=1.0,
+        iris_aspect=1.37,
         lash=1.2,
         brow_tilt=0.0,
         brow_weight=0.7,
