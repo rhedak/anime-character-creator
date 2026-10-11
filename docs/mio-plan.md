@@ -720,25 +720,77 @@ shirt's arm without a band, the wrist anchors (set only on her body) and their s
 
 ### M8. The hair and the bangs
 
-Last of the shapes because it is drawn over everything, and because the side
-locks hang in front of the shoulders and the blazer has to be right to judge
-them.
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the
+checklist.
 
-- [ ] Run `harness/hair_audit/gate.py` first (with the body from M2 now ours,
-      the below-the-chin gate should pass).
-- [ ] Trace the bangs off `segments/bangs.png`: a flat blunt fringe across the
-      brow, over the brow line, with its fine strand lines.
-- [ ] Trace the long mass and side locks off `segments/long-black-hair.png`,
-      their lengths, the way the side locks fall in front of the shoulders and
-      the way the ends are cut straight. Probably a new hairstyle (neutral name)
-      beside `long_traced`, built from the existing `Hairstyle` pattern; first
-      try whether a variant of an existing style plus a fringe option does it.
-- [ ] Check the hair against the head at 4x, the ears (covered or not?), the
-      crown, and the hairline against the face.
-- [ ] Check it clears the arms and the blazer at her `hair_length`.
+- [x] Run `harness/hair_audit/gate.py` first. Not applicable: it checks a hair
+      reference against `katherina_grok`'s body, to keep a hair traced off a
+      reference whose body is not ours. Her reference is the body `tall_slender`
+      was measured off (M2), so nothing below the chin is taken from a foreign body.
+- [x] Trace the fringe, the long mass and the side locks, **and the lines in the hair**
+      (`harness/mio/trace_hair.py`, `emit_hair.py`), as the new cut `long_fringed`.
+- [x] The ears, the crown and the hairline against the face, at 4x.
+- [x] Check it clears the arms and the blazer: the front is drawn over the blazer, the
+      way hers lies in front of her shoulders.
 
-Acceptance: the fringe is blunt, the locks hang straight, in front of the
-shoulders; every other preset's hair is byte-identical.
+Acceptance: the fringe is blunt, the locks hang straight in front of the shoulders and
+every other preset's hair is byte-identical (`refresh-ref-out.sh --check`).
+
+#### M8 findings
+
+**The hair is the composite's, not the layers'.** `segments/long-black-hair.png` and
+`bangs.png` are flat fills with only some of her line work: they hold the silhouette and
+the fringe's lines but not the darker strips and the lines between them, which only the
+composite has (the owner's reminder, mid-step, that her blacks come in shades). So the
+outline comes from the two layers together and everything inside it from the composite,
+read two ways: a **thin dark line** is a black-hat of the luminance (dark runs narrower
+than seven pixels, whatever tone they lie in), and the **darker hair** is the second tone
+(21, 22, 24) against the main fill (39, 40, 44), a wide region once the lines are opened
+away. A plain ink threshold found a third of the lines, because many are thin and grey.
+
+**What `long_fringed` is** (a `Hairstyle`, body-relative like `long_traced`, `covers_ears`):
+
+- *The front piece*: both layers as one U-shaped silhouette, the fringe, the face
+  opening and the two curtains of locks, as one closed outline (143 segments), all of it
+  stroked. Her outer outline lies just outside the layer's mask and the opening's inside
+  it, so the outer ink is added before the whole is eroded by half the stroke.
+- *The mass behind*: the same silhouette with the gap between the two curtains closed
+  below the chin, where the blazer hides it. Not the whole row's span: the daylight
+  between a curtain's outer lock and its inner one has to stay open (a first pass
+  filled it and left a flat ledge between the tips).
+- *The strands* (`_FRINGED_STRANDS`, 46): the lines that part the hair into locks, open
+  chains, found by thinning, pruning spurs (`common.prune`, which Zhang-Suen's rough
+  edges need) and cutting at junctions. Blotches, the streaks in the flaps beside the
+  neck, are not lines and are dropped by thickness.
+- *The darker hair* (`Hairstyle.front_shade`, `_FRINGED_SHADE`, 4 regions): her strips down
+  the outer side of each curtain and the flaps beside the neck, painted in
+  `_HAIR_UNDERSIDE_VALUE` of the hair colour, clipped to the front. The flat-colour
+  rule allows a second tone on hair that lies behind (`underside`, the same call).
+- *The openings* (`Hairstyle.openings`, three): patches of skin drawn over the hair, her
+  ears peeping out between the locks and a small gap in the fringe. They are the layer's
+  holes, ringed by ink, and are drawn skin-filled rather than cut, since our own ear
+  sits elsewhere on a wider face.
+- `_fall_q` is `_parted_q` with the traced tip depth as a parameter; the parted cut calls
+  it, so it draws as before. Her `hair_length` is 0.721, which puts the tips at the traced
+  3.459 head radii and makes the stretch the identity.
+
+**Palette check:** red hair on dark skin, blond hair, and black on black. The second tone
+derives well on all three.
+
+**Left:**
+
+- The lock tips are blunter and about 15 px shorter than hers: her tapers are under four
+  pixels wide for the last stretch, which the erosion to the stroke's centre removes, and
+  our outline is heavier than hers.
+- The strokes are constant in width; hers taper.
+- The flaps' streaks and the noisy temple patches are not ported.
+- The fringe's tabs are narrow under our heavier stroke, so the notches between them read
+  as thin spikes.
+- The hair covers less of our shoulders than hers where the blazer's inferred shoulder
+  line shows (M7's open item), now hidden under the front hair.
+
+Tests: 859 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio and the
+catalogue changed.
 
 ### M9. The face
 

@@ -1255,8 +1255,10 @@ MIO = CharacterParams(
     bust=0.3,
     skin_tone="#f6dbc2",
     hair_color="#27272d",
-    hairstyle="long_blunt",
-    hair_length=0.9,
+    hairstyle="long_fringed",
+    # Her traced length: the tips at 3.459 head radii below the head centre, where this
+    # body's chin-to-hip measure puts them at 0.721 (`docs/mio-plan.md`, M8).
+    hair_length=0.721,
     eye_color="#4f9a5e",
     # Her own proportions, measured off her reference (`docs/mio-plan.md`, M2).
     body="tall_slender",

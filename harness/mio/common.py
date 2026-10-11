@@ -168,3 +168,67 @@ def branches(skel, min_len=6):
         if len(path) >= min_len:
             out.append(path)
     return out
+
+
+def prune(skel, spur=8, rounds=3):
+    """The skeleton without its spurs: branches shorter than `spur` pixels that end at a
+    free end and join the rest at a junction. Zhang-Suen thinning sprouts one wherever
+    a stroke's edge is rough, and each spur is a junction that splits a long line in two;
+    taking them off first is what lets a hair's whole strand come out as one stroke."""
+    skel = skel.copy()
+    for _ in range(rounds):
+        pts = {tuple(p) for p in np.argwhere(skel)}
+
+        def nbrs(p):
+            y, x = p
+            return [
+                (y + dy, x + dx)
+                for dy in (-1, 0, 1)
+                for dx in (-1, 0, 1)
+                if (dy or dx) and (y + dy, x + dx) in pts
+            ]
+
+        ends = [p for p in pts if len(nbrs(p)) == 1]
+        removed = False
+        for e in ends:
+            path, seen, cur = [e], {e}, e
+            while True:
+                nxt = [q for q in nbrs(cur) if q not in seen]
+                if len(nxt) != 1:
+                    break  # a junction (or a dead end) ahead
+                cur = nxt[0]
+                if len(nbrs(cur)) >= 3:
+                    break
+                path.append(cur)
+                seen.add(cur)
+                if len(path) > spur:
+                    break
+            if len(path) <= spur and len(nbrs(cur)) >= 3:
+                for q in path:
+                    skel[q] = False
+                removed = True
+        if not removed:
+            break
+    return skel
+
+
+def strokes_of(skel, min_len=12):
+    """The strokes of a skeleton, cut at its junctions (`branches` without the gap a
+    neighbourhood cut leaves): only the junction pixels themselves are taken out."""
+    pts = {tuple(p) for p in np.argwhere(skel)}
+
+    def count(p):
+        y, x = p
+        return sum((y + dy, x + dx) in pts for dy in (-1, 0, 1) for dx in (-1, 0, 1) if dy or dx)
+
+    rest = np.zeros_like(skel)
+    for p in pts:
+        if count(p) < 3:
+            rest[p] = True
+    lab, n = ndi.label(rest, structure=np.ones((3, 3)))
+    out = []
+    for i in range(1, n + 1):
+        path = walk(lab == i)
+        if len(path) >= min_len:
+            out.append(path)
+    return out

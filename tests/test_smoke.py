@@ -3000,3 +3000,37 @@ def test_a_cuts_holes_are_left_open_under_the_even_odd_rule() -> None:
     assert 'fill-rule="evenodd"' not in character._draw_cut(sk, plain, "#456789")
     svg = character._draw_cut(sk, holed, "#456789")
     assert 'fill-rule="evenodd"' in svg and svg.count("M ") == 2
+
+
+def test_only_mio_wears_the_fringed_hair_and_it_is_traced_to_her_own_length() -> None:
+    for name, p in PRESETS.items():
+        assert (p.hairstyle == "long_fringed") == (name == "mio"), name
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    # Her hair_length puts the tips where the trace has them, so the stretch is the identity.
+    assert character._hair_fall(sk, p) == pytest.approx(character._FRINGED_BASE_TIP, abs=0.01)
+    start, line, back = character.HAIRSTYLES["long_fringed"].hairline(character._hair_fall(sk, p))
+    assert back == [] and line[-1][1] == pytest.approx(start, abs=1e-6), "one closed outline"
+
+
+def test_the_fringed_hair_draws_its_darker_tone_its_strands_and_its_ears_over_the_hair() -> None:
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    svg = character._hair_front(sk, p)
+    assert svg.count(f'fill="{p.skin_tone}"') == len(character._FRINGED_OPENINGS) == 3
+    assert svg.count("clip-path") == len(character._FRINGED_SHADE) + len(character._FRINGED_STRANDS)
+    other = replace(p, hairstyle="long_blunt")
+    assert character._hair_front(sk, other).count(f'fill="{p.skin_tone}"') == 0
+
+
+def test_a_longer_haircut_stretches_the_fringed_tips_and_keeps_the_fringe() -> None:
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    style = character.HAIRSTYLES["long_fringed"]
+    base = style.mass(character._hair_fall(sk, p))
+    longer = style.mass(character._hair_fall(sk, replace(p, hair_length=0.9)))
+    ys = lambda m: [e[1] for _, e in m[1]]  # noqa: E731
+    assert max(ys(longer)) > max(ys(base)) + 0.3
+    # Above the cheek line nothing moves: the fringe stays on the skull.
+    top = lambda m: sorted(e for _, e in m[1] if e[1] < 0.5)  # noqa: E731
+    assert top(longer) == top(base)

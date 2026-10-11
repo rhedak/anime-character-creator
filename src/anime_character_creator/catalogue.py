@@ -577,6 +577,7 @@ HAIRSTYLE_LABELS: dict[str, str] = {
     "short_layered": "Short, layered",
     "long_traced": "Long",
     "long_parted": "Long, front locks",
+    "long_fringed": "Long, blunt fringe and side locks",
     "short_crop": "Short crop",
     "short_tousled": "Short, tousled",
     "long_center_part": "Long, center part",
