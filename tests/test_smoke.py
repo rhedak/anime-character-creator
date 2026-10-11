@@ -2726,8 +2726,10 @@ def test_the_older_cuts_still_read_the_tall_chibi_and_mios_read_her_own() -> Non
     for registry in (character.COAT_CUTS, character.COLLAR_CUTS, character.SKIRT_CUTS):
         for name, cut in registry.items():
             # Mio's cuts are the exceptions, each traced on her own body.
-            mine = (registry is character.SKIRT_CUTS and name == "pleated") or (
-                registry is character.COLLAR_CUTS and name == "shirt"
+            mine = (
+                (registry is character.SKIRT_CUTS and name == "pleated")
+                or (registry is character.COLLAR_CUTS and name == "shirt")
+                or (registry is character.COAT_CUTS and name == "blazer")
             )
             assert cut.ref_body == ("tall_slender" if mine else "tall_chibi"), name
             assert not cut.per_leg, name
@@ -2876,6 +2878,95 @@ def test_only_mio_wears_a_ribbon() -> None:
     assert Outfit().ribbon_color is None
     for name, p in PRESETS.items():
         assert (p.outfit.ribbon_color is not None) == (name == "mio"), name
+
+
+def test_the_blazer_is_one_garment_with_two_lapels_and_heavy_lines() -> None:
+    cut = character.COAT_CUTS["blazer"]
+    assert cut.ref_body == "tall_slender" and not cut.per_leg and cut.over_arms
+    assert len(cut.fills) == 3, "the garment, then a lapel over it each side"
+    assert len(cut.lines) == 3, "the front line and a side line each side"
+    assert cut.line_weight == 1.0, "a blazer's lapel and front lines are as heavy as its edge"
+    assert character.GarmentCut(fills=()).line_weight == 0.7, "every other cut keeps its light line"
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    svg = character._draw_cut(sk, cut, p.outfit.coat_color)
+    assert svg.count(f'fill="{p.outfit.coat_color}"') == 3
+    assert svg.count('fill="none"') == 3
+
+
+def test_a_blazer_wearers_arm_shows_the_shirt_past_the_sleeve_without_a_band() -> None:
+    """The cut is the whole garment, so the arm under it is the shirt's, and what shows
+    past the blazer's sleeve is that arm and the line where it ends, not the second-tone
+    cuff band a long undersleeve draws."""
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    arms = character._arms(sk, p, hands=False)
+    assert arms.count(f'fill="{p.outfit.tunic_color}"') == 2, "one white sleeve each side"
+    assert character.shade(p.outfit.tunic_color) not in arms
+    assert character._traced_coat(sk, p) and character._hands_after_coat(sk, p)
+
+
+def test_only_mio_wears_a_blazer_with_pockets_and_buttons() -> None:
+    assert Outfit().hip_pocket_color is None and Outfit().coat_button_color is None
+    for name, p in PRESETS.items():
+        mine = name == "mio"
+        assert (p.outfit.hip_pocket_color is not None) == mine, name
+        assert (p.outfit.coat_button_color is not None) == mine, name
+        assert (p.outfit.coat_cut == "blazer") == mine, name
+
+
+def test_the_hip_pockets_and_the_buttons_are_drawn_with_the_coat() -> None:
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    pockets = character._hip_pockets(sk, p)
+    assert pockets.count("<path") == 2, "a flap each side"
+    assert (
+        character._hip_pockets(sk, replace(p, outfit=replace(p.outfit, hip_pocket_color=None)))
+        == ""
+    )
+    buttons = character._coat_buttons(sk, p)
+    assert buttons.count("<circle") == len(character._COAT_BUTTONS) == 3
+    assert f'fill="{p.outfit.coat_button_color}"' in buttons
+    assert (
+        character._coat_buttons(sk, replace(p, outfit=replace(p.outfit, coat_button_color=None)))
+        == ""
+    )
+    # Drawn after the garment they sit on, whichever side of the arms it is drawn.
+    whole = character._traced_coat_and_belt(sk, p)
+    assert whole.index("<circle") > whole.index("<path") and whole.count("<circle") == 3
+    bare = replace(p, outfit=replace(p.outfit, coat_color=None, coat_cut=None))
+    assert "<circle" not in character._traced_coat_and_belt(sk, bare)
+
+
+def test_a_body_profile_that_measures_the_wrist_moves_the_hand_and_the_rest_do_not() -> None:
+    """`wrist_y` and `wrist_x` are opt-in anchors on a body profile: the arm line takes
+    them when they are set and derives the wrist from the hip and the arm's width when
+    they are not, so every body that never measured one draws as it always did."""
+    for name, profile in character.BODY_TYPES.items():
+        sk = character.skeleton_for(CharacterParams(body=name))
+        measured = name == "tall_slender"
+        assert (profile.wrist_y is not None) == measured, name
+        assert (sk.wrist_y is not None) == measured, name
+        _, _, centre_wrist, wrist_y = character._arm_line(sk)
+        if measured:
+            assert (wrist_y, centre_wrist) == (sk.wrist_y, sk.wrist_x)
+        else:
+            assert wrist_y == pytest.approx(sk.hip_y + sk.arm_half_w * 0.8)
+
+
+def test_a_stretched_body_carries_its_measured_wrist_with_it() -> None:
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    tall = character.skeleton_for(replace(p, height=1.2))
+
+    def heads_down(s: object) -> tuple[float, float]:
+        return (s.wrist_y - s.head_cy) / s.head_r, (s.hip_y - s.head_cy) / s.head_r
+
+    wrist, hip = heads_down(sk)
+    tall_wrist, tall_hip = heads_down(tall)
+    assert tall_wrist > wrist, "a taller figure's hand hangs lower, in head radii"
+    # It keeps its place against the hip it was measured beside, rather than staying put.
+    assert tall_wrist - tall_hip == pytest.approx(wrist - hip, abs=0.03)
 
 
 def test_a_cuts_holes_are_left_open_under_the_even_odd_rule() -> None:

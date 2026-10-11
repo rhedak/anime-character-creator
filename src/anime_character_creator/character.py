@@ -470,6 +470,12 @@ class Outfit:
     # open vest or cardigan over a tunic, 0.30 a jacket cropped at the waist,
     # 0.62 below the knee, 0.75 mid-calf.
     coat_length: float = 0.55
+    # A flapped pocket on each hip of a traced coat, in this colour (`HIP_POCKET_CUT`).
+    # `None` draws none.
+    hip_pocket_color: str | None = None
+    # A line of buttons down the front of a traced coat, in this colour
+    # (`_COAT_BUTTONS`): separate discs, not the tunic's placket. `None` draws none.
+    coat_button_color: str | None = None
     # Four mana crystals clipped to the belt, two a side, the carrying rig
     # Elara and Krista wear instead of a pouch: a crystal is dangerous to grip
     # bare-handed (`valley_of_mist/docs/design.md`, "Donarsblut"), so it rides
@@ -4541,9 +4547,14 @@ BODY_TYPES["tall_slender"] = BodyProfile(
     waist_half_w=0.70,
     hip_half_w=1.20,
     hem_half_w=0.93,
-    arm_half_w=0.19,
+    arm_half_w=0.145,
     arm_x=0.90,
     leg_half_w=0.225,
+    # Where her hand begins: the shirt cuff's bottom, 3.947 down and 0.999 out on that
+    # radius (`docs/mio-plan.md`, M7), where the arm line's own formula, from the hip and
+    # the arm's width, put it 0.1 lower and 0.14 in.
+    wrist_y=3.947,
+    wrist_x=0.999,
 ).head_scaled(_SLENDER_HEAD_SCALE)
 
 
@@ -4811,6 +4822,10 @@ class GarmentCut:
     # beneath it. Drawn as extra subpaths of that fill's path, under the even-odd
     # rule.
     holes: tuple[tuple[int, Chain], ...] = ()
+    # How heavy the cut's `lines` are drawn, as a fraction of the outline. The fold
+    # and seam work of most cuts is lighter than the outline; a blazer's lapel and
+    # front lines are as heavy as its edge in the reference.
+    line_weight: float = 0.7
 
 
 def _traced_coat(sk: Skeleton, p: CharacterParams) -> bool:
@@ -4841,7 +4856,38 @@ def _traced_coat_and_belt(sk: Skeleton, p: CharacterParams, after_arms: bool = T
     # The belt travels with the jacket it is worn over, so a coat drawn under
     # the arms takes its belt under them too: the arm's outline is then what
     # ends the band, which is what a belt passing round a body looks like.
-    return _draw_cut(sk, cut, p.outfit.coat_color) + _belt_drawn(sk, p)
+    return (
+        _draw_cut(sk, cut, p.outfit.coat_color)
+        + _hip_pockets(sk, p)
+        + _coat_buttons(sk, p)
+        + _belt_drawn(sk, p)
+    )
+
+
+def _hip_pockets(sk: Skeleton, p: CharacterParams) -> str:
+    """A flapped pocket on each hip, a traced cut (`HIP_POCKET_CUT`), over the coat it
+    is sewn on and in the colour `hip_pocket_color`. Nothing without a colour."""
+    if p.outfit.hip_pocket_color is None:
+        return ""
+    return _draw_cut(sk, HIP_POCKET_CUT, p.outfit.hip_pocket_color)
+
+
+def _coat_buttons(sk: Skeleton, p: CharacterParams) -> str:
+    """The coat's buttons: discs down the front (`_COAT_BUTTONS`), each with a thin
+    ring, in `coat_button_color`. Nothing without a colour."""
+    if p.outfit.coat_button_color is None:
+        return ""
+    xf = _garment_placement(sk, "tall_slender")
+    sw = _stroke_w(sk)
+    out = []
+    for x, y, r in _COAT_BUTTONS:
+        px, py = xf((x, y))
+        out.append(
+            f'<circle cx="{sk.head_cx + px * sk.head_r:.1f}" cy="{sk.head_cy + py * sk.head_r:.1f}" '
+            f'r="{r * sk.head_r:.1f}" fill="{p.outfit.coat_button_color}" stroke="{OUTLINE}" '
+            f'stroke-width="{_interior_w(sw, 0.5):.2f}" />'
+        )
+    return "".join(out)
 
 
 def _cut_half_w_at(sk: Skeleton, cut: GarmentCut, y: float) -> float | None:
@@ -4913,7 +4959,7 @@ def _draw_cut(
         parts.insert(n, line)
     parts.extend(
         f'<path d="{d(line, close=False)}" fill="none" stroke="{OUTLINE}" '
-        f'stroke-width="{_interior_w(sw, 0.7):.2f}" stroke-linecap="round" />'
+        f'stroke-width="{_interior_w(sw, cut.line_weight):.2f}" stroke-linecap="round" />'
         for line in cut.lines
     )
     return "".join(parts)
@@ -7103,6 +7149,11 @@ def _arm_line(sk: Skeleton) -> tuple[float, float, float, float]:
     # beside the skirt, not against it.
     centre_wrist = centre_top + sk.arm_half_w * (0.50 + 0.70 * sk.build)
     wrist_y = sk.hip_y + sk.arm_half_w * 0.8
+    # A body profile that measured where the hand begins says so (`BodyProfile.wrist_y`).
+    if sk.wrist_x is not None:
+        centre_wrist = sk.wrist_x
+    if sk.wrist_y is not None:
+        wrist_y = sk.wrist_y
     return centre_top, _sleeve_hem_y(sk), centre_wrist, wrist_y
 
 
@@ -8456,6 +8507,206 @@ RIBBON_CUT = GarmentCut(
 # (end of the ribbon)
 
 
+# Mio's blazer, per `docs/mio-plan.md` M7.
+# Traced by `harness/mio/trace_blazer.py` off `segments/school-blazer.png`: the whole
+# garment as one silhouette, sleeves included (the reference draws it as one fill, and
+# her hair hides the shoulders, so the strips beside the torso are filled), the two
+# lapel facings with their notches over it, and the line work: the front line from the
+# lapels' point to the hem and the two side lines where the torso passes in front of the
+# sleeve. The neck opening is the shirt's V. Head radii on `tall_slender`, x from the
+# blazer's own centre line. Pockets and buttons are parts of their own.
+COAT_CUTS["blazer"] = GarmentCut(
+    fills=(
+        # the garment
+        (
+            (-1.301, 4.314),
+            [
+                ((-1.322, 4.271), (-1.323, 4.229)),
+                ((-1.233, 3.494), (-1.123, 2.760)),
+                ((-1.086, 2.268), (-1.037, 1.776)),
+                ((-1.025, 1.658), (-0.980, 1.540)),
+                ((-0.898, 1.474), (-0.816, 1.441)),
+                ((-0.656, 1.362), (-0.496, 1.305)),
+                ((-0.414, 1.235), (-0.332, 1.170)),
+                ((-0.317, 1.170), (-0.303, 1.170)),
+                ((-0.318, 1.227), (-0.317, 1.284)),
+                ((-0.315, 1.369), (-0.282, 1.455)),
+                ((-0.289, 1.551), (-0.289, 1.647)),
+                ((-0.256, 1.776), (-0.210, 1.904)),
+                ((-0.203, 1.958), (-0.203, 2.011)),
+                ((-0.146, 2.172), (-0.068, 2.332)),
+                ((-0.039, 2.364), (-0.011, 2.353)),
+                ((0.079, 2.200), (0.146, 2.047)),
+                ((0.162, 1.975), (0.168, 1.904)),
+                ((0.209, 1.801), (0.246, 1.697)),
+                ((0.274, 1.426), (0.296, 1.155)),
+                ((0.385, 1.221), (0.474, 1.291)),
+                ((0.553, 1.323), (0.631, 1.355)),
+                ((0.642, 1.380), (0.667, 1.405)),
+                ((0.806, 1.449), (0.945, 1.498)),
+                ((0.966, 1.530), (0.995, 1.562)),
+                ((1.002, 1.619), (1.016, 1.676)),
+                ((1.078, 2.321), (1.137, 2.967)),
+                ((1.191, 3.230), (1.237, 3.494)),
+                ((1.281, 3.893), (1.316, 4.293)),
+                ((1.187, 4.354), (1.059, 4.357)),
+                ((1.016, 4.262), (0.973, 4.150)),
+                ((0.856, 4.195), (0.738, 4.236)),
+                ((0.588, 4.263), (0.439, 4.300)),
+                ((0.282, 4.318), (0.125, 4.307)),
+                ((0.096, 4.300), (0.068, 4.271)),
+                ((0.043, 4.200), (-0.018, 4.129)),
+                ((-0.062, 4.211), (-0.096, 4.293)),
+                ((-0.121, 4.318), (-0.146, 4.321)),
+                ((-0.417, 4.311), (-0.688, 4.257)),
+                ((-0.824, 4.222), (-0.959, 4.157)),
+                ((-0.984, 4.159), (-1.009, 4.186)),
+                ((-1.014, 4.271), (-1.059, 4.357)),
+                ((-1.105, 4.357), (-1.152, 4.357)),
+                ((-1.226, 4.324), (-1.301, 4.314)),
+            ],
+        ),
+        # the left lapel
+        (
+            (0.004, 2.539),
+            [
+                ((-0.166, 2.328), (-0.339, 2.118)),
+                ((-0.388, 2.040), (-0.453, 1.961)),
+                ((-0.514, 1.861), (-0.567, 1.762)),
+                ((-0.502, 1.690), (-0.439, 1.619)),
+                ((-0.522, 1.578), (-0.588, 1.519)),
+                ((-0.533, 1.405), (-0.481, 1.291)),
+                ((-0.406, 1.218), (-0.332, 1.163)),
+                ((-0.314, 1.158), (-0.296, 1.170)),
+                ((-0.311, 1.227), (-0.310, 1.284)),
+                ((-0.302, 1.377), (-0.282, 1.469)),
+                ((-0.282, 1.558), (-0.282, 1.647)),
+                ((-0.249, 1.776), (-0.203, 1.904)),
+                ((-0.196, 1.958), (-0.196, 2.011)),
+                ((-0.171, 2.082), (-0.146, 2.154)),
+                ((-0.094, 2.243), (-0.061, 2.332)),
+                ((-0.032, 2.355), (-0.018, 2.389)),
+                ((-0.008, 2.450), (0.018, 2.510)),
+                ((0.022, 2.524), (0.004, 2.539)),
+            ],
+        ),
+        # the right lapel
+        (
+            (-0.004, 2.446),
+            [
+                ((-0.025, 2.410), (-0.032, 2.375)),
+                ((-0.025, 2.350), (0.004, 2.332)),
+                ((0.037, 2.243), (0.089, 2.154)),
+                ((0.117, 2.143), (0.132, 2.118)),
+                ((0.120, 2.093), (0.125, 2.068)),
+                ((0.144, 2.032), (0.153, 1.997)),
+                ((0.151, 1.950), (0.160, 1.904)),
+                ((0.209, 1.786), (0.246, 1.669)),
+                ((0.257, 1.569), (0.253, 1.469)),
+                ((0.279, 1.369), (0.289, 1.270)),
+                ((0.287, 1.216), (0.282, 1.163)),
+                ((0.289, 1.155), (0.296, 1.148)),
+                ((0.374, 1.210), (0.453, 1.262)),
+                ((0.506, 1.387), (0.560, 1.512)),
+                ((0.563, 1.530), (0.538, 1.548)),
+                ((0.471, 1.583), (0.403, 1.619)),
+                ((0.455, 1.683), (0.524, 1.747)),
+                ((0.524, 1.758), (0.524, 1.769)),
+                ((0.456, 1.901), (0.360, 2.032)),
+                ((0.194, 2.232), (0.025, 2.432)),
+                ((0.011, 2.451), (-0.004, 2.446)),
+            ],
+        ),
+    ),
+    lines=(
+        # front line
+        (
+            (-0.023, 2.436),
+            [
+                ((0.007, 2.521), (0.032, 2.603)),
+                ((0.037, 2.706), (0.043, 2.810)),
+                ((0.043, 3.131), (0.043, 3.451)),
+                ((0.035, 3.615), (0.027, 3.779)),
+                ((0.010, 3.936), (-0.015, 4.093)),
+                ((-0.015, 4.194), (-0.007, 4.279)),
+            ],
+        ),
+        # left side line
+        (
+            (-0.731, 2.773),
+            [
+                ((-0.725, 2.892), (-0.742, 3.024)),
+                ((-0.857, 3.426), (-0.948, 3.829)),
+                ((-0.973, 3.950), (-0.996, 4.072)),
+                ((-1.007, 4.129), (-0.992, 4.186)),
+                ((-1.005, 4.240), (-1.013, 4.279)),
+            ],
+        ),
+        # right side line
+        (
+            (0.724, 2.773),
+            [
+                ((0.718, 2.892), (0.735, 3.024)),
+                ((0.853, 3.441), (0.948, 3.858)),
+                ((0.989, 4.076), (1.007, 4.279)),
+            ],
+        ),
+    ),
+    ref_body="tall_slender",
+    line_weight=1.0,
+)
+
+# A flapped hip pocket, one flap a side: the right one traced, the left its mirror.
+HIP_POCKET_CUT = GarmentCut(
+    fills=(
+        # right
+        (
+            (0.873, 3.537),
+            [
+                ((0.866, 3.544), (0.859, 3.551)),
+                ((0.813, 3.557), (0.766, 3.573)),
+                ((0.670, 3.582), (0.574, 3.594)),
+                ((0.560, 3.587), (0.545, 3.573)),
+                ((0.545, 3.551), (0.531, 3.530)),
+                ((0.521, 3.469), (0.517, 3.409)),
+                ((0.524, 3.401), (0.531, 3.394)),
+                ((0.560, 3.394), (0.588, 3.394)),
+                ((0.702, 3.374), (0.816, 3.359)),
+                ((0.832, 3.377), (0.838, 3.394)),
+                ((0.852, 3.466), (0.873, 3.537)),
+            ],
+        ),
+        # left
+        (
+            (-0.873, 3.537),
+            [
+                ((-0.866, 3.544), (-0.859, 3.551)),
+                ((-0.813, 3.557), (-0.766, 3.573)),
+                ((-0.670, 3.582), (-0.574, 3.594)),
+                ((-0.560, 3.587), (-0.545, 3.573)),
+                ((-0.545, 3.551), (-0.531, 3.530)),
+                ((-0.521, 3.469), (-0.517, 3.409)),
+                ((-0.524, 3.401), (-0.531, 3.394)),
+                ((-0.560, 3.394), (-0.588, 3.394)),
+                ((-0.702, 3.374), (-0.816, 3.359)),
+                ((-0.832, 3.377), (-0.838, 3.394)),
+                ((-0.852, 3.466), (-0.873, 3.537)),
+            ],
+        ),
+    ),
+    ref_body="tall_slender",
+)
+
+# The blazer's buttons, as (x, y, radius) in head radii on `tall_slender`, x from the
+# blazer's centre line: a line of three down the front.
+_COAT_BUTTONS: tuple[tuple[float, float, float], ...] = (
+    (-0.071, 2.624, 0.051),
+    (-0.070, 3.170, 0.049),
+    (-0.075, 3.708, 0.050),
+)
+# (end of the blazer)
+
+
 def _arms(
     sk: Skeleton, p: CharacterParams, hands: bool | None = None, silhouette: bool = False
 ) -> str:
@@ -8622,7 +8873,14 @@ def _arms(
             ]
         if cut is None and p.outfit.coat_sleeves:
             limb.append(_cuff_line(sk, x(centre_wrist), wrist_y, w_wrist))
-        elif cut is None and (p.outfit.undersleeve_color is not None or long_sleeve):
+        elif (
+            cut is None
+            and (p.outfit.undersleeve_color is not None or long_sleeve)
+            # A traced coat owns its sleeve, and what shows past it is the arm's own
+            # sleeve and a line where it ends: a band there was a second tone the
+            # reference's white cuff does not have (`docs/mio-plan.md`, M7).
+            and not _traced_coat(sk, p)
+        ):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
         limb.append(_wristband(sk, p, s, x(centre_wrist), wrist_y, w_wrist))
         hand = _hand(sk, p, x(centre_wrist), wrist_y, w_wrist, s)

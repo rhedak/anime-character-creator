@@ -1279,11 +1279,14 @@ MIO = CharacterParams(
         neckline_notch=0.04,
         # The blue bow at the throat (`ribbon_color`, traced).
         ribbon_color="#467b99",
+        # The traced blazer (`docs/mio-plan.md`, M7): the whole garment, sleeves included, so
+        # the arm under it is the shirt's, and the white cuff is the arm showing past the
+        # blazer's sleeve.
         coat_color="#1b2739",
-        coat_sleeves=True,
-        # Shoulder to ankle: 0.437 puts the blazer's hem at 3.87, the reference's.
-        coat_length=0.437,
-        placket_color="#bd9957",
+        coat_cut="blazer",
+        hip_pocket_color="#1b2739",
+        coat_button_color="#bd9957",
+        sleeve_long=True,
     ),
     frame=-0.2,
     face=FaceStyle(

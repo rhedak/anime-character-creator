@@ -727,6 +727,10 @@
               "label": "Two panels"
             },
             {
+              "value": "blazer",
+              "label": "Blazer (closed, notched lapels)"
+            },
+            {
               "value": "lab_coat",
               "label": "Lab coat (notched lapel)"
             },
@@ -737,6 +741,26 @@
           ]
         }
       ]
+    },
+    {
+      "id": "hip_pocket",
+      "label": "Hip pockets (on a traced coat)",
+      "color": {
+        "field": "hip_pocket_color",
+        "label": "Hip pockets",
+        "optional": true
+      },
+      "requires": "coat"
+    },
+    {
+      "id": "coat_button",
+      "label": "Coat buttons (on a traced coat)",
+      "color": {
+        "field": "coat_button_color",
+        "label": "Coat buttons",
+        "optional": true
+      },
+      "requires": "coat"
     },
     {
       "id": "headscarf",

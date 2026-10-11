@@ -84,6 +84,11 @@ class Skeleton:
     # How far along the retired adult build's limb taper the arms and legs are
     # drawn, 0 to 1; it follows the height (`character._limb_taper_at`).
     limb_taper: float = 0.0
+    # Where the arm ends and the hand begins, when a body profile measured it: the
+    # wrist's height, and how far out from the centre line its centre hangs. `None`
+    # keeps the formula `character._arm_line` derives from the hip and the arm's width.
+    wrist_y: float | None = None
+    wrist_x: float | None = None
 
     @property
     def face_build(self) -> float:
@@ -155,6 +160,10 @@ class BodyProfile:
     arm_half_w: float | None = None
     arm_x: float | None = None
     leg_half_w: float | None = None
+    # Where the hand begins: its height and how far out the arm's centre hangs there.
+    # `None` keeps the arm line's own derivation from the hip (`Skeleton.wrist_y`).
+    wrist_y: float | None = None
+    wrist_x: float | None = None
 
     def head_scaled(self, s: float) -> BodyProfile:
         """The same body under a head `s` times as big.
@@ -189,10 +198,12 @@ class BodyProfile:
             arm_half_w=w(self.arm_half_w),
             arm_x=w(self.arm_x),
             leg_half_w=w(self.leg_half_w),
+            wrist_y=y(self.wrist_y),
+            wrist_x=w(self.wrist_x),
         )
 
     def applied(self, sk: Skeleton, build: float) -> Skeleton:
-        ys = ("shoulder_y", "waist_y", "hip_y", "hem_y", "boot_y", "ankle_y")
+        ys = ("shoulder_y", "waist_y", "hip_y", "hem_y", "boot_y", "ankle_y", "wrist_y")
         ws = (
             "shoulder_half_w",
             "waist_half_w",
@@ -201,6 +212,7 @@ class BodyProfile:
             "arm_half_w",
             "arm_x",
             "leg_half_w",
+            "wrist_x",
         )
         changes: dict[str, float] = {"build": build}
         for name in ys:
@@ -280,10 +292,14 @@ def stretched(
         changes[name] = fit.head_cy + y(hr(getattr(sk, name))) * fit.head_r
     for name in _KEEP_YS:
         changes[name] = fit.head_cy + hr(getattr(sk, name)) * fit.head_r
+    if sk.wrist_y is not None:
+        changes["wrist_y"] = fit.head_cy + y(hr(sk.wrist_y)) * fit.head_r
     grow = 1.0 + _WIDTH_FOLLOW * (h - 1.0)
     for name in _KEEP_WS:
         follow = 1.0 if name == "neck_half_w" else grow
         changes[name] = getattr(sk, name) / sk.head_r * fit.head_r * follow
+    if sk.wrist_x is not None:
+        changes["wrist_x"] = sk.wrist_x / sk.head_r * fit.head_r * grow
     return replace(fit, **changes)
 
 

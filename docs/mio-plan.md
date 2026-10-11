@@ -573,28 +573,31 @@ knot as a small X. Tests: 845 pass; `refresh-ref-out.sh` changed only Mio's rend
 The largest piece, so it is last of the garments, and the one with the most to
 get wrong.
 
-- [ ] Trace `COAT_CUTS["blazer"]` off `segments/school-blazer.png` (crop check
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the
+checklist.
+
+- [x] Trace `COAT_CUTS["blazer"]` off `segments/school-blazer.png` (crop check
       first): the notched lapels, the front opening and its taper, the hem, and
       the sleeves.
-- [ ] **The decision point from the Keiko plan, taken on the data.** Keiko's
+- [x] **The decision point from the Keiko plan, taken on the data.** Keiko's
       panels were built from the measured profile and only the lapel traced,
       because the crop was occlusion-cut and the shoulder sat under the hair.
       Mio's hair covers her shoulders the same way. Trace both and look; fall
       back to the profile-built panel plus a traced lapel if the shoulder and
       the arm come out as stair-steps. Record which, and why, in this file.
-- [ ] The sleeve runs from the shoulder to the wrist and ends in the white cuff
+- [x] The sleeve runs from the shoulder to the wrist and ends in the white cuff
       (a thin cuff line, or the shirt's cuff showing). Re-measure sleeve widths
       against the segment, not the composite.
-- [ ] Buttons: three separate gold buttons, not the cast's line of dots. Trace
+- [x] Buttons: three separate gold buttons, not the cast's line of dots. Trace
       their positions off `segments/gold-buttons/`, probably a new
       `Outfit.button_color` with a count, or the existing placket given a
       spacing option. Check `_placket` first.
-- [ ] `Outfit.hip_pocket_color` (default `None`): a flapped pocket on each
+- [x] `Outfit.hip_pocket_color` (default `None`): a flapped pocket on each
       hip, as the reference has (the owner's call, 2026-10-11).
-- [ ] Draw order, hands and arms: the reference's order is sleeve, then coat,
+- [x] Draw order, hands and arms: the reference's order is sleeve, then coat,
       then hand. Decide, per the cut, the way the Keiko plan's P5 did, and keep
       it a property of the cut, never global.
-- [ ] Watch the bust (`bust=0.3` now): an open front bows out over it
+- [x] Watch the bust (`bust=0.3` now): an open front bows out over it
       (`_COAT_BUST_BOW`); check the blazer's front edge against the reference.
 
 Acceptance: region overlap and mean contour distance against the reference,
@@ -602,6 +605,98 @@ predicted before it is rendered; looked at on white and on black, 4x at the
 lapel notch, the front opening, the pocket flaps, the hem and the cuff. The
 other presets that wear a coat (gero, kyoko, tomohiro, keiko, katherina) are
 byte-identical.
+
+#### M7 findings
+
+**The decision point: the whole garment is traced, sleeves and all.** The crop's
+gaps are two strips beside the torso, each bounded by visible cloth on both sides
+(the sleeve's outer edge, the torso's edge) and closed below by the armpit, with
+only a short shoulder line open above. Her hair hides them, but they are inside the
+garment's outline, so filling them is inference over one flat cloth with no seam to
+place, which is a different problem from Keiko's, where panel and sleeve were traced
+as separate pieces and the join left stair-steps. The shoulder runs on in a straight
+line from where it is last seen (the torso at 535, 448 and 725, 450 in her composite)
+to each sleeve's tip, and `trace_blazer.py` fills the strips row by row. The result is
+one silhouette of 43 segments. The profile-built fallback was not needed. A first pass
+quietly did not fill the strips at all (a loop bound that broke on the rows above the
+sleeves' tips), which drew the torso alone with the sleeves hanging off it as 114
+ragged segments; the overlay showed it, the numbers had not.
+
+**The neck opening is read off the composite and smoothed.** The segment's own edge
+there is the shirt layer's cut and ragged. `trace_blazer.py` walks in from each side
+over navy and ink and stops at the first bright pixel (the ribbon's outline masked
+out, since it is dark too and the walk would carry on through it), then moves the walls
+to the stroke's centre line and smooths each below the collar wings to a plain slope,
+which is what a lapel's inner edge is. Above, where the wings hide it, the walls run
+straight up. The lapels' V tip lands on her shirt's tip.
+
+**Lapels and lines come from the regions the ink cuts the garment into.** Labelling
+the navy inside the silhouette with the ink as a barrier gives the two lapel facings,
+the two fronts, the two lower sleeves and the two pocket flaps as clean regions;
+growing each by half the stroke puts its boundary on the stroke's centre line. The
+lapels are fills over the garment (their notches come out as corners), the front line
+and the two side lines are the gap between the regions they part, and the pocket flap
+is a region of its own. That replaced a first attempt at thinning the ink and
+splitting it at its junctions, which broke every notch into fragments. A barrier across
+each sleeve at the armpit stands in for the hidden seam while labelling, since above it
+the filled strips make sleeve and torso one cloth.
+
+**New behaviour, all opt-in.** `GarmentCut.line_weight` (default 0.7, the blazer's 1.0:
+its lapel and front lines are as heavy as its edge in the reference), `Outfit.hip_pocket_color`
+with `HIP_POCKET_CUT` (the traced right flap and its mirror), `Outfit.coat_button_color`
+with `_COAT_BUTTONS` (three discs with a thin ring, since the reference's are separate
+gold buttons and not the tunic's dotted placket), and the catalogue entries for the three
+(`COAT_CUT_LABELS["blazer"]` and two slots that require a coat). Pockets and buttons are
+drawn with a traced coat, after it, on whichever side of the arms the cut goes, and are
+placed by the body's landmarks, so they work with any traced coat on any body.
+
+**The arm under it is the shirt's.** The cut is the whole garment, so it is drawn over the
+arms (`over_arms`, the default) and the hands come out after it. The arm tube is the long
+white sleeve of the tunic (`sleeve_long`), hidden under the blazer's own sleeve, and the
+white cuff is that tube showing past the blazer's end, with the tube's own outline for the
+cuff's line. A first render drew `_wrist_cuff`'s band there, a second tone of white that
+read as grey; it is skipped under a traced coat, which owns its sleeve.
+
+**The arm had to move to meet the sleeve.** Her wrist stood 0.13 head radii too low and
+0.14 too far in, and the tube, 0.224 across at its top and 0.202 at the wrist, was wider
+than the blazer's sleeve end (0.165) and showed as a white edge along the whole outer
+side. Two changes, both on her body profile and neither touching another body:
+`BodyProfile.wrist_y` and `wrist_x`, new opt-in anchors (default `None`, which keeps the
+arm line's formula from the hip and the arm's width) set to the shirt cuff's bottom, 3.947
+down and 0.999 out on the skull's radius; and `arm_half_w` from 0.19 to 0.145, which
+brings the tube to 0.17 at the top and 0.122 at the wrist and her hands to the reference's
+size. `stretched` carries the anchors with the height, held by a test.
+
+**Measured against the reference** (`harness/mio/blazer_overlap.py`, navy against navy on
+the same pixels at one head scale): overlap 0.843 and a mean outline distance of 0.040
+head radii (5.6 px) below the armpit, 0.771 and 0.039 over the whole garment. No
+prediction was written down before this reading, which the method asks for, so these are
+a reading and not the test of one. The picture (`out/mio/m7_overlap.png`) shows where the
+rest goes: a thin red edge along the outline, hers navy where ours is ink, since our
+stroke is a little heavier than hers; our hair counted as navy on the shoulders, since
+the two darks are within the colour tolerance; and the sleeve ends, where ours sit a few
+pixels inside. No systematic offset.
+
+Looked at on white and on black, whole figure, 3x on the lapels and the cuff, and with
+two other palettes (a cream blazer over a red skirt, and the same cut on Satoko, whose
+body differs). The notches, the front line, the pocket flaps, the buttons and the hem
+read; the blazer separates from her black hair by its outline on black.
+
+**Left, each for its own step:**
+
+- Her hair covers the shoulders in the reference and ours is narrower, so our inferred
+  shoulder line shows where hers hides (M8).
+- The darker strip along the inside of each sleeve, and the shadow tone on the lapels'
+  inner edge, are texture and not ported (decision 6).
+- The hands are still the shared mitten; the reference draws fingers. Not in this plan's
+  scope unless the owner asks.
+- The collar wings' outline and the opening wall sit a pixel or two apart and read as one
+  slightly heavy line beside the neck.
+
+Tests: 851 pass, `ruff` green; `refresh-ref-out.sh --check` and `refresh-catalogue.sh`
+changed only Mio's render and the catalogue, every other character byte-identical. Seven
+new tests hold the cut's shape, the two opt-in parts and that only Mio wears them, the
+shirt's arm without a band, the wrist anchors (set only on her body) and their stretch.
 
 ### M8. The hair and the bangs
 

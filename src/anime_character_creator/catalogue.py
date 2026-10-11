@@ -406,6 +406,7 @@ KATANA_FITTINGS = GarmentSlot(
 COAT_CUT_LABELS: dict[str, str] = {
     "open_jacket": "Open jacket (traced)",
     "lab_coat": "Lab coat (notched lapel)",
+    "blazer": "Blazer (closed, notched lapels)",
 }
 assert set(COAT_CUT_LABELS) == set(COAT_CUTS)
 COAT = GarmentSlot(
@@ -422,6 +423,19 @@ COAT = GarmentSlot(
         SelectField("coat_cut", "Cut", ((None, "Two panels"), *sorted(COAT_CUT_LABELS.items()))),
     ),
 )
+HIP_POCKET = GarmentSlot(
+    "hip_pocket",
+    "Hip pockets (on a traced coat)",
+    _color("hip_pocket_color", "Hip pockets"),
+    requires="coat",
+)
+COAT_BUTTON = GarmentSlot(
+    "coat_button",
+    "Coat buttons (on a traced coat)",
+    _color("coat_button_color", "Coat buttons"),
+    requires="coat",
+)
+
 
 # Order here is display order: the two always-worn layers first, then
 # everything else in the rough order a figure is dressed, innermost to
@@ -451,6 +465,8 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     HAKAMA,
     ROBE,
     COAT,
+    HIP_POCKET,
+    COAT_BUTTON,
     HEADSCARF,
     GOGGLES,
     BLINDFOLD,
