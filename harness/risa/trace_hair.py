@@ -36,6 +36,7 @@ CLOSE_Y = 700  # where the mass is closed across between the curtains, behind th
 SMOOTH = 1.5
 HAT, HAT_MIN = 7, 12
 FLAP_ROWS = (395, 450)  # rows of the streaked flaps, where no strand is taken
+GAP_ROWS, GAP_MAX = (455, 700), 14  # where the outer locks stand off the sleeve, and by how much at most
 FLAP_TOP, FLAP_BOTTOM = 347, 446
 FLAP_EDGE = (522.0, 0.111)  # the curtain's inner edge at FLAP_TOP, and its slope
 EDGE_NEAR = 6
@@ -100,6 +101,26 @@ def flap_edge(y):
     return FLAP_EDGE[0] + (min(max(y, FLAP_TOP), FLAP_BOTTOM) - FLAP_TOP) * FLAP_EDGE[1]
 
 
+# Her outer locks stand a few pixels off the blazer's sleeve where ours (traced from the
+# reference with the hair over the sleeve) stops short, so between the sleeve's edge and the
+# lock's inner edge a sliver of the hair behind showed, with the sleeve's outline on one side
+# and the lock's on the other. The hair is taken out to the sleeve's edge there, so the two
+# outlines are one.
+sleeve = np.load("out/risa/blazer_sil.npy")
+gap = np.zeros_like(F)
+for y in range(GAP_ROWS[0], GAP_ROWS[1] + 1):
+    cols = np.nonzero(sleeve[y])[0]
+    if not len(cols):
+        continue
+    lo, hi = cols.min(), cols.max()
+    right = np.nonzero(F[y, hi + 1 : hi + 1 + GAP_MAX])[0]
+    if len(right):
+        gap[y, hi + 1 : hi + 1 + right[0]] = True
+    left = np.nonzero(F[y, max(0, lo - GAP_MAX) : lo])[0]
+    if len(left):
+        gap[y, max(0, lo - GAP_MAX) + left[-1] + 1 : lo] = True
+F = F | gap
+print(f"sleeve gap filled: {gap.sum()} px")
 Her_full = silhouette(F)
 cut = np.zeros_like(F)
 for y in range(FLAP_TOP, FLAP_BOTTOM + 1):
@@ -280,6 +301,7 @@ print(f"{len(strands)} strands, {sum(len(c[1]) for c in strands)} segments")
 darker = F & (lum <= SHADE_MAX)
 darker = ndi.binary_opening(darker, structure=np.ones((3, 3)), iterations=3)
 darker = ndi.binary_closing(darker, structure=np.ones((3, 3)), iterations=3)
+darker |= gap  # the sliver beside the sleeve is the same hair behind, in its darker tone
 darker = ndi.gaussian_filter(ndi.binary_fill_holes(darker).astype(float), 2.5) > 0.5
 darker &= ~ear_zone
 slab, sn = ndi.label(darker)

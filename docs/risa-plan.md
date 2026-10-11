@@ -815,6 +815,15 @@ derives well on all three.
 - The hair covers less of our shoulders than hers where the blazer's inferred shoulder
   line shows (M7's open item), now hidden under the front hair.
 
+**A sliver beside each sleeve (found by the owner on the dark red hair).** Along each outer lock
+a thin strip of the hair behind showed between the blazer's sleeve and the lock's inner edge, with
+two outlines a few pixels apart and a hooked top. Her blazer, traced with the hair over the
+sleeve, stops 3 to 7 px short of her outer locks (`blazer_sil.npy`'s edge against the layer's),
+so ours had a gap she does not. The black hair had hidden it. The hair is now taken out to the
+sleeve's edge in rows 455 to 700 (`GAP_ROWS`, at most `GAP_MAX` 14 px), on both sides, and the
+filled strip is in the darker tone of the strip beside it: the two outlines are one, and the
+dark strip meets the sleeve as hers does.
+
 Tests: 859 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Risa and the
 catalogue changed. Her eyebrows over the fringe are M9's: the face is drawn under the hair, and
 hers are drawn over it.
