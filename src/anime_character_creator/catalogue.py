@@ -34,6 +34,7 @@ from dataclasses import dataclass, fields
 from .character import (
     BELT_CUTS,
     BODY_TYPES,
+    BOOT_CUTS,
     COAT_CUTS,
     COLLAR_CUTS,
     GRIP_STYLES,
@@ -173,12 +174,17 @@ TUNIC = GarmentSlot(
 # `boot_shaft` is 0 (ankle) to 1 (knee) across the
 # whole cast, Tenno's 0.55 through the uniform's 1.0, so the full declared
 # range is one that has actually been looked at.
+BOOT_CUT_LABELS: dict[str, str] = {"loafer": "Loafer (traced)"}
+assert set(BOOT_CUT_LABELS) == set(BOOT_CUTS)
 BOOTS = GarmentSlot(
     "boots",
-    "Boots",
-    _color("boot_color", "Boots"),
+    "Boots (and shoes)",
+    _color("boot_color", "Boots (and shoes)"),
     ranges=(_range("boot_shaft", "Boot height", 0.0, 1.0),),
+    selects=(SelectField("boot_cut", "Shape", ((None, "Boot"), *sorted(BOOT_CUT_LABELS.items()))),),
 )
+# Over the bare leg and under the shoe or boot: a sock from just under the knee.
+KNEE_SOCK = GarmentSlot("knee_sock", "Knee socks", _color("knee_sock_color", "Knee socks"))
 
 # The base layer, likewise always worn: what shows with the tunic off, for
 # every character (`docs/bare-body-plan.md`, step 3). The top comes with a
@@ -244,6 +250,7 @@ CRYSTAL_4 = GarmentSlot(
 SKIRT_CUT_LABELS: dict[str, str] = {
     "a_line": "A-line (traced)",
     "column": "Narrow column",
+    "pleated": "Box-pleated (traced)",
 }
 assert set(SKIRT_CUT_LABELS) == set(SKIRT_CUTS)
 SKIRT = GarmentSlot(
@@ -421,6 +428,7 @@ COAT = GarmentSlot(
 GARMENTS: tuple[GarmentSlot, ...] = (
     TUNIC,
     BOOTS,
+    KNEE_SOCK,
     UNDERWEAR,
     UNDERSLEEVE,
     TROUSER,
@@ -566,6 +574,7 @@ assert set(HAIRSTYLE_LABELS) == set(HAIRSTYLES), (
 BODY_LABELS: dict[str, str] = {
     "tall_chibi": "Tall chibi (Katherina's)",
     "tall_chibi_long_torso": "Tall chibi (long torso)",
+    "tall_slender": "Tall and slender (about 4.4 heads)",
 }
 assert set(BODY_LABELS) == set(BODY_TYPES), (
     "BODY_LABELS and BODY_TYPES have drifted apart; a body type was added or "

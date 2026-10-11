@@ -50,6 +50,10 @@
         "label": "Linnea"
       },
       {
+        "id": "mio",
+        "label": "Mio"
+      },
+      {
         "id": "reika",
         "label": "Reika Mizuki"
       },
@@ -97,6 +101,10 @@
     {
       "id": "tall_chibi_long_torso",
       "label": "Tall chibi (long torso)"
+    },
+    {
+      "id": "tall_slender",
+      "label": "Tall and slender (about 4.4 heads)"
     }
   ],
   "hand_styles": [
@@ -327,10 +335,10 @@
     },
     {
       "id": "boots",
-      "label": "Boots",
+      "label": "Boots (and shoes)",
       "color": {
         "field": "boot_color",
-        "label": "Boots",
+        "label": "Boots (and shoes)",
         "optional": true
       },
       "ranges": [
@@ -340,7 +348,32 @@
           "min": 0.0,
           "max": 1.0
         }
+      ],
+      "selects": [
+        {
+          "field": "boot_cut",
+          "label": "Shape",
+          "options": [
+            {
+              "value": null,
+              "label": "Boot"
+            },
+            {
+              "value": "loafer",
+              "label": "Loafer (traced)"
+            }
+          ]
+        }
       ]
+    },
+    {
+      "id": "knee_sock",
+      "label": "Knee socks",
+      "color": {
+        "field": "knee_sock_color",
+        "label": "Knee socks",
+        "optional": true
+      }
     },
     {
       "id": "underwear",
@@ -413,6 +446,10 @@
             {
               "value": "column",
               "label": "Narrow column"
+            },
+            {
+              "value": "pleated",
+              "label": "Box-pleated (traced)"
             }
           ]
         }

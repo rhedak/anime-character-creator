@@ -1243,6 +1243,56 @@ LINDITA = CharacterParams(
     ),
 )
 
+# Mio: a generic Japanese schoolgirl, 18, in her last year of high school. A guest,
+# not one of the Valley of Mist cast (`docs/mio-plan.md`). Black hair and green
+# eyes (the reference has black; green is the owner's call), the winter uniform:
+# navy blazer with gold buttons over a white shirt, a light blue-grey skirt.
+# Colours sampled off `ref-local/mio/segments/` where they are flat. This is the
+# first pass, existing fields only: the ribbon, the pleats, the knee socks and the
+# loafers are still to come, so boots and a plain skirt stand in for them.
+MIO = CharacterParams(
+    face_age=0.8,
+    bust=0.3,
+    skin_tone="#f6dbc2",
+    hair_color="#27272d",
+    hairstyle="long_blunt",
+    hair_length=0.9,
+    eye_color="#4f9a5e",
+    # Her own proportions, measured off her reference (`docs/mio-plan.md`, M2).
+    body="tall_slender",
+    outfit=Outfit(
+        tunic_color="#f9f9f9",
+        # Brown loafers (`boot_cut`, traced) over black knee socks, the reference's.
+        boot_color="#453327",
+        boot_cut="loafer",
+        knee_sock_color="#262729",
+        undersleeve_color="#f9f9f9",
+        belt_color=None,
+        skirt_color="#818da5",
+        # The traced box-pleated skirt (`docs/mio-plan.md`, M4); the cut owns its hem,
+        # so no length is set.
+        skirt_cut="pleated",
+        tunic_tucked=True,
+        collar_color="#f9f9f9",
+        coat_color="#1b2739",
+        coat_sleeves=True,
+        # Shoulder to ankle: 0.437 puts the blazer's hem at 3.87, the reference's.
+        coat_length=0.437,
+        placket_color="#bd9957",
+    ),
+    frame=-0.2,
+    face=FaceStyle(
+        eye_size=1.0,
+        eye_width=1.0,
+        iris_size=1.06,
+        brow_tilt=0.0,
+        brow_weight=0.7,
+        mouth_curve=0.0,
+        mouth_width=0.6,
+        blush=0.1,
+    ),
+)
+
 PRESETS: dict[str, CharacterParams] = {
     "katherina": KATHERINA,
     "gero": GERO,
@@ -1263,6 +1313,7 @@ PRESETS: dict[str, CharacterParams] = {
     "reinhard": REINHARD,
     "tenno": TENNO,
     "viktor": VIKTOR,
+    "mio": MIO,
 }
 
 # What a character is called on a sheet, where the preset key is not it: the
@@ -1295,6 +1346,7 @@ DISPLAY_NAMES: dict[str, str] = {
     # filename, so we do the same: the character is Viktor, and renaming a
     # checked-in reference to match would be the more disruptive half of the fix.
     "viktor": "Viktor Grau",
+    "mio": "Mio",
 }
 
 # Who appears on a sheet, in the order they appear.
@@ -1341,6 +1393,8 @@ ROSTERS["everglow"] = ("gero", "linnea")
 # Dritan and Lindita, the leads of another short story (../short_stories,
 # "The Bureaucracy of Blood"): a separate work, its own roster.
 ROSTERS["bureaucracy"] = ("dritan", "lindita")
+# Mio is a generic schoolgirl from no story of ours (`docs/mio-plan.md`): her own roster.
+ROSTERS["mio"] = ("mio",)
 
 # ---------------------------------------------------------------------------
 # Neutral bases, for the web tool rather than the novel.

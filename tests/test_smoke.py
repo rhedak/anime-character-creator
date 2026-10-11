@@ -2705,3 +2705,131 @@ def test_the_shoulder_bars_are_counted_on_one_shoulder_of_a_coat() -> None:
     )
     coatless = replace(worn, outfit=replace(worn.outfit, coat_color=None))
     assert character._shoulder_bars(sk, coatless) == ""
+
+
+# --- Mio (`docs/mio-plan.md`) --------------------------------------------------
+
+
+def test_a_cut_is_the_identity_on_the_body_it_was_traced_on() -> None:
+    """`GarmentCut.ref_body` says whose head radii a cut's numbers are in, and on
+    that body the placement must hand them back as written: that is the test that
+    the mapping is right and not an approximation. It is also why a cut traced off
+    Mio's own body (`tall_slender`) lands where it was traced on her."""
+    for body in ("tall_chibi", "tall_slender"):
+        sk = character.skeleton_for(CharacterParams(body=body))
+        xf = character._garment_placement(sk, body)
+        for pt in ((0.3, 1.5), (0.6, 3.0), (0.9, 4.2), (0.4, 6.0)):
+            assert xf(pt) == pytest.approx(pt), f"{body} moved a point it was traced on"
+
+
+def test_the_older_cuts_still_read_the_tall_chibi_and_mios_read_her_own() -> None:
+    for registry in (character.COAT_CUTS, character.COLLAR_CUTS, character.SKIRT_CUTS):
+        for name, cut in registry.items():
+            # Mio's cuts are the exceptions, each traced on her own body.
+            mine = registry is character.SKIRT_CUTS and name == "pleated"
+            assert cut.ref_body == ("tall_slender" if mine else "tall_chibi"), name
+            assert not cut.per_leg, name
+    assert character.KNEE_SOCK_CUT.ref_body == "tall_slender"
+    for cut in character.BOOT_CUTS.values():
+        assert cut.ref_body == "tall_slender" and cut.per_leg
+
+
+def test_only_mio_wears_the_knee_sock_and_the_loafer() -> None:
+    """Both are opt-in, so every other preset keeps its ankle boot and its bare
+    leg, byte for byte (`refresh-ref-out.sh --check` holds the rest)."""
+    assert Outfit().knee_sock_color is None and Outfit().boot_cut is None
+    for name, p in PRESETS.items():
+        assert (p.outfit.knee_sock_color is not None) == (name == "mio"), name
+        assert (p.outfit.boot_cut is not None) == (name == "mio"), name
+
+
+def test_mio_stands_on_her_own_longer_body() -> None:
+    p = PRESETS["mio"]
+    assert p.body == "tall_slender"
+    assert (
+        character.BODY_TYPES["tall_slender"].heads
+        > character.BODY_TYPES["tall_chibi_long_torso"].heads + 1
+    )
+
+
+def _path_xs(svg: str) -> list[float]:
+    """Every x in a path's data, as `M x y Q cx cy ex ey ...` writes them."""
+    d = re.search(r' d="([^"]+)"', svg)
+    assert d
+    nums = [float(v) for v in re.findall(r"-?\d+\.\d+", d.group(1))]
+    return nums[0::2]
+
+
+def test_a_sock_hangs_on_each_leg_and_the_left_mirrors_the_right() -> None:
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    gap, _ = character._leg_gap_and_top(sk, False)
+    cut = character.KNEE_SOCK_CUT
+    right = character._draw_leg_cut(sk, cut, "#262729", gap, 1)
+    left = character._draw_leg_cut(sk, cut, "#262729", gap, -1)
+    r, l_ = _path_xs(right), _path_xs(left)
+    mid_r, mid_l = (min(r) + max(r)) / 2, (min(l_) + max(l_)) / 2
+    assert (mid_r + mid_l) / 2 == pytest.approx(sk.head_cx, abs=0.5), "not mirrored"
+    # The sock's box sits on the leg's centre line, to within the few pixels its own
+    # shape leans from the line it was traced about.
+    out = gap + character._LEG_CUT_OUT * sk.head_r
+    assert mid_r - sk.head_cx == pytest.approx(out, abs=4.0), "the sock is not on the leg"
+
+
+def test_the_bare_leg_stops_at_the_sock_top() -> None:
+    """The sock is narrower than our leg, and a tube running on inside it showed
+    as skin along both sides, so the leg is clipped at the sock's top edge."""
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    assert "leg-above-sock" in character._legs_and_boots(sk, p)
+    bare = replace(p, outfit=replace(p.outfit, knee_sock_color=None))
+    assert "leg-above-sock" not in character._legs_and_boots(sk, bare)
+
+
+def test_the_loafers_sole_is_a_second_tone_of_the_shoes_own_leather() -> None:
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    svg = character._boot(sk, p, sk.head_cx + 40.0, 10.0, 1)
+    assert f'fill="{p.outfit.boot_color}"' in svg
+    assert f'fill="{character.shade(p.outfit.boot_color, 0.78)}"' in svg
+    # Without the cut the same character is back in the ankle boot.
+    boot = replace(p, outfit=replace(p.outfit, boot_cut=None))
+    assert character._boot(sk, boot, sk.head_cx + 40.0, 10.0, 1) != svg
+
+
+def test_the_pleated_skirt_is_traced_on_her_own_body_with_six_folds() -> None:
+    cut = character.SKIRT_CUTS["pleated"]
+    assert cut.ref_body == "tall_slender" and not cut.per_leg
+    assert len(cut.fills) == 1, "one silhouette, the seven faces are line work"
+    assert len(cut.lines) == 6, "seven box-pleat faces have six folds between them"
+    assert PRESETS["mio"].outfit.skirt_cut == "pleated"
+    # Folds are line work, not tone planes (`CLAUDE.md`): the skirt is one colour.
+    p = PRESETS["mio"]
+    svg = character._skirt(character.skeleton_for(p), p)
+    assert svg.count(f'fill="{p.outfit.skirt_color}"') == 1
+    assert svg.count('fill="none"') == 6
+
+
+def test_underwear_never_hangs_below_a_skirts_hem() -> None:
+    """Mio's hem sits above where the placeholder underwear ends, as no other
+    character's does, and her thigh under it is bare in the reference."""
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    cap = character._skirt_bottom_y(sk, p)
+    assert cap is not None
+    gap, w_top = character._leg_gap_and_top(sk, False)
+    crotch = character._crotch_y(sk, p)
+    top = character._leg_tuck_top_y(sk, p)
+
+    def lowest(svg: str) -> float:
+        d = re.search(r' d="([^"]+)"', svg)
+        assert d
+        return max(float(v) for v in re.findall(r"-?\d+\.\d+", d.group(1))[1::2])
+
+    free = character._underpants(sk, "#ffffff", gap, top, crotch, w_top)
+    capped = character._underpants(sk, "#ffffff", gap, top, crotch, w_top, cap)
+    assert lowest(free) > cap, "the case this guards against has gone away"
+    assert lowest(capped) < cap
+    # Without a skirt there is nothing to cap against.
+    bare = replace(p, outfit=replace(p.outfit, skirt_color=None))
+    assert character._skirt_bottom_y(sk, bare) is None

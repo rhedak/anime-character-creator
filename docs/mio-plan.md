@@ -1,0 +1,623 @@
+# Mio plan
+
+A new preset, Mio: a generic Japanese high school girl in a school uniform,
+black hair, green eyes. Written 2026-10-11 at the owner's request, and
+rewritten the same day after the first render, when the owner asked for it to
+be done properly: her clothes **traced** off the reference, her **body
+measured** (the reference has longer legs than our tall chibi), and the work
+taken step by step until she is as close to the reference as is feasible.
+
+She is **18, in the last year of high school in Japan**. She is a guest, not
+one of the *Valley of Mist* cast.
+
+Reference: `ref-local/mio/mio.png` (the full figure) and
+`ref-local/mio/segments/` (hair, bangs, eyes, blazer, shirt, ribbon, skirt,
+buttons, loafers, and the figure and background layers). The reference is
+local only and is not checked in.
+
+Campaign status lives at the top of each step. Nothing here is committed
+unless the owner asks.
+
+## Why this is a different kind of job from the rest of the guests
+
+`CLAUDE.md` says the AI-generated references in `ref/` have done their job and
+are not a target for new work, and that new characters are designed directly in
+`presets.py`. This one is the owner's explicit exception, a character drawn in
+"a slightly new style" and wanted close to her reference, so she follows the
+campaigns that did take a reference as the target: Katherina's clothes
+(`docs/katherina-clothes-plan.md`) and Keiko's (`docs/keiko-clothes-plan.md`),
+by tracing, with `.claude/skills/trace-reference/SKILL.md` as the method and
+`harness/keiko/` as the template for the scripts.
+
+The standing lesson is **trace nothing below the chin off a reference whose body
+is not ours** (`harness/hair_audit/gate.py` checks it for hair). Mio's body is
+not ours: her legs are longer. The fix is to make her body ours first. Katherina
+could be traced directly because her reference *is* `tall_chibi`, the profile
+was measured off it. Mio gets the same treatment, a body profile measured off
+her own reference, before anything below the chin is traced. A first look puts
+her at about 4 heads against the tall chibi's 3.47, which is a hunch from
+eyeballing the image and exactly what M2 measures.
+
+## What the reference shows
+
+| Part | Reference |
+| --- | --- |
+| Hair | black, very long (about waist length), blunt bangs across the brow, long side locks in front of the shoulders, straight and flat |
+| Eyes | large and round, with highlights. **Black in the reference; the owner wants green.** |
+| Blazer | navy, notched lapels, three gold buttons, a flap pocket on each hip, long sleeves, a white cuff showing at each wrist |
+| Shirt | white, with a small collar under the lapels |
+| Ribbon | a blue bow at the throat with two tails hanging over the shirt front |
+| Skirt | light blue-grey, box pleats, ends well above the knee |
+| Legs | bare thigh, then black knee socks. **Longer than the tall chibi's.** |
+| Shoes | brown penny loafers |
+
+## Decisions that shape the work
+
+1. **Age 18 means an adult face.** `face_age` runs from young (low) to old
+   (high): Katherina 0.35, Linnea 0.4, Lindita 0.7, Satoko 0.8, most of the
+   adult cast 1.0. She starts at 0.8 and is tuned by eye later (the owner's
+   call). The reference draws her younger than that; the age is the owner's.
+2. **Trace, do not eyeball (the owner's call, 2026-10-11, replacing this
+   plan's first decision to build parametrically).** Every shape that is a
+   silhouette question is traced: the blazer, its lapels, the shirt collar, the
+   ribbon, the pleated skirt, the sock, the loafer, the hair and bangs. A part
+   that is only a colour or a yes/no stays a field.
+3. **The body comes first.** A new `BODY_TYPES` profile measured off her
+   reference (M2), the way `tall_chibi` was measured off Katherina's. Named for
+   the shape, not for her, so anyone can wear it. Every traced cut is mapped
+   landmark to landmark (shoulder, waist, hip, hem, knee, ankle), which is what
+   keeps a cut wearable if the calibration is a few percent off.
+4. **New behaviour is opt-in, and the cast stays byte-identical.** Knee socks,
+   the ribbon, hip pockets, the loafers, the pleated skirt, the blazer and the
+   new body are new fields, cuts or profiles with neutral defaults. The other 18
+   presets render byte-identical. Compare the files with `cmp`, not only the
+   snapshot report. A shared garment (`_coat`, `_tunic`, `_belt`, `_skirt`
+   serve most of the cast) is never reshaped.
+5. **Names stay neutral.** `"blazer"`, `"pleated"`, `knee_sock_color`,
+   `ribbon_color`, never `"mio_blazer"`, so anyone can wear them, the way
+   `long_traced` is a hairstyle anyone can pick.
+6. **Flat colour, hard edges, no shading plane across a garment** (`CLAUDE.md`).
+   The reference's pleats alternate two skirt tones. That is a shading plane
+   across a garment, so the pleats are drawn as line work, as the cast's skirts
+   already are, with a second tone only on small elements.
+7. **The base layer rule stands.** With the tunic off she wears underwear like
+   everyone else, and no bare render is a web option (`docs/bare-body-plan.md`).
+8. **No em dashes, no double hyphens in prose or comments**, per `CLAUDE.md`.
+9. **Not done quickly.** One step at a time, each its own predict, measure,
+   render, look, record and owner sign-off pass, not a batch edit.
+
+## Order of work, and why this order
+
+The body first, because every traced cut is placed against it. Then back to
+front, the order things are drawn in and occlude each other: legs and shoes are
+behind the skirt, the skirt behind the shirt, the shirt behind the ribbon, the
+ribbon behind the blazer, and the hair and the face over everything. Judging a
+garment against a layer that is still wrong is how the Keiko plan lost a
+milestone to a collar that read as a block because the coat's opening was
+half the width it should be.
+
+## Method, every step
+
+- **Predict before rendering.** Write the number or the look down first, then
+  measure. The gap between predicted and measured is the next clue and is
+  invisible without the prediction.
+- **One variable per measurement.** A single change that makes things worse is a
+  hypothesis about coupling, not a verdict on the lever.
+- **Calibrate on our own face, cross-checked twice** (face width and the
+  vertical run), per the skill. Check every segment is a true pixel crop of the
+  composite by offset search before taking coordinates off it. A layer export
+  that is a regenerated variant, not a crop, may be used to see a shape but not
+  to take coordinates (the witch hat lost two passes to that).
+- **Look at it.** Side by side at one head scale, on white and on black, at 4x
+  on every junction the step touches. A black page hides gaps against hair, and
+  black hair, blazer and socks need checking on black as well as on white.
+- **Scripts are records.** Each pass's scripts live in `harness/mio/`
+  (`landmarks.py`, `compare.py`, and one trace and emit script per shape, the
+  `harness/keiko/` pattern) and write to the ignored `out/mio/`. The emit step
+  generates the `character.py` block from the trace, so a retrace is cheap.
+- **Green tooling in the same change:** `ruff check`, `ruff format --check`,
+  `pytest`; `./refresh-ref-out.sh` reports only Mio's renders (and the sheets
+  and `catalogue.json` where relevant) changed.
+- **The owner signs off before the next step starts.**
+
+## Steps
+
+### M0. Groundwork
+
+**Status: done, 2026-10-11.**
+
+- [x] Read the segments and sample the flat colours.
+- [x] Render a throwaway to see which existing fields already do the job.
+- [x] Compare the existing hairstyles against the hair and bangs segments.
+- [x] Record the findings here before changing `src/`.
+
+Findings, sampled as the dominant flat colour of each segment's eroded interior
+(a 6-level quantised histogram, so good to about a step per channel, not the
+modal-exact grade the Satoko palette used; M10 refines them):
+
+| Part | Sampled |
+| --- | --- |
+| Hair | `#27272d` |
+| Blazer | `#1b2739` |
+| Skirt | `#818da5` |
+| Ribbon | `#457b99` |
+| Shirt | `#f9f9f9` |
+| Loafers | `#453327` |
+| Gold buttons | `#bd9957` |
+| Skin | about `#f9dbc3` (the figure layer; ours stays `#f6dbc2`, Satoko's) |
+
+What the existing fields do against the reference, rendered at `out/tmp/mio/`:
+
+- **Hair.** `long_blunt` is the closest of `long_blunt`, `long_center_part`,
+  `long_parted` and `long_traced`: flat and straight, ears covered. None of them
+  has blunt bangs straight across the brow. Every one sweeps the fringe into a
+  point or a part.
+- **Blazer.** The shared coat with `coat_sleeves=True` gives navy sleeves and a
+  coat that reads as a blazer from a distance, but it has only a small lapel
+  point. `coat_cut="lab_coat"` has a notched lapel, but it ignores `coat_length`
+  and runs to the knee. `open_jacket` is Katherina's and bares the shoulders.
+- **Shirt, collar, buttons.** `collar_color` and `placket_color` read right as a
+  white standing collar and a gold line of buttons, but the reference has three
+  separate buttons and a notched collar that opens, not a closed band.
+- **Skirt.** The shared skirt is a smooth bell with two fold lines and **no
+  pleats**.
+- **Feet.** `boot_color` gives a lace-up ankle boot, nothing like a loafer, and
+  there is no sock.
+- **A preset needs more than a `PRESETS` entry:** a `DISPLAY_NAMES` entry and a
+  `ROSTERS` entry, or the smoke tests fail.
+
+### M1. The first preset, existing fields only
+
+**Status: first pass done, 2026-10-11, and now a placeholder.** `MIO` in
+`presets.py`, registered last in `PRESETS` so nobody else's sheet order moves,
+with `DISPLAY_NAMES["mio"] = "Mio"` and `ROSTERS["mio"] = ("mio",)`. `face_age`
+0.8, `long_blunt` at `hair_length` 0.9, the shared coat with navy sleeves at
+`coat_length` 0.55, a white tunic and collar, a gold placket, the grey skirt at
+`skirt_length` 0.35, black boots. Rendered at `out/tmp/mio_preset.png`, beside
+the reference at `out/tmp/mio_compare.png`.
+
+It exists as a baseline to improve on. Each later step replaces a piece of it
+with a traced one, and the fields it uses stand in until then.
+
+Tests: 828 pass. Three fail on purpose and wait for M11: the `ref-out/`
+snapshot, the `catalogue.json` match and the README table row. `ruff` is green.
+
+### M2. Calibration, the crop check, and the body
+
+The step that decides whether everything after it works.
+
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings and what
+was built are in "M2 findings" below the checklist.
+
+- [x] **Crop check.** Find which segments are true pixel crops of `mio.png` by
+      offset search (mean RGB difference at the best offset), and which are
+      regenerated variants. Record the offset of each true crop. Expect the
+      figure layer (`anime-girl.png`) to be a crop and some layer exports not
+      to be, as the grok layers were.
+- [x] **Calibration.** `harness/mio/landmarks.py` re-derives it every run:
+      head centre and px per head radius from our own rendered face against the
+      reference's, solved twice (face width, vertical run) and cross-checked on
+      the eyes. Record both numbers and the gap, and reject the contaminated
+      method the Keiko plan documents (equator to chin, which runs into the
+      neck and the collar).
+- [x] **Landmarks, in head radii, y down from the head centre:** shoulder,
+      waist, hip, skirt hem, knee, ankle, sole, and the half-widths at each, the
+      arm's and the leg's. Print them all so the numbers have a runnable source.
+- [x] **Predict, then fit.** Write down the predicted height in heads, then
+      measure it. Add `BODY_TYPES["<name>"]` (a neutral name for a longer-legged
+      tall chibi) and its `BODY_LABELS` entry, and check the shape that decides
+      it: where the knee falls under a short skirt and how far the boot or sock
+      shaft reaches (`boot_y`, `ankle_y`).
+- [x] **A head-size decision.** `tall_chibi_long_torso` scales the head 1.1 over
+      the measured profile, the owner's pick. Decide, by looking, whether her
+      head ratio is the reference's or the cast's.
+- [x] Render her on the new body with the M1 clothes and compare beside the
+      reference on white, at one head scale, whole figure and legs.
+
+Acceptance: both calibration numbers agree to a few percent; the landmark table
+reproduces from the harness; her body sits on the reference's at the shoulder,
+waist, hip, knee and sole to a stated tolerance; every other preset byte
+identical. **This is the owner's first sign-off**: her proportions are the one
+thing that is hard to change once the clothes are traced to them.
+
+#### M2 findings
+
+**Every segment is a true pixel crop** (`harness/mio/crops.py`, a masked
+sum-of-squares search over every offset), at RMS differences of 0.03 to 0.44 per
+channel for thirteen of fourteen and 4.67 for the hair layer (a layer composited
+under other layers at its edges). Better than Keiko's. Coordinates may be taken
+straight off any segment. The offsets, as (x, y) of the crop's top-left corner in
+the composite: figure (416, 47), blazer (440, 410), shirt (447, 401), skirt (475,
+836), ribbon (593, 435), loafers (531, 1388) and (650, 1388), bangs (511, 101),
+long hair (417, 47), eyes (518, 255) and (663, 257), buttons (611, 766), (612,
+613) and (612, 690). The composite is transparent, not white.
+
+**The calibration is a compromise, and the compromise is the finding.** Her head
+is not our head. Measured in our own head radii, four features give four scales:
+
+| Feature | Her pixels | Ours in head radii | Px per radius |
+| --- | --- | --- | --- |
+| Ear tip to ear tip | 299 | 1.76 | 170 |
+| Hair top to chin | 352 | 2.19 | 161 |
+| Visible face width | 226 | 1.60 | 141 |
+| Eye line to chin | 108 | 0.84 | 128 |
+
+The first two measure the skull and agree within 5%. The last two measure the
+face and disagree with them by 15 to 25%, because her face is a wide, short one
+against ours: her ears sit about 0.5 head radii above her chin, ours about 1.0.
+Keiko's calibration used the widest row of skin as the head's diameter, which
+cannot be used here since her side locks cover the cheeks. The method that works:
+the skull sets the body's scale, **R = 165 px per head radius**, head centre at
+the chin minus 1.02 R (our chin stands 1.02 below our centre). This is an
+estimate good to about 4%.
+
+**She stands 4.36 heads on that radius, against the tall chibi's 3.47.** That is
+not "slightly longer legs": the shoulder is where ours is (1.40), the torso is
+longer (the wrist at 3.9), and the legs run 3.8 head radii from the hip to the
+sole where the default tall chibi's run 2.3. The landmark table, `landmarks.py`,
+in head radii from the head centre: shoulder 1.40 at 0.80 across, blazer hem
+3.87, wrist 3.90, fingertips 4.35, skirt hem 4.43 (widest 0.93), sock top 5.675,
+sole 7.72, thigh 0.27 wide at the top running to 0.21 at the calf, legs centred
+0.39 either side. Waist and hip are not measured (a blazer and a skirt cover
+them) and are placed by the tall chibi's own proportion.
+
+**The head-size decision, taken by looking** (`compare.py heads`, three head
+sizes blended over the reference): at the full 165 px our face is about 17% wider
+than hers and the eyes sit far apart; at 0.85 of it the face width lands on hers,
+which is also what the visible-face-width estimate gives on its own (141 px).
+The face is what reads, so the head is made to suit it: the profile carries a
+head scale of 0.85 (`_SLENDER_HEAD_SCALE`), the way `tall_chibi_long_torso`
+carries 1.1. Her figure then stands 4.96 heads in that smaller radius.
+
+**Built:** `BODY_TYPES["tall_slender"]` in `character.py` with its label in
+`catalogue.py`, `MIO.body = "tall_slender"`, and the placeholder skirt and
+blazer lengths re-derived for her body (`skirt_length` 0.168, `coat_length`
+0.437). Measured against the reference on the same pixels (`compare.py`, and a
+leg-run comparison): the figure's sole within 0.05 head radii (8 px), the sock
+top and the knee on hers in the blend, the thigh and the calf within 0.03 of her
+widths, the legs 0.06 closer to the centre line at the thigh top than hers.
+`ref-out` check: only Mio's files differ; every other character is byte-identical.
+Tests: 828 pass, and the same three expected failures wait for M11.
+
+**Known and left, each for its own step:**
+
+- The leg spacing at the thigh top wants `hip_half_w` near 1.2 (it is 1.0): at
+  1.2 the placeholder shared skirt, which follows the hip width, flares into
+  wings. Revisit once the skirt is a traced cut (M4), which does not read it.
+- **Our hair is smaller than hers**, 0.28 head radii lower at the crown with her
+  head scale at 0.85: her hair stands up to 0.28 radii clear of her skull. M8.
+- Our face has no jaw like hers: our chin is a V, hers a rounded U. The face
+  fields reach part of it (M9); a head-shape option may be needed.
+- **Cuts are drawn in head radii of a reference body.** `_GARMENT_REF_BODY` is
+  `"tall_chibi"`, so a traced cut is mapped from that body onto the wearer's.
+  Mio's cuts are traced off her own body, so the mapping needs `tall_slender` (or
+  a per-cut reference body) as its reference. That is a small change to
+  `_garment_placement` and belongs at the start of M3, before the first cut.
+
+### M3. Legs, knee socks and loafers
+
+**Status: done pending the owner's sign-off, 2026-10-11.** What was built and
+found is in "M3 findings" below the checklist.
+
+- [x] `Outfit.knee_sock_color` (default `None`, draws nothing): trace the sock's
+      silhouette (its top edge, the slight taper at the calf and the ankle)
+      from the figure crop, mapped by landmark to the new body. Drawn over the
+      bare leg and under the shoe. Check first whether `boot_shaft` plus a boot
+      colour is close enough to avoid a new field; it probably is not, since a
+      sock is not a boot and has no cuff.
+- [x] The loafer: trace `segments/brown-loafers/` (two crops of one shoe, check
+      which is true) as a low shoe. Probably a new opt-in shoe variant beside
+      the ankle boot, since the ankle boot's silhouette is the wrong shape for a
+      loafer. Include the strap and the opening as line work.
+- [x] Look at the legs full body, on white and on black (black socks on a black
+      page vanish: check the outline holds them).
+- [x] Catalogue entries and a test that the other presets draw neither.
+
+Acceptance: bare thigh, black sock, brown loafer, at figure size and at 4x on
+the knee, the sock top and the ankle; the other 18 byte-identical.
+
+#### M3 findings
+
+**The cuts needed to learn about bodies first.** A traced cut is drawn in head
+radii of a reference body, `_GARMENT_REF_BODY`, which was fixed at the tall
+chibi. `GarmentCut` now carries `ref_body` (default the tall chibi, so every
+older cut is untouched, held by a test), `_garment_placement` takes it, and a
+test holds that a cut is the identity on the body it was traced on. Mio's cuts
+are traced on `tall_slender`.
+
+**A cut for a limb.** `GarmentCut.per_leg` marks a cut whose coordinates are the
+right leg's, with x from that leg's own centre line, drawn once per leg and
+mirrored for the left (`_leg_placement`, `_draw_leg_cut`). A sock or a shoe
+therefore goes where the leg hangs and not at a fixed x, so the leg spacing
+(deferred to M4) cannot pull a sock off its leg. `GarmentCut.shades` gives a
+fill its own tone (the loafer's sole), as `shade()`'s value factor on the cut's
+colour.
+
+**Traced, by `harness/mio/trace_feet.py`, emitted by `emit_feet.py`:**
+
+- `KNEE_SOCK_CUT`: one sock, 17 segments, the leg-coloured component below the
+  skirt grown to the stroke's centre line. The reference hides its lower end under
+  the shoe, so it is run straight on down under it; a first pass that let the
+  colour mask follow the sock into the shoe's collar grew a spike along the shoe.
+- `BOOT_CUTS["loafer"]`: the silhouette (18 segments), a sole band as a second
+  tone (0.78 of the leather, the reference's #332921 over #433228), and four
+  lines: the saddle's upper seam, the penny slit, the toe-cap loop (the saddle's
+  lower edge, the sides and the U, one closed ring) and the sole line.
+- The outline width has to be measured with its antialiased edge: the solid ink
+  run was 1 px and the stroke is 3, and a trace grown by 1 rode the fill's edge
+  and not the stroke's centre. The first overlay showed it.
+- The toe-cap loop is a closed ring, so the line walker (`common.walk`) now closes
+  rings, which it did not.
+
+**Two things the render found and the numbers had not:**
+
+- The bare leg is wider than the sock and ran on down inside it, showing as skin
+  along both sides. The leg is now clipped at the sock's top edge when a sock is
+  worn (`leg-above-sock`).
+- Our sock sat 7 px in from our own leg where the reference's sock and leg share a
+  centre and a width (72 and 74 px). The leg is not drawn on `_leg_gap_and_top`'s
+  centre line: the knee's bulge and the inside edge running off toward the crotch
+  put it 0.05 head radii further out. `_LEG_CUT_OUT` carries that, and it also
+  puts her feet where the reference's are. Measured after: leg 535 to 605 px, sock
+  535 to 606.
+
+**Measured against the reference** (`step.py`-style leg and sock runs, at the sock
+top): the reference's leg 531 to 603 and sock 530 to 604; ours 535 to 605 and 535
+to 606. Her legs still stand 4 to 9 px nearer the centre line than the
+reference's, which is the hip-width item below.
+
+Looked at: the legs against the reference on white at figure size and at 3x on the
+sock top and the shoe; both on white and on black (the sock's fill separates from
+black and the loafer's seams read). The sock's slight bend at the lower calf is
+the reference's own.
+
+**New fields and registry:** `Outfit.knee_sock_color`, `Outfit.boot_cut`,
+`BOOT_CUTS`; the catalogue slots `KNEE_SOCK` and the `boot_cut` select on the
+boots slot (renamed "Boots (and shoes)"), each with its label and the registry
+assert. `refresh-ref-out.sh --check` says only Mio is stale: every other
+character is byte-identical. Tests: 835 pass, plus the same three expected
+failures for M11; seven new tests hold the reference body, the older cuts'
+default, that only Mio wears either, the mirror and the placement, the leg clip
+and the sole's tone.
+
+**Still open for M4:** the legs' spacing at the thigh top (about 4 to 9 px
+closer than hers, `hip_half_w` 1.0 against about 1.2) waits for the traced skirt,
+which does not read the hip width. The shared skirt on the placeholder is a bell
+and hides the thigh tops.
+
+
+### M4. The pleated skirt
+
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the
+checklist.
+
+- [x] Trace the skirt's silhouette off `segments/pleated-skirt.png` (check the
+      crop first) as `SKIRT_CUTS["pleated"]`, landmarks mapped: waistband,
+      the hem's edge, which is a zigzag of pleat folds and not a smooth curve.
+- [x] The pleat folds are **line work**, not tone planes (decision 6): trace
+      the interior fold lines the way the skill's interior-stroke case does
+      (erode the hull, take the dark pixels, fit open chains), keeping their
+      count and spacing from the reference.
+- [x] Hem about at mid-thigh, checked against the sock top and the blazer hem.
+- [x] Check it from the front only; no pose exists.
+
+Acceptance: pleats read at figure size; `SKIRT_CUTS` has a label and the
+assert; no other skirt wearer changes (`cmp` Satoko, Chiyo, Keiko, Reika).
+
+#### M4 findings
+
+**`SKIRT_CUTS["pleated"]`**, traced by `harness/mio/trace_skirt.py` and emitted by
+`emit_skirt.py`: one silhouette (24 segments, carrying the stepped hem, each pleat's
+bottom edge a slanted straight line) and six fold lines (one to two segments
+each), the stroke's centre line throughout. The segment is the visible skirt, so
+its top edge is the blazer's hem arc with a tab where the blazer's front comes to
+a point. Her skirt continues up behind the blazer, so the silhouette is carried up
+to her waist (120 px, 3.0 head radii on the skull calibration) along its own side
+slopes and the top rows filled across the tab; that is inference, hidden by the
+blazer, and it has to leave no gap above the skirt wherever the blazer is open (a
+first pass carried it up only 36 px and left a band of the placeholder underwear
+showing between the tunic and the skirt). The fold lines are the six clean ink
+components inside the eroded hull, thinned and fitted, their ends carried on along
+their tangent to meet the outline, and the upper ends on up to the waist so they
+converge there as stitched-down pleats do.
+
+**A stray line, found by the owner, and what it was.** A first emit drew a thick
+horizontal line across the skirt, mid-way. It was a bug in the trace and nothing
+meant to show where the blazer goes: the segment's topmost pixel is the blazer
+tab's tip, one pixel on its own row, so "fill the top rows across from each row's
+own extent" filled nothing there and the carried-up part was joined to the visible
+skirt through a one-pixel slit. The contour walked down both sides of the slit and
+drew it as a line, with a spike to the centre and back. It is now filled from the
+side edges' fitted slopes, which has no such row, and a check that the silhouette
+has no long near-horizontal segment other than its top edge. That silhouette fell
+from 32 segments to 24 as well. The one horizontal that remains is the skirt's top
+edge at her waist, where it meets the shirt: a waistband the open placeholder
+blazer shows, which the traced blazer (M7) will cover.
+
+**Folds are line work, not tone.** The reference alternates two skirt tones
+across the pleats, which is a shading plane across a garment (decision 6). The
+skirt is one colour, held by a test (one fill, six `fill="none"` strokes). Its
+other tone, a darker band along the top and a skin shadow on the thigh under the
+hem, is texture and not ported.
+
+**The underwear showed.** Her hem sits above where the placeholder underwear
+ends, which no other character's does, and the white showed as a strip under it
+where the reference has bare thigh. `_underpants` now takes a `hem_cap` and
+`_bare_seat` passes `_skirt_bottom_y` (a cut's own lowest point, or the
+parametric hem), so underwear is never drawn below a worn skirt's hem. It changes
+no other character: `refresh-ref-out.sh --check` shows only Mio.
+
+**The leg spacing is closed.** With the skirt a cut, `hip_half_w` could go to 1.2
+without the placeholder flaring into wings. Measured at five heights against the
+reference's skin and sock runs, her legs are now within 1 to 7 px on the left and
+within 7 to 13 px on the right at the thigh and 4 to 8 at the sock; the reference
+is itself asymmetric about its own centre by a few pixels (its legs stand 62 px
+left and 69 px right of 630), ours about 62 and 61. Near enough: about 0.03 head
+radii.
+
+**Left, by design:** the thigh's taper (the reference's tapers from 0.27 to 0.21
+across the thigh, ours is straight) is the shared leg shape, not the skirt's.
+
+Tests: 837 pass, plus the same three expected failures for M11; two new tests
+hold the skirt's shape (one fill, six folds, her body) and the underwear cap.
+
+
+### M5. The shirt and its collar
+
+- [ ] Trace the collar off `segments/white-collared-shirt.png`
+      (`COLLAR_CUTS["shirt"]`, a neutral name): two points sitting over the
+      lapels, opening at the throat, not the closed band `_collar` draws.
+- [ ] Decide whether the shirt body is the shared tunic (probably, in white) or
+      needs a cut, by comparing the front, the cuffs and the hem under the
+      skirt. The cuffs show white at the wrist; `undersleeve_color` may do.
+- [ ] Skin shows in the V of the collar above the ribbon: check the neck.
+
+Acceptance: the collar reads as a real shirt collar at 4x, on white and black,
+beside the ribbon's place (not yet drawn); only Mio's render changes.
+
+### M6. The ribbon
+
+- [ ] `Outfit.ribbon_color` (default `None`, draws nothing): trace the bow and
+      its two tails off `segments/blue-ribbon.png` as fills with interior
+      line work, a small unoccluded shape, which is what tracing is for. Mapped
+      to the collar's landmarks so it lands at the throat.
+- [ ] Draw order: over the shirt and collar, under the blazer's lapels.
+- [ ] Catalogue entry, and a test that the other presets draw no ribbon.
+
+Acceptance: the bow reads at figure size and at 4x, tails over the shirt front,
+lapels crossing the tails the way the reference does; byte-identical elsewhere.
+
+### M7. The blazer
+
+The largest piece, so it is last of the garments, and the one with the most to
+get wrong.
+
+- [ ] Trace `COAT_CUTS["blazer"]` off `segments/school-blazer.png` (crop check
+      first): the notched lapels, the front opening and its taper, the hem, and
+      the sleeves.
+- [ ] **The decision point from the Keiko plan, taken on the data.** Keiko's
+      panels were built from the measured profile and only the lapel traced,
+      because the crop was occlusion-cut and the shoulder sat under the hair.
+      Mio's hair covers her shoulders the same way. Trace both and look; fall
+      back to the profile-built panel plus a traced lapel if the shoulder and
+      the arm come out as stair-steps. Record which, and why, in this file.
+- [ ] The sleeve runs from the shoulder to the wrist and ends in the white cuff
+      (a thin cuff line, or the shirt's cuff showing). Re-measure sleeve widths
+      against the segment, not the composite.
+- [ ] Buttons: three separate gold buttons, not the cast's line of dots. Trace
+      their positions off `segments/gold-buttons/`, probably a new
+      `Outfit.button_color` with a count, or the existing placket given a
+      spacing option. Check `_placket` first.
+- [ ] `Outfit.hip_pocket_color` (default `None`): a flapped pocket on each
+      hip, as the reference has (the owner's call, 2026-10-11).
+- [ ] Draw order, hands and arms: the reference's order is sleeve, then coat,
+      then hand. Decide, per the cut, the way the Keiko plan's P5 did, and keep
+      it a property of the cut, never global.
+- [ ] Watch the bust (`bust=0.3` now): an open front bows out over it
+      (`_COAT_BUST_BOW`); check the blazer's front edge against the reference.
+
+Acceptance: region overlap and mean contour distance against the reference,
+predicted before it is rendered; looked at on white and on black, 4x at the
+lapel notch, the front opening, the pocket flaps, the hem and the cuff. The
+other presets that wear a coat (gero, kyoko, tomohiro, keiko, katherina) are
+byte-identical.
+
+### M8. The hair and the bangs
+
+Last of the shapes because it is drawn over everything, and because the side
+locks hang in front of the shoulders and the blazer has to be right to judge
+them.
+
+- [ ] Run `harness/hair_audit/gate.py` first (with the body from M2 now ours,
+      the below-the-chin gate should pass).
+- [ ] Trace the bangs off `segments/bangs.png`: a flat blunt fringe across the
+      brow, over the brow line, with its fine strand lines.
+- [ ] Trace the long mass and side locks off `segments/long-black-hair.png`,
+      their lengths, the way the side locks fall in front of the shoulders and
+      the way the ends are cut straight. Probably a new hairstyle (neutral name)
+      beside `long_traced`, built from the existing `Hairstyle` pattern; first
+      try whether a variant of an existing style plus a fringe option does it.
+- [ ] Check the hair against the head at 4x, the ears (covered or not?), the
+      crown, and the hairline against the face.
+- [ ] Check it clears the arms and the blazer at her `hair_length`.
+
+Acceptance: the fringe is blunt, the locks hang straight, in front of the
+shoulders; every other preset's hair is byte-identical.
+
+### M9. The face
+
+- [ ] Compare the eyes against `segments/large-black-eyes/` (two crops, one
+      eye each): the reference's are large, round and tall, with a lash line
+      and two highlights. Tune `FaceStyle` (`eye_size`, `eye_width`,
+      `eye_openness`, `iris_size`, `eye_tilt`, `lash`) first; trace only if the
+      shape cannot be reached with the fields.
+- [ ] Green eyes that hold against black hair and a dark lash line, at figure
+      size and at sheet size.
+- [ ] Brows, mouth, blush: the reference is calm and neutral, a short flat
+      mouth, a tiny nose mark. Soften the stern look the first render had.
+- [ ] `face_age` by eye, from 0.75 to 0.85 (the owner's call).
+
+Acceptance: a calm, neutral, clearly 18-year-old face that reads beside the
+reference at one head scale.
+
+### M10. Colours and finish
+
+- [ ] Move every colour to a modal-exact sample (the Satoko grade, not the
+      quantised first pass), one layer at a time, not in one jump.
+- [ ] Test one palette very different from the defaults (red hair, brown eyes,
+      a light blazer), confirming `shade()` derivations hold outside the dark
+      range, per `CLAUDE.md`.
+- [ ] Check black on black: hair, blazer and socks together, on white and black.
+- [ ] `height` by eye (default stays at 1.0 unless the owner picks otherwise).
+
+### M11. Integration
+
+- [ ] `catalogue.py`: every new field, cut and body has its entry and label, and
+      each registry's assert holds.
+- [ ] Refresh `catalogue.json`, `ref-out/mio.svg` and `ref-out/mio.png`
+      (`./refresh-ref-out.sh`); it must report only Mio, the cast sheets and
+      `catalogue.json` changed. Anything else changing is a blast-radius escape
+      and stops the step.
+- [ ] README: Mio's table row (the smoke test checks for it) and the character
+      count; `CLAUDE.md` and `docs/api.md` where they say how many characters.
+- [ ] The cast sheet at tile size, Mio beside Satoko and Keiko.
+- [ ] The web tool restaged (`web-stage.sh`) and looked at in a browser: she
+      loads, every new control works.
+- [ ] `ruff check`, `ruff format --check`, `pytest` green.
+
+Acceptance: tooling green, only expected files changed, owner signs off.
+
+## Risks
+
+- **The reference body is not ours, and the reference is AI-generated.** A new
+  body profile is a measurement of one picture, so it can encode that picture's
+  quirks. Mitigation: landmark-to-landmark mapping, two independent calibrations,
+  and the owner's sign-off on proportions before any cut depends on them.
+- **Occluded regions.** Her hair hides the shoulders and the upper sleeves, the
+  skirt hides the thigh tops, the hands hide the sleeve ends. Shape there is
+  inference. Where the Keiko plan hit this it built from the measured profile
+  and traced only what was unoccluded.
+- **Segments that are not crops.** An AI layer export may be a regenerated
+  variant, not a crop. Offset search before using any coordinate.
+- **Age and the reference disagree.** It reads younger than 18. The owner's age
+  wins and `face_age` is tuned, not the reference copied.
+- **Shared garments serve many presets.** New behaviour is a new field, a new
+  named cut or a new profile, never a reshaped shared garment.
+- **Black on black.** Hair, blazer and socks are all very dark: outline and
+  `shade()` tones have to keep them apart, checked on black as well as white.
+- **Scope creep.** No poses, no new skeleton, no realistic build (retired).
+  Nothing here touches `../valley_of_mist`.
+
+## Owner's decisions (2026-10-11)
+
+1. **`face_age` is judged by eye.** Start at 0.75 to 0.85.
+2. **The hip pocket flaps get a new field.** Opt-in, default draws nothing.
+3. **Default height for now**, revisited by eye at the end (M10). Her longer legs
+   come from her own body profile (M2), not from `height`.
+4. **Display name is just "Mio".** (Her entry in `DISPLAY_NAMES` is still
+   needed: the label is "Mio" and the entry is its only home.)
+5. **Trace her clothes properly, and measure her body, step by step, as close to
+   the reference as is feasible, not quickly.** This replaces the first plan's
+   "parametric first, trace only small shapes".
+6. **Order is the plan's.** The owner left it open; this file's order stands
+   (body, legs, skirt, shirt, ribbon, blazer, hair, face).

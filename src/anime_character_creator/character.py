@@ -316,6 +316,12 @@ class Outfit:
     # How far up the shin the boot climbs, on top of the ankle boot every
     # character already has: 0 leaves it alone, 1 takes it to the knee.
     boot_shaft: float = 0.0
+    # A traced foot from `BOOT_CUTS`, in `boot_color`, in place of the ankle boot;
+    # `None` is the boot.
+    boot_cut: str | None = None
+    # A knee sock over the leg, from just under the knee to the shoe, in this
+    # colour (`KNEE_SOCK_CUT`). `None` is a bare leg above the boot.
+    knee_sock_color: str | None = None
     # --- The base layer, what shows with the tunic off (`bare-body-plan.md`,
     # step 3). Not optional: with nothing else worn it is what the figure
     # wears, for every character (the owner's call, 2026-09-25); a fully bare
@@ -2936,6 +2942,7 @@ def _hair_underside(sk: Skeleton, p: CharacterParams, d: str, lines: list[Chain]
 # `_CHIN_SHADOW_VALUE`, inside the neck. The head drawn over it covers all but
 # a band as deep as the drop, which follows the jaw because it is the jaw.
 _CHIN_SHADOW_CLIP_ID = "chin-shadow"
+_SOCK_CLIP_ID = "leg-above-sock"
 _CHIN_SHADOW_DROP = 0.16
 _CHIN_SHADOW_VALUE = 0.88
 
@@ -4490,6 +4497,43 @@ BODY_TYPES["tall_chibi_long_torso"] = replace(
     waist_y=BODY_TYPES["tall_chibi"].waist_y + 0.5,
     hip_y=BODY_TYPES["tall_chibi"].hip_y + 0.5,
 ).head_scaled(_LONG_TORSO_HEAD_SCALE)
+# A taller, slimmer figure, measured off Mio's reference (`ref-local/mio/`,
+# `docs/mio-plan.md`, M2; the scripts are `harness/mio/`), 165 px per head radius,
+# head centre at the chin minus 1.02 of it (`harness/mio/landmarks.py`). It stands
+# 4.36 heads against the tall chibi's 3.47 on that radius: the shoulders at 1.40
+# and 0.80 across, the wrist at 3.9 and the fingertips at 4.35, the skirt hem at
+# 4.43, the sock top (the boot landmark) at 5.675 and the sole at 7.72. The legs
+# are most of the difference, 3.8 head radii from hip to sole where the default
+# tall chibi's are 2.3, with a thigh 0.27 across at the top running to 0.21 at the
+# calf, and they hang 0.39 either side of the centre. The waist and hip are not
+# measured, since a blazer and a skirt hide them: the hip is at the wrist's
+# height, 3.9, and the waist two thirds of the way down to it from the shoulder,
+# the tall chibi's own proportion (0.69).
+#
+# Then a head 0.85 times as big against the same body (`BodyProfile.head_scaled`).
+# 165 px is her skull's radius (her ears, her hair top to chin) but our face is
+# drawn wider than hers at that size: at 165 it came out 17% wider across the
+# cheeks, and the head variants put it on hers at 0.85 (`harness/mio/compare.py
+# heads`), which is also what her visible face width alone gives, 141 px. Her face
+# is a wide, short one against ours (her ears sit 0.5 head radii above her chin,
+# ours 1.0), so the face is the part to match and the head is made to suit it.
+_SLENDER_HEAD_SCALE = 0.85
+BODY_TYPES["tall_slender"] = BodyProfile(
+    heads=4.362,
+    shoulder_y=1.40,
+    waist_y=3.00,
+    hip_y=3.90,
+    hem_y=4.43,
+    boot_y=5.675,
+    ankle_y=7.05,
+    shoulder_half_w=0.80,
+    waist_half_w=0.70,
+    hip_half_w=1.20,
+    hem_half_w=0.93,
+    arm_half_w=0.19,
+    arm_x=0.90,
+    leg_half_w=0.225,
+).head_scaled(_SLENDER_HEAD_SCALE)
 
 
 def skeleton_for(p: CharacterParams) -> Skeleton:
@@ -4687,7 +4731,7 @@ def _interp_flat(v: float, xs: tuple[float, ...], ys: tuple[float, ...]) -> floa
     return _interp(v, xs, ys)
 
 
-def _garment_placement(sk: Skeleton) -> Callable[[Point], Point]:
+def _garment_placement(sk: Skeleton, ref_body: str = _GARMENT_REF_BODY) -> Callable[[Point], Point]:
     """Map a traced garment's head radii onto `sk`'s body, as a point function.
 
     Heights move piecewise between the two bodies' landmarks (`_body_knots`),
@@ -4698,7 +4742,7 @@ def _garment_placement(sk: Skeleton) -> Callable[[Point], Point]:
     is the head, which every body shares at one size. The identity on
     `_GARMENT_REF_BODY` is the test that this is right, not an approximation.
     """
-    ref_ys, ref_ws = _body_knots(skeleton_for(CharacterParams(body=_GARMENT_REF_BODY)))
+    ref_ys, ref_ws = _body_knots(skeleton_for(CharacterParams(body=ref_body)))
     ys, ws = _body_knots(sk)
 
     def xf(pt: Point) -> Point:
@@ -4737,6 +4781,20 @@ class GarmentCut:
     # panels, and masked to them, so a lapel drawn after lies over it and the
     # opening shows the garment underneath with its own line. None draws none.
     bust_line_after: int | None = None
+    # The body the cut was traced on, whose head radii its coordinates are in; the
+    # placement maps them from there onto the wearer's. The tall chibi unless the
+    # cut was traced off a different body (Mio's, `tall_slender`).
+    ref_body: str = _GARMENT_REF_BODY
+    # A cut for a limb: coordinates are for the right leg, with x measured from
+    # that leg's own centre line, and the cut is drawn once per leg, mirrored for
+    # the left, where each of the wearer's legs hangs (`_draw_leg_cut`). A sock or
+    # a shoe goes where the leg is, whatever the hips do to the spacing.
+    per_leg: bool = False
+    # A tone for each of `fills`, as `shade()`'s value factor on the colour the cut
+    # is drawn in; `None`, or running out, is the colour itself. A sole is the
+    # same leather a shade darker, a small element where a second tone reads as
+    # thickness, which `CLAUDE.md` allows.
+    shades: tuple[float | None, ...] = ()
 
 
 def _traced_coat(sk: Skeleton, p: CharacterParams) -> bool:
@@ -4775,7 +4833,7 @@ def _cut_half_w_at(sk: Skeleton, cut: GarmentCut, y: float) -> float | None:
     `y`, both in pixels: the outermost crossing of that row by any fill's
     outline, or None if no fill crosses it."""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    xf = _garment_placement(sk)
+    xf = _garment_placement(sk, cut.ref_body)
     reach = None
     for start, segs in cut.fills:
         p0 = xf(start)
@@ -4798,20 +4856,32 @@ def _cut_half_w_at(sk: Skeleton, cut: GarmentCut, y: float) -> float | None:
     return reach
 
 
-def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> str:
+def _draw_cut(
+    sk: Skeleton,
+    cut: GarmentCut,
+    fill: str,
+    weight: float = 1.0,
+    xf: Callable[[Point], Point] | None = None,
+) -> str:
     """`weight` scales the outline, for small hardware whose own parts are
-    thinner than the figure's line (a buckle's frame)."""
+    thinner than the figure's line (a buckle's frame). `xf` replaces the
+    placement, for a cut that is not hung off the torso (`_draw_leg_cut`)."""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk) * weight
-    xf = _garment_placement(sk)
+    if xf is None:
+        xf = _garment_placement(sk, cut.ref_body)
 
     def d(chain: Chain, close: bool = True) -> str:
         start, segs = chain
         return _curve(cx, cy, r, xf(start), [(xf(c), xf(e)) for c, e in segs], close=close)
 
+    def tone(i: int) -> str:
+        k = cut.shades[i] if i < len(cut.shades) else None
+        return fill if k is None else shade(fill, k)
+
     parts = [
-        f'<path d="{d(shape)}" fill="{fill}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
-        for shape in cut.fills
+        f'<path d="{d(shape)}" fill="{tone(i)}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
+        for i, shape in enumerate(cut.fills)
     ]
     if cut.bust_line_after is not None:
         n = cut.bust_line_after
@@ -4823,6 +4893,51 @@ def _draw_cut(sk: Skeleton, cut: GarmentCut, fill: str, weight: float = 1.0) -> 
         for line in cut.lines
     )
     return "".join(parts)
+
+
+# How far outside `_leg_gap_and_top`'s centre line a leg is actually drawn, measured
+# where a sock starts, in head radii: the knee's bulge and the inside edge running
+# off toward the crotch put the visible leg there, and a sock set on the gap itself
+# sat 7 px in from it on Mio, where the reference's sock and leg share one centre
+# (`docs/mio-plan.md`, M3). It is also where her reference's feet stand.
+_LEG_CUT_OUT = 0.05
+
+
+def _leg_placement(sk: Skeleton, ref_body: str, side: int, gap: float) -> Callable[[Point], Point]:
+    """Map a per-leg cut onto the wearer's leg on `side` (-1 left, +1 right).
+
+    The cut's x is from its leg's centre line, in head radii on `ref_body`: it is
+    scaled by how much thicker this wearer's leg is than that body's and set down
+    where the leg hangs, `gap` pixels out from the figure's centre line, mirrored
+    for the left. Heights move piecewise between the two bodies' landmarks like
+    any cut's, so a sock top traced under the knee lands under this body's.
+    """
+    ref = skeleton_for(CharacterParams(body=ref_body))
+    ref_ys, _ = _body_knots(ref)
+    ys, _ = _body_knots(sk)
+    across = (sk.leg_half_w / sk.head_r) / (ref.leg_half_w / ref.head_r)
+    centre = gap / sk.head_r + _LEG_CUT_OUT
+
+    def xf(pt: Point) -> Point:
+        return (side * (centre + pt[0] * across), _interp(pt[1], ref_ys, ys))
+
+    return xf
+
+
+def _leg_cut_top_y(sk: Skeleton, cut: GarmentCut) -> float:
+    """The highest point of a `per_leg` cut once placed, in pixels: where a sock's
+    top edge is, so the bare leg can stop there."""
+    xf = _leg_placement(sk, cut.ref_body, 1, 0.0)
+    ys = [
+        xf(pt)[1] for start, segs in cut.fills for pt in (start, *(q for seg in segs for q in seg))
+    ]
+    return sk.head_cy + min(ys) * sk.head_r
+
+
+def _draw_leg_cut(sk: Skeleton, cut: GarmentCut, fill: str, gap: float, side: int) -> str:
+    """One leg's share of a `per_leg` cut: `gap` is where that leg's centre line
+    hangs, from `_leg_gap_and_top`."""
+    return _draw_cut(sk, cut, fill, xf=_leg_placement(sk, cut.ref_body, side, gap))
 
 
 # Traced collar cuts, drawn by `_collar` when `Outfit.collar_cut` names one.
@@ -7901,6 +8016,227 @@ def _katana(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# Mio's knee sock and loafer, per `docs/mio-plan.md` M3.
+# Traced by `harness/mio/trace_feet.py` off `segments/anime-girl.png` (the sock, the
+# one component of the leg colour below the skirt, grown to the stroke's centre line
+# and run on down under the shoe) and `segments/brown-loafers/` (the silhouette, the
+# saddle seam, the slit, the toe cap and the sole line, and the sole band as a second
+# tone). The right leg, in head radii on `tall_slender`, x from the leg's centre line:
+# `per_leg` mirrors it for the left. The reference's own sock and shoe are one pair
+# that are not quite mirror images of each other; one is traced and mirrored.
+KNEE_SOCK_CUT = GarmentCut(
+    fills=(
+        (
+            (-0.297, 8.307),
+            [
+                ((-0.304, 8.300), (-0.311, 8.293)),
+                ((-0.311, 8.150), (-0.311, 8.008)),
+                ((-0.302, 7.933), (-0.290, 7.858)),
+                ((-0.284, 7.733), (-0.283, 7.608)),
+                ((-0.298, 7.248), (-0.332, 6.888)),
+                ((-0.341, 6.703), (-0.332, 6.517)),
+                ((-0.322, 6.502), (-0.311, 6.503)),
+                ((-0.258, 6.521), (-0.204, 6.532)),
+                ((-0.126, 6.536), (-0.047, 6.539)),
+                ((0.031, 6.525), (0.110, 6.517)),
+                ((0.152, 6.502), (0.195, 6.482)),
+                ((0.202, 6.489), (0.209, 6.496)),
+                ((0.208, 6.656), (0.202, 6.817)),
+                ((0.121, 7.291), (0.045, 7.765)),
+                ((0.053, 8.029), (0.053, 8.293)),
+                ((0.045, 8.300), (0.038, 8.307)),
+                ((-0.129, 8.307), (-0.297, 8.307)),
+            ],
+        ),
+    ),
+    ref_body="tall_slender",
+    per_leg=True,
+)
+BOOT_CUTS: dict[str, GarmentCut] = {
+    "loafer": GarmentCut(
+        fills=(
+            (
+                (-0.176, 8.122),
+                [
+                    ((-0.108, 8.117), (-0.040, 8.136)),
+                    ((-0.022, 8.150), (-0.004, 8.157)),
+                    ((0.029, 8.204), (0.060, 8.250)),
+                    ((0.079, 8.236), (0.081, 8.221)),
+                    ((0.111, 8.418), (0.152, 8.614)),
+                    ((0.152, 8.688), (0.152, 8.763)),
+                    ((0.143, 8.795), (0.131, 8.827)),
+                    ((0.113, 8.845), (0.095, 8.863)),
+                    ((0.063, 8.874), (0.031, 8.892)),
+                    ((-0.119, 8.908), (-0.268, 8.892)),
+                    ((-0.304, 8.876), (-0.340, 8.863)),
+                    ((-0.368, 8.835), (-0.375, 8.806)),
+                    ((-0.385, 8.717), (-0.382, 8.628)),
+                    ((-0.371, 8.535), (-0.340, 8.442)),
+                    ((-0.335, 8.321), (-0.332, 8.200)),
+                    ((-0.325, 8.207), (-0.318, 8.214)),
+                    ((-0.287, 8.181), (-0.247, 8.143)),
+                    ((-0.211, 8.132), (-0.176, 8.122)),
+                ],
+            ),
+            (
+                (0.145, 8.770),
+                [
+                    ((0.147, 8.799), (0.131, 8.827)),
+                    ((0.113, 8.845), (0.095, 8.863)),
+                    ((0.042, 8.887), (-0.012, 8.899)),
+                    ((-0.140, 8.903), (-0.268, 8.892)),
+                    ((-0.304, 8.876), (-0.340, 8.863)),
+                    ((-0.368, 8.835), (-0.375, 8.806)),
+                    ((-0.375, 8.792), (-0.375, 8.778)),
+                    ((-0.354, 8.798), (-0.332, 8.813)),
+                    ((-0.283, 8.833), (-0.233, 8.849)),
+                    ((-0.136, 8.860), (-0.040, 8.856)),
+                    ((0.003, 8.841), (0.045, 8.835)),
+                    ((0.095, 8.813), (0.145, 8.770)),
+                ],
+            ),
+        ),
+        lines=(
+            (
+                (0.067, 8.268),
+                [
+                    ((0.069, 8.284), (0.053, 8.288)),
+                    ((-0.012, 8.257), (-0.076, 8.241)),
+                    ((-0.119, 8.233), (-0.161, 8.236)),
+                    ((-0.236, 8.246), (-0.300, 8.283)),
+                ],
+            ),
+            (
+                (-0.250, 8.341),
+                [
+                    ((-0.179, 8.316), (-0.097, 8.321)),
+                    ((-0.051, 8.331), (-0.016, 8.341)),
+                ],
+            ),
+            (
+                (0.081, 8.333),
+                [
+                    ((0.097, 8.393), (0.080, 8.452)),
+                    ((0.000, 8.424), (-0.083, 8.407)),
+                    ((-0.151, 8.402), (-0.218, 8.413)),
+                    ((-0.269, 8.424), (-0.317, 8.452)),
+                    ((-0.338, 8.494), (-0.332, 8.542)),
+                    ((-0.328, 8.574), (-0.308, 8.606)),
+                    ((-0.288, 8.634), (-0.261, 8.648)),
+                    ((-0.215, 8.664), (-0.168, 8.671)),
+                    ((-0.115, 8.671), (-0.061, 8.671)),
+                    ((-0.022, 8.664), (0.017, 8.648)),
+                    ((0.043, 8.634), (0.065, 8.606)),
+                    ((0.093, 8.528), (0.088, 8.461)),
+                ],
+            ),
+            (
+                (0.120, 8.795),
+                [
+                    ((0.081, 8.819), (0.031, 8.837)),
+                    ((-0.015, 8.849), (-0.061, 8.856)),
+                    ((-0.143, 8.859), (-0.225, 8.849)),
+                    ((-0.293, 8.835), (-0.350, 8.800)),
+                ],
+            ),
+        ),
+        shades=(None, 0.78),
+        ref_body="tall_slender",
+        per_leg=True,
+    ),
+}
+# (end of the feet)
+
+
+# Mio's pleated skirt, per `docs/mio-plan.md` M4.
+# Traced by `harness/mio/trace_skirt.py` off `segments/pleated-skirt.png`: the
+# silhouette with its stepped hem, carried up behind the blazer along its own side
+# slopes (the reference's top edge is the blazer's hem), and the six fold lines
+# between the seven pleat faces as open strokes. Folds are line work and not tone:
+# the reference's alternating skirt tones are a shading plane across a garment,
+# which `CLAUDE.md` rules out. Head radii on `tall_slender`, x from the silhouette's
+# own centre line.
+SKIRT_CUTS["pleated"] = GarmentCut(
+    fills=(
+        (
+            (-1.073, 4.813),
+            [
+                ((-1.085, 4.774), (-1.080, 4.735)),
+                ((-1.064, 4.688), (-1.066, 4.642)),
+                ((-0.935, 3.997), (-0.824, 3.352)),
+                ((0.018, 3.352), (0.859, 3.352)),
+                ((0.968, 4.075), (1.080, 4.799)),
+                ((1.034, 4.820), (0.988, 4.835)),
+                ((0.938, 4.863), (0.888, 4.892)),
+                ((0.856, 4.894), (0.824, 4.913)),
+                ((0.738, 4.922), (0.652, 4.934)),
+                ((0.627, 4.949), (0.602, 4.970)),
+                ((0.553, 4.974), (0.503, 4.984)),
+                ((0.378, 4.979), (0.253, 4.984)),
+                ((0.239, 4.999), (0.225, 5.013)),
+                ((0.075, 5.012), (-0.075, 5.006)),
+                ((-0.107, 4.999), (-0.139, 4.991)),
+                ((-0.178, 4.991), (-0.217, 4.991)),
+                ((-0.235, 5.007), (-0.253, 5.013)),
+                ((-0.267, 5.013), (-0.282, 5.013)),
+                ((-0.414, 4.989), (-0.545, 4.956)),
+                ((-0.588, 4.955), (-0.631, 4.970)),
+                ((-0.734, 4.940), (-0.838, 4.913)),
+                ((-0.884, 4.894), (-0.930, 4.863)),
+                ((-0.959, 4.861), (-0.988, 4.856)),
+                ((-1.030, 4.835), (-1.073, 4.813)),
+            ],
+        ),
+    ),
+    lines=(
+        (
+            (-0.677, 3.399),
+            [
+                ((-0.786, 3.976), (-0.888, 4.557)),
+                ((-0.915, 4.730), (-0.925, 4.894)),
+            ],
+        ),
+        (
+            (-0.487, 3.465),
+            [
+                ((-0.534, 4.151), (-0.595, 4.835)),
+                ((-0.595, 4.914), (-0.595, 4.987)),
+            ],
+        ),
+        (
+            (-0.203, 3.498),
+            [
+                ((-0.203, 3.986), (-0.203, 4.464)),
+                ((-0.223, 4.745), (-0.225, 5.016)),
+            ],
+        ),
+        (
+            (0.055, 3.513),
+            [
+                ((0.139, 3.972), (0.225, 4.421)),
+                ((0.234, 4.724), (0.239, 5.016)),
+            ],
+        ),
+        (
+            (0.574, 3.456),
+            [
+                ((0.574, 3.929), (0.574, 4.393)),
+                ((0.606, 4.688), (0.639, 4.972)),
+            ],
+        ),
+        (
+            (0.662, 3.406),
+            [
+                ((0.765, 3.871), (0.866, 4.328)),
+                ((0.909, 4.610), (0.953, 4.880)),
+            ],
+        ),
+    ),
+    ref_body="tall_slender",
+)
+# (end of the pleated skirt)
+
+
 def _arms(
     sk: Skeleton, p: CharacterParams, hands: bool | None = None, silhouette: bool = False
 ) -> str:
@@ -8893,6 +9229,21 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
         # skirt shorter than default, both garments off entirely, and read as
         # the figure's legs not being attached to its body.
         parts = [_bare_seat(sk, p, gap, w_top, w_knee, w_calf, w_ankle)]
+    # A knee sock goes over the leg and under the shoe, which in the reference
+    # comes down over its lower end. The leg above it stops at its top edge: the
+    # sock is narrower than our leg and a tube running on down inside it showed
+    # as skin along both its sides.
+    if p.outfit.knee_sock_color and not trousers:
+        stop = _leg_cut_top_y(sk, KNEE_SOCK_CUT) + sk.head_r * 0.04
+        parts = [
+            f'<clipPath id="{_SOCK_CLIP_ID}"><rect x="0" y="0" width="{sk.canvas_w:.1f}" '
+            f'height="{stop:.1f}" /></clipPath><g clip-path="url(#{_SOCK_CLIP_ID})">{parts[0]}</g>'
+        ]
+    if p.outfit.knee_sock_color:
+        parts.extend(
+            _draw_leg_cut(sk, KNEE_SOCK_CUT, p.outfit.knee_sock_color, gap, side)
+            for side in (-1, 1)
+        )
     # A bare foot on a bare leg takes the leg's slimmer ankle; a boot, or a foot
     # under trousers, keeps the width it had.
     bare = not trousers and p.outfit.boot_color is None
@@ -9069,8 +9420,27 @@ def _trousers(
 # nothing for a per-character field to hold, the way there is for a tunic or a
 # skirt. A plain neutral cotton tone, the way OUTLINE is a plain neutral line
 # regardless of what it outlines.
+def _skirt_bottom_y(sk: Skeleton, p: CharacterParams) -> float | None:
+    """The lowest point of the skirt the figure wears, in pixels, or None without
+    one: a traced cut's own hem, otherwise the parametric skirt's."""
+    if p.outfit.skirt_color is None:
+        return None
+    if p.outfit.skirt_cut is None:
+        return _skirt_hem_y(sk, p.outfit.skirt_length, p.outfit.skirt_length_chibi)
+    cut = SKIRT_CUTS[p.outfit.skirt_cut]
+    xf = _garment_placement(sk, cut.ref_body)
+    ys = [xf(pt)[1] for start, segs in cut.fills for pt in (start, *(end for _, end in segs))]
+    return sk.head_cy + max(ys) * sk.head_r
+
+
 def _underpants(
-    sk: Skeleton, color: str, gap: float, top_y: float, crotch_y: float, w_top: float
+    sk: Skeleton,
+    color: str,
+    gap: float,
+    top_y: float,
+    crotch_y: float,
+    w_top: float,
+    hem_cap: float | None = None,
 ) -> str:
     """A modesty layer over the top of `_bare_seat`, not full-length: it never
     reaches the point the legs part, so it needs no notch of its own and is
@@ -9082,6 +9452,10 @@ def _underpants(
     # hip, and the hem came out above the top, the underpants gone entirely on
     # every untucked figure (`docs/bare-body-status.md`, steps 1 and 3).
     hem_y = crotch_y + (sk.knee_y - crotch_y) * 0.22
+    # Never below a skirt's hem: a short skirt, Mio's, ends above where this does,
+    # and the thigh under it is bare skin in her reference.
+    if hem_cap is not None:
+        hem_y = min(hem_y, hem_cap - sk.head_r * 0.05)
     w_waist = gap + w_top
     # A little narrower at the hem than the waist, which is what a hem gathered
     # by elastic looks like rather than a straight-sided box.
@@ -9250,7 +9624,9 @@ def _bare_seat(
     return (
         f'<path d="{d}" fill="{p.skin_tone}" stroke="{OUTLINE}" '
         f'stroke-width="{_outline_w(_stroke_w(sk), 0.85):.2f}" stroke-linejoin="round" />'
-        + _underpants(sk, p.outfit.underwear_color, gap, brief_y, crotch_y, w_top)
+        + _underpants(
+            sk, p.outfit.underwear_color, gap, brief_y, crotch_y, w_top, _skirt_bottom_y(sk, p)
+        )
     )
 
 
@@ -9352,6 +9728,8 @@ def _boot(sk: Skeleton, p: CharacterParams, cx: float, w_ankle: float, side: int
     color = p.outfit.boot_color
     if color is None:
         return _bare_foot(sk, p, cx, w_ankle, side)
+    if p.outfit.boot_cut is not None:
+        return _draw_leg_cut(sk, BOOT_CUTS[p.outfit.boot_cut], color, abs(cx - sk.head_cx), side)
     # A foot is a foot: measured off the leg rather than off the ankle, so it
     # keeps its size when the shin's width is retuned. As a multiple of the ankle
     # it doubled the moment the leg stopped tapering to a point. The multiplier
