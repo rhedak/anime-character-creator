@@ -3092,7 +3092,7 @@ def test_an_iris_set_against_the_inner_corner_and_stretched_tall_only_on_mio() -
     eye_dx, eye_y, eye_r, f = character._eye_placement(sk, p)
     left = character._eye(sk.head_cx - eye_dx, eye_y, eye_r, -1, f, p.eye_color, 2.0)
     right = character._eye(sk.head_cx + eye_dx, eye_y, eye_r, 1, f, p.eye_color, 2.0)
-    assert "scale(1 1.370)" in left and "scale(1 1.370)" in right
+    assert "scale(1 1.500)" in left and "scale(1 1.500)" in right
 
     def iris_x(svg: str) -> float:
         return float(svg.split('<circle cx="')[1].split('"')[0])
@@ -3100,3 +3100,24 @@ def test_an_iris_set_against_the_inner_corner_and_stretched_tall_only_on_mio() -
     # Each iris is nearer the nose than its eye's centre.
     assert iris_x(left) > sk.head_cx - eye_dx
     assert iris_x(right) < sk.head_cx + eye_dx
+
+
+def test_a_dot_nose_and_a_shaded_lid_are_opt_in_and_only_mio_has_them() -> None:
+    stock = FaceStyle()
+    assert stock.nose_dot is False and stock.lid_shadow == 0.0
+    for name, p in PRESETS.items():
+        assert (p.face.nose_dot, p.face.lid_shadow) == (
+            (True, 0.15) if name == "mio" else (False, 0.0)
+        ), name
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    svg = character._face(sk, p)
+    assert svg.count("<circle") >= 1 and "scale(1 1.500)" in svg
+    ticks = replace(p, face=replace(p.face, nose_dot=False))
+    assert character._face(sk, ticks) != svg
+    eye = character._eye_placement(sk, p)
+    shaded = character._eye(sk.head_cx, eye[1], eye[2], -1, eye[3], p.eye_color, 2.0)
+    clean = character._eye(
+        sk.head_cx, eye[1], eye[2], -1, replace(eye[3], lid_shadow=0.0), p.eye_color, 2.0
+    )
+    assert character._SCLERA_SHADOW in shaded and character._SCLERA_SHADOW not in clean

@@ -22,12 +22,14 @@ MATCHED = {
     "eye_size": 1.009, "eye_width": 0.729, "eye_openness": 1.0, "eye_lower_lid": 1.0,
     "iris_size": 0.978, "eye_gap": 1.157, "iris_inset": 1.0, "eye_tilt": -0.05,
 }
-TALL = dict(MATCHED, iris_aspect=1.37)
+SOFT = dict(lid_shadow=0.12, lash=1.6, nose_dot=True, mouth_curve=0.5, mouth_width=0.5)
+DEEP = {"eye_color": "#3c7a50"}
 VARIANTS = [
     ("now", {}, {}),
-    ("matched, tall iris", dict(TALL, eye_corner=0.0), {}),
-    ("matched, tall iris, lash 1.2", dict(TALL, eye_corner=0.0, lash=1.2), {}),
-    ("matched, tall iris, corner 0.2, lash 1.2", dict(TALL, eye_corner=0.2, lash=1.2), {}),
+    ("A soft: lid shadow, lash 1.6, dot nose, slight smile", dict(SOFT), {}),
+    ("B + darker green", dict(SOFT), dict(DEEP)),
+    ("C + lid over the iris (open 0.88, aspect 1.5)", dict(SOFT, eye_openness=0.88, iris_aspect=1.5), dict(DEEP)),
+    ("D + brows lifted (tilt -0.25), smile 0.8", dict(SOFT, eye_openness=0.88, iris_aspect=1.5, brow_tilt=-0.25, mouth_curve=0.8), dict(DEEP)),
 ]
 
 

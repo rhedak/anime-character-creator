@@ -104,6 +104,10 @@ class FaceStyle:
     # The iris's height against its width: 1 a circle, above 1 a tall oval, which fills a
     # tall aperture from lid to lid without growing wider than the eye has room for.
     iris_aspect: float = 1.0
+    # How deep the upper lid's shadow lies on the white of the eye, as a share of the eye's
+    # height: a band of the white in a second, greyer tone along the lid, which takes the
+    # glare off a wide eye. 0 leaves the white clean.
+    lid_shadow: float = 0.0
     # How far the upper lash thickens toward the outer corner and how long its
     # flick runs past it: 1 the full lash (`_LASH_OUTER`, `_LASH_FLICK`), 0 a
     # lash of even, inner-corner weight with no flick. The men draw less of it,
@@ -121,6 +125,9 @@ class FaceStyle:
     # How far the mouth sits below its usual place, in head radii: a longer lower
     # face, a smaller mouth set low in it.
     mouth_drop: float = 0.0
+    # The nose as one small dot at its usual height, in place of the two ticks an older
+    # face draws, for a face that reads younger and softer with it.
+    nose_dot: bool = False
     # Whether the brows are drawn over the fringe rather than under it, for a face
     # whose reference draws them through the hair (a blunt fringe that comes down
     # to the lids).
@@ -11871,6 +11878,8 @@ _LID_SAMPLES = 16
 # centre (a share of the coloured disc's radius), at this `shade()`.
 _IRIS_BAND_CUT = 0.25
 _IRIS_BAND_SHADE = 0.68
+# The white of the eye where the upper lid shades it (`FaceStyle.lid_shadow`).
+_SCLERA_SHADOW = "#c2c2c8"
 
 
 def _lid_points(quads: list[tuple[Point, Point, Point]], first: int, last: int) -> list[Point]:
@@ -11961,6 +11970,14 @@ def _eye(
     # of 2026-09-27.
     parts.append(f'<path d="{d}" fill="white" stroke="none" />')
     parts.append(f'<g clip-path="url(#{clip_id})">')
+    if f.lid_shadow:
+        # The aperture again in grey, then the same shape moved down over it in white: what
+        # is left of the grey is a band along the upper lid, as deep as the move.
+        drop = f.lid_shadow * er * (f.eye_openness + f.eye_lower_lid)
+        parts.append(f'<path d="{d}" fill="{_SCLERA_SHADOW}" stroke="none" />')
+        parts.append(
+            f'<path d="{d}" fill="white" stroke="none" transform="translate(0 {drop:.2f})" />'
+        )
     # Looking sideways moves the iris and everything drawn on it, and nothing else:
     # the lids and lashes stay put, and the aperture's clip crops what overhangs.
     ix = ex + f.gaze * er * 0.34
@@ -12297,6 +12314,14 @@ def _nose_y(sk: Skeleton) -> float:
     return _NOSE_Y + _MOUTH_REALISTIC_DROP * sk.face_build
 
 
+def _nose_dot(sk: Skeleton, sw: float) -> str:
+    """The nose as a single small dot, where the ticks' lowest point would be."""
+    return (
+        f'<circle cx="{sk.head_cx:.2f}" cy="{sk.head_cy + sk.head_r * _nose_y(sk):.2f}" '
+        f'r="{_interior_w(sw, 0.9) * 0.62:.2f}" fill="{OUTLINE}" opacity="0.8" />'
+    )
+
+
 def _nose(sk: Skeleton, sw: float) -> str:
     m = sk.face_maturity
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
@@ -12368,7 +12393,9 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         else:
             parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio, reach))
 
-    if sk.face_maturity > 0.0:
+    if f.nose_dot:
+        parts.append(_nose_dot(sk, sw))
+    elif sk.face_maturity > 0.0:
         parts.append(_nose(sk, sw))
 
     mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.face_build + f.mouth_drop)

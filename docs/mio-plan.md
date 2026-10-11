@@ -846,7 +846,26 @@ her numbers, `eye_metrics.py` against `MIO.face`: `eye_size` 1.009, `eye_width` 
 `eye_corner` 0.2 for the round oval and `lash` 1.2. That was a variant the owner asked for, and it is the one in
 the preset now. The first pass's values are in the commit before it, `6023132`.
 
-**Five new opt-in `FaceStyle` fields**, since no existing one reached them (every other face
+**Why the matched eye read cold, and what fixed it** (the owner: hers reads friendly, ours
+creepy). The numbers matched and the feeling did not. Looked at 6x beside hers:
+
+- *Bare white all round a bright iris.* Hers has a heavy upper lid that comes down over the top
+  of the iris, a grey lid shadow along the top of the white, and a dark, quiet iris. Ours had the
+  whole iris showing under a thin lash, a stark white crescent and a bright saturated green:
+  a stare. So the lid comes down (`eye_openness` 0.9 with `eye_size` and `eye_width` re-solved
+  to keep her aperture, `iris_aspect` 1.5), the lash is as heavy as hers (`lash` 1.6, about
+  12 px at its thickest), the white takes a lid shadow (`lid_shadow` 0.15, a second tone on a small
+  element) and the green is deeper (`#3c7a50`; the owner's green, not the first pass's `#4f9a5e`).
+- *A face with nothing in it.* A flat mouth, two ticks for a nose, flat brows close over the lid.
+  Hers has one dot of a nose, a short mouth that turns up a little and brows with air under them.
+  So `nose_dot`, `mouth_curve` 0.6 at `mouth_width` 0.5 and `brow_tilt` -0.15.
+
+Two more opt-in fields for that: `lid_shadow` (0, a greyer band along the upper lid on the white)
+and `nose_dot` (False, one small dot where the ticks would be). The eye's measurements are
+unchanged by the lid (`eye_metrics.py` still reads her 63.5 by 66.5, an iris 48.5 and a centre
+distance of 137), because the solve was repeated with the lid at 0.9.
+
+**Seven new opt-in `FaceStyle` fields**, since no existing one reached them (every other face
 renders as before, `refresh-ref-out.sh --check`):
 
 - `eye_gap` (None keeps `_EYE_GAP`): the gap between the eyes as a share of an eye's half-width.
@@ -874,13 +893,12 @@ for the owner's call on going lower.
   scale in M2. Only a lower `face_age` brings it nearer, and the owner set the range.
 - Her iris is grey with a lighter lower half, a softer look than our flat band and a darker
   rim; the highlight pair is at the same places.
-- Her nose is one dot where ours is two small ticks (`face_maturity`).
 - The eyes' lash wing droops down and out at hers and flicks up at ours.
 - The web tool's ranges (`FACE_RANGES`) do not reach these values (`eye_width` 0.85 to 1.10,
   `iris_size` 0.60 to 0.80). Mio is not a web starting point until M11 decides whether to widen
   them.
 
-Tests: 862 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
+Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
 
 ### M10. Colours and finish
 

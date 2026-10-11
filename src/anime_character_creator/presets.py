@@ -1259,7 +1259,7 @@ MIO = CharacterParams(
     # Her traced length: the tips at 3.441 head radii below the head centre, where this
     # body's chin-to-hip measure puts them at 0.716 (`docs/mio-plan.md`, M8).
     hair_length=0.716,
-    eye_color="#4f9a5e",
+    eye_color="#3c7a50",
     # Her own proportions, measured off her reference (`docs/mio-plan.md`, M2).
     body="tall_slender",
     outfit=Outfit(
@@ -1298,24 +1298,28 @@ MIO = CharacterParams(
         # The eye, solved against her measurements (`harness/mio/eye_metrics.py`): an
         # aperture 63 by 67 px, a tall iris 48 wide filling it from lid to lid and set against
         # the inner corner so the white shows on the outer side only, and the two eyes
-        # about one eye apart.
-        eye_size=1.009,
-        eye_width=0.729,
-        eye_openness=1.0,
+        # about one eye apart. The upper lid comes down over the top of the iris and shades
+        # the white, as hers does: bare white all round the iris read as a stare.
+        eye_size=1.061,
+        eye_width=0.694,
+        eye_openness=0.9,
         eye_lower_lid=1.0,
         eye_tilt=-0.05,
         eye_corner=0.2,
         eye_gap=1.157,
         iris_size=0.978,
         iris_inset=1.0,
-        iris_aspect=1.37,
-        lash=1.2,
-        brow_tilt=0.0,
+        iris_aspect=1.5,
+        lash=1.6,
+        lid_shadow=0.15,
+        # Friendly: brows a little lifted, one dot for a nose and a slight smile.
+        brow_tilt=-0.15,
         brow_weight=0.7,
         brow_length=0.65,
         brows_over_hair=True,
-        mouth_curve=0.0,
-        mouth_width=0.45,
+        nose_dot=True,
+        mouth_curve=0.6,
+        mouth_width=0.5,
         mouth_drop=0.06,
         blush=0.1,
     ),
