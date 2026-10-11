@@ -1,4 +1,4 @@
-"""Mio's reference against our render, at one head scale (`docs/mio-plan.md`, M2).
+"""Risa's reference against our render, at one head scale (`docs/risa-plan.md`, M2).
 
 Calibrated the way `landmarks.py` is (centre (630, CY), R = 165 px per head
 radius), our render is scaled so that its head radius is R and its head centre
@@ -10,8 +10,8 @@ The body is the preset's own (`character.BODY_TYPES["tall_slender"]`, which was
 fitted with this script). To try a number without touching `src/`, register a
 profile under another name in `BODY_TYPES` here and put `body=` on the replace.
 
-    ./harness/run.sh harness/mio/compare.py            # the whole figure
-    ./harness/run.sh harness/mio/compare.py legs       # a crop
+    ./harness/run.sh harness/risa/compare.py            # the whole figure
+    ./harness/run.sh harness/risa/compare.py legs       # a crop
 """
 
 import io
@@ -29,7 +29,7 @@ from anime_character_creator.character import (
     render_character,
     skeleton_for,
 )
-from anime_character_creator.presets import MIO
+from anime_character_creator.presets import RISA
 
 BASE = "ref-local/mio"
 R = 165.0
@@ -66,7 +66,7 @@ def ours(p, size, r=R):
     return page.convert("RGB")
 
 
-def sheet(p, crop="full", out="out/mio/m2_compare.png"):
+def sheet(p, crop="full", out="out/risa/m2_compare.png"):
     ref = reference()
     mine = ours(p, ref.size, r=R * _SLENDER_HEAD_SCALE)
     box = CROPS[crop]
@@ -81,7 +81,7 @@ def sheet(p, crop="full", out="out/mio/m2_compare.png"):
     print(f"wrote {out} ({s.size[0]} x {s.size[1]})")
 
 
-def head_variants(scales=(1.0, 0.91, 0.85), crop="upper", out="out/mio/m2_heads.png"):
+def head_variants(scales=(1.0, 0.91, 0.85), crop="upper", out="out/risa/m2_heads.png"):
     # Always on the measured profile at the calibrated radius, whatever scale the
     # preset's own body carries, so the variants stay comparable.
     """The head-size decision: the same body in pixels under a head `s` times the
@@ -93,7 +93,7 @@ def head_variants(scales=(1.0, 0.91, 0.85), crop="upper", out="out/mio/m2_heads.
     for s in scales:
         measured = BODY_TYPES["tall_slender"].head_scaled(1 / _SLENDER_HEAD_SCALE)
         BODY_TYPES[f"tall_slender_{s}"] = measured.head_scaled(s)
-        p = replace(MIO, body=f"tall_slender_{s}")
+        p = replace(RISA, body=f"tall_slender_{s}")
         mine = ours(p, ref.size, r=R * s)
         panels.append(Image.blend(ref, mine, 0.5).crop(box))
     w, h = panels[0].size
@@ -109,4 +109,4 @@ if __name__ == "__main__":
         head_variants()
         sys.exit()
     crop = sys.argv[1] if len(sys.argv) > 1 else "full"
-    sheet(MIO, crop, f"out/mio/m2_{crop}.png")
+    sheet(RISA, crop, f"out/risa/m2_{crop}.png")

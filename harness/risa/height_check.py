@@ -1,16 +1,16 @@
-"""Her height against ours at one head scale (`docs/mio-plan.md`, M10): the top of the hair and
+"""Her height against ours at one head scale (`docs/risa-plan.md`, M10): the top of the hair and
 the sole, on her composite and on our render placed on it.
 
-    ./harness/run.sh harness/mio/height_check.py
+    ./harness/run.sh harness/risa/height_check.py
 """
 
 import numpy as np
 from compare import R, _SLENDER_HEAD_SCALE, ours, reference
 
-from anime_character_creator.presets import MIO
+from anime_character_creator.presets import RISA
 
 ref = np.asarray(reference()).astype(int)
-mine = np.asarray(ours(MIO, reference().size, r=R * _SLENDER_HEAD_SCALE)).astype(int)
+mine = np.asarray(ours(RISA, reference().size, r=R * _SLENDER_HEAD_SCALE)).astype(int)
 
 
 def extent(a):

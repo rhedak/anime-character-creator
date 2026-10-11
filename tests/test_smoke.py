@@ -2707,14 +2707,14 @@ def test_the_shoulder_bars_are_counted_on_one_shoulder_of_a_coat() -> None:
     assert character._shoulder_bars(sk, coatless) == ""
 
 
-# --- Mio (`docs/mio-plan.md`) --------------------------------------------------
+# --- Risa (`docs/risa-plan.md`) --------------------------------------------------
 
 
 def test_a_cut_is_the_identity_on_the_body_it_was_traced_on() -> None:
     """`GarmentCut.ref_body` says whose head radii a cut's numbers are in, and on
     that body the placement must hand them back as written: that is the test that
     the mapping is right and not an approximation. It is also why a cut traced off
-    Mio's own body (`tall_slender`) lands where it was traced on her."""
+    Risa's own body (`tall_slender`) lands where it was traced on her."""
     for body in ("tall_chibi", "tall_slender"):
         sk = character.skeleton_for(CharacterParams(body=body))
         xf = character._garment_placement(sk, body)
@@ -2725,7 +2725,7 @@ def test_a_cut_is_the_identity_on_the_body_it_was_traced_on() -> None:
 def test_the_older_cuts_still_read_the_tall_chibi_and_mios_read_her_own() -> None:
     for registry in (character.COAT_CUTS, character.COLLAR_CUTS, character.SKIRT_CUTS):
         for name, cut in registry.items():
-            # Mio's cuts are the exceptions, each traced on her own body.
+            # Risa's cuts are the exceptions, each traced on her own body.
             mine = (
                 (registry is character.SKIRT_CUTS and name == "pleated")
                 or (registry is character.COLLAR_CUTS and name == "shirt")
@@ -2738,17 +2738,17 @@ def test_the_older_cuts_still_read_the_tall_chibi_and_mios_read_her_own() -> Non
         assert cut.ref_body == "tall_slender" and cut.per_leg
 
 
-def test_only_mio_wears_the_knee_sock_and_the_loafer() -> None:
+def test_only_risa_wears_the_knee_sock_and_the_loafer() -> None:
     """Both are opt-in, so every other preset keeps its ankle boot and its bare
     leg, byte for byte (`refresh-ref-out.sh --check` holds the rest)."""
     assert Outfit().knee_sock_color is None and Outfit().boot_cut is None
     for name, p in PRESETS.items():
-        assert (p.outfit.knee_sock_color is not None) == (name == "mio"), name
-        assert (p.outfit.boot_cut is not None) == (name == "mio"), name
+        assert (p.outfit.knee_sock_color is not None) == (name == "risa"), name
+        assert (p.outfit.boot_cut is not None) == (name == "risa"), name
 
 
-def test_mio_stands_on_her_own_longer_body() -> None:
-    p = PRESETS["mio"]
+def test_risa_stands_on_her_own_longer_body() -> None:
+    p = PRESETS["risa"]
     assert p.body == "tall_slender"
     assert (
         character.BODY_TYPES["tall_slender"].heads
@@ -2765,7 +2765,7 @@ def _path_xs(svg: str) -> list[float]:
 
 
 def test_a_sock_hangs_on_each_leg_and_the_left_mirrors_the_right() -> None:
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     gap, _ = character._leg_gap_and_top(sk, False)
     cut = character.KNEE_SOCK_CUT
@@ -2783,7 +2783,7 @@ def test_a_sock_hangs_on_each_leg_and_the_left_mirrors_the_right() -> None:
 def test_the_bare_leg_stops_at_the_sock_top() -> None:
     """The sock is narrower than our leg, and a tube running on inside it showed
     as skin along both sides, so the leg is clipped at the sock's top edge."""
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     assert "leg-above-sock" in character._legs_and_boots(sk, p)
     bare = replace(p, outfit=replace(p.outfit, knee_sock_color=None))
@@ -2791,7 +2791,7 @@ def test_the_bare_leg_stops_at_the_sock_top() -> None:
 
 
 def test_the_loafers_sole_is_a_second_tone_of_the_shoes_own_leather() -> None:
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     svg = character._boot(sk, p, sk.head_cx + 40.0, 10.0, 1)
     assert f'fill="{p.outfit.boot_color}"' in svg
@@ -2806,18 +2806,18 @@ def test_the_pleated_skirt_is_traced_on_her_own_body_with_six_folds() -> None:
     assert cut.ref_body == "tall_slender" and not cut.per_leg
     assert len(cut.fills) == 1, "one silhouette, the seven faces are line work"
     assert len(cut.lines) == 6, "seven box-pleat faces have six folds between them"
-    assert PRESETS["mio"].outfit.skirt_cut == "pleated"
+    assert PRESETS["risa"].outfit.skirt_cut == "pleated"
     # Folds are line work, not tone planes (`CLAUDE.md`): the skirt is one colour.
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     svg = character._skirt(character.skeleton_for(p), p)
     assert svg.count(f'fill="{p.outfit.skirt_color}"') == 1
     assert svg.count('fill="none"') == 6
 
 
 def test_underwear_never_hangs_below_a_skirts_hem() -> None:
-    """Mio's hem sits above where the placeholder underwear ends, as no other
+    """Risa's hem sits above where the placeholder underwear ends, as no other
     character's does, and her thigh under it is bare in the reference."""
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     cap = character._skirt_bottom_y(sk, p)
     assert cap is not None
@@ -2843,7 +2843,7 @@ def test_the_shirt_collar_is_two_open_wings_on_her_own_body() -> None:
     cut = character.COLLAR_CUTS["shirt"]
     assert cut.ref_body == "tall_slender" and not cut.per_leg
     assert len(cut.fills) == 2, "the shirt front under the crossing, then the wings"
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     assert p.outfit.collar_cut == "shirt"
     sk = character.skeleton_for(p)
     svg = character._collar(sk, p)
@@ -2851,10 +2851,10 @@ def test_the_shirt_collar_is_two_open_wings_on_her_own_body() -> None:
     assert f'fill="{p.outfit.collar_color}"' in svg
 
 
-def test_a_shallow_neckline_notch_closes_the_tunic_higher_and_only_mio_sets_one() -> None:
+def test_a_shallow_neckline_notch_closes_the_tunic_higher_and_only_risa_sets_one() -> None:
     for name, p in PRESETS.items():
-        assert (p.outfit.neckline_notch is not None) == (name == "mio"), name
-    p = PRESETS["mio"]
+        assert (p.outfit.neckline_notch is not None) == (name == "risa"), name
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     shallow = character._tunic(sk, p)
     default = character._tunic(sk, replace(p, outfit=replace(p.outfit, neckline_notch=None)))
@@ -2866,7 +2866,7 @@ def test_the_ribbon_is_five_pieces_tied_in_order_with_a_slit_in_each_loop() -> N
     assert cut.ref_body == "tall_slender" and not cut.per_leg
     assert len(cut.fills) == 5, "two tails, two loops and a knot"
     assert [i for i, _ in cut.holes] == [2, 3], "a slit in each loop, and only the loops"
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     svg = character._ribbon(sk, p)
     assert svg.count(f'fill="{p.outfit.ribbon_color}"') == 5
@@ -2874,10 +2874,10 @@ def test_the_ribbon_is_five_pieces_tied_in_order_with_a_slit_in_each_loop() -> N
     assert character._ribbon(sk, replace(p, outfit=replace(p.outfit, ribbon_color=None))) == ""
 
 
-def test_only_mio_wears_a_ribbon() -> None:
+def test_only_risa_wears_a_ribbon() -> None:
     assert Outfit().ribbon_color is None
     for name, p in PRESETS.items():
-        assert (p.outfit.ribbon_color is not None) == (name == "mio"), name
+        assert (p.outfit.ribbon_color is not None) == (name == "risa"), name
 
 
 def test_the_blazer_is_one_garment_with_two_lapels_and_heavy_lines() -> None:
@@ -2887,7 +2887,7 @@ def test_the_blazer_is_one_garment_with_two_lapels_and_heavy_lines() -> None:
     assert len(cut.lines) == 3, "the front line and a side line each side"
     assert cut.line_weight == 1.0, "a blazer's lapel and front lines are as heavy as its edge"
     assert character.GarmentCut(fills=()).line_weight == 0.7, "every other cut keeps its light line"
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     svg = character._draw_cut(sk, cut, p.outfit.coat_color)
     assert svg.count(f'fill="{p.outfit.coat_color}"') == 3
@@ -2898,7 +2898,7 @@ def test_a_blazer_wearers_arm_shows_the_shirt_past_the_sleeve_without_a_band() -
     """The cut is the whole garment, so the arm under it is the shirt's, and what shows
     past the blazer's sleeve is that arm and the line where it ends, not the second-tone
     cuff band a long undersleeve draws."""
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     arms = character._arms(sk, p, hands=False)
     assert arms.count(f'fill="{p.outfit.tunic_color}"') == 2, "one white sleeve each side"
@@ -2906,17 +2906,17 @@ def test_a_blazer_wearers_arm_shows_the_shirt_past_the_sleeve_without_a_band() -
     assert character._traced_coat(sk, p) and character._hands_after_coat(sk, p)
 
 
-def test_only_mio_wears_a_blazer_with_pockets_and_buttons() -> None:
+def test_only_risa_wears_a_blazer_with_pockets_and_buttons() -> None:
     assert Outfit().hip_pocket_color is None and Outfit().coat_button_color is None
     for name, p in PRESETS.items():
-        mine = name == "mio"
+        mine = name == "risa"
         assert (p.outfit.hip_pocket_color is not None) == mine, name
         assert (p.outfit.coat_button_color is not None) == mine, name
         assert (p.outfit.coat_cut == "blazer") == mine, name
 
 
 def test_the_hip_pockets_and_the_buttons_are_drawn_with_the_coat() -> None:
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     pockets = character._hip_pockets(sk, p)
     assert pockets.count("<path") == 2, "a flap each side"
@@ -2969,7 +2969,7 @@ def test_only_a_profile_that_measured_the_neck_narrows_it() -> None:
 
 
 def test_a_stretched_body_carries_its_measured_wrist_with_it() -> None:
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     tall = character.skeleton_for(replace(p, height=1.2))
 
@@ -2986,7 +2986,7 @@ def test_a_stretched_body_carries_its_measured_wrist_with_it() -> None:
 def test_a_cuts_holes_are_left_open_under_the_even_odd_rule() -> None:
     """A hole is an extra subpath of its fill's own path, so what is behind the
     garment shows through it (the shirt behind a bow's slit)."""
-    sk = character.skeleton_for(PRESETS["mio"])
+    sk = character.skeleton_for(PRESETS["risa"])
     square = (
         (-0.4, 2.0),
         [((0.4, 2.0), (0.4, 2.0)), ((0.4, 3.0), (0.4, 3.0)), ((-0.4, 3.0), (-0.4, 3.0))],
@@ -3002,10 +3002,10 @@ def test_a_cuts_holes_are_left_open_under_the_even_odd_rule() -> None:
     assert 'fill-rule="evenodd"' in svg and svg.count("M ") == 2
 
 
-def test_only_mio_wears_the_fringed_hair_and_it_is_traced_to_her_own_length() -> None:
+def test_only_risa_wears_the_fringed_hair_and_it_is_traced_to_her_own_length() -> None:
     for name, p in PRESETS.items():
-        assert (p.hairstyle == "long_fringed") == (name == "mio"), name
-    p = PRESETS["mio"]
+        assert (p.hairstyle == "long_fringed") == (name == "risa"), name
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     # Her hair_length puts the tips where the trace has them, so the stretch is the identity.
     assert character._hair_fall(sk, p) == pytest.approx(character._FRINGED_BASE_TIP, abs=0.01)
@@ -3014,7 +3014,7 @@ def test_only_mio_wears_the_fringed_hair_and_it_is_traced_to_her_own_length() ->
 
 
 def test_the_fringed_hair_draws_its_darker_tone_its_strands_and_its_ears_over_the_hair() -> None:
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     svg = character._hair_front(sk, p)
     assert svg.count(f'fill="{p.skin_tone}"') == len(character._FRINGED_OPENINGS) == 2, (
@@ -3026,7 +3026,7 @@ def test_the_fringed_hair_draws_its_darker_tone_its_strands_and_its_ears_over_th
 
 
 def test_a_longer_haircut_stretches_the_fringed_tips_and_keeps_the_fringe() -> None:
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     style = character.HAIRSTYLES["long_fringed"]
     base = style.mass(character._hair_fall(sk, p))
@@ -3038,7 +3038,7 @@ def test_a_longer_haircut_stretches_the_fringed_tips_and_keeps_the_fringe() -> N
     assert top(longer) == top(base)
 
 
-def test_the_new_face_fields_default_to_the_cast_and_only_mio_sets_them() -> None:
+def test_the_new_face_fields_default_to_the_cast_and_only_risa_sets_them() -> None:
     stock = FaceStyle()
     assert stock.eye_gap is None and stock.mouth_drop == 0.0
     assert stock.brows_over_hair is False and stock.brow_length == 1.0
@@ -3050,11 +3050,11 @@ def test_the_new_face_fields_default_to_the_cast_and_only_mio_sets_them() -> Non
             False,
             1.0,
         )
-        assert set_here == (name == "mio"), name
+        assert set_here == (name == "risa"), name
 
 
 def test_eyes_set_wide_apart_a_mouth_set_low_and_brows_over_the_hair() -> None:
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     narrow = replace(p, face=replace(p.face, eye_gap=0.2))
     assert character._eye_placement(sk, p)[0] > character._eye_placement(sk, narrow)[0]
@@ -3080,14 +3080,14 @@ def test_eyes_set_wide_apart_a_mouth_set_low_and_brows_over_the_hair() -> None:
     assert mouth_y(p) > mouth_y(flat)
 
 
-def test_an_iris_set_against_the_inner_corner_and_stretched_tall_only_on_mio() -> None:
+def test_an_iris_set_against_the_inner_corner_and_stretched_tall_only_on_risa() -> None:
     stock = FaceStyle()
     assert stock.iris_inset == 0.0 and stock.iris_aspect == 1.0
     for name, p in PRESETS.items():
-        assert (p.face.iris_inset, p.face.iris_aspect) != (0.0, 1.0) or name != "mio", name
-        if name != "mio":
+        assert (p.face.iris_inset, p.face.iris_aspect) != (0.0, 1.0) or name != "risa", name
+        if name != "risa":
             assert (p.face.iris_inset, p.face.iris_aspect) == (0.0, 1.0), name
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     eye_dx, eye_y, eye_r, f = character._eye_placement(sk, p)
     left = character._eye(sk.head_cx - eye_dx, eye_y, eye_r, -1, f, p.eye_color, 2.0)
@@ -3102,14 +3102,14 @@ def test_an_iris_set_against_the_inner_corner_and_stretched_tall_only_on_mio() -
     assert iris_x(right) < sk.head_cx + eye_dx
 
 
-def test_a_dot_nose_and_a_shaded_lid_are_opt_in_and_only_mio_has_them() -> None:
+def test_a_dot_nose_and_a_shaded_lid_are_opt_in_and_only_risa_has_them() -> None:
     stock = FaceStyle()
     assert stock.nose_dot is False and stock.lid_shadow == 0.0
     for name, p in PRESETS.items():
         assert (p.face.nose_dot, p.face.lid_shadow) == (
-            (True, 0.15) if name == "mio" else (False, 0.0)
+            (True, 0.15) if name == "risa" else (False, 0.0)
         ), name
-    p = PRESETS["mio"]
+    p = PRESETS["risa"]
     sk = character.skeleton_for(p)
     svg = character._face(sk, p)
     assert svg.count("<circle") >= 1 and "scale(1 1.500)" in svg

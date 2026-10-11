@@ -1,7 +1,7 @@
-"""Her eyes, measured (`docs/mio-plan.md`, M9 variant): where the two eye layers sit in the
+"""Her eyes, measured (`docs/risa-plan.md`, M9 variant): where the two eye layers sit in the
 composite, and for each eye the aperture, the iris and the white, and the gap between them.
 
-    ./harness/run.sh harness/mio/measure_eyes.py
+    ./harness/run.sh harness/risa/measure_eyes.py
 """
 
 import numpy as np
@@ -41,5 +41,5 @@ for name, off in (("large-black-eyes-1.png", (518, 255)), ("large-black-eyes-2.p
     cls[op & (s <= 650) & (s > 200)] = (140, 140, 140)
     cls[op & (s <= 200)] = (0, 0, 0)
     Image.fromarray(cls).resize((seg.shape[1] * 8, seg.shape[0] * 8), Image.NEAREST).save(
-        f"out/mio/eye_cls_{name[-5]}.png"
+        f"out/risa/eye_cls_{name[-5]}.png"
     )

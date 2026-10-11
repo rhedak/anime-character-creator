@@ -1,5 +1,5 @@
-"""Mio's calibration and body landmarks, measured off `ref-local/mio/mio.png`
-(`docs/mio-plan.md`, M2).
+"""Risa's calibration and body landmarks, measured off `ref-local/mio/mio.png`
+(`docs/risa-plan.md`, M2).
 
 Every segment is a true pixel crop of the composite (`crops.py`), so each is
 placed at its verified offset and its alpha is that garment's own extent. The
@@ -26,7 +26,7 @@ The estimate is good to about 4% for garment work and no better. Every cut is
 mapped landmark to landmark, which is what keeps it wearable if the calibration
 is a little off, so no conclusion here rests on the third digit.
 
-    ./harness/run.sh harness/mio/landmarks.py
+    ./harness/run.sh harness/risa/landmarks.py
 """
 
 import numpy as np

@@ -15,12 +15,12 @@ possible later addition (they'd slot in as extra SVG layers).
 
 Fourteen named characters for *Valley of Mist*, plus guests from two other
 projects (Katherina from `../time_slider_katharina`; Gero and Linnea, and
-Dritan and Lindita, from `../short_stories`), and Mio, a schoolgirl from no
+Dritan and Lindita, from `../short_stories`), and Risa, a schoolgirl from no
 story of ours, all rendering at the chibi build. They are all the tall chibi, the one figure since
 2026-09-26, when the realistic build and the old compressed chibi were
 retired; a `height` from 0.8 to 1.3 stretches it for a younger or a
-taller character. Mio is the exception in proportion: she is drawn on her own
-longer body, measured off her reference (`docs/mio-plan.md`).
+taller character. Risa is the exception in proportion: she is drawn on her own
+longer body, measured off her reference (`docs/risa-plan.md`).
 
 All are **first drafts**: each carries the colouring, frame and garments
 its design calls for, judged at the size a character is actually seen on a
@@ -44,9 +44,9 @@ are Krista and Chiyo, whose references lean hardest on a head accessory.
 | --- | --- | --- | --- |
 | <img src="ref-out/on-white/tenno.png" width="140" alt="Tenno"> | <img src="ref-out/on-white/viktor.png" width="140" alt="Viktor"> | <img src="ref-out/on-white/katherina.png" width="140" alt="Katherina"> | <img src="ref-out/on-white/gero.png" width="140" alt="Gero"> |
 
-| Linnea | Dritan | Lindita | Mio |
+| Linnea | Dritan | Lindita | Risa |
 | --- | --- | --- | --- |
-| <img src="ref-out/on-white/linnea.png" width="140" alt="Linnea"> | <img src="ref-out/on-white/dritan.png" width="140" alt="Dritan"> | <img src="ref-out/on-white/lindita.png" width="140" alt="Lindita"> | <img src="ref-out/on-white/mio.png" width="140" alt="Mio"> |
+| <img src="ref-out/on-white/linnea.png" width="140" alt="Linnea"> | <img src="ref-out/on-white/dritan.png" width="140" alt="Dritan"> | <img src="ref-out/on-white/lindita.png" width="140" alt="Lindita"> | <img src="ref-out/on-white/risa.png" width="140" alt="Risa"> |
 
 All of them live in `ref-out/` as both `.png` and `.svg`. **They are
 transparent**, so a render drops onto a scene as it is.

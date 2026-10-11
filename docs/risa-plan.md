@@ -1,6 +1,17 @@
-# Mio plan
+# Risa plan
 
-A new preset, Mio: a generic Japanese high school girl in a school uniform,
+> **Renamed and recoloured, 2026-10-11.** This campaign began as "Mio", traced off a reference
+> that turned out to read too much like Akiyama Mio from K-On (a friend pointed it out). The
+> owner's answer: the name is **Risa**, the hair is **dark red** (`#6b1f2a`), the blazer is
+> **grey** (`#4d5159`) and she wears a **gold bar clip** (`#e8c45a`) at the temple. The shapes
+> (hair cut, blazer, ribbon, skirt, face) are still the traced ones; the names, files and
+> comments here were changed to Risa throughout, and the steps below keep "Mio" nowhere except
+> in the reference's own paths (`ref-local/mio/`, local only, untouched). The colours
+> sampled in M0 and M10 are the reference's, and the hair and blazer rows are no longer hers.
+> Whether the silhouette (the blunt fringe and the long straight locks) needs to change as
+> well is open.
+
+A new preset, Risa: a generic Japanese high school girl in a school uniform,
 black hair, green eyes. Written 2026-10-11 at the owner's request, and
 rewritten the same day after the first render, when the owner asked for it to
 be done properly: her clothes **traced** off the reference, her **body
@@ -30,10 +41,10 @@ by tracing, with `.claude/skills/trace-reference/SKILL.md` as the method and
 `harness/keiko/` as the template for the scripts.
 
 The standing lesson is **trace nothing below the chin off a reference whose body
-is not ours** (`harness/hair_audit/gate.py` checks it for hair). Mio's body is
+is not ours** (`harness/hair_audit/gate.py` checks it for hair). Risa's body is
 not ours: her legs are longer. The fix is to make her body ours first. Katherina
 could be traced directly because her reference *is* `tall_chibi`, the profile
-was measured off it. Mio gets the same treatment, a body profile measured off
+was measured off it. Risa gets the same treatment, a body profile measured off
 her own reference, before anything below the chin is traced. A first look puts
 her at about 4 heads against the tall chibi's 3.47, which is a hunch from
 eyeballing the image and exactly what M2 measures.
@@ -74,7 +85,7 @@ eyeballing the image and exactly what M2 measures.
    snapshot report. A shared garment (`_coat`, `_tunic`, `_belt`, `_skirt`
    serve most of the cast) is never reshaped.
 5. **Names stay neutral.** `"blazer"`, `"pleated"`, `knee_sock_color`,
-   `ribbon_color`, never `"mio_blazer"`, so anyone can wear them, the way
+   `ribbon_color`, never `"risa_blazer"`, so anyone can wear them, the way
    `long_traced` is a hairstyle anyone can pick.
 6. **Flat colour, hard edges, no shading plane across a garment** (`CLAUDE.md`).
    The reference's pleats alternate two skirt tones. That is a shading plane
@@ -111,12 +122,12 @@ half the width it should be.
 - **Look at it.** Side by side at one head scale, on white and on black, at 4x
   on every junction the step touches. A black page hides gaps against hair, and
   black hair, blazer and socks need checking on black as well as on white.
-- **Scripts are records.** Each pass's scripts live in `harness/mio/`
+- **Scripts are records.** Each pass's scripts live in `harness/risa/`
   (`landmarks.py`, `compare.py`, and one trace and emit script per shape, the
-  `harness/keiko/` pattern) and write to the ignored `out/mio/`. The emit step
+  `harness/keiko/` pattern) and write to the ignored `out/risa/`. The emit step
   generates the `character.py` block from the trace, so a retrace is cheap.
 - **Green tooling in the same change:** `ruff check`, `ruff format --check`,
-  `pytest`; `./refresh-ref-out.sh` reports only Mio's renders (and the sheets
+  `pytest`; `./refresh-ref-out.sh` reports only Risa's renders (and the sheets
   and `catalogue.json` where relevant) changed.
 - **The owner signs off before the next step starts.**
 
@@ -146,7 +157,7 @@ modal-exact grade the Satoko palette used; M10 refines them):
 | Gold buttons | `#bd9957` |
 | Skin | about `#f9dbc3` (the figure layer; ours stays `#f6dbc2`, Satoko's) |
 
-What the existing fields do against the reference, rendered at `out/tmp/mio/`:
+What the existing fields do against the reference, rendered at `out/tmp/risa/`:
 
 - **Hair.** `long_blunt` is the closest of `long_blunt`, `long_center_part`,
   `long_parted` and `long_traced`: flat and straight, ears covered. None of them
@@ -168,13 +179,13 @@ What the existing fields do against the reference, rendered at `out/tmp/mio/`:
 
 ### M1. The first preset, existing fields only
 
-**Status: first pass done, 2026-10-11, and now a placeholder.** `MIO` in
+**Status: first pass done, 2026-10-11, and now a placeholder.** `RISA` in
 `presets.py`, registered last in `PRESETS` so nobody else's sheet order moves,
-with `DISPLAY_NAMES["mio"] = "Mio"` and `ROSTERS["mio"] = ("mio",)`. `face_age`
+with `DISPLAY_NAMES["risa"] = "Risa"` and `ROSTERS["risa"] = ("risa",)`. `face_age`
 0.8, `long_blunt` at `hair_length` 0.9, the shared coat with navy sleeves at
 `coat_length` 0.55, a white tunic and collar, a gold placket, the grey skirt at
-`skirt_length` 0.35, black boots. Rendered at `out/tmp/mio_preset.png`, beside
-the reference at `out/tmp/mio_compare.png`.
+`skirt_length` 0.35, black boots. Rendered at `out/tmp/risa_preset.png`, beside
+the reference at `out/tmp/risa_compare.png`.
 
 It exists as a baseline to improve on. Each later step replaces a piece of it
 with a traced one, and the fields it uses stand in until then.
@@ -189,12 +200,12 @@ The step that decides whether everything after it works.
 **Status: done pending the owner's sign-off, 2026-10-11.** Findings and what
 was built are in "M2 findings" below the checklist.
 
-- [x] **Crop check.** Find which segments are true pixel crops of `mio.png` by
+- [x] **Crop check.** Find which segments are true pixel crops of `mio.png` (the reference composite, whose file name is the reference's own) by
       offset search (mean RGB difference at the best offset), and which are
       regenerated variants. Record the offset of each true crop. Expect the
       figure layer (`anime-girl.png`) to be a crop and some layer exports not
       to be, as the grok layers were.
-- [x] **Calibration.** `harness/mio/landmarks.py` re-derives it every run:
+- [x] **Calibration.** `harness/risa/landmarks.py` re-derives it every run:
       head centre and px per head radius from our own rendered face against the
       reference's, solved twice (face width, vertical run) and cross-checked on
       the eyes. Record both numbers and the gap, and reject the contaminated
@@ -222,7 +233,7 @@ thing that is hard to change once the clothes are traced to them.
 
 #### M2 findings
 
-**Every segment is a true pixel crop** (`harness/mio/crops.py`, a masked
+**Every segment is a true pixel crop** (`harness/risa/crops.py`, a masked
 sum-of-squares search over every offset), at RMS differences of 0.03 to 0.44 per
 channel for thirteen of fourteen and 4.67 for the hair layer (a layer composited
 under other layers at its edges). Better than Keiko's. Coordinates may be taken
@@ -270,13 +281,13 @@ head scale of 0.85 (`_SLENDER_HEAD_SCALE`), the way `tall_chibi_long_torso`
 carries 1.1. Her figure then stands 4.96 heads in that smaller radius.
 
 **Built:** `BODY_TYPES["tall_slender"]` in `character.py` with its label in
-`catalogue.py`, `MIO.body = "tall_slender"`, and the placeholder skirt and
+`catalogue.py`, `RISA.body = "tall_slender"`, and the placeholder skirt and
 blazer lengths re-derived for her body (`skirt_length` 0.168, `coat_length`
 0.437). Measured against the reference on the same pixels (`compare.py`, and a
 leg-run comparison): the figure's sole within 0.05 head radii (8 px), the sock
 top and the knee on hers in the blend, the thigh and the calf within 0.03 of her
 widths, the legs 0.06 closer to the centre line at the thigh top than hers.
-`ref-out` check: only Mio's files differ; every other character is byte-identical.
+`ref-out` check: only Risa's files differ; every other character is byte-identical.
 Tests: 828 pass, and the same three expected failures wait for M11.
 
 **Known and left, each for its own step:**
@@ -290,7 +301,7 @@ Tests: 828 pass, and the same three expected failures wait for M11.
   fields reach part of it (M9); a head-shape option may be needed.
 - **Cuts are drawn in head radii of a reference body.** `_GARMENT_REF_BODY` is
   `"tall_chibi"`, so a traced cut is mapped from that body onto the wearer's.
-  Mio's cuts are traced off her own body, so the mapping needs `tall_slender` (or
+  Risa's cuts are traced off her own body, so the mapping needs `tall_slender` (or
   a per-cut reference body) as its reference. That is a small change to
   `_garment_placement` and belongs at the start of M3, before the first cut.
 
@@ -322,7 +333,7 @@ the knee, the sock top and the ankle; the other 18 byte-identical.
 radii of a reference body, `_GARMENT_REF_BODY`, which was fixed at the tall
 chibi. `GarmentCut` now carries `ref_body` (default the tall chibi, so every
 older cut is untouched, held by a test), `_garment_placement` takes it, and a
-test holds that a cut is the identity on the body it was traced on. Mio's cuts
+test holds that a cut is the identity on the body it was traced on. Risa's cuts
 are traced on `tall_slender`.
 
 **A cut for a limb.** `GarmentCut.per_leg` marks a cut whose coordinates are the
@@ -333,7 +344,7 @@ therefore goes where the leg hangs and not at a fixed x, so the leg spacing
 fill its own tone (the loafer's sole), as `shade()`'s value factor on the cut's
 colour.
 
-**Traced, by `harness/mio/trace_feet.py`, emitted by `emit_feet.py`:**
+**Traced, by `harness/risa/trace_feet.py`, emitted by `emit_feet.py`:**
 
 - `KNEE_SOCK_CUT`: one sock, 17 segments, the leg-coloured component below the
   skirt grown to the stroke's centre line. The reference hides its lower end under
@@ -374,10 +385,10 @@ the reference's own.
 **New fields and registry:** `Outfit.knee_sock_color`, `Outfit.boot_cut`,
 `BOOT_CUTS`; the catalogue slots `KNEE_SOCK` and the `boot_cut` select on the
 boots slot (renamed "Boots (and shoes)"), each with its label and the registry
-assert. `refresh-ref-out.sh --check` says only Mio is stale: every other
+assert. `refresh-ref-out.sh --check` says only Risa is stale: every other
 character is byte-identical. Tests: 835 pass, plus the same three expected
 failures for M11; seven new tests hold the reference body, the older cuts'
-default, that only Mio wears either, the mirror and the placement, the leg clip
+default, that only Risa wears either, the mirror and the placement, the leg clip
 and the sole's tone.
 
 **Still open for M4:** the legs' spacing at the thigh top (about 4 to 9 px
@@ -406,7 +417,7 @@ assert; no other skirt wearer changes (`cmp` Satoko, Chiyo, Keiko, Reika).
 
 #### M4 findings
 
-**`SKIRT_CUTS["pleated"]`**, traced by `harness/mio/trace_skirt.py` and emitted by
+**`SKIRT_CUTS["pleated"]`**, traced by `harness/risa/trace_skirt.py` and emitted by
 `emit_skirt.py`: one silhouette (24 segments, carrying the stepped hem, each pleat's
 bottom edge a slanted straight line) and six fold lines (one to two segments
 each), the stroke's centre line throughout. The segment is the visible skirt, so
@@ -445,7 +456,7 @@ ends, which no other character's does, and the white showed as a strip under it
 where the reference has bare thigh. `_underpants` now takes a `hem_cap` and
 `_bare_seat` passes `_skirt_bottom_y` (a cut's own lowest point, or the
 parametric hem), so underwear is never drawn below a worn skirt's hem. It changes
-no other character: `refresh-ref-out.sh --check` shows only Mio.
+no other character: `refresh-ref-out.sh --check` shows only Risa.
 
 **The leg spacing is closed.** With the skirt a cut, `hip_half_w` could go to 1.2
 without the placeholder flaring into wings. Measured at five heights against the
@@ -476,7 +487,7 @@ checklist.
 - [x] Skin shows in the V of the collar above the ribbon: check the neck.
 
 Acceptance: the collar reads as a real shirt collar at 4x, on white and black,
-beside the ribbon's place (not yet drawn); only Mio's render changes.
+beside the ribbon's place (not yet drawn); only Risa's render changes.
 
 #### M5 findings
 
@@ -487,7 +498,7 @@ wings are a silhouette question: the strip and the slivers are what the lapels a
 the ribbon leave visible, so the tunic draws the shirt front and the blazer (M7)
 decides how much shows; the cuffs go with the sleeves (M7).
 
-**`COLLAR_CUTS["shirt"]`**, traced by `harness/mio/trace_collar.py`, emitted by
+**`COLLAR_CUTS["shirt"]`**, traced by `harness/risa/trace_collar.py`, emitted by
 `emit_collar.py`: the two wings as one outline of 24 segments, open above the
 crossing so her neck shows between them, which the closed standing band
 `_collar` draws without a cut cannot do. Her chin and the wing tips already
@@ -497,8 +508,8 @@ that drew a spike. The erosion to the stroke's centre is one pixel here and not
 two: these are all sharp tips, which a wider erosion cuts back along their bisector.
 
 **`Outfit.neckline_notch`**, a new opt-in depth for the tunic's V, in head radii
-(`None` keeps every case as it was; only Mio sets it, 0.04). A traced collar sets
-the V to 0.19, built for Katherina's, and on Mio it bottomed out below the point
+(`None` keeps every case as it was; only Risa sets it, 0.04). A traced collar sets
+the V to 0.19, built for Katherina's, and on Risa it bottomed out below the point
 where her wings cross, leaving a diamond of skin under them where the reference has
 white shirt. Under the wings the V is now a seam. It is in the catalogue as a
 range on the tunic slot.
@@ -510,7 +521,7 @@ sit on the reference's in the blend.
 **Left for M6 and M7:** the wings crossing reads as an X without the ribbon's knot
 over it, and the skin between the crossing and the tunic's top edge will be covered
 by the ribbon; the reference's neck has a darker shadow tone under the chin
-(texture, not ported). Tests: 842 pass; `refresh-ref-out.sh` changed only Mio's
+(texture, not ported). Tests: 842 pass; `refresh-ref-out.sh` changed only Risa's
 render.
 
 
@@ -531,7 +542,7 @@ lapels crossing the tails the way the reference does; byte-identical elsewhere.
 
 #### M6 findings
 
-**`RIBBON_CUT`**, traced by `harness/mio/trace_ribbon.py`, emitted by
+**`RIBBON_CUT`**, traced by `harness/risa/trace_ribbon.py`, emitted by
 `emit_ribbon.py`, with `Outfit.ribbon_color` (opt-in, `None` draws nothing) and a
 `RIBBON` slot in the catalogue. The bow is five overlapping pieces drawn in the
 order it is tied, the tails, then the loops over their tops, then the knot over
@@ -548,7 +559,7 @@ the skirt's. The branch splitter (`common.branches`) stays in the harness unused
 **Holes in a cut.** The loops' slits are white in the reference with the shirt
 behind them, so a cut can now carry `holes`, `(index into fills, shape)` pairs,
 drawn as extra subpaths of that fill under the even-odd rule: whatever is under the
-bow shows through, the white tunic on Mio and anything else on another wearer.
+bow shows through, the white tunic on Risa and anything else on another wearer.
 Painting them white would have been right only on a white shirt.
 
 **The line weight.** At the figure's own stroke the slits filled in solid black,
@@ -564,7 +575,7 @@ reference has them beside the loops and not over them.
 
 **Left:** the highlight tick on the left tail and the bow's lighter blue strokes are
 texture and not ported. The crossing of the collar's wings still shows above the
-knot as a small X. Tests: 845 pass; `refresh-ref-out.sh` changed only Mio's render
+knot as a small X. Tests: 845 pass; `refresh-ref-out.sh` changed only Risa's render
 (and `catalogue.json`).
 
 
@@ -582,7 +593,7 @@ checklist.
 - [x] **The decision point from the Keiko plan, taken on the data.** Keiko's
       panels were built from the measured profile and only the lapel traced,
       because the crop was occlusion-cut and the shoulder sat under the hair.
-      Mio's hair covers her shoulders the same way. Trace both and look; fall
+      Risa's hair covers her shoulders the same way. Trace both and look; fall
       back to the profile-built panel plus a traced lapel if the shoulder and
       the arm come out as stair-steps. Record which, and why, in this file.
 - [x] The sleeve runs from the shoulder to the wrist and ends in the white cuff
@@ -667,11 +678,11 @@ down and 0.999 out on the skull's radius; and `arm_half_w` from 0.19 to 0.145, w
 brings the tube to 0.17 at the top and 0.122 at the wrist and her hands to the reference's
 size. `stretched` carries the anchors with the height, held by a test.
 
-**Measured against the reference** (`harness/mio/blazer_overlap.py`, navy against navy on
+**Measured against the reference** (`harness/risa/blazer_overlap.py`, navy against navy on
 the same pixels at one head scale): overlap 0.843 and a mean outline distance of 0.040
 head radii (5.6 px) below the armpit, 0.771 and 0.039 over the whole garment. No
 prediction was written down before this reading, which the method asks for, so these are
-a reading and not the test of one. The picture (`out/mio/m7_overlap.png`) shows where the
+a reading and not the test of one. The picture (`out/risa/m7_overlap.png`) shows where the
 rest goes: a thin red edge along the outline, hers navy where ours is ink, since our
 stroke is a little heavier than hers; our hair counted as navy on the shoulders, since
 the two darks are within the colour tolerance; and the sleeve ends, where ours sit a few
@@ -695,7 +706,7 @@ read; the blazer separates from her black hair by its outline on black.
   came out a dull grey-tan, since `shade()` darkens without warming, so it is off and the
   neck stays flat skin (the owner's rule on the throat, `_neck`). Open for M9 or M10.
 
-**The neck, after the owner looked at the side-by-side** (`harness/mio/side_by_side.py`
+**The neck, after the owner looked at the side-by-side** (`harness/risa/side_by_side.py`
 writes hers, ours and the blend). Three differences were real and are fixed:
 
 - *Width.* Ours was 0.40 head radii a half, the chibi's neck; hers is 0.151 on the skull's
@@ -714,8 +725,8 @@ writes hers, ours and the blend). Three differences were real and are fixed:
 The knot also sits about 4 px lower than hers (M6, not moved).
 
 Tests: 852 pass, `ruff` green; `refresh-ref-out.sh --check` and `refresh-catalogue.sh`
-changed only Mio's render and the catalogue, every other character byte-identical. Seven
-new tests hold the cut's shape, the two opt-in parts and that only Mio wears them, the
+changed only Risa's render and the catalogue, every other character byte-identical. Seven
+new tests hold the cut's shape, the two opt-in parts and that only Risa wears them, the
 shirt's arm without a band, the wrist anchors (set only on her body) and their stretch.
 
 ### M8. The hair and the bangs
@@ -728,7 +739,7 @@ checklist.
       reference whose body is not ours. Her reference is the body `tall_slender`
       was measured off (M2), so nothing below the chin is taken from a foreign body.
 - [x] Trace the fringe, the long mass and the side locks, **and the lines in the hair**
-      (`harness/mio/trace_hair.py`, `emit_hair.py`), as the new cut `long_fringed`.
+      (`harness/risa/trace_hair.py`, `emit_hair.py`), as the new cut `long_fringed`.
 - [x] The ears, the crown and the hairline against the face, at 4x.
 - [x] Check it clears the arms and the blazer: the front is drawn over the blazer, the
       way hers lies in front of her shoulders.
@@ -804,7 +815,7 @@ derives well on all three.
 - The hair covers less of our shoulders than hers where the blazer's inferred shoulder
   line shows (M7's open item), now hidden under the front hair.
 
-Tests: 859 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio and the
+Tests: 859 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Risa and the
 catalogue changed. Her eyebrows over the fringe are M9's: the face is drawn under the hair, and
 hers are drawn over it.
 
@@ -824,14 +835,14 @@ head scale.
 
 #### M9 findings
 
-**Method.** `harness/mio/face_compare.py` lays her face and variants of ours side by side at one
+**Method.** `harness/risa/face_compare.py` lays her face and variants of ours side by side at one
 head scale (`BOX` is the face, 3x) and takes each variant as a dict of `FaceStyle` fields and
 `CharacterParams` fields, so a sweep is a list of dicts. Several rounds, each changing a few
 fields, picked by eye against the blend and not by a number.
 
 **What her eyes are against ours: measured, then solved.** The two eye layers
 (`segments/large-black-eyes/`) are true crops of the composite, at (518, 255) and (663, 257), so
-the eye can be read in her own pixels (`harness/mio/measure_eyes.py`, `eye_metrics.py`). Each
+the eye can be read in her own pixels (`harness/risa/measure_eyes.py`, `eye_metrics.py`). Each
 aperture is 63.5 wide and 66.5 tall, so a tall oval, nearly round, where ours was 1.43 wide for
 each unit of height. Her iris is 48.5 wide, 76% of the aperture, **as tall as the aperture**
 (an oval about 1.37 tall for its width, clipped by the lids), set **against the inner
@@ -841,7 +852,7 @@ aperture's width).
 
 A first pass by eye (a sweep of `eye_size`, `eye_width`, `iris_size`...) had the iris at 60 px,
 1.25 times hers, and read as filled only because it was clipped by a small aperture. Solving for
-her numbers, `eye_metrics.py` against `MIO.face`: `eye_size` 1.009, `eye_width` 0.729,
+her numbers, `eye_metrics.py` against `RISA.face`: `eye_size` 1.009, `eye_width` 0.729,
 `iris_size` 0.978, `eye_gap` 1.157, the lids even (`eye_openness` and `eye_lower_lid` 1.0),
 `eye_corner` 0.2 for the round oval and `lash` 1.2. That was a variant the owner asked for, and it is the one in
 the preset now. The first pass's values are in the commit before it, `6023132`.
@@ -883,7 +894,7 @@ renders as before, `refresh-ref-out.sh --check`):
 
 **`face_age` 0.75.** The age moves the jaw and little else: at 0.5 the jaw is rounder and
 wider, nearer hers, and at 0.85 it narrows to a V. The owner's range is 0.75 to 0.85, so the
-low end, which is the rounder jaw. `out/mio/face_age_strip.png` shows 0.50, 0.65, 0.75 and 0.85
+low end, which is the rounder jaw. `out/risa/face_age_strip.png` shows 0.50, 0.65, 0.75 and 0.85
 for the owner's call on going lower.
 
 **Left:**
@@ -895,10 +906,10 @@ for the owner's call on going lower.
   rim; the highlight pair is at the same places.
 - The eyes' lash wing droops down and out at hers and flicks up at ours.
 - The web tool's ranges (`FACE_RANGES`) do not reach these values (`eye_width` 0.85 to 1.10,
-  `iris_size` 0.60 to 0.80). Mio is not a web starting point until M11 decides whether to widen
+  `iris_size` 0.60 to 0.80). Risa is not a web starting point until M11 decides whether to widen
   them.
 
-Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
+Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Risa's render changed.
 
 ### M10. Colours and finish
 
@@ -911,17 +922,17 @@ Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's ren
 
 #### M10 findings
 
-**Colours** (`harness/mio/colours.py`). Her fills carry a faint mottle, so the exact mode of a
+**Colours** (`harness/risa/colours.py`). Her fills carry a faint mottle, so the exact mode of a
 fill is a weak statistic (the hair's is 18% of its pixels, the ribbon's 1%) and the per-channel
 median of the eroded interior is the steadier read; the two agree to within one or two steps. The
 first pass (M0) had been a 6-level histogram, good to a step per channel, and every colour was
 within three of the new reading. Moved one layer at a time, each step rendered and the pixels it
-changed counted (`out/mio/apply_colours.py`, not kept: it is the commit's diff), each landing only in
+changed counted (`out/risa/apply_colours.py`, not kept: it is the commit's diff), each landing only in
 its own layer, by no more than 3 a channel except the buttons (7):
 
 | Layer | Was | Now |
 | --- | --- | --- |
-| Hair | `#27272d` | `#27282b` |
+| Hair | `#27272d` | `#27282b` (then `#6b1f2a`, see the note at the top) |
 | Blazer, hip pockets | `#1b2739` | `#1c2838` |
 | Skirt | `#818da5` | `#808ea7` |
 | Ribbon | `#467b99` | `#467a98` |
@@ -935,30 +946,30 @@ to keep Satoko's `#f6dbc2`, and it stands. Her eyes are green, the owner's, and 
 
 **A palette far from the defaults.** Red hair, brown eyes, a lighter skin, a cream blazer with
 pockets to match, a deep red skirt, a green bow, white socks and black loafers
-(`out/mio/m10_palettes.png`). The second tone on the hair, the lid shadow and the outline all
+(`out/risa/m10_palettes.png`). The second tone on the hair, the lid shadow and the outline all
 derive and read; nothing is hard-coded to her dark palette.
 
 **Black on black.** Hair, blazer and socks on white and on a black page: the hair's fill is a
 visible step lighter than the black, the blazer is blue against it and the outline separates the
 socks from the legs and the loafers. Nothing merges.
 
-**Height.** `harness/mio/height_check.py` places her and ours at one head scale: hair top at
+**Height.** `harness/risa/height_check.py` places her and ours at one head scale: hair top at
 45 and 46, sole at 1515 and 1506, the width of the hair 416 to 853 on both. Ours is 10 px shorter in
 1470, 0.7%, which `height` 1.007 would close; not worth leaving the default for. It stays 1.0.
 
-Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
+Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Risa's render changed.
 
 ### M11. Integration
 
 - [ ] `catalogue.py`: every new field, cut and body has its entry and label, and
       each registry's assert holds.
-- [ ] Refresh `catalogue.json`, `ref-out/mio.svg` and `ref-out/mio.png`
-      (`./refresh-ref-out.sh`); it must report only Mio, the cast sheets and
+- [ ] Refresh `catalogue.json`, `ref-out/risa.svg` and `ref-out/risa.png`
+      (`./refresh-ref-out.sh`); it must report only Risa, the cast sheets and
       `catalogue.json` changed. Anything else changing is a blast-radius escape
       and stops the step.
-- [ ] README: Mio's table row (the smoke test checks for it) and the character
+- [ ] README: Risa's table row (the smoke test checks for it) and the character
       count; `CLAUDE.md` and `docs/api.md` where they say how many characters.
-- [ ] The cast sheet at tile size, Mio beside Satoko and Keiko.
+- [ ] The cast sheet at tile size, Risa beside Satoko and Keiko.
 - [ ] The web tool restaged (`web-stage.sh`) and looked at in a browser: she
       loads, every new control works.
 - [ ] `ruff check`, `ruff format --check`, `pytest` green.
@@ -992,8 +1003,8 @@ Acceptance: tooling green, only expected files changed, owner signs off.
 2. **The hip pocket flaps get a new field.** Opt-in, default draws nothing.
 3. **Default height for now**, revisited by eye at the end (M10). Her longer legs
    come from her own body profile (M2), not from `height`.
-4. **Display name is just "Mio".** (Her entry in `DISPLAY_NAMES` is still
-   needed: the label is "Mio" and the entry is its only home.)
+4. **Display name is just "Risa".** (Her entry in `DISPLAY_NAMES` is still
+   needed: the label is "Risa" and the entry is its only home.)
 5. **Trace her clothes properly, and measure her body, step by step, as close to
    the reference as is feasible, not quickly.** This replaces the first plan's
    "parametric first, trace only small shapes".

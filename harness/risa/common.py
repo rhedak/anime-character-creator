@@ -1,4 +1,4 @@
-"""What the Mio trace scripts share (`docs/mio-plan.md`).
+"""What the Risa trace scripts share (`docs/risa-plan.md`).
 
 The composite and the segments are placed at the offsets `crops.py` verified, and
 coordinates are converted into the **cut frame**: head radii on

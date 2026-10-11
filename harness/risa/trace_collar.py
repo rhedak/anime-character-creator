@@ -1,4 +1,4 @@
-"""Trace Mio's shirt collar (`docs/mio-plan.md`, M5).
+"""Trace Risa's shirt collar (`docs/risa-plan.md`, M5).
 
 `segments/white-collared-shirt.png` holds four things: the collar's two wings, a
 narrow strip of shirt front down the middle, two slivers beside the ribbon, and a
@@ -16,7 +16,7 @@ one pixel, so that drew a thin spike.
 Cut coordinates are head radii on `tall_slender`, x from the collar's own centre
 line (`AXIS_X`).
 
-    ./harness/run.sh harness/mio/trace_collar.py
+    ./harness/run.sh harness/risa/trace_collar.py
 """
 
 import json
@@ -56,7 +56,7 @@ def to_cut(p):
 
 chain = T.fit_closed([to_cut(p) for p in T.boundary(sil)], TOL)
 print(f"collar: {len(chain[1])} segments, colour {median_colour(collar, rgb, 4)}")
-json.dump({"axis_x": AXIS_X, "collar": chain, "colour": median_colour(collar, rgb, 4)}, open("out/mio/collar_trace.json", "w"))
+json.dump({"axis_x": AXIS_X, "collar": chain, "colour": median_colour(collar, rgb, 4)}, open("out/risa/collar_trace.json", "w"))
 
 box = (int(sx.min()) - 20, int(sy.min()) - 20, int(sx.max()) + 21, int(sy.max()) + 30)
 S = 4
@@ -67,5 +67,5 @@ d = ImageDraw.Draw(img)
 pts = T.sample_chain(chain[0], chain[1], 14)
 px = [((AXIS_X + x * R - box[0]) * S, (CY + y * R - box[1]) * S) for x, y in pts]
 d.line(px + [px[0]], fill=(255, 0, 80), width=2)
-img.save("out/mio/collar_trace.png")
-print("wrote out/mio/collar_trace.json and out/mio/collar_trace.png")
+img.save("out/risa/collar_trace.png")
+print("wrote out/risa/collar_trace.json and out/risa/collar_trace.png")

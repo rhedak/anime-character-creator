@@ -1,7 +1,7 @@
-"""Mio's hair, traced (`docs/mio-plan.md`, M8), off `segments/long-black-hair.png` and
+"""Risa's hair, traced (`docs/risa-plan.md`, M8), off `segments/long-black-hair.png` and
 `segments/bangs.png`, which together are the whole hair in front of her and beside her.
 
-What it writes to `out/mio/hair_trace.json` and draws on `out/mio/hair_trace.png`:
+What it writes to `out/risa/hair_trace.json` and draws on `out/risa/hair_trace.png`:
 
 - **The front piece**: both layers as one U-shaped silhouette, the face opening and the
   two curtains of the long locks, as one closed chain. Its outline is the stroke's centre
@@ -15,7 +15,7 @@ What it writes to `out/mio/hair_trace.json` and draws on `out/mio/hair_trace.png
 - **The openings**: the holes in the hair's mask, ringed by ink, where skin shows through:
   an ear at each side and a small gap in the fringe.
 
-    ./harness/run.sh harness/mio/trace_hair.py
+    ./harness/run.sh harness/risa/trace_hair.py
 """
 
 import json
@@ -141,7 +141,7 @@ underside = (
     [(((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), b) for a, b in zip(under_pts, under_pts[1:] + under_pts[:1])],
 )
 
-json.dump({"front": front, "mass": mass, "underside": underside}, open("out/mio/hair_trace.json", "w"))
+json.dump({"front": front, "mass": mass, "underside": underside}, open("out/risa/hair_trace.json", "w"))
 
 # A picture: the reference with the front outline in red and the mass in blue.
 im = Image.fromarray(RGB.astype(np.uint8)).convert("RGB")
@@ -155,8 +155,8 @@ def px(p):
 for chain, colour in ((mass, (40, 80, 230)), (front, (220, 30, 30))):
     pts = [px(p) for p in T.sample_chain(*chain)]
     d.line(pts, fill=colour, width=1)
-im.crop((400, 40, 870, 770)).resize((940, 1460), Image.LANCZOS).save("out/mio/hair_trace.png")
-print("wrote out/mio/hair_trace.json, hair_trace.png")
+im.crop((400, 40, 870, 770)).resize((940, 1460), Image.LANCZOS).save("out/risa/hair_trace.png")
+print("wrote out/risa/hair_trace.json, hair_trace.png")
 
 # --- the ears --------------------------------------------------------------------------
 # What shows of each ear is a thin sliver of skin: a hole in the hair's mask, ringed by ink
@@ -295,16 +295,16 @@ for i in range(1, sn + 1):
     shade.append(ch)
 shade.sort(key=lambda ch: (ch[0][1] > 0.9, ch[0][0]))
 
-data = json.load(open("out/mio/hair_trace.json"))
+data = json.load(open("out/risa/hair_trace.json"))
 data.update({"openings": ears, "strands": strands, "shade": shade})
-json.dump(data, open("out/mio/hair_trace.json", "w"))
+json.dump(data, open("out/risa/hair_trace.json", "w"))
 for chain in strands:
     d.line([px(p) for p in T.sample_chain(*chain)], fill=(0, 170, 60), width=1)
 for chain in ears:
     d.line([px(p) for p in T.sample_chain(*chain)], fill=(230, 120, 0), width=1)
 for chain in shade:
     d.line([px(p) for p in T.sample_chain(*chain)], fill=(200, 0, 200), width=1)
-im.crop((400, 40, 870, 770)).resize((940, 1460), Image.LANCZOS).save("out/mio/hair_trace.png")
+im.crop((400, 40, 870, 770)).resize((940, 1460), Image.LANCZOS).save("out/risa/hair_trace.png")
 
 # A second picture on the stretched-contrast reference, where her lines can be seen:
 # every strand in red, the darker regions in magenta, the openings in orange.
@@ -317,10 +317,10 @@ for chain in shade:
     d2.line([px(p) for p in T.sample_chain(*chain)], fill=(200, 0, 200), width=1)
 for chain in ears:
     d2.line([px(p) for p in T.sample_chain(*chain)], fill=(255, 140, 0), width=1)
-im2.crop((400, 40, 870, 770)).resize((940, 1460), Image.NEAREST).save("out/mio/hair_trace_contrast.png")
+im2.crop((400, 40, 870, 770)).resize((940, 1460), Image.NEAREST).save("out/risa/hair_trace_contrast.png")
 
 dbg = np.full((*F.shape, 3), 255, np.uint8)
 dbg[F] = (225, 225, 225)
 dbg[ink] = (0, 0, 0)
 dbg[skel] = (255, 0, 0)
-Image.fromarray(dbg[40:770, 400:870]).resize((940, 1460), Image.NEAREST).save("out/mio/hair_dbg.png")
+Image.fromarray(dbg[40:770, 400:870]).resize((940, 1460), Image.NEAREST).save("out/risa/hair_dbg.png")

@@ -1,4 +1,4 @@
-"""Mio's colours, modal-exact (`docs/mio-plan.md`, M10): for each layer the most common
+"""Risa's colours, modal-exact (`docs/risa-plan.md`, M10): for each layer the most common
 exact RGB value in its eroded interior, in the composite, against what the preset has.
 
 The first pass (M0) took a 6-level quantised histogram, good to a step per channel; this
@@ -6,7 +6,7 @@ takes the exact mode, the grade Satoko's palette was sampled to. Where a flat fi
 textured (her reference has a faint mottle) the mode is the fill, and the runner-up shows
 how far the texture strays from it.
 
-    ./harness/run.sh harness/mio/colours.py
+    ./harness/run.sh harness/risa/colours.py
 """
 
 from collections import Counter
@@ -16,7 +16,7 @@ from common import RGB, segment
 from PIL import Image
 from scipy import ndimage as ndi
 
-from anime_character_creator.presets import MIO
+from anime_character_creator.presets import RISA
 
 
 def mode(mask, erode=4):
@@ -35,10 +35,10 @@ def parse(h):
     return tuple(int(h[i : i + 2], 16) for i in (1, 3, 5))
 
 
-o = MIO.outfit
+o = RISA.outfit
 layers = {}
 for name, seg, have in (
-    ("hair", "long-black-hair.png", MIO.hair_color),
+    ("hair", "long-black-hair.png", RISA.hair_color),
     ("blazer", "school-blazer.png", o.coat_color),
     ("skirt", "pleated-skirt.png", o.skirt_color),
     ("ribbon", "blue-ribbon.png", o.ribbon_color),
@@ -76,7 +76,7 @@ def box(x0, y0, x1, y1):
 
 for name, b, have in (
     ("sock", (545, 1180, 575, 1250), o.knee_sock_color),
-    ("skin", (560, 330, 600, 360), MIO.skin_tone),
+    ("skin", (560, 330, 600, 360), RISA.skin_tone),
 ):
     top, share, rest = box(*b)
     d = np.abs(np.array(top) - np.array(parse(have))).max()

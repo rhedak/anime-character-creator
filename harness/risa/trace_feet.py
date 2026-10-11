@@ -1,4 +1,4 @@
-"""Trace Mio's knee sock and loafer (`docs/mio-plan.md`, M3).
+"""Trace Risa's knee sock and loafer (`docs/risa-plan.md`, M3).
 
 Both are traced for the **right** leg (the viewer's right) in the cut frame, head
 radii on `tall_slender`, with x measured from that leg's own centre line, the
@@ -14,10 +14,10 @@ the segment's own alpha, eroded by half the outline width for the same reason
 ink inside the eroded hull, thinned, walked and fitted as open chains, and the
 sole band, the one region of a second tone, as a fill.
 
-Writes `out/mio/feet_trace.json` and `out/mio/feet_trace.png`, the chains drawn
+Writes `out/risa/feet_trace.json` and `out/risa/feet_trace.png`, the chains drawn
 back over the reference at 3x. Always look at that before emitting.
 
-    ./harness/run.sh harness/mio/trace_feet.py
+    ./harness/run.sh harness/risa/trace_feet.py
 """
 
 import json
@@ -179,7 +179,7 @@ out = {
     "loafer_sole": sole,
     "base_colour": base,
 }
-json.dump(out, open("out/mio/feet_trace.json", "w"))
+json.dump(out, open("out/risa/feet_trace.json", "w"))
 
 # --- draw it back over the reference, 3x ----------------------------------------------
 box = (int(centre_px) - 130, 1130, int(centre_px) + 130, 1520)
@@ -201,5 +201,5 @@ for ln in lines:
     draw(ln, (255, 200, 0), closed=False)
 if sole:
     draw(sole, (0, 220, 120))
-img.save("out/mio/feet_trace.png")
-print("wrote out/mio/feet_trace.json and out/mio/feet_trace.png")
+img.save("out/risa/feet_trace.png")
+print("wrote out/risa/feet_trace.json and out/risa/feet_trace.png")

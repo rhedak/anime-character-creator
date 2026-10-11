@@ -296,7 +296,7 @@ class Outfit:
     # it replaces the undersleeve trim (`neckline_trim`) on the V.
     neckline_stand: bool = True
     # How deep the tunic's V cuts, in head radii, for a garment that closes higher
-    # than its collar's default leaves it: Mio's shirt is buttoned to the throat
+    # than its collar's default leaves it: Risa's shirt is buttoned to the throat
     # under a shirt collar whose wings cross above the point where the default V
     # for a traced collar bottoms out, so the V's skin showed below them. `None`
     # keeps the depth each case already had.
@@ -2679,8 +2679,8 @@ def _tousle_strands(tip: float) -> list[tuple[Point, list[Segment]]]:
 
 
 # BEGIN fringed trace
-# Traced by `harness/mio/trace_hair.py` off `segments/long-black-hair.png` and
-# `segments/bangs.png` (`docs/mio-plan.md`, M8). Head radii on the figure's own head, x
+# Traced by `harness/risa/trace_hair.py` off `segments/long-black-hair.png` and
+# `segments/bangs.png` (`docs/risa-plan.md`, M8). Head radii on the figure's own head, x
 # from its centre line, so a cut is the same hair on any body; `_fringed_q` stretches
 # the part below the cheek line to `hair_length`.
 _FRINGED_BASE_TIP = 3.441
@@ -3347,8 +3347,8 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         tip_lines=_parted_tip_lines,
     ),
     # Blunt fringe across the brow, long straight locks in front of the shoulders and
-    # the ears peeping out between them, traced off Mio's reference
-    # (`docs/mio-plan.md`, M8). Body-relative like `long_traced`.
+    # the ears peeping out between them, traced off Risa's reference
+    # (`docs/risa-plan.md`, M8). Body-relative like `long_traced`.
     "long_fringed": Hairstyle(
         _fringed_mass,
         _fringed_hairline,
@@ -5084,9 +5084,9 @@ BODY_TYPES["tall_chibi_long_torso"] = replace(
     waist_y=BODY_TYPES["tall_chibi"].waist_y + 0.5,
     hip_y=BODY_TYPES["tall_chibi"].hip_y + 0.5,
 ).head_scaled(_LONG_TORSO_HEAD_SCALE)
-# A taller, slimmer figure, measured off Mio's reference (`ref-local/mio/`,
-# `docs/mio-plan.md`, M2; the scripts are `harness/mio/`), 165 px per head radius,
-# head centre at the chin minus 1.02 of it (`harness/mio/landmarks.py`). It stands
+# A taller, slimmer figure, measured off Risa's reference (`ref-local/mio/`,
+# `docs/risa-plan.md`, M2; the scripts are `harness/risa/`), 165 px per head radius,
+# head centre at the chin minus 1.02 of it (`harness/risa/landmarks.py`). It stands
 # 4.36 heads against the tall chibi's 3.47 on that radius: the shoulders at 1.40
 # and 0.80 across, the wrist at 3.9 and the fingertips at 4.35, the skirt hem at
 # 4.43, the sock top (the boot landmark) at 5.675 and the sole at 7.72. The legs
@@ -5100,7 +5100,7 @@ BODY_TYPES["tall_chibi_long_torso"] = replace(
 # Then a head 0.85 times as big against the same body (`BodyProfile.head_scaled`).
 # 165 px is her skull's radius (her ears, her hair top to chin) but our face is
 # drawn wider than hers at that size: at 165 it came out 17% wider across the
-# cheeks, and the head variants put it on hers at 0.85 (`harness/mio/compare.py
+# cheeks, and the head variants put it on hers at 0.85 (`harness/risa/compare.py
 # heads`), which is also what her visible face width alone gives, 141 px. Her face
 # is a wide, short one against ours (her ears sit 0.5 head radii above her chin,
 # ours 1.0), so the face is the part to match and the head is made to suit it.
@@ -5121,12 +5121,12 @@ BODY_TYPES["tall_slender"] = BodyProfile(
     arm_x=0.90,
     leg_half_w=0.225,
     # Where her hand begins: the shirt cuff's bottom, 3.947 down and 0.999 out on that
-    # radius (`docs/mio-plan.md`, M7), where the arm line's own formula, from the hip and
+    # radius (`docs/risa-plan.md`, M7), where the arm line's own formula, from the hip and
     # the arm's width, put it 0.1 lower and 0.14 in.
     wrist_y=3.947,
     wrist_x=0.999,
     # Her neck, 25 px across a half at 165 px a skull radius where the chibi build's is
-    # 0.40 of one (`docs/mio-plan.md`, M7 neck).
+    # 0.40 of one (`docs/risa-plan.md`, M7 neck).
     neck_half_w=0.151,
 ).head_scaled(_SLENDER_HEAD_SCALE)
 
@@ -5378,7 +5378,7 @@ class GarmentCut:
     bust_line_after: int | None = None
     # The body the cut was traced on, whose head radii its coordinates are in; the
     # placement maps them from there onto the wearer's. The tall chibi unless the
-    # cut was traced off a different body (Mio's, `tall_slender`).
+    # cut was traced off a different body (Risa's, `tall_slender`).
     ref_body: str = _GARMENT_REF_BODY
     # A cut for a limb: coordinates are for the right leg, with x measured from
     # that leg's own centre line, and the cut is drawn once per leg, mirrored for
@@ -5541,8 +5541,8 @@ def _draw_cut(
 # How far outside `_leg_gap_and_top`'s centre line a leg is actually drawn, measured
 # where a sock starts, in head radii: the knee's bulge and the inside edge running
 # off toward the crotch put the visible leg there, and a sock set on the gap itself
-# sat 7 px in from it on Mio, where the reference's sock and leg share one centre
-# (`docs/mio-plan.md`, M3). It is also where her reference's feet stand.
+# sat 7 px in from it on Risa, where the reference's sock and leg share one centre
+# (`docs/risa-plan.md`, M3). It is also where her reference's feet stand.
 _LEG_CUT_OUT = 0.05
 
 
@@ -8679,8 +8679,8 @@ def _katana(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
-# Mio's knee sock and loafer, per `docs/mio-plan.md` M3.
-# Traced by `harness/mio/trace_feet.py` off `segments/anime-girl.png` (the sock, the
+# Risa's knee sock and loafer, per `docs/risa-plan.md` M3.
+# Traced by `harness/risa/trace_feet.py` off `segments/anime-girl.png` (the sock, the
 # one component of the leg colour below the skirt, grown to the stroke's centre line
 # and run on down under the shoe) and `segments/brown-loafers/` (the silhouette, the
 # saddle seam, the slit, the toe cap and the sole line, and the sole band as a second
@@ -8811,8 +8811,8 @@ BOOT_CUTS: dict[str, GarmentCut] = {
 # (end of the feet)
 
 
-# Mio's pleated skirt, per `docs/mio-plan.md` M4.
-# Traced by `harness/mio/trace_skirt.py` off `segments/pleated-skirt.png`: the
+# Risa's pleated skirt, per `docs/risa-plan.md` M4.
+# Traced by `harness/risa/trace_skirt.py` off `segments/pleated-skirt.png`: the
 # silhouette with its stepped hem, carried up behind the blazer along its own side
 # slopes (the reference's top edge is the blazer's hem), and the six fold lines
 # between the seven pleat faces as open strokes. Folds are line work and not tone:
@@ -8900,8 +8900,8 @@ SKIRT_CUTS["pleated"] = GarmentCut(
 # (end of the pleated skirt)
 
 
-# Mio's shirt collar, per `docs/mio-plan.md` M5.
-# Traced by `harness/mio/trace_collar.py` off `segments/white-collared-shirt.png`: the
+# Risa's shirt collar, per `docs/risa-plan.md` M5.
+# Traced by `harness/risa/trace_collar.py` off `segments/white-collared-shirt.png`: the
 # two wings as one outline, touching at the foot of their V where the ribbon's knot sits
 # and open above it, so her neck shows between them. An open collar, unlike the closed
 # band `_collar` draws without a cut. Head radii on `tall_slender`, x from the collar's
@@ -8955,8 +8955,8 @@ COLLAR_CUTS["shirt"] = GarmentCut(
 # (end of the shirt collar)
 
 
-# Mio's ribbon, per `docs/mio-plan.md` M6.
-# Traced by `harness/mio/trace_ribbon.py` off `segments/blue-ribbon.png` as five
+# Risa's ribbon, per `docs/risa-plan.md` M6.
+# Traced by `harness/risa/trace_ribbon.py` off `segments/blue-ribbon.png` as five
 # overlapping pieces drawn in the order they are tied, the tails, then the loops over
 # their tops, then the knot over both, so that their outlines are the fold lines and
 # none has to be traced as interior line work. Each loop has a slit cut out of it, with
@@ -9092,8 +9092,8 @@ RIBBON_CUT = GarmentCut(
 # (end of the ribbon)
 
 
-# Mio's blazer, per `docs/mio-plan.md` M7.
-# Traced by `harness/mio/trace_blazer.py` off `segments/school-blazer.png`: the whole
+# Risa's blazer, per `docs/risa-plan.md` M7.
+# Traced by `harness/risa/trace_blazer.py` off `segments/school-blazer.png`: the whole
 # garment as one silhouette, sleeves included (the reference draws it as one fill, and
 # her hair hides the shoulders, so the strips beside the torso are filled), the two
 # lapel facings with their notches over it, and the line work: the front line from the
@@ -9467,7 +9467,7 @@ def _arms(
             and (p.outfit.undersleeve_color is not None or long_sleeve)
             # A traced coat owns its sleeve, and what shows past it is the arm's own
             # sleeve and a line where it ends: a band there was a second tone the
-            # reference's white cuff does not have (`docs/mio-plan.md`, M7).
+            # reference's white cuff does not have (`docs/risa-plan.md`, M7).
             and not _traced_coat(sk, p)
         ):
             limb.append(_wrist_cuff(sk, sleeve, x(centre_wrist), wrist_y, w_wrist))
@@ -10518,7 +10518,7 @@ def _underpants(
     # hip, and the hem came out above the top, the underpants gone entirely on
     # every untucked figure (`docs/bare-body-status.md`, steps 1 and 3).
     hem_y = crotch_y + (sk.knee_y - crotch_y) * 0.22
-    # Never below a skirt's hem: a short skirt, Mio's, ends above where this does,
+    # Never below a skirt's hem: a short skirt, Risa's, ends above where this does,
     # and the thigh under it is bare skin in her reference.
     if hem_cap is not None:
         hem_y = min(hem_y, hem_cap - sk.head_r * 0.05)

@@ -1,14 +1,14 @@
-"""Emit Mio's shirt collar as `character.py` source, before `def _arms(`
-(`docs/mio-plan.md`, M5). Reads `out/mio/collar_trace.json`, which
+"""Emit Risa's shirt collar as `character.py` source, before `def _arms(`
+(`docs/risa-plan.md`, M5). Reads `out/risa/collar_trace.json`, which
 `trace_collar.py` writes. Re-running replaces the previously emitted block.
 """
 
 import json
 
 SRC = "src/anime_character_creator/character.py"
-BEGIN = "# Mio's shirt collar, per `docs/mio-plan.md` M5."
+BEGIN = "# Risa's shirt collar, per `docs/risa-plan.md` M5."
 END = "# (end of the shirt collar)"
-data = json.load(open("out/mio/collar_trace.json"))
+data = json.load(open("out/risa/collar_trace.json"))
 
 
 def chain(c, indent):
@@ -39,7 +39,7 @@ front = (
 
 lines = [
     BEGIN,
-    "# Traced by `harness/mio/trace_collar.py` off `segments/white-collared-shirt.png`: the",
+    "# Traced by `harness/risa/trace_collar.py` off `segments/white-collared-shirt.png`: the",
     "# two wings as one outline, touching at the foot of their V where the ribbon's knot sits",
     "# and open above it, so her neck shows between them. An open collar, unlike the closed",
     "# band `_collar` draws without a cut. Head radii on `tall_slender`, x from the collar's",

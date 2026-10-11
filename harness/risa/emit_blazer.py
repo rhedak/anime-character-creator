@@ -1,5 +1,5 @@
-"""Emit Mio's blazer as `character.py` source, before `def _arms(`
-(`docs/mio-plan.md`, M7). Reads `out/mio/blazer_trace.json`, which `trace_blazer.py`
+"""Emit Risa's blazer as `character.py` source, before `def _arms(`
+(`docs/risa-plan.md`, M7). Reads `out/risa/blazer_trace.json`, which `trace_blazer.py`
 writes. Re-running replaces the previously emitted block.
 
 Three things come out: the blazer itself (`COAT_CUTS["blazer"]`), the pocket flap
@@ -10,9 +10,9 @@ button positions (`_COAT_BUTTONS`).
 import json
 
 SRC = "src/anime_character_creator/character.py"
-BEGIN = "# Mio's blazer, per `docs/mio-plan.md` M7."
+BEGIN = "# Risa's blazer, per `docs/risa-plan.md` M7."
 END = "# (end of the blazer)"
-data = json.load(open("out/mio/blazer_trace.json"))
+data = json.load(open("out/risa/blazer_trace.json"))
 
 
 def chain(c, indent):
@@ -38,7 +38,7 @@ def mirror(c):
 
 lines = [
     BEGIN,
-    "# Traced by `harness/mio/trace_blazer.py` off `segments/school-blazer.png`: the whole",
+    "# Traced by `harness/risa/trace_blazer.py` off `segments/school-blazer.png`: the whole",
     "# garment as one silhouette, sleeves included (the reference draws it as one fill, and",
     "# her hair hides the shoulders, so the strips beside the torso are filled), the two",
     "# lapel facings with their notches over it, and the line work: the front line from the",

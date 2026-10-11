@@ -1,7 +1,7 @@
-"""Her face beside variants of ours (`docs/mio-plan.md`, M9): the reference first, then each
+"""Her face beside variants of ours (`docs/risa-plan.md`, M9): the reference first, then each
 variant, cropped to the face at one head scale.
 
-    ./harness/run.sh harness/mio/face_compare.py            # the variants in VARIANTS below
+    ./harness/run.sh harness/risa/face_compare.py            # the variants in VARIANTS below
 """
 
 import sys
@@ -10,7 +10,7 @@ from dataclasses import replace
 from compare import R, _SLENDER_HEAD_SCALE, ours, reference
 from PIL import Image, ImageDraw
 
-from anime_character_creator.presets import MIO
+from anime_character_creator.presets import RISA
 
 BOX = (500, 215, 760, 420)
 K = 3
@@ -34,10 +34,10 @@ VARIANTS = [
 
 
 def make(face, params):
-    return replace(MIO, face=replace(MIO.face, **face), **params)
+    return replace(RISA, face=replace(RISA.face, **face), **params)
 
 
-def run(variants, out="out/mio/face_variants.png"):
+def run(variants, out="out/risa/face_variants.png"):
     ref = reference().crop(BOX)
     tiles = [("reference", ref)]
     for label, face, params in variants:

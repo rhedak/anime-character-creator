@@ -1,4 +1,4 @@
-"""How well our blazer lies on hers (`docs/mio-plan.md`, M7): the overlap of the two
+"""How well our blazer lies on hers (`docs/risa-plan.md`, M7): the overlap of the two
 blazers' navy, and the distance between their outlines, on the same pixels.
 
 Both figures are on white at one head scale (`compare.py`). Her hair lies over her
@@ -6,14 +6,14 @@ shoulders where ours does not, so the comparison is made on the torso below the
 armpit, rows 650 to 860 of her composite, where nothing covers either garment but
 the hands, and on the whole garment separately for the record.
 
-    ./harness/run.sh harness/mio/blazer_overlap.py
+    ./harness/run.sh harness/risa/blazer_overlap.py
 """
 
 import numpy as np
 from compare import R, _SLENDER_HEAD_SCALE, ours, reference
 from scipy import ndimage as ndi
 
-from anime_character_creator.presets import MIO
+from anime_character_creator.presets import RISA
 
 NAVY = np.array([27, 39, 57])
 
@@ -24,7 +24,7 @@ def navy(im, tol=38):
 
 
 ref_im = reference()
-mine_im = ours(MIO, ref_im.size, r=R * _SLENDER_HEAD_SCALE)
+mine_im = ours(RISA, ref_im.size, r=R * _SLENDER_HEAD_SCALE)
 rn, mn = navy(ref_im), navy(mine_im)
 # The blazer is the navy in the garment's band, which keeps her black hair (a different
 # grey) and the black socks out of it.
@@ -55,5 +55,5 @@ out = np.full((*rn.shape, 3), 255, np.uint8)
 out[rn & mn] = (170, 170, 170)
 out[rn & ~mn] = (220, 40, 40)
 out[~rn & mn] = (40, 80, 230)
-Image.fromarray(out).crop((430, 405, 835, 880)).resize((810, 950), Image.NEAREST).save("out/mio/m7_overlap.png")
-print("wrote out/mio/m7_overlap.png")
+Image.fromarray(out).crop((430, 405, 835, 880)).resize((810, 950), Image.NEAREST).save("out/risa/m7_overlap.png")
+print("wrote out/risa/m7_overlap.png")

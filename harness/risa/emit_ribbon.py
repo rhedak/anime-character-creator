@@ -1,14 +1,14 @@
-"""Emit Mio's ribbon as `character.py` source, before `def _arms(`
-(`docs/mio-plan.md`, M6). Reads `out/mio/ribbon_trace.json`, which
+"""Emit Risa's ribbon as `character.py` source, before `def _arms(`
+(`docs/risa-plan.md`, M6). Reads `out/risa/ribbon_trace.json`, which
 `trace_ribbon.py` writes. Re-running replaces the previously emitted block.
 """
 
 import json
 
 SRC = "src/anime_character_creator/character.py"
-BEGIN = "# Mio's ribbon, per `docs/mio-plan.md` M6."
+BEGIN = "# Risa's ribbon, per `docs/risa-plan.md` M6."
 END = "# (end of the ribbon)"
-data = json.load(open("out/mio/ribbon_trace.json"))
+data = json.load(open("out/risa/ribbon_trace.json"))
 NAMES = ["left tail", "right tail", "left loop", "right loop", "knot"]
 
 
@@ -24,7 +24,7 @@ def chain(c, indent):
 
 lines = [
     BEGIN,
-    "# Traced by `harness/mio/trace_ribbon.py` off `segments/blue-ribbon.png` as five",
+    "# Traced by `harness/risa/trace_ribbon.py` off `segments/blue-ribbon.png` as five",
     "# overlapping pieces drawn in the order they are tied, the tails, then the loops over",
     "# their tops, then the knot over both, so that their outlines are the fold lines and",
     "# none has to be traced as interior line work. Each loop has a slit cut out of it, with",

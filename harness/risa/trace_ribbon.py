@@ -1,4 +1,4 @@
-"""Trace Mio's ribbon (`docs/mio-plan.md`, M6).
+"""Trace Risa's ribbon (`docs/risa-plan.md`, M6).
 
 `segments/blue-ribbon.png` is a true crop and the whole bow. Drawn the way an
 illustrator would build it, as five overlapping pieces, so that their outlines are
@@ -19,7 +19,7 @@ texture and is left out.
 Cut coordinates are head radii on `tall_slender`, x from the collar's centre line
 (`AXIS_X`, so the bow and the wings it is tied under share one axis).
 
-    ./harness/run.sh harness/mio/trace_ribbon.py
+    ./harness/run.sh harness/risa/trace_ribbon.py
 """
 
 import json
@@ -86,7 +86,7 @@ for i in range(1, ln + 1):
             print(f"slit in {name}: {int(c.sum())} px, {len(chain[1])} segments")
             break
 
-json.dump({"axis_x": AXIS_X, "fills": fills, "holes": holes, "colour": median_colour(m & blue, rgb, 2)}, open("out/mio/ribbon_trace.json", "w"))
+json.dump({"axis_x": AXIS_X, "fills": fills, "holes": holes, "colour": median_colour(m & blue, rgb, 2)}, open("out/risa/ribbon_trace.json", "w"))
 
 ys, xs = np.nonzero(m)
 box = (int(xs.min()) - 10, int(ys.min()) - 10, int(xs.max()) + 11, int(ys.max()) + 11)
@@ -103,5 +103,5 @@ for _, chain in holes:
     q = T.sample_chain(chain[0], chain[1], 14)
     px = [((AXIS_X + x * R - box[0]) * S, (CY + y * R - box[1]) * S) for x, y in q]
     d.line([*px, px[0]], fill=(255, 255, 0), width=2)
-img.save("out/mio/ribbon_trace.png")
-print("wrote out/mio/ribbon_trace.json and out/mio/ribbon_trace.png")
+img.save("out/risa/ribbon_trace.png")
+print("wrote out/risa/ribbon_trace.json and out/risa/ribbon_trace.png")

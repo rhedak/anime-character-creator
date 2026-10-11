@@ -1243,24 +1243,23 @@ LINDITA = CharacterParams(
     ),
 )
 
-# Mio: a generic Japanese schoolgirl, 18, in her last year of high school. A guest,
-# not one of the Valley of Mist cast (`docs/mio-plan.md`). Black hair and green
-# eyes (the reference has black; green is the owner's call), the winter uniform:
-# navy blazer with gold buttons over a white shirt, a light blue-grey skirt.
-# Colours sampled off `ref-local/mio/segments/` where they are flat. This is the
-# first pass, existing fields only: the ribbon, the pleats, the knee socks and the
-# loafers are still to come, so boots and a plain skirt stand in for them.
-MIO = CharacterParams(
+# Risa: a generic Japanese schoolgirl, 18, in her last year of high school. A guest,
+# not one of the Valley of Mist cast (`docs/risa-plan.md`). Dark red hair held back with
+# a gold clip, green eyes, a grey blazer with gold buttons over a white shirt, a blue bow
+# and a light blue-grey pleated skirt. Her clothes, hair and body are traced off a
+# reference (`ref-local/mio/`, local only); the colours of hair and blazer are her own
+# (the reference's were black and navy, too like an existing character).
+RISA = CharacterParams(
     face_age=0.75,
     bust=0.3,
     skin_tone="#f6dbc2",
-    hair_color="#27282b",
+    hair_color="#6b1f2a",
     hairstyle="long_fringed",
     # Her traced length: the tips at 3.441 head radii below the head centre, where this
-    # body's chin-to-hip measure puts them at 0.716 (`docs/mio-plan.md`, M8).
+    # body's chin-to-hip measure puts them at 0.716 (`docs/risa-plan.md`, M8).
     hair_length=0.716,
     eye_color="#3c7a50",
-    # Her own proportions, measured off her reference (`docs/mio-plan.md`, M2).
+    # Her own proportions, measured off her reference (`docs/risa-plan.md`, M2).
     body="tall_slender",
     outfit=Outfit(
         tunic_color="#f8f8f8",
@@ -1271,7 +1270,7 @@ MIO = CharacterParams(
         undersleeve_color="#f8f8f8",
         belt_color=None,
         skirt_color="#808ea7",
-        # The traced box-pleated skirt (`docs/mio-plan.md`, M4); the cut owns its hem,
+        # The traced box-pleated skirt (`docs/risa-plan.md`, M4); the cut owns its hem,
         # so no length is set.
         skirt_cut="pleated",
         tunic_tucked=True,
@@ -1281,21 +1280,24 @@ MIO = CharacterParams(
         neckline_notch=0.04,
         # The blue bow at the throat (`ribbon_color`, traced).
         ribbon_color="#467a98",
-        # The traced blazer (`docs/mio-plan.md`, M7): the whole garment, sleeves included, so
+        # The traced blazer (`docs/risa-plan.md`, M7): the whole garment, sleeves included, so
         # the arm under it is the shirt's, and the white cuff is the arm showing past the
         # blazer's sleeve.
-        coat_color="#1c2838",
+        coat_color="#4d5159",
         coat_cut="blazer",
-        hip_pocket_color="#1c2838",
+        hip_pocket_color="#4d5159",
         coat_button_color="#ba975e",
+        # A bar clip at the temple, over the fringe: one asymmetric detail of her own.
+        hair_clip_color="#e8c45a",
+        hair_clip="bar",
         sleeve_long=True,
     ),
     frame=-0.2,
-    # Her face, tuned against her reference's at one head scale (`docs/mio-plan.md`, M9):
+    # Her face, tuned against her reference's at one head scale (`docs/risa-plan.md`, M9):
     # tall oval eyes with an iris that fills them, set wide apart, a short mouth low in
     # the face and brows drawn through the fringe.
     face=FaceStyle(
-        # The eye, solved against her measurements (`harness/mio/eye_metrics.py`): an
+        # The eye, solved against her measurements (`harness/risa/eye_metrics.py`): an
         # aperture 63 by 67 px, a tall iris 48 wide filling it from lid to lid and set against
         # the inner corner so the white shows on the outer side only, and the two eyes
         # about one eye apart. The upper lid comes down over the top of the iris and shades
@@ -1345,7 +1347,7 @@ PRESETS: dict[str, CharacterParams] = {
     "reinhard": REINHARD,
     "tenno": TENNO,
     "viktor": VIKTOR,
-    "mio": MIO,
+    "risa": RISA,
 }
 
 # What a character is called on a sheet, where the preset key is not it: the
@@ -1378,7 +1380,7 @@ DISPLAY_NAMES: dict[str, str] = {
     # filename, so we do the same: the character is Viktor, and renaming a
     # checked-in reference to match would be the more disruptive half of the fix.
     "viktor": "Viktor Grau",
-    "mio": "Mio",
+    "risa": "Risa",
 }
 
 # Who appears on a sheet, in the order they appear.
@@ -1425,8 +1427,8 @@ ROSTERS["everglow"] = ("gero", "linnea")
 # Dritan and Lindita, the leads of another short story (../short_stories,
 # "The Bureaucracy of Blood"): a separate work, its own roster.
 ROSTERS["bureaucracy"] = ("dritan", "lindita")
-# Mio is a generic schoolgirl from no story of ours (`docs/mio-plan.md`): her own roster.
-ROSTERS["mio"] = ("mio",)
+# Risa is a generic schoolgirl from no story of ours (`docs/risa-plan.md`): her own roster.
+ROSTERS["risa"] = ("risa",)
 
 # ---------------------------------------------------------------------------
 # Neutral bases, for the web tool rather than the novel.

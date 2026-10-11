@@ -1,4 +1,4 @@
-"""Trace Mio's pleated skirt (`docs/mio-plan.md`, M4).
+"""Trace Risa's pleated skirt (`docs/risa-plan.md`, M4).
 
 `segments/pleated-skirt.png` is a true crop and is the *visible* skirt: seven
 box-pleat faces, six fold lines between them, a stepped hem, and for a top edge
@@ -8,7 +8,7 @@ edges are extended along their own slope for `EXTEND` px, and the top rows are
 filled across (the tab is the blazer, not a hole in the skirt). That part is
 inference and hidden by the blazer in every render; it only has to leave no gap.
 
-The folds are line work, not tone (`docs/mio-plan.md`, decision 6): the
+The folds are line work, not tone (`docs/risa-plan.md`, decision 6): the
 reference alternates two skirt tones across the pleats, which is a shading plane
 across a garment. The ink inside the eroded hull is six clean strokes; each is
 thinned, walked, smoothed and fitted as an open chain, and its ends are carried
@@ -17,7 +17,7 @@ on along their own tangent to meet the silhouette.
 Cut coordinates are head radii on `tall_slender`, x from the body's centre line
 (`AXIS_X`, the silhouette's own centre), y from the head centre.
 
-    ./harness/run.sh harness/mio/trace_skirt.py
+    ./harness/run.sh harness/risa/trace_skirt.py
 """
 
 import json
@@ -116,7 +116,7 @@ for i in range(1, dn + 1):
     print(f"  fold {len(lines)}: {int(m.sum())} px, {len(c[1])} segments, x {cut_pts[0][0]:+.3f} to {cut_pts[-1][0]:+.3f}")
 lines.sort(key=lambda c: c[0][0])
 
-json.dump({"axis_x": AXIS_X, "silhouette": chain, "folds": lines, "colour": median_colour(skirt, rgb, 6)}, open("out/mio/skirt_trace.json", "w"))
+json.dump({"axis_x": AXIS_X, "silhouette": chain, "folds": lines, "colour": median_colour(skirt, rgb, 6)}, open("out/risa/skirt_trace.json", "w"))
 
 # --- back over the reference, 3x --------------------------------------------------
 box = (int(sx.min()) - 12, int(top) - 50, int(sx.max()) + 13, int(ys.max()) + 14)
@@ -137,5 +137,5 @@ def draw(c, colour, closed=True):
 draw(chain, (255, 0, 80))
 for c in lines:
     draw(c, (0, 140, 255), closed=False)
-img.save("out/mio/skirt_trace.png")
-print("wrote out/mio/skirt_trace.json and out/mio/skirt_trace.png")
+img.save("out/risa/skirt_trace.png")
+print("wrote out/risa/skirt_trace.json and out/risa/skirt_trace.png")

@@ -1,14 +1,14 @@
-"""Our eye in her pixels (`docs/mio-plan.md`, M9 variant): the aperture's width and height, the
+"""Our eye in her pixels (`docs/risa-plan.md`, M9 variant): the aperture's width and height, the
 iris's diameter and the distance between the two eyes' centres, for a `FaceStyle`, so a
 variant can be solved against what `measure_eyes.py` reads off hers.
 
-    ./harness/run.sh harness/mio/eye_metrics.py
+    ./harness/run.sh harness/risa/eye_metrics.py
 """
 
 from dataclasses import replace
 
 from anime_character_creator import character
-from anime_character_creator.presets import MIO
+from anime_character_creator.presets import RISA
 
 # Hers, in px of her composite (R = 140.25 px a head radius): `measure_eyes.py`, read off
 # the two eye layers, which are true crops (offsets (518, 255) and (663, 257)).
@@ -23,7 +23,7 @@ R_PX = 140.25
 
 
 def metrics(face_fields, params_fields=None):
-    p = replace(MIO, face=replace(MIO.face, **face_fields), **(params_fields or {}))
+    p = replace(RISA, face=replace(RISA.face, **face_fields), **(params_fields or {}))
     sk = character.skeleton_for(p)
     dx, ey, er, f = character._eye_placement(sk, p)
     k = R_PX / sk.head_r

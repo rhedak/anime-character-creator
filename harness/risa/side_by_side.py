@@ -1,10 +1,10 @@
-"""Hers and ours side by side, with a half-and-half blend (`docs/mio-plan.md`).
+"""Hers and ours side by side, with a half-and-half blend (`docs/risa-plan.md`).
 
 Left her composite, middle our render, right the two blended. Both are on white at the
 same head scale and the same head centre (`compare.py`), so a difference of placement
 shows as a double line in the blend.
 
-    ./harness/run.sh harness/mio/side_by_side.py [crop ...]     # crops: see compare.CROPS
+    ./harness/run.sh harness/risa/side_by_side.py [crop ...]     # crops: see compare.CROPS
 """
 
 import sys
@@ -12,12 +12,12 @@ import sys
 from compare import CROPS, R, _SLENDER_HEAD_SCALE, ours, reference
 from PIL import Image, ImageDraw
 
-from anime_character_creator.presets import MIO
+from anime_character_creator.presets import RISA
 
 
 def run(crop, out):
     ref = reference()
-    mine = ours(MIO, ref.size, r=R * _SLENDER_HEAD_SCALE)
+    mine = ours(RISA, ref.size, r=R * _SLENDER_HEAD_SCALE)
     box = CROPS[crop]
     if box:
         ref, mine = ref.crop(box), mine.crop(box)
@@ -34,4 +34,4 @@ def run(crop, out):
 
 
 for crop in sys.argv[1:] or ["upper", "torso"]:
-    run(crop, f"out/mio/side_{crop}.png")
+    run(crop, f"out/risa/side_{crop}.png")

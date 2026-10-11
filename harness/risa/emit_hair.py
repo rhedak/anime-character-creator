@@ -1,5 +1,5 @@
-"""Emit Mio's hair as `character.py` source, before `class Hairstyle`
-(`docs/mio-plan.md`, M8). Reads `out/mio/hair_trace.json`, which `trace_hair.py` writes.
+"""Emit Risa's hair as `character.py` source, before `class Hairstyle`
+(`docs/risa-plan.md`, M8). Reads `out/risa/hair_trace.json`, which `trace_hair.py` writes.
 Re-running replaces the previously emitted block.
 """
 
@@ -8,7 +8,7 @@ import json
 SRC = "src/anime_character_creator/character.py"
 BEGIN = "# BEGIN fringed trace"
 END = "# END fringed trace"
-data = json.load(open("out/mio/hair_trace.json"))
+data = json.load(open("out/risa/hair_trace.json"))
 
 
 def chain(c, indent):
@@ -35,8 +35,8 @@ def many(name, cs, doc):
 tip = max(max(e[1] for _, e in data["front"][1]), data["front"][0][1])
 lines = [
     BEGIN,
-    "# Traced by `harness/mio/trace_hair.py` off `segments/long-black-hair.png` and",
-    "# `segments/bangs.png` (`docs/mio-plan.md`, M8). Head radii on the figure's own head, x",
+    "# Traced by `harness/risa/trace_hair.py` off `segments/long-black-hair.png` and",
+    "# `segments/bangs.png` (`docs/risa-plan.md`, M8). Head radii on the figure's own head, x",
     "# from its centre line, so a cut is the same hair on any body; `_fringed_q` stretches",
     "# the part below the cheek line to `hair_length`.",
     f"_FRINGED_BASE_TIP = {tip:.3f}",

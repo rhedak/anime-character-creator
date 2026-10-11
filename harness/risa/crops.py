@@ -1,5 +1,5 @@
-"""Which of Mio's segments are true pixel crops of `ref-local/mio/mio.png`
-(`docs/mio-plan.md`, M2).
+"""Which of Risa's segments are true pixel crops of `ref-local/mio/mio.png`
+(`docs/risa-plan.md`, M2).
 
 The skill's standing check: an AI tool's layer export is not necessarily a crop
 of the composite, and coordinates may be taken off a segment only if it is one
@@ -16,7 +16,7 @@ best offset is noise. The runner-up offset away from the best is printed too,
 since a flat region can match at several offsets and the best of those is not a
 placement.
 
-    ./harness/run.sh harness/mio/crops.py
+    ./harness/run.sh harness/risa/crops.py
 """
 
 import glob

@@ -1,14 +1,14 @@
-"""Emit Mio's pleated skirt as `character.py` source, before `def _arms(`
-(`docs/mio-plan.md`, M4). Reads `out/mio/skirt_trace.json`, which `trace_skirt.py`
+"""Emit Risa's pleated skirt as `character.py` source, before `def _arms(`
+(`docs/risa-plan.md`, M4). Reads `out/risa/skirt_trace.json`, which `trace_skirt.py`
 writes. Re-running replaces the previously emitted block.
 """
 
 import json
 
 SRC = "src/anime_character_creator/character.py"
-BEGIN = "# Mio's pleated skirt, per `docs/mio-plan.md` M4."
+BEGIN = "# Risa's pleated skirt, per `docs/risa-plan.md` M4."
 END = "# (end of the pleated skirt)"
-data = json.load(open("out/mio/skirt_trace.json"))
+data = json.load(open("out/risa/skirt_trace.json"))
 
 
 def chain(c, indent):
@@ -28,7 +28,7 @@ def tup(c, indent):
 
 lines = [
     BEGIN,
-    "# Traced by `harness/mio/trace_skirt.py` off `segments/pleated-skirt.png`: the",
+    "# Traced by `harness/risa/trace_skirt.py` off `segments/pleated-skirt.png`: the",
     "# silhouette with its stepped hem, carried up behind the blazer along its own side",
     "# slopes (the reference's top edge is the blazer's hem), and the six fold lines",
     "# between the seven pleat faces as open strokes. Folds are line work and not tone:",

@@ -1,4 +1,4 @@
-"""Trace Mio's blazer (`docs/mio-plan.md`, M7).
+"""Trace Risa's blazer (`docs/risa-plan.md`, M7).
 
 `segments/school-blazer.png` is a true crop and the whole blazer, sleeves
 included, but her hair lies over it in two places and the shirt under it in a
@@ -24,7 +24,7 @@ emitted as small parts of their own (`emit_blazer.py`).
 Cut coordinates are head radii on `tall_slender`, x from the blazer's own centre line
 (`AXIS_X`, the silhouette's middle), y from the head centre.
 
-    ./harness/run.sh harness/mio/trace_blazer.py
+    ./harness/run.sh harness/risa/trace_blazer.py
 """
 
 import json
@@ -138,7 +138,7 @@ hi_s[sel] = smooth(hi[sel])
 # the ink begins) made a doubled, heavy line. The wing's outline is the centre line of its
 # stroke (`collar_trace.json`), so the opening's wall is put on it.
 COLLAR_TO = 470
-_col = json.load(open("out/mio/collar_trace.json"))
+_col = json.load(open("out/risa/collar_trace.json"))
 _cs, _csegs = _col["collar"]
 _cpts = [(_col["axis_x"] + x * R, CY + y * R) for x, y in [_cs] + [e for _, e in _csegs]]
 _poly = Image.new("L", (W, H), 0)
@@ -287,9 +287,9 @@ json.dump(
         "buttons": button_cut,
         "colour": median_colour(m, rgb, 6),
     },
-    open("out/mio/blazer_trace.json", "w"),
+    open("out/risa/blazer_trace.json", "w"),
 )
-print("wrote out/mio/blazer_trace.json")
+print("wrote out/risa/blazer_trace.json")
 
 # --- back over the reference, 2x --------------------------------------------------------
 box = (435, 405, 830, 880)
@@ -313,5 +313,5 @@ for c in (closure, side_l, side_r):
     draw(c, (255, 200, 0), closed=False)
 draw(pocket, (0, 255, 120))
 draw(closed_chain(region['pocket_l'], tol=0.006), (0, 255, 120))
-img.save("out/mio/blazer_trace.png")
-print("wrote out/mio/blazer_trace.png")
+img.save("out/risa/blazer_trace.png")
+print("wrote out/risa/blazer_trace.png")

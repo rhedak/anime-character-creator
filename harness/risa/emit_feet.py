@@ -1,5 +1,5 @@
-"""Emit Mio's knee sock and loafer as `character.py` source, before `def _arms(`
-(`docs/mio-plan.md`, M3). Reads `out/mio/feet_trace.json`, which `trace_feet.py`
+"""Emit Risa's knee sock and loafer as `character.py` source, before `def _arms(`
+(`docs/risa-plan.md`, M3). Reads `out/risa/feet_trace.json`, which `trace_feet.py`
 writes. Re-running replaces the previously emitted block.
 
 Coordinates are cut coordinates for a `per_leg` cut: head radii on `tall_slender`,
@@ -9,9 +9,9 @@ the right leg's, with x from the leg's own centre line.
 import json
 
 SRC = "src/anime_character_creator/character.py"
-BEGIN = "# Mio's knee sock and loafer, per `docs/mio-plan.md` M3."
+BEGIN = "# Risa's knee sock and loafer, per `docs/risa-plan.md` M3."
 END = "# (end of the feet)"
-data = json.load(open("out/mio/feet_trace.json"))
+data = json.load(open("out/risa/feet_trace.json"))
 # The sole's tone against the loafer's own, as `shade()`'s value factor: the
 # reference's sole #332921 over its leather #433228 is 0.76 in value, and `shade`
 # adds a little saturation on top, so a touch above.
@@ -35,7 +35,7 @@ def tup(c, indent):
 
 lines = [BEGIN]
 lines += [
-    "# Traced by `harness/mio/trace_feet.py` off `segments/anime-girl.png` (the sock, the",
+    "# Traced by `harness/risa/trace_feet.py` off `segments/anime-girl.png` (the sock, the",
     "# one component of the leg colour below the skirt, grown to the stroke's centre line",
     "# and run on down under the shoe) and `segments/brown-loafers/` (the silhouette, the",
     "# saddle seam, the slit, the toe cap and the sole line, and the sole band as a second",
