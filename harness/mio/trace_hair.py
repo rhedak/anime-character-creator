@@ -31,9 +31,15 @@ sys.path.insert(0, ".claude/skills/trace-reference")
 import trace_lib as T  # noqa: E402
 
 HALF = 2
+CONTOUR_SIGMA = 2.5  # pixels along the contour
 CLOSE_Y = 700  # where the mass is closed across between the curtains, behind the blazer
 SMOOTH = 1.5
-HAT, HAT_MIN = 7, 22
+HAT, HAT_MIN = 7, 12
+FLAP_ROWS = (395, 450)  # rows of the streaked flaps, where no strand is taken
+FLAP_TOP, FLAP_BOTTOM = 347, 446
+FLAP_EDGE = (522.0, 0.111)  # the curtain's inner edge at FLAP_TOP, and its slope
+EDGE_NEAR = 6
+FRINGE_BOTTOM, MIN_LONG = 345, 30
 MAX_THICK = 4.5
 MIN_STROKE = 14
 INK = 55  # luminance sum: her lines are black (0 to 30) and their edges
@@ -57,38 +63,85 @@ def to_frame(pt):
     return ((pt[0] - CX) / R, (pt[1] - CY) / R)
 
 
-# The outer silhouette's ink lies outside the segment's mask: add the dark ring there.
-span = np.zeros_like(F)
-for y in range(F.shape[0]):
-    row = np.nonzero(F[y])[0]
-    if len(row):
-        span[y, row.min() : row.max() + 1] = True
-ring = ndi.binary_dilation(F, iterations=4) & ~F & (RGB.sum(2) <= 60) & ~span
-H = F | ring
-# The masks' own edges are a pixel ragged (the ring most of all): round them off.
-H = ndi.gaussian_filter(H.astype(float), SMOOTH) > 0.5
-Her = ndi.binary_erosion(H, iterations=HALF)
-lab, n = ndi.label(Her)
-Her = lab == (1 + int(np.argmax(ndi.sum(Her, lab, range(1, n + 1)))))
+def smooth_loop(points, sigma=CONTOUR_SIGMA):
+    """A closed contour with its pixel staircase rounded off: the coordinates averaged
+    along the arc. Her edges are long smooth curves and the mask's boundary is not."""
+    xy = np.asarray(points, float)
+    return list(
+        zip(
+            ndi.gaussian_filter1d(xy[:, 0], sigma, mode="wrap"),
+            ndi.gaussian_filter1d(xy[:, 1], sigma, mode="wrap"),
+        )
+    )
 
-pts = [to_frame(p) for p in T.boundary(Her)]
+
+def silhouette(mask):
+    """`mask` with its outer ink added, rounded and eroded to the stroke's centre line."""
+    # The outer silhouette's ink lies outside the segment's mask: add the dark ring there.
+    span = np.zeros_like(mask)
+    for y in range(mask.shape[0]):
+        row = np.nonzero(mask[y])[0]
+        if len(row):
+            span[y, row.min() : row.max() + 1] = True
+    ring = ndi.binary_dilation(mask, iterations=4) & ~mask & (RGB.sum(2) <= 60) & ~span
+    # The masks' own edges are a pixel ragged (the ring most of all): round them off.
+    h = ndi.gaussian_filter((mask | ring).astype(float), SMOOTH) > 0.5
+    er = ndi.binary_erosion(h, iterations=HALF)
+    lab, n = ndi.label(er)
+    return lab == (1 + int(np.argmax(ndi.sum(er, lab, range(1, n + 1)))))
+
+
+# The flaps beside the neck are hair behind her, not hair in front: a lobe hanging from
+# each curtain's inner edge, down to the blazer's shoulder, where the reference's blazer
+# outline is the one line between them. They belong to the mass, behind the blazer, in the
+# darker tone. The curtain's inner edge runs straight on past where they hang.
+def flap_edge(y):
+    """x of the left curtain's inner edge, from the lobe's top to the shoulder."""
+    return FLAP_EDGE[0] + (min(max(y, FLAP_TOP), FLAP_BOTTOM) - FLAP_TOP) * FLAP_EDGE[1]
+
+
+Her_full = silhouette(F)
+cut = np.zeros_like(F)
+for y in range(FLAP_TOP, FLAP_BOTTOM + 1):
+    xl = int(round(flap_edge(y)))
+    cut[y, xl + 1 : int(round(2 * CX)) - xl] = True
+F_full = F
+F = F & ~cut
+Her = silhouette(F)
+
+pts = [to_frame(p) for p in smooth_loop(T.boundary(Her))]
 front = T.fit_closed(pts, TOL_FRONT)
 print(f"front outline: {len(front[1])} segments")
 
 # The mass: the silhouette with the gap between the two curtains filled, from the left
 # curtain's inner edge to the right's, down to CLOSE_Y. Not the whole row's span: the
 # daylight between a curtain's outer lock and its inner one has to stay open.
-M = Her.copy()
+M = Her_full.copy()
 mid = int(round(CX))
 for y in range(F.shape[0]):
-    left = np.nonzero(Her[y, :mid])[0]
-    right = np.nonzero(Her[y, mid:])[0]
+    left = np.nonzero(Her_full[y, :mid])[0]
+    right = np.nonzero(Her_full[y, mid:])[0]
     if len(left) and len(right) and y <= CLOSE_Y:
         M[y, left.max() : mid + right.min() + 1] = True
-mass = T.fit_closed([to_frame(p) for p in T.boundary(M)], TOL_MASS)
+mass = T.fit_closed([to_frame(p) for p in smooth_loop(T.boundary(M))], TOL_MASS)
 print(f"mass outline: {len(mass[1])} segments")
 
-json.dump({"front": front, "mass": mass}, open("out/mio/hair_trace.json", "w"))
+# The darker hair behind the neck: the mass between the curtains below the flaps' top,
+# a polygon running a little under each curtain (which covers it) and closed far below.
+UNDER_TUCK = 6
+UNDER_TOP = 290  # up beside the ear; the head covers what is not hair
+poly = []
+for y in (UNDER_TOP, FLAP_BOTTOM, CLOSE_Y):
+    poly.append((flap_edge(y) - UNDER_TUCK, y))
+for y in (CLOSE_Y, FLAP_BOTTOM, UNDER_TOP):
+    poly.append((2 * CX - flap_edge(y) + UNDER_TUCK, y))
+under_pts = [to_frame(q) for q in poly]
+underside = (
+    under_pts[0],
+    [(((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), b) for a, b in zip(under_pts, under_pts[1:] + under_pts[:1])],
+)
+
+json.dump({"front": front, "mass": mass, "underside": underside}, open("out/mio/hair_trace.json", "w"))
 
 # A picture: the reference with the front outline in red and the mass in blue.
 im = Image.fromarray(RGB.astype(np.uint8)).convert("RGB")
@@ -114,7 +167,9 @@ ears, ear_zone = [], np.zeros_like(F)
 for i in range(1, hn + 1):
     c = hlab == i
     ey, ex = np.nonzero(c)
-    if c.sum() < 100:
+    if c.sum() < 100 or ey.mean() < 250:
+        # (a small gap in her fringe, up at the brow, is skin showing between two locks: it
+        # reads as a scratch under our heavier stroke, so it is left out)
         continue
     grown = ndi.binary_dilation(c, iterations=HALF)
     chain = T.fit_closed([to_frame(p) for p in T.boundary(grown)], 0.008)
@@ -131,7 +186,18 @@ inner = ndi.binary_erosion(F, iterations=4)
 # black-hat (the closing less the image) picks out dark runs narrower than the window, and
 # leaves the wide darker regions alone.
 blackhat = ndi.grey_closing(lum.astype(float), size=(HAT, HAT)) - lum
-ink = inner & ((lum <= INK) | (blackhat >= HAT_MIN)) & ~ear_zone
+# The flaps beside the neck are streaked with ink, a texture and not lines.
+flaps = np.zeros_like(F)
+flaps[FLAP_ROWS[0] : FLAP_ROWS[1], 515:745] = True
+ear_zone = ear_zone | flaps
+strong = inner & (lum <= INK) & ~ear_zone
+# Her thin lines are grey along their length and black only in places, so a threshold
+# breaks each into fragments: keep everything line-like that touches a strong pixel.
+weak = inner & ((lum <= INK) | (blackhat >= HAT_MIN)) & ~ear_zone
+wl, wn = ndi.label(weak, structure=np.ones((3, 3)))
+has_strong = np.zeros(wn + 1, bool)
+has_strong[np.unique(wl[strong])] = True
+ink = has_strong[wl] & (wl > 0)
 lab2, n2 = ndi.label(ink, structure=np.ones((3, 3)))
 strokes = np.zeros_like(ink)
 for i in range(1, n2 + 1):
@@ -178,8 +244,22 @@ def extend(path):
     return pts
 
 
+edge_dist = ndi.distance_transform_edt(Her)  # from each pixel to the front's outline
 strands = []
 for path in paths:
+    px_, py_ = [q[0] for q in path], [q[1] for q in path]
+    # Below the fringe a short fragment is a dash, where above it a short line is a lock's
+    # edge: her long lines there come out whole, so a short one is a piece of something.
+    if np.mean(py_) > FRINGE_BOTTOM and len(path) < MIN_LONG:
+        continue
+    # The near-horizontal marks at the fringe's foot are her eyebrows showing through it,
+    # which are the face's, not the hair's.
+    if (max(px_) - min(px_)) > 1.2 * (max(py_) - min(py_)):
+        continue
+    # A stroke lying along the outline is the outline again: half of it would be clipped away.
+    on_edge = np.mean([edge_dist[int(y), int(x)] < EDGE_NEAR for x, y in path])
+    if on_edge > 0.5:
+        continue
     pts = extend(path)
     if len(pts) < 3:
         continue

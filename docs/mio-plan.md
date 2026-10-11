@@ -758,21 +758,36 @@ away. A plain ink threshold found a third of the lines, because many are thin an
   below the chin, where the blazer hides it. Not the whole row's span: the daylight
   between a curtain's outer lock and its inner one has to stay open (a first pass
   filled it and left a flat ledge between the tips).
-- *The strands* (`_FRINGED_STRANDS`, 46): the lines that part the hair into locks, open
+- *The strands* (`_FRINGED_STRANDS`, 28): the lines that part the hair into locks, open
   chains, found by thinning, pruning spurs (`common.prune`, which Zhang-Suen's rough
-  edges need) and cutting at junctions. Blotches, the streaks in the flaps beside the
-  neck, are not lines and are dropped by thickness.
-- *The darker hair* (`Hairstyle.front_shade`, `_FRINGED_SHADE`, 4 regions): her strips down
+  edges need) and cutting at junctions. Her thin lines are grey along their length and
+  black only in places, so they are found by hysteresis: every line-like pixel that
+  touches a strong one. Left out: blotches (the streaks in the flaps), near-horizontal
+  marks at the fringe's foot (her eyebrows showing through it, the face's), strokes lying
+  along the outline (half of one is clipped away and it reads as dashes) and short
+  fragments below the fringe. They are drawn at `Hairstyle.strand_weight` 0.8 of the
+  outline, where the default is 0.55, since her lines are bold.
+- *The flaps and the hair behind the neck belong to the mass.* A first pass traced them
+  as part of the front, and the hair met the blazer in a doubled line with a wedge of
+  mass between (the owner's circle on the neck and shoulders). In the reference the
+  flap is hair behind the blazer, whose outline is the one line there. So the front is
+  cut along the curtain's inner edge, which runs straight on past where the flaps hang,
+  and the flaps and everything between the curtains below the ear are the mass's, in
+  the second tone (`Hairstyle.underside`, `_FRINGED_UNDERSIDE`), under the blazer.
+- *The darker hair* (`Hairstyle.front_shade`, `_FRINGED_SHADE`, 2 regions: the outer strips): her strips down
   the outer side of each curtain and the flaps beside the neck, painted in
   `_HAIR_UNDERSIDE_VALUE` of the hair colour, clipped to the front. The flat-colour
   rule allows a second tone on hair that lies behind (`underside`, the same call).
-- *The openings* (`Hairstyle.openings`, three): patches of skin drawn over the hair, her
-  ears peeping out between the locks and a small gap in the fringe. They are the layer's
-  holes, ringed by ink, and are drawn skin-filled rather than cut, since our own ear
-  sits elsewhere on a wider face.
+- *The openings* (`Hairstyle.openings`, two): patches of skin drawn over the hair, her
+  ears peeping out between the locks. They are the layer's holes, ringed by ink, and are
+  drawn skin-filled rather than cut, since our own ear sits elsewhere on a wider face.
+  A third, a small skin gap in her fringe, is left out: it read as a scratch.
+- *The contour is rounded along its length* (a Gaussian of 2.5 px on the coordinates)
+  before it is fitted, since a mask's edge is a staircase and her edges are long curves.
+  That took the fringe's opening from a jagged line to her V parting.
 - `_fall_q` is `_parted_q` with the traced tip depth as a parameter; the parted cut calls
-  it, so it draws as before. Her `hair_length` is 0.721, which puts the tips at the traced
-  3.459 head radii and makes the stretch the identity.
+  it, so it draws as before. Her `hair_length` is 0.716, which puts the tips at the traced
+  3.441 head radii and makes the stretch the identity.
 
 **Palette check:** red hair on dark skin, blond hair, and black on black. The second tone
 derives well on all three.
@@ -790,7 +805,8 @@ derives well on all three.
   line shows (M7's open item), now hidden under the front hair.
 
 Tests: 859 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio and the
-catalogue changed.
+catalogue changed. Her eyebrows over the fringe are M9's: the face is drawn under the hair, and
+hers are drawn over it.
 
 ### M9. The face
 

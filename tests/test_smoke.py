@@ -3017,7 +3017,9 @@ def test_the_fringed_hair_draws_its_darker_tone_its_strands_and_its_ears_over_th
     p = PRESETS["mio"]
     sk = character.skeleton_for(p)
     svg = character._hair_front(sk, p)
-    assert svg.count(f'fill="{p.skin_tone}"') == len(character._FRINGED_OPENINGS) == 3
+    assert svg.count(f'fill="{p.skin_tone}"') == len(character._FRINGED_OPENINGS) == 2, (
+        "an ear a side"
+    )
     assert svg.count("clip-path") == len(character._FRINGED_SHADE) + len(character._FRINGED_STRANDS)
     other = replace(p, hairstyle="long_blunt")
     assert character._hair_front(sk, other).count(f'fill="{p.skin_tone}"') == 0

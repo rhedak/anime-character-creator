@@ -56,6 +56,15 @@ lines = [
             "closed across, below the chin, where the blazer hides it.",
         ],
     ),
+    *one(
+        "_FRINGED_UNDERSIDE",
+        data["underside"],
+        [
+            "The hair behind the neck, in the second tone: where the mass shows between the two",
+            "curtains below the cheek. The flaps hang from the curtains' inner edges, behind the",
+            "blazer, so they are the mass's and not the front's.",
+        ],
+    ),
     *many(
         "_FRINGED_STRANDS",
         data["strands"],
