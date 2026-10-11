@@ -810,19 +810,65 @@ hers are drawn over it.
 
 ### M9. The face
 
-- [ ] Compare the eyes against `segments/large-black-eyes/` (two crops, one
-      eye each): the reference's are large, round and tall, with a lash line
-      and two highlights. Tune `FaceStyle` (`eye_size`, `eye_width`,
-      `eye_openness`, `iris_size`, `eye_tilt`, `lash`) first; trace only if the
-      shape cannot be reached with the fields.
-- [ ] Green eyes that hold against black hair and a dark lash line, at figure
-      size and at sheet size.
-- [ ] Brows, mouth, blush: the reference is calm and neutral, a short flat
-      mouth, a tiny nose mark. Soften the stern look the first render had.
-- [ ] `face_age` by eye, from 0.75 to 0.85 (the owner's call).
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the
+checklist.
 
-Acceptance: a calm, neutral, clearly 18-year-old face that reads beside the
-reference at one head scale.
+- [x] Compare the eyes against `segments/large-black-eyes/`, tune `FaceStyle`, trace only if
+      the fields cannot reach the shape. They reach it: no tracing.
+- [x] Green eyes that hold against black hair and a dark lash line.
+- [x] Brows, mouth, blush: calm and neutral, a short mouth low in the face, a tiny nose mark.
+- [x] `face_age` by eye, from 0.75 to 0.85: **0.75**, the low end, for the rounder jaw.
+
+Acceptance: a calm, neutral, clearly 18-year-old face that reads beside the reference at one
+head scale.
+
+#### M9 findings
+
+**Method.** `harness/mio/face_compare.py` lays her face and variants of ours side by side at one
+head scale (`BOX` is the face, 3x) and takes each variant as a dict of `FaceStyle` fields and
+`CharacterParams` fields, so a sweep is a list of dicts. Several rounds, each changing a few
+fields, picked by eye against the blend and not by a number.
+
+**What her eyes are against ours.** Hers are tall ovals, about 1.15 wide for each unit of height,
+where ours were 1.43; the iris is as tall as the aperture, clipped by the upper lid, with white
+only at the outer side; the upper lash is heavy; they sit wider apart than a narrow eye's
+proportionate gap puts them. The fields that did it, on `MIO.face`: `eye_width` 0.68 and
+`eye_size` 1.18 (taller, not wider), `iris_size` 1.12 with `eye_openness` 0.95 and
+`eye_lower_lid` 0.75 (the iris fills the aperture and the white crescent under it is gone),
+`eye_tilt` -0.05 and `lash` 1.2.
+
+**Three new opt-in `FaceStyle` fields**, since no existing one reached them (every other face
+renders as before, `refresh-ref-out.sh --check`):
+
+- `eye_gap` (None keeps `_EYE_GAP`): the gap between the eyes as a share of an eye's half-width.
+  A narrow eye keeps its gap proportionate to itself, which put her tall pair too close;
+  hers is 0.75.
+- `mouth_drop` (0.0): the mouth lower in the face, in head radii. Hers is 0.06 lower and about
+  two thirds as wide (`mouth_width` 0.45).
+- `brows_over_hair` (False) and `brow_length` (1.0): her brows are drawn through the fringe, as
+  short arcs. The brow is now `_brow`, and `_brows_over_hair` draws it after the front hair
+  when asked; the stock face draws them where it always did. Hers are arcs and ours are
+  straight lines.
+
+**`face_age` 0.75.** The age moves the jaw and little else: at 0.5 the jaw is rounder and
+wider, nearer hers, and at 0.85 it narrows to a V. The owner's range is 0.75 to 0.85, so the
+low end, which is the rounder jaw. `out/mio/face_age_strip.png` shows 0.50, 0.65, 0.75 and 0.85
+for the owner's call on going lower.
+
+**Left:**
+
+- Her jaw and chin are wider and rounder than any of ours: the skull's shape is the build's and
+  not a `FaceStyle` field (`_head_shape`), and the head's width was already matched at one
+  scale in M2. Only a lower `face_age` brings it nearer, and the owner set the range.
+- Her iris is grey with a lighter lower half, a softer look than our flat band; the highlight
+  pair is at the same places.
+- Her nose is one dot where ours is two small ticks (`face_maturity`).
+- The eyes' lash wing droops down and out at hers and flicks up at ours.
+- The web tool's ranges (`FACE_RANGES`) do not reach these values (`eye_width` 0.85 to 1.10,
+  `iris_size` 0.60 to 0.80). Mio is not a web starting point until M11 decides whether to widen
+  them.
+
+Tests: 861 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
 
 ### M10. Colours and finish
 

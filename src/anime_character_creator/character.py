@@ -86,6 +86,10 @@ class FaceStyle:
     eye_lower_lid: float = 1.0
     # Raises the outer corner above the inner one.
     eye_tilt: float = 0.10
+    # The gap between the eyes, as a share of an eye's half-width (the cast's median,
+    # `_EYE_GAP`, when None). A narrow eye keeps the gap proportionate to itself, which
+    # puts a tall narrow pair close together; a face that draws them wide apart says so.
+    eye_gap: float | None = None
     # 0 is a rounded oval, 1 pulls all four corners out to sharp points.
     eye_corner: float = 0.35
     # Iris against the aperture's smaller half-axis. Below 1 leaves white
@@ -99,9 +103,19 @@ class FaceStyle:
     # 0 is level. Positive drops the inner ends (stern), negative raises them.
     brow_tilt: float = 0.0
     brow_weight: float = 1.0
+    # How long each brow runs, against the eye's own width: 1.0 the stock line, shorter a
+    # short brow over a big eye.
+    brow_length: float = 1.0
     # 1.0 is the stock smile, 0 is a flat line, negative frowns.
     mouth_curve: float = 1.0
     mouth_width: float = 1.0
+    # How far the mouth sits below its usual place, in head radii: a longer lower
+    # face, a smaller mouth set low in it.
+    mouth_drop: float = 0.0
+    # Whether the brows are drawn over the fringe rather than under it, for a face
+    # whose reference draws them through the hair (a blunt fringe that comes down
+    # to the lids).
+    brows_over_hair: bool = False
     # How far the mouth hangs open: 0 is the shut line it has always been, 1 a
     # mouth about as deep as it is wide. The upper edge is the same curve as the
     # shut mouth, so a face moves between the two without the lip jumping.
@@ -12191,7 +12205,8 @@ def _eye_placement(sk: Skeleton, p: CharacterParams) -> tuple[float, float, floa
     # (`harness/detail/eye_spacing_study.py`).
     w = eye_r * f.eye_width * _EYE_ASPECT
     edge = _head_edge_x((eye_y - cy) / r, sk.face_build) * r
-    eye_dx = min(w * (1.0 + _EYE_GAP), edge - w - _EYE_CORNER_CLEAR * r)
+    gap = _EYE_GAP if f.eye_gap is None else f.eye_gap
+    eye_dx = min(w * (1.0 + gap), edge - w - _EYE_CORNER_CLEAR * r)
     return eye_dx, eye_y, eye_r, f
 
 
@@ -12280,6 +12295,35 @@ def _nose(sk: Skeleton, sw: float) -> str:
 _EYE_EDGE_CLEAR = 0.03
 
 
+def _brow(sk: Skeleton, p: CharacterParams, side: int) -> str:
+    """One brow: a line just above the lash line, on `side` (-1 left, 1 right)."""
+    eye_dx, eye_y, eye_r, f = _eye_placement(sk, p)
+    sw = _stroke_w(sk)
+    # Brows are hair, so they carry the hair's own darker tone rather than the
+    # outline color. On dark hair the difference vanishes, which is correct.
+    # 0.45 rather than a softer tint because the brows are what carry
+    # expression now the eyes stay open: too faint and the face goes blank.
+    brow_color = shade(p.hair_color, 0.45)
+    ex = sk.head_cx + side * eye_dx
+    # Just above the lash line, nearly touching it. The canon's sternness
+    # lives in that closeness: a brow floating high off the eye reads as
+    # mild surprise whatever its tilt says.
+    brow_y = eye_y - eye_r * 1.30
+    tilt = f.brow_tilt * eye_r * 0.28
+    return (
+        f'<line x1="{ex - side * eye_r * f.brow_length:.1f}" y1="{brow_y + tilt:.1f}" '
+        f'x2="{ex + side * eye_r * f.brow_length:.1f}" y2="{brow_y - tilt:.1f}" '
+        f'stroke="{brow_color}" stroke-width="{_outline_w(sw, f.brow_weight):.2f}" stroke-linecap="round" />'
+    )
+
+
+def _brows_over_hair(sk: Skeleton, p: CharacterParams) -> str:
+    """The brows, drawn after the front hair, for a face that asks for it."""
+    if not _eye_placement(sk, p)[3].brows_over_hair:
+        return ""
+    return "".join(_brow(sk, p, side) for side in (-1, 1))
+
+
 def _face(sk: Skeleton, p: CharacterParams) -> str:
     r = sk.head_r
     cx, cy = sk.head_cx, sk.head_cy
@@ -12289,26 +12333,13 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     edge = _head_edge_x((eye_y - cy) / r, sk.face_build) * r
     reach = edge - eye_dx - _EYE_EDGE_CLEAR * r
     sw = _stroke_w(sk)
-    # Brows are hair, so they carry the hair's own darker tone rather than the
-    # outline color. On dark hair the difference vanishes, which is correct.
-    # 0.45 rather than a softer tint because the brows are what carry
-    # expression now the eyes stay open: too faint and the face goes blank.
-    brow_color = shade(p.hair_color, 0.45)
     pupil_ratio = 0.40 + _PUPIL_REALISTIC_GROW * _eye_build(sk)
     parts = []
 
     for side in (-1, 1):
         ex = cx + side * eye_dx
-        # Just above the lash line, nearly touching it. The canon's sternness
-        # lives in that closeness: a brow floating high off the eye reads as
-        # mild surprise whatever its tilt says.
-        brow_y = eye_y - eye_r * 1.30
-        tilt = f.brow_tilt * eye_r * 0.28
-        parts.append(
-            f'<line x1="{ex - side * eye_r:.1f}" y1="{brow_y + tilt:.1f}" '
-            f'x2="{ex + side * eye_r:.1f}" y2="{brow_y - tilt:.1f}" '
-            f'stroke="{brow_color}" stroke-width="{_outline_w(sw, f.brow_weight):.2f}" stroke-linecap="round" />'
-        )
+        if not f.brows_over_hair:
+            parts.append(_brow(sk, p, side))
         if f.eyes_closed:
             parts.append(_eye_closed(ex, eye_y, eye_r, side, f, sw))
         else:
@@ -12317,7 +12348,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     if sk.face_maturity > 0.0:
         parts.append(_nose(sk, sw))
 
-    mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.face_build)
+    mouth_y = cy + r * (_MOUTH_Y + _MOUTH_REALISTIC_DROP * sk.face_build + f.mouth_drop)
     mouth_half = r * 0.12 * f.mouth_width * (1.0 + _MOUTH_REALISTIC_WIDEN * sk.face_build)
     if f.mouth_open > 0.0:
         # Open: the shut mouth's curve is the upper lip, and a second curve below it
@@ -13145,6 +13176,8 @@ def render_character(
         # already covers the ear and the beard's sideburns.
         _goggles_strap(sk, p),
         _hair_front(sk, p),
+        # Over the fringe, for a face that draws them there.
+        _brows_over_hair(sk, p),
         # Last of the hair, unlike the tail, which is first. See `_hair_knot`: a
         # cut leaves under a tenth of a head radius of daylight above itself, so
         # a knot drawn behind the mass is invisible; drawn between the mass and

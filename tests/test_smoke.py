@@ -3036,3 +3036,45 @@ def test_a_longer_haircut_stretches_the_fringed_tips_and_keeps_the_fringe() -> N
     # Above the cheek line nothing moves: the fringe stays on the skull.
     top = lambda m: sorted(e for _, e in m[1] if e[1] < 0.5)  # noqa: E731
     assert top(longer) == top(base)
+
+
+def test_the_new_face_fields_default_to_the_cast_and_only_mio_sets_them() -> None:
+    stock = FaceStyle()
+    assert stock.eye_gap is None and stock.mouth_drop == 0.0
+    assert stock.brows_over_hair is False and stock.brow_length == 1.0
+    for name, p in PRESETS.items():
+        f = p.face
+        set_here = (f.eye_gap, f.mouth_drop, f.brows_over_hair, f.brow_length) != (
+            None,
+            0.0,
+            False,
+            1.0,
+        )
+        assert set_here == (name == "mio"), name
+
+
+def test_eyes_set_wide_apart_a_mouth_set_low_and_brows_over_the_hair() -> None:
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    narrow = replace(p, face=replace(p.face, eye_gap=0.2))
+    assert character._eye_placement(sk, p)[0] > character._eye_placement(sk, narrow)[0]
+    # The brows leave the face and are drawn on their own, over the hair.
+    assert character._brows_over_hair(sk, p).count("<line") == 2
+    assert "<line" not in character._brows_over_hair(
+        sk, replace(p, face=replace(p.face, brows_over_hair=False))
+    )
+    under = replace(p, face=replace(p.face, brows_over_hair=False))
+    assert character._face(sk, under).count("<line") == 2
+    assert character._face(sk, p).count("<line") == 0
+    # A short brow is shorter.
+    long_brow = replace(p, face=replace(p.face, brow_length=1.0))
+    assert len(character._brow(sk, p, 1)) == len(character._brow(sk, long_brow, 1))
+    assert character._brow(sk, p, 1) != character._brow(sk, long_brow, 1)
+    # A mouth dropped sits lower.
+    flat = replace(p, face=replace(p.face, mouth_drop=0.0))
+
+    def mouth_y(q: CharacterParams) -> float:
+        svg = character._face(character.skeleton_for(q), q)
+        return float(svg.split('d="M ')[-1].split(" Q")[0].split()[1])
+
+    assert mouth_y(p) > mouth_y(flat)

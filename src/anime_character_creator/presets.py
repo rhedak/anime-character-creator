@@ -1251,7 +1251,7 @@ LINDITA = CharacterParams(
 # first pass, existing fields only: the ribbon, the pleats, the knee socks and the
 # loafers are still to come, so boots and a plain skirt stand in for them.
 MIO = CharacterParams(
-    face_age=0.8,
+    face_age=0.75,
     bust=0.3,
     skin_tone="#f6dbc2",
     hair_color="#27272d",
@@ -1291,14 +1291,25 @@ MIO = CharacterParams(
         sleeve_long=True,
     ),
     frame=-0.2,
+    # Her face, tuned against her reference's at one head scale (`docs/mio-plan.md`, M9):
+    # tall oval eyes with an iris that fills them, set wide apart, a short mouth low in
+    # the face and brows drawn through the fringe.
     face=FaceStyle(
-        eye_size=1.0,
-        eye_width=1.0,
-        iris_size=1.06,
+        eye_size=1.18,
+        eye_width=0.68,
+        eye_openness=0.95,
+        eye_lower_lid=0.75,
+        eye_tilt=-0.05,
+        eye_gap=0.75,
+        iris_size=1.12,
+        lash=1.2,
         brow_tilt=0.0,
         brow_weight=0.7,
+        brow_length=0.65,
+        brows_over_hair=True,
         mouth_curve=0.0,
-        mouth_width=0.6,
+        mouth_width=0.45,
+        mouth_drop=0.06,
         blush=0.1,
     ),
 )
