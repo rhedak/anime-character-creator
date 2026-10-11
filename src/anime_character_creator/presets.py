@@ -1254,7 +1254,7 @@ MIO = CharacterParams(
     face_age=0.75,
     bust=0.3,
     skin_tone="#f6dbc2",
-    hair_color="#27272d",
+    hair_color="#27282b",
     hairstyle="long_fringed",
     # Her traced length: the tips at 3.441 head radii below the head centre, where this
     # body's chin-to-hip measure puts them at 0.716 (`docs/mio-plan.md`, M8).
@@ -1263,31 +1263,31 @@ MIO = CharacterParams(
     # Her own proportions, measured off her reference (`docs/mio-plan.md`, M2).
     body="tall_slender",
     outfit=Outfit(
-        tunic_color="#f9f9f9",
+        tunic_color="#f8f8f8",
         # Brown loafers (`boot_cut`, traced) over black knee socks, the reference's.
-        boot_color="#453327",
+        boot_color="#433228",
         boot_cut="loafer",
         knee_sock_color="#262729",
-        undersleeve_color="#f9f9f9",
+        undersleeve_color="#f8f8f8",
         belt_color=None,
-        skirt_color="#818da5",
+        skirt_color="#808ea7",
         # The traced box-pleated skirt (`docs/mio-plan.md`, M4); the cut owns its hem,
         # so no length is set.
         skirt_cut="pleated",
         tunic_tucked=True,
-        collar_color="#f9f9f9",
+        collar_color="#f8f8f8",
         collar_cut="shirt",
         # Buttoned to the throat: the V stays a seam under the wings.
         neckline_notch=0.04,
         # The blue bow at the throat (`ribbon_color`, traced).
-        ribbon_color="#467b99",
+        ribbon_color="#467a98",
         # The traced blazer (`docs/mio-plan.md`, M7): the whole garment, sleeves included, so
         # the arm under it is the shirt's, and the white cuff is the arm showing past the
         # blazer's sleeve.
-        coat_color="#1b2739",
+        coat_color="#1c2838",
         coat_cut="blazer",
-        hip_pocket_color="#1b2739",
-        coat_button_color="#bd9957",
+        hip_pocket_color="#1c2838",
+        coat_button_color="#ba975e",
         sleeve_long=True,
     ),
     frame=-0.2,

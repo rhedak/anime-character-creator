@@ -902,13 +902,51 @@ Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's ren
 
 ### M10. Colours and finish
 
-- [ ] Move every colour to a modal-exact sample (the Satoko grade, not the
-      quantised first pass), one layer at a time, not in one jump.
-- [ ] Test one palette very different from the defaults (red hair, brown eyes,
-      a light blazer), confirming `shade()` derivations hold outside the dark
-      range, per `CLAUDE.md`.
-- [ ] Check black on black: hair, blazer and socks together, on white and black.
-- [ ] `height` by eye (default stays at 1.0 unless the owner picks otherwise).
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the checklist.
+
+- [x] Move every colour to a modal-exact sample, one layer at a time.
+- [x] A palette very different from the defaults (red hair, brown eyes, a cream blazer), and
+      black on black on white and on black.
+- [x] `height` by eye: the default 1.0 stays.
+
+#### M10 findings
+
+**Colours** (`harness/mio/colours.py`). Her fills carry a faint mottle, so the exact mode of a
+fill is a weak statistic (the hair's is 18% of its pixels, the ribbon's 1%) and the per-channel
+median of the eroded interior is the steadier read; the two agree to within one or two steps. The
+first pass (M0) had been a 6-level histogram, good to a step per channel, and every colour was
+within three of the new reading. Moved one layer at a time, each step rendered and the pixels it
+changed counted (`out/mio/apply_colours.py`, not kept: it is the commit's diff), each landing only in
+its own layer, by no more than 3 a channel except the buttons (7):
+
+| Layer | Was | Now |
+| --- | --- | --- |
+| Hair | `#27272d` | `#27282b` |
+| Blazer, hip pockets | `#1b2739` | `#1c2838` |
+| Skirt | `#818da5` | `#808ea7` |
+| Ribbon | `#467b99` | `#467a98` |
+| Shirt (tunic, cuffs, collar) | `#f9f9f9` | `#f8f8f8` |
+| Loafers | `#453327` | `#433228` |
+| Gold buttons | `#bd9957` | `#ba975e`, the mean of her three buttons' medians |
+| Knee socks | `#262729` | unchanged: the mode, and 50% of the fill |
+
+**Not moved: the skin.** Hers samples at `#fbd9c0`, pinker than ours; the owner's M0 call was
+to keep Satoko's `#f6dbc2`, and it stands. Her eyes are green, the owner's, and were set in M9.
+
+**A palette far from the defaults.** Red hair, brown eyes, a lighter skin, a cream blazer with
+pockets to match, a deep red skirt, a green bow, white socks and black loafers
+(`out/mio/m10_palettes.png`). The second tone on the hair, the lid shadow and the outline all
+derive and read; nothing is hard-coded to her dark palette.
+
+**Black on black.** Hair, blazer and socks on white and on a black page: the hair's fill is a
+visible step lighter than the black, the blazer is blue against it and the outline separates the
+socks from the legs and the loafers. Nothing merges.
+
+**Height.** `harness/mio/height_check.py` places her and ours at one head scale: hair top at
+45 and 46, sole at 1515 and 1506, the width of the hair 416 to 853 on both. Ours is 10 px shorter in
+1470, 0.7%, which `height` 1.007 would close; not worth leaving the default for. It stays 1.0.
+
+Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Mio's render changed.
 
 ### M11. Integration
 
