@@ -212,7 +212,10 @@ def _tile(p: SheetParams, preset: str, x: float, y: float) -> str:
     k = (p.tile_h * p.figure_height) / sk.canvas_h
     fx = x + p.tile_w / 2 - sk.canvas_w * k / 2
     fy = top + p.tile_h * p.figure_feet_y - sk.foot_y * k
-    doc = render_character(character, sk)
+    # Each tile its own id prefix: the eye's clip path is `eye-l` in every figure, and a
+    # viewer takes one definition for them all, which clipped Risa's iris away when her eye,
+    # a different shape in a different place, was drawn through another figure's clip.
+    doc = render_character(character, sk, id_prefix=preset)
     body = re.sub(r"\A<svg[^>]*>\s*", "", doc)
     body = re.sub(r"</svg>\s*\Z", "", body).strip()
     return (

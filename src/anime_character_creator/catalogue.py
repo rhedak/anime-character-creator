@@ -630,8 +630,8 @@ assert "grip_style" in _CHARACTER_FIELDS
 # right now" (`brow_tilt`, `mouth_curve`, `blush`, ...) or duplicate what a
 # preset already states at rest (`eye_openness`, `eye_lower_lid`,
 # `brow_weight`).
-# Bounds are the min and max actually used across the fourteen presets (see
-# `presets.py`), the same "rendered and judged" rule `skirt_length` and
+# Bounds are the min and max actually used across the presets (see
+# `presets.py`; Risa's face, drawn on her own measurements, widened several), the same "rendered and judged" rule `skirt_length` and
 # `coat_length` already follow above, widened by a small margin so the
 # default chibi face sits inside every range rather than at its edge.
 # `mouth_width`'s default (1.0, `BASE_FEMALE`/`BASE_MALE`'s own value) sits
@@ -647,13 +647,21 @@ assert "grip_style" in _CHARACTER_FIELDS
 # sharp but intact corner, not a self-intersecting one, at both ends of every
 # other range here too.
 FACE_RANGES: tuple[RangeField, ...] = (
-    _face_range("eye_size", "Eye size", 0.80, 1.05),
-    _face_range("eye_width", "Eye width (round to narrow)", 0.85, 1.10),
-    _face_range("eye_tilt", "Eye tilt", 0.0, 0.20),
-    _face_range("eye_corner", "Eye corner (round to sharp)", 0.30, 0.65),
-    _face_range("iris_size", "Iris size", 0.60, 0.80),
-    _face_range("lash", "Lash (soft to winged)", 0.0, 1.0),
-    _face_range("mouth_width", "Mouth width", 0.60, 1.05),
+    _face_range("eye_size", "Eye size", 0.80, 1.10),
+    _face_range("eye_width", "Eye width (round to narrow)", 0.65, 1.10),
+    _face_range("eye_tilt", "Eye tilt", -0.10, 0.20),
+    _face_range("eye_corner", "Eye corner (round to sharp)", 0.15, 0.65),
+    _face_range("iris_size", "Iris size", 0.60, 1.05),
+    _face_range("lash", "Lash (soft to winged)", 0.0, 1.7),
+    _face_range("mouth_width", "Mouth width", 0.40, 1.05),
+    # Risa's face (`docs/risa-plan.md`, M9) added these. `eye_gap` is None for a preset
+    # that keeps the cast's spacing, which the web tool shows as the slider's middle.
+    _face_range("eye_gap", "Eye spacing", 0.20, 1.30),
+    _face_range("iris_inset", "Iris toward the nose", 0.0, 1.0),
+    _face_range("iris_aspect", "Iris height (round to tall)", 1.0, 1.6),
+    _face_range("lid_shadow", "Shadow under the upper lid", 0.0, 0.25),
+    _face_range("mouth_drop", "Mouth lower in the face", 0.0, 0.10),
+    _face_range("brow_length", "Brow length", 0.40, 1.0),
 )
 for _fr in FACE_RANGES:
     assert _fr.field in _FACE_FIELDS
@@ -661,6 +669,8 @@ for _fr in FACE_RANGES:
 FACE_BOOLS: tuple[BoolField, ...] = (
     _face_bool("glasses", "Glasses"),
     _face_bool("chin_shadow", "Shadow under the chin"),
+    _face_bool("nose_dot", "Nose as a dot"),
+    _face_bool("brows_over_hair", "Brows over the fringe"),
 )
 for _fb in FACE_BOOLS:
     assert _fb.field in _FACE_FIELDS

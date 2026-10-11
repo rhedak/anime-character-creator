@@ -185,7 +185,7 @@ away, drop it from the preset, since the command line has no way to say
 "none".
 
 Shape flags: `--hairstyle` (`long_blunt`, `long_center_part`, `long_parted`,
-`long_traced`, `short_crop`, `short_layered` or `short_tousled`),
+`long_traced`, `long_fringed`, `short_crop`, `short_layered` or `short_tousled`),
 `--hair-length`, `--frame` (shoulder against hip, -1 to 1, only bites at
 taller builds).
 

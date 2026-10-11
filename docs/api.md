@@ -91,7 +91,7 @@ angry_satoko = replace(SATOKO, face=replace(SATOKO.face, brow_tilt=0.8))
 | `eye_color` | `#4a9c6d` | Hex colour. |
 | `outfit` | `Outfit()` | The garments, below. |
 | `face` | `FaceStyle()` | The expression, below. |
-| `body` | `"tall_chibi_long_torso"` | The tall chibi body profile, from `BODY_TYPES`: `tall_chibi` (Katherina's, measured) or the long torso. |
+| `body` | `"tall_chibi_long_torso"` | The body profile, from `BODY_TYPES`: `tall_chibi` (Katherina's, measured), the long torso, or `tall_slender` (Risa's, about 4.4 heads, with a narrow neck and arm and its own wrist anchors). |
 | `frame` | `0.0` | Shoulder against hip, -1 to 1. Ignored when a skeleton is passed. |
 | `bust` | `0.0` | How much bust the figure carries, 0 to 1; 0 draws the figure as it was before the bust existed. Ignored when a skeleton is passed: build it with `build_skeleton(bust=...)`. See `docs/bust-plan.md`. |
 | `height` | `1.0` | How tall the figure stands against its head, 0.8 to 1.3 in the web tool: below the shoulder line the figure is this many times as long, two thirds of the difference in the legs. See `docs/tall-chibi-plan.md`, R4b. |
@@ -117,6 +117,11 @@ piece.
 | --- | --- | --- |
 | `tunic_color` | `#4f7a52` | `None` takes the tunic off, with its placket, chest pockets and long sleeve, and the body shows. See `docs/bare-body-plan.md`. |
 | `boot_color` | `#5b4632` | `None` draws bare feet. |
+| `knee_sock_color` | `None` | A knee sock over the leg, under the boot. Risa's. |
+| `ribbon_color` | `None` | A traced bow at the throat, over the collar and under the coat. |
+| `hip_pocket_color` | `None` | A flap pocket on each hip, over the coat. Needs a traced coat. |
+| `coat_button_color` | `None` | The coat's buttons, a line of three. Needs a traced coat. |
+| `neckline_notch` | `None` | How deep the tunic's V is, in head radii. `None` keeps each case's own depth. |
 | `underwear_color` | `#e8e4dc` | The base layer, always worn: underpants under every bare leg, and a top with the tunic off. |
 | `underwear_top` | `False` | The top is drawn with the tunic off whenever there is a bust; this adds one without. |
 | `undersleeve_color` | `None` | Long sleeve under the tunic's short one. `None` leaves the arm bare. |
@@ -146,6 +151,14 @@ quadratics, and these deform it; there is no second eye shape to choose.
 | `iris_size` | `0.72` | Iris against the aperture's smaller half-axis. Below 1 leaves sclera all round. |
 | `brow_tilt` | `0.0` | Positive drops the inner ends (stern), negative raises them (worried). |
 | `brow_weight` | `1.0` | Brow stroke against the figure's own line weight. |
+| `brow_length` | `1.0` | How long each brow runs, against the eye's width. |
+| `brows_over_hair` | `False` | Draws the brows over the fringe instead of under it. |
+| `eye_gap` | `None` | The gap between the eyes as a share of an eye's half-width. `None` keeps the cast's median. |
+| `iris_inset` | `0.0` | How far each iris sits toward the nose, by a share of the room it has. `1` is against the inner corner. |
+| `iris_aspect` | `1.0` | The iris's height against its width. Above 1 is a tall oval that fills a tall aperture. |
+| `lid_shadow` | `0.0` | A greyer band of shadow along the upper lid on the white, as a share of the eye's height. |
+| `nose_dot` | `False` | The nose as one dot, in place of the two ticks. |
+| `mouth_drop` | `0.0` | The mouth lower in the face, in head radii. |
 | `mouth_curve` | `1.0` | `1` the stock smile, `0` flat, negative a frown. |
 | `mouth_width` | `1.0` | |
 | `blush` | `1.0` | `0` removes the cheek patches. |
@@ -197,7 +210,10 @@ with each other, plus an optional fifth:
 | `hairline` | The fringe and side locks drawn in front of the face, as `(start, line, back)`. |
 | `fall_edge` | The stretch of the mass's outer edge the front lock retraces, exactly. |
 | `tip_edge` | Where the two tones meet, as a list of closed regions covering everything below each. They clip to their union, so a cut can give each lock its own boundary. |
-| `strands` | Optional open chains dividing the mass into locks. |
+| `strands` | Optional open chains dividing the mass into locks. `strand_weight` sets how heavy they are against the outline. |
+| `openings` | Optional patches of skin drawn over the front hair, an ear between two locks. |
+| `front_shade` | Optional regions of the front hair painted in a second, darker tone. |
+| `underside` | Optional darker hair behind, where the mass shows. |
 | `tip_range` | What `hair_length` 0 and 1 mean for this cut, as depth below the head centre. `None` measures the body instead, chin to hip. |
 | `volume` | How much bigger the cut is at the chibi end than at the adult end, as `(chibi, adult)` multipliers on `tip_range`'s answer. `None` keeps one size against the head at every build. The canon gives a chibi about 1.3 times an adult's hair, so a cut traced off one reference wants this to reach the other. A cut that raises it needs `hair_margin` to have room for it, and the ceiling test says so. |
 

@@ -905,7 +905,8 @@ def test_a_sheet_tile_draws_the_figure_on_its_own_body(preset: str) -> None:
     p = PRESETS[preset]
     bare = replace(p, outfit=replace(p.outfit, hat_color=None))
     sk = character.skeleton_for(bare)
-    doc = render_character(p, sk)
+    # Under the tile's own id prefix: figures sharing a sheet must not share ids.
+    doc = render_character(p, sk, id_prefix=preset)
     body = re.sub(r"</svg>\s*\Z", "", re.sub(r"\A<svg[^>]*>\s*", "", doc)).strip()
     svg = sheet.render_sheet(sheet.SheetParams(members=(preset,), columns=1))
     assert body in svg, f"{preset}: the sheet does not draw the figure on its own body"
@@ -3121,3 +3122,15 @@ def test_a_dot_nose_and_a_shaded_lid_are_opt_in_and_only_risa_has_them() -> None
         sk.head_cx, eye[1], eye[2], -1, replace(eye[3], lid_shadow=0.0), p.eye_color, 2.0
     )
     assert character._SCLERA_SHADOW in shaded and character._SCLERA_SHADOW not in clean
+
+
+def test_every_figure_on_a_sheet_has_its_own_ids() -> None:
+    """The eye's clip path is `eye-l` in every figure, and a viewer takes one definition for
+    all of them: Risa's iris, in a different place from the rest, was clipped away on a cast
+    sheet. Each tile's ids carry its preset's name."""
+    from anime_character_creator import sheet
+
+    svg = sheet.render_sheet(sheet.SheetParams(members=("satoko", "risa", "keiko"), columns=3))
+    ids = re.findall(r'\bid="([^"]+)"', svg)
+    assert ids and all(i.startswith(("satoko-", "risa-", "keiko-")) for i in ids)
+    assert 'id="risa-eye-l"' in svg and 'id="satoko-eye-l"' in svg

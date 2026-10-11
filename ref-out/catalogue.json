@@ -984,43 +984,79 @@
         "field": "eye_size",
         "label": "Eye size",
         "min": 0.8,
-        "max": 1.05
+        "max": 1.1
       },
       {
         "field": "eye_width",
         "label": "Eye width (round to narrow)",
-        "min": 0.85,
+        "min": 0.65,
         "max": 1.1
       },
       {
         "field": "eye_tilt",
         "label": "Eye tilt",
-        "min": 0.0,
+        "min": -0.1,
         "max": 0.2
       },
       {
         "field": "eye_corner",
         "label": "Eye corner (round to sharp)",
-        "min": 0.3,
+        "min": 0.15,
         "max": 0.65
       },
       {
         "field": "iris_size",
         "label": "Iris size",
         "min": 0.6,
-        "max": 0.8
+        "max": 1.05
       },
       {
         "field": "lash",
         "label": "Lash (soft to winged)",
         "min": 0.0,
-        "max": 1.0
+        "max": 1.7
       },
       {
         "field": "mouth_width",
         "label": "Mouth width",
-        "min": 0.6,
+        "min": 0.4,
         "max": 1.05
+      },
+      {
+        "field": "eye_gap",
+        "label": "Eye spacing",
+        "min": 0.2,
+        "max": 1.3
+      },
+      {
+        "field": "iris_inset",
+        "label": "Iris toward the nose",
+        "min": 0.0,
+        "max": 1.0
+      },
+      {
+        "field": "iris_aspect",
+        "label": "Iris height (round to tall)",
+        "min": 1.0,
+        "max": 1.6
+      },
+      {
+        "field": "lid_shadow",
+        "label": "Shadow under the upper lid",
+        "min": 0.0,
+        "max": 0.25
+      },
+      {
+        "field": "mouth_drop",
+        "label": "Mouth lower in the face",
+        "min": 0.0,
+        "max": 0.1
+      },
+      {
+        "field": "brow_length",
+        "label": "Brow length",
+        "min": 0.4,
+        "max": 1.0
       }
     ],
     "bools": [
@@ -1031,6 +1067,14 @@
       {
         "field": "chin_shadow",
         "label": "Shadow under the chin"
+      },
+      {
+        "field": "nose_dot",
+        "label": "Nose as a dot"
+      },
+      {
+        "field": "brows_over_hair",
+        "label": "Brows over the fringe"
       }
     ],
     "selects": [

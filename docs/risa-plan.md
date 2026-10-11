@@ -970,20 +970,37 @@ Tests: 863 pass, `ruff` green, `refresh-ref-out.sh --check` shows only Risa's re
 
 ### M11. Integration
 
-- [ ] `catalogue.py`: every new field, cut and body has its entry and label, and
-      each registry's assert holds.
-- [ ] Refresh `catalogue.json`, `ref-out/risa.svg` and `ref-out/risa.png`
-      (`./refresh-ref-out.sh`); it must report only Risa, the cast sheets and
-      `catalogue.json` changed. Anything else changing is a blast-radius escape
-      and stops the step.
-- [ ] README: Risa's table row (the smoke test checks for it) and the character
-      count; `CLAUDE.md` and `docs/api.md` where they say how many characters.
-- [ ] The cast sheet at tile size, Risa beside Satoko and Keiko.
-- [ ] The web tool restaged (`web-stage.sh`) and looked at in a browser: she
-      loads, every new control works.
-- [ ] `ruff check`, `ruff format --check`, `pytest` green.
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the checklist.
 
-Acceptance: tooling green, only expected files changed, owner signs off.
+- [x] `catalogue.py`: every new field has its control and label; each registry's assert holds.
+- [x] `catalogue.json`, `ref-out/risa.*` refreshed; `refresh-ref-out.sh` reports only Risa, the
+      two cast sheets and `catalogue.json` changed (the sheets: see below).
+- [x] README (the Risa row and the hairstyle list), `docs/api.md` (the new `Outfit`, `FaceStyle`
+      and `Hairstyle` fields and the `tall_slender` body). `CLAUDE.md` and the README say
+      "fourteen named characters plus guests", which is still true: she is a guest.
+- [x] The cast sheet at tile size, Risa beside Satoko, Keiko and Katherina.
+- [x] The web tool restaged (`web-stage.sh`) and looked at in a browser.
+- [x] `ruff check`, `ruff format --check`, `pytest` green.
+
+#### M11 findings
+
+**A latent bug the cast sheet surfaced.** At tile size Risa's irises were gone: white discs for eyes.
+`sheet.py` pasted every figure into one SVG without namespacing its ids, and the eye's clip path is
+`eye-l` in every figure, so a viewer clipped Risa's iris to another figure's aperture. Until her, every
+character's eye sat in nearly the same place, so the wrong clip happened to fit. `render_character`
+already had an `id_prefix` for this (the comic uses it); the sheet now gives each tile its own
+(`id_prefix=preset`), and a test holds that every id on a sheet carries a preset's name. The two
+committed cast sheets changed for that, in their ids only.
+
+**The web tool.** Her tile loads her; her values sit inside every slider, because the catalogue's
+ranges were widened to cover her (the rule there is the min and max across the presets, plus a
+margin): `eye_size`, `eye_width`, `eye_tilt`, `eye_corner`, `iris_size`, `lash` and `mouth_width`
+reach further, and six new sliders (`eye_gap`, `iris_inset`, `iris_aspect`, `lid_shadow`,
+`mouth_drop`, `brow_length`) and two switches (`nose_dot`, `brows_over_hair`) were added.
+Driven in the page: each control is there at her value, moving them redraws the preview (the
+iris, the spacing and the mouth), and the console has no errors.
+
+Tests: 864 pass, `ruff` green.
 
 ## Risks
 
