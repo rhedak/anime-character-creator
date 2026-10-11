@@ -2726,7 +2726,9 @@ def test_the_older_cuts_still_read_the_tall_chibi_and_mios_read_her_own() -> Non
     for registry in (character.COAT_CUTS, character.COLLAR_CUTS, character.SKIRT_CUTS):
         for name, cut in registry.items():
             # Mio's cuts are the exceptions, each traced on her own body.
-            mine = registry is character.SKIRT_CUTS and name == "pleated"
+            mine = (registry is character.SKIRT_CUTS and name == "pleated") or (
+                registry is character.COLLAR_CUTS and name == "shirt"
+            )
             assert cut.ref_body == ("tall_slender" if mine else "tall_chibi"), name
             assert not cut.per_leg, name
     assert character.KNEE_SOCK_CUT.ref_body == "tall_slender"
@@ -2833,3 +2835,25 @@ def test_underwear_never_hangs_below_a_skirts_hem() -> None:
     # Without a skirt there is nothing to cap against.
     bare = replace(p, outfit=replace(p.outfit, skirt_color=None))
     assert character._skirt_bottom_y(sk, bare) is None
+
+
+def test_the_shirt_collar_is_two_open_wings_on_her_own_body() -> None:
+    cut = character.COLLAR_CUTS["shirt"]
+    assert cut.ref_body == "tall_slender" and not cut.per_leg
+    assert len(cut.fills) == 1
+    p = PRESETS["mio"]
+    assert p.outfit.collar_cut == "shirt"
+    sk = character.skeleton_for(p)
+    svg = character._collar(sk, p)
+    assert svg.count("<path") == 1, "wings only: no closed band and no notch line"
+    assert f'fill="{p.outfit.collar_color}"' in svg
+
+
+def test_a_shallow_neckline_notch_closes_the_tunic_higher_and_only_mio_sets_one() -> None:
+    for name, p in PRESETS.items():
+        assert (p.outfit.neckline_notch is not None) == (name == "mio"), name
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    shallow = character._tunic(sk, p)
+    default = character._tunic(sk, replace(p, outfit=replace(p.outfit, neckline_notch=None)))
+    assert shallow != default

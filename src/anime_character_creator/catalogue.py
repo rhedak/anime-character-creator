@@ -156,6 +156,7 @@ TUNIC = GarmentSlot(
     "tunic",
     "Tunic",
     _color("tunic_color", "Tunic"),
+    ranges=(_range("neckline_notch", "Neckline depth", 0.0, 0.6),),
     bools=(
         _bool("tunic_tucked", "Tucked in"),
         _bool("neckline_round", "Round neckline"),
@@ -283,7 +284,7 @@ UNDERSKIRT = GarmentSlot(
 TROUSER = GarmentSlot("trouser", "Trousers (Pants)", _color("trouser_color", "Trousers (Pants)"))
 POUCH = GarmentSlot("pouch", "Pouch", _color("pouch_color", "Pouch"), requires="belt")
 # Cut labels for `COLLAR_CUTS`, asserted in sync the way the hairstyles' are.
-COLLAR_CUT_LABELS: dict[str, str] = {"pointed": "Pointed"}
+COLLAR_CUT_LABELS: dict[str, str] = {"pointed": "Pointed", "shirt": "Shirt collar (traced)"}
 assert set(COLLAR_CUT_LABELS) == set(COLLAR_CUTS)
 COLLAR = GarmentSlot(
     "collar",

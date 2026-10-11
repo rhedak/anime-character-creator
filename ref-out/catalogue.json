@@ -290,6 +290,14 @@
         "label": "Tunic",
         "optional": true
       },
+      "ranges": [
+        {
+          "field": "neckline_notch",
+          "label": "Neckline depth",
+          "min": 0.0,
+          "max": 0.6
+        }
+      ],
       "bools": [
         {
           "field": "tunic_tucked",
@@ -602,6 +610,10 @@
             {
               "value": "pointed",
               "label": "Pointed"
+            },
+            {
+              "value": "shirt",
+              "label": "Shirt collar (traced)"
             }
           ]
         }

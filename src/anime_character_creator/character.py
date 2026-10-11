@@ -265,6 +265,12 @@ class Outfit:
     # (`collar_color`) and with a round neckline, which have their own necks, and
     # it replaces the undersleeve trim (`neckline_trim`) on the V.
     neckline_stand: bool = True
+    # How deep the tunic's V cuts, in head radii, for a garment that closes higher
+    # than its collar's default leaves it: Mio's shirt is buttoned to the throat
+    # under a shirt collar whose wings cross above the point where the default V
+    # for a traced collar bottoms out, so the V's skin showed below them. `None`
+    # keeps the depth each case already had.
+    neckline_notch: float | None = None
     # The tunic's sleeve reads its own sleeve colour all the way to the
     # wrist cuff instead of stopping at the short hem and handing off to
     # `undersleeve_color`/bare skin. Off by default, the short sleeve every
@@ -3872,6 +3878,8 @@ def _tunic(sk: Skeleton, p: CharacterParams) -> str:
         # has to sit behind its wings, or its edges show in that V above the
         # collar's back band.
         notch = sk.head_r * 0.19
+    if p.outfit.neckline_notch is not None:
+        notch = sk.head_r * p.outfit.neckline_notch
     sleeve_w = _sleeve_half_w(sk)
     # A coat worn over the tunic hides its short sleeve at the shoulder. The
     # coat's own shoulder reaches `_sleeve_half_w(sk) * 0.92` (see `_coat`) and
@@ -8235,6 +8243,49 @@ SKIRT_CUTS["pleated"] = GarmentCut(
     ref_body="tall_slender",
 )
 # (end of the pleated skirt)
+
+
+# Mio's shirt collar, per `docs/mio-plan.md` M5.
+# Traced by `harness/mio/trace_collar.py` off `segments/white-collared-shirt.png`: the
+# two wings as one outline, touching at the foot of their V where the ribbon's knot sits
+# and open above it, so her neck shows between them. An open collar, unlike the closed
+# band `_collar` draws without a cut. Head radii on `tall_slender`, x from the collar's
+# own centre line.
+COLLAR_CUTS["shirt"] = GarmentCut(
+    fills=(
+        (
+            (-0.253, 1.569),
+            [
+                ((-0.253, 1.523), (-0.253, 1.476)),
+                ((-0.266, 1.419), (-0.275, 1.362)),
+                ((-0.275, 1.291), (-0.275, 1.220)),
+                ((-0.262, 1.173), (-0.253, 1.127)),
+                ((-0.242, 1.102), (-0.217, 1.077)),
+                ((-0.207, 1.073), (-0.196, 1.084)),
+                ((-0.198, 1.102), (-0.189, 1.120)),
+                ((-0.168, 1.141), (-0.146, 1.163)),
+                ((-0.100, 1.189), (-0.053, 1.220)),
+                ((-0.036, 1.237), (-0.018, 1.255)),
+                ((0.004, 1.255), (0.025, 1.255)),
+                ((0.093, 1.192), (0.160, 1.148)),
+                ((0.178, 1.131), (0.196, 1.113)),
+                ((0.207, 1.091), (0.210, 1.070)),
+                ((0.228, 1.072), (0.246, 1.091)),
+                ((0.259, 1.127), (0.275, 1.163)),
+                ((0.275, 1.266), (0.275, 1.369)),
+                ((0.267, 1.412), (0.253, 1.455)),
+                ((0.252, 1.505), (0.246, 1.555)),
+                ((0.176, 1.441), (0.103, 1.327)),
+                ((0.093, 1.316), (0.082, 1.305)),
+                ((0.036, 1.289), (-0.011, 1.277)),
+                ((-0.068, 1.312), (-0.125, 1.362)),
+                ((-0.195, 1.466), (-0.253, 1.569)),
+            ],
+        ),
+    ),
+    ref_body="tall_slender",
+)
+# (end of the shirt collar)
 
 
 def _arms(

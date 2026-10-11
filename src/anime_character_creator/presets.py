@@ -1274,6 +1274,9 @@ MIO = CharacterParams(
         skirt_cut="pleated",
         tunic_tucked=True,
         collar_color="#f9f9f9",
+        collar_cut="shirt",
+        # Buttoned to the throat: the V stays a seam under the wings.
+        neckline_notch=0.04,
         coat_color="#1b2739",
         coat_sleeves=True,
         # Shoulder to ankle: 0.437 puts the blazer's hem at 3.87, the reference's.

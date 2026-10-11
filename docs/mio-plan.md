@@ -464,16 +464,55 @@ hold the skirt's shape (one fill, six folds, her body) and the underwear cap.
 
 ### M5. The shirt and its collar
 
-- [ ] Trace the collar off `segments/white-collared-shirt.png`
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the
+checklist.
+
+- [x] Trace the collar off `segments/white-collared-shirt.png`
       (`COLLAR_CUTS["shirt"]`, a neutral name): two points sitting over the
       lapels, opening at the throat, not the closed band `_collar` draws.
-- [ ] Decide whether the shirt body is the shared tunic (probably, in white) or
+- [x] Decide whether the shirt body is the shared tunic (probably, in white) or
       needs a cut, by comparing the front, the cuffs and the hem under the
       skirt. The cuffs show white at the wrist; `undersleeve_color` may do.
-- [ ] Skin shows in the V of the collar above the ribbon: check the neck.
+- [x] Skin shows in the V of the collar above the ribbon: check the neck.
 
 Acceptance: the collar reads as a real shirt collar at 4x, on white and black,
 beside the ribbon's place (not yet drawn); only Mio's render changes.
+
+#### M5 findings
+
+**What the shirt segment holds.** The collar's two wings (one component, touching
+at the foot of their V where the ribbon's knot sits), a narrow strip of shirt front
+down the middle, two slivers beside the ribbon, and a cuff at each wrist. Only the
+wings are a silhouette question: the strip and the slivers are what the lapels and
+the ribbon leave visible, so the tunic draws the shirt front and the blazer (M7)
+decides how much shows; the cuffs go with the sleeves (M7).
+
+**`COLLAR_CUTS["shirt"]`**, traced by `harness/mio/trace_collar.py`, emitted by
+`emit_collar.py`: the two wings as one outline of 24 segments, open above the
+crossing so her neck shows between them, which the closed standing band
+`_collar` draws without a cut cannot do. Her chin and the wing tips already
+meet, so nothing is carried up; a first pass copied the top row upward to tuck the
+wings behind the jaw and the top row of a pointed wing is its one-pixel tip, so
+that drew a spike. The erosion to the stroke's centre is one pixel here and not
+two: these are all sharp tips, which a wider erosion cuts back along their bisector.
+
+**`Outfit.neckline_notch`**, a new opt-in depth for the tunic's V, in head radii
+(`None` keeps every case as it was; only Mio sets it, 0.04). A traced collar sets
+the V to 0.19, built for Katherina's, and on Mio it bottomed out below the point
+where her wings cross, leaving a diamond of skin under them where the reference has
+white shirt. Under the wings the V is now a seam. It is in the catalogue as a
+range on the tunic slot.
+
+**Checked:** the calibration holds at the throat: her chin and ours both at row 399
+and the face's columns 516 to 745 against the reference's 516 to 742. The wings
+sit on the reference's in the blend.
+
+**Left for M6 and M7:** the wings crossing reads as an X without the ribbon's knot
+over it, and the skin between the crossing and the tunic's top edge will be covered
+by the ribbon; the reference's neck has a darker shadow tone under the chin
+(texture, not ported). Tests: 842 pass; `refresh-ref-out.sh` changed only Mio's
+render.
+
 
 ### M6. The ribbon
 
