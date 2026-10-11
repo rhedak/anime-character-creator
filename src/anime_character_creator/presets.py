@@ -1277,6 +1277,8 @@ MIO = CharacterParams(
         collar_cut="shirt",
         # Buttoned to the throat: the V stays a seam under the wings.
         neckline_notch=0.04,
+        # The blue bow at the throat (`ribbon_color`, traced).
+        ribbon_color="#467b99",
         coat_color="#1b2739",
         coat_sleeves=True,
         # Shoulder to ankle: 0.437 puts the blazer's hem at 3.87, the reference's.

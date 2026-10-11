@@ -2857,3 +2857,41 @@ def test_a_shallow_neckline_notch_closes_the_tunic_higher_and_only_mio_sets_one(
     shallow = character._tunic(sk, p)
     default = character._tunic(sk, replace(p, outfit=replace(p.outfit, neckline_notch=None)))
     assert shallow != default
+
+
+def test_the_ribbon_is_five_pieces_tied_in_order_with_a_slit_in_each_loop() -> None:
+    cut = character.RIBBON_CUT
+    assert cut.ref_body == "tall_slender" and not cut.per_leg
+    assert len(cut.fills) == 5, "two tails, two loops and a knot"
+    assert [i for i, _ in cut.holes] == [2, 3], "a slit in each loop, and only the loops"
+    p = PRESETS["mio"]
+    sk = character.skeleton_for(p)
+    svg = character._ribbon(sk, p)
+    assert svg.count(f'fill="{p.outfit.ribbon_color}"') == 5
+    assert svg.count('fill-rule="evenodd"') == 2, "the slits are cut out, not painted white"
+    assert character._ribbon(sk, replace(p, outfit=replace(p.outfit, ribbon_color=None))) == ""
+
+
+def test_only_mio_wears_a_ribbon() -> None:
+    assert Outfit().ribbon_color is None
+    for name, p in PRESETS.items():
+        assert (p.outfit.ribbon_color is not None) == (name == "mio"), name
+
+
+def test_a_cuts_holes_are_left_open_under_the_even_odd_rule() -> None:
+    """A hole is an extra subpath of its fill's own path, so what is behind the
+    garment shows through it (the shirt behind a bow's slit)."""
+    sk = character.skeleton_for(PRESETS["mio"])
+    square = (
+        (-0.4, 2.0),
+        [((0.4, 2.0), (0.4, 2.0)), ((0.4, 3.0), (0.4, 3.0)), ((-0.4, 3.0), (-0.4, 3.0))],
+    )
+    hole = (
+        (-0.1, 2.4),
+        [((0.1, 2.4), (0.1, 2.4)), ((0.1, 2.6), (0.1, 2.6)), ((-0.1, 2.6), (-0.1, 2.6))],
+    )
+    plain = character.GarmentCut(fills=(square,), ref_body="tall_slender")
+    holed = character.GarmentCut(fills=(square,), holes=((0, hole),), ref_body="tall_slender")
+    assert 'fill-rule="evenodd"' not in character._draw_cut(sk, plain, "#456789")
+    svg = character._draw_cut(sk, holed, "#456789")
+    assert 'fill-rule="evenodd"' in svg and svg.count("M ") == 2

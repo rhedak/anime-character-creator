@@ -620,6 +620,15 @@
       ]
     },
     {
+      "id": "ribbon",
+      "label": "Ribbon (a bow at the throat)",
+      "color": {
+        "field": "ribbon_color",
+        "label": "Ribbon",
+        "optional": true
+      }
+    },
+    {
       "id": "placket",
       "label": "Buttons",
       "color": {

@@ -299,6 +299,7 @@ COLLAR = GarmentSlot(
         ),
     ),
 )
+RIBBON = GarmentSlot("ribbon", "Ribbon (a bow at the throat)", _color("ribbon_color", "Ribbon"))
 PLACKET = GarmentSlot("placket", "Buttons", _color("placket_color", "Buttons"))
 CHEST_POCKET = GarmentSlot(
     "chest_pocket", "Chest pocket", _color("chest_pocket_color", "Chest pocket")
@@ -443,6 +444,7 @@ GARMENTS: tuple[GarmentSlot, ...] = (
     CRYSTAL_4,
     APRON,
     COLLAR,
+    RIBBON,
     PLACKET,
     CHEST_POCKET,
     STRAP,

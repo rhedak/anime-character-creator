@@ -328,6 +328,9 @@ class Outfit:
     # A knee sock over the leg, from just under the knee to the shoe, in this
     # colour (`KNEE_SOCK_CUT`). `None` is a bare leg above the boot.
     knee_sock_color: str | None = None
+    # A bow at the throat, over the collar, in this colour (`RIBBON_CUT`). `None`
+    # draws nothing.
+    ribbon_color: str | None = None
     # --- The base layer, what shows with the tunic off (`bare-body-plan.md`,
     # step 3). Not optional: with nothing else worn it is what the figure
     # wears, for every character (the owner's call, 2026-09-25); a fully bare
@@ -4803,6 +4806,11 @@ class GarmentCut:
     # same leather a shade darker, a small element where a second tone reads as
     # thickness, which `CLAUDE.md` allows.
     shades: tuple[float | None, ...] = ()
+    # Shapes cut out of a fill, as `(index into fills, shape)`, where what is behind
+    # shows through: the slit inside each loop of a bow, with the shirt white
+    # beneath it. Drawn as extra subpaths of that fill's path, under the even-odd
+    # rule.
+    holes: tuple[tuple[int, Chain], ...] = ()
 
 
 def _traced_coat(sk: Skeleton, p: CharacterParams) -> bool:
@@ -4887,10 +4895,18 @@ def _draw_cut(
         k = cut.shades[i] if i < len(cut.shades) else None
         return fill if k is None else shade(fill, k)
 
-    parts = [
-        f'<path d="{d(shape)}" fill="{tone(i)}" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
-        for i, shape in enumerate(cut.fills)
-    ]
+    def fill_path(i: int, shape: Chain) -> str:
+        """One fill, with the cut's holes for it as extra subpaths: under the
+        even-odd rule they are left open."""
+        mine = [h for j, h in cut.holes if j == i]
+        data = " ".join([d(shape), *(d(h) for h in mine)])
+        rule = ' fill-rule="evenodd"' if mine else ""
+        return (
+            f'<path d="{data}" fill="{tone(i)}"{rule} '
+            f'stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" />'
+        )
+
+    parts = [fill_path(i, shape) for i, shape in enumerate(cut.fills)]
     if cut.bust_line_after is not None:
         n = cut.bust_line_after
         line = _bust_panel_line(sk, [d(shape) for shape in cut.fills[:n]])
@@ -6516,6 +6532,21 @@ def _collar(sk: Skeleton, p: CharacterParams) -> str:
         f'<path d="M {cx:.1f} {top:.1f} L {cx:.1f} {top + notch:.1f}" fill="none" '
         f'stroke="{OUTLINE}" stroke-width="{_interior_w(sw, 0.7):.2f}" />'
     )
+
+
+# The ribbon's outline against the figure's: the reference draws it in a line about
+# half the weight it draws the figure's silhouette in.
+_RIBBON_LINE = 0.55
+
+
+def _ribbon(sk: Skeleton, p: CharacterParams) -> str:
+    """A bow tied at the throat, over the collar's wings and the shirt front: a
+    traced cut (`RIBBON_CUT`), in `ribbon_color`. Nothing without a colour."""
+    if p.outfit.ribbon_color is None:
+        return ""
+    # Thinner than the figure's line: the bow is small, and its slits are narrower
+    # than the full stroke, which filled them in.
+    return _draw_cut(sk, RIBBON_CUT, p.outfit.ribbon_color, weight=_RIBBON_LINE)
 
 
 def _placket(sk: Skeleton, p: CharacterParams) -> str:
@@ -8286,6 +8317,143 @@ COLLAR_CUTS["shirt"] = GarmentCut(
     ref_body="tall_slender",
 )
 # (end of the shirt collar)
+
+
+# Mio's ribbon, per `docs/mio-plan.md` M6.
+# Traced by `harness/mio/trace_ribbon.py` off `segments/blue-ribbon.png` as five
+# overlapping pieces drawn in the order they are tied, the tails, then the loops over
+# their tops, then the knot over both, so that their outlines are the fold lines and
+# none has to be traced as interior line work. Each loop has a slit cut out of it, with
+# the shirt showing through. Head radii on `tall_slender`, x from the collar's own
+# centre line.
+RIBBON_CUT = GarmentCut(
+    fills=(
+        # left tail
+        (
+            (-0.053, 1.712),
+            [
+                ((-0.043, 1.722), (-0.032, 1.733)),
+                ((-0.032, 1.744), (-0.032, 1.754)),
+                ((-0.042, 1.826), (-0.053, 1.897)),
+                ((-0.060, 2.022), (-0.068, 2.147)),
+                ((-0.078, 2.157), (-0.089, 2.168)),
+                ((-0.125, 2.158), (-0.160, 2.125)),
+                ((-0.160, 2.075), (-0.160, 2.025)),
+                ((-0.141, 1.922), (-0.132, 1.819)),
+                ((-0.111, 1.797), (-0.089, 1.776)),
+                ((-0.082, 1.754), (-0.075, 1.733)),
+                ((-0.064, 1.722), (-0.053, 1.712)),
+            ],
+        ),
+        # right tail
+        (
+            (0.046, 1.704),
+            [
+                ((0.079, 1.754), (0.118, 1.804)),
+                ((0.124, 1.883), (0.139, 1.961)),
+                ((0.145, 2.043), (0.146, 2.125)),
+                ((0.121, 2.150), (0.096, 2.161)),
+                ((0.086, 2.161), (0.075, 2.161)),
+                ((0.064, 2.150), (0.053, 2.139)),
+                ((0.059, 2.118), (0.046, 2.097)),
+                ((0.045, 1.940), (0.025, 1.783)),
+                ((0.025, 1.754), (0.025, 1.726)),
+                ((0.036, 1.715), (0.046, 1.704)),
+            ],
+        ),
+        # left loop
+        (
+            (-0.061, 1.341),
+            [
+                ((-0.038, 1.362), (-0.032, 1.384)),
+                ((-0.026, 1.401), (-0.046, 1.419)),
+                ((-0.029, 1.437), (-0.011, 1.455)),
+                ((-0.016, 1.544), (-0.032, 1.633)),
+                ((-0.052, 1.701), (-0.082, 1.769)),
+                ((-0.100, 1.786), (-0.118, 1.804)),
+                ((-0.139, 1.804), (-0.160, 1.804)),
+                ((-0.200, 1.785), (-0.239, 1.740)),
+                ((-0.241, 1.726), (-0.253, 1.712)),
+                ((-0.253, 1.676), (-0.253, 1.640)),
+                ((-0.231, 1.576), (-0.203, 1.512)),
+                ((-0.161, 1.455), (-0.125, 1.398)),
+                ((-0.093, 1.361), (-0.061, 1.341)),
+            ],
+        ),
+        # right loop
+        (
+            (0.061, 1.341),
+            [
+                ((0.107, 1.375), (0.146, 1.426)),
+                ((0.186, 1.498), (0.225, 1.569)),
+                ((0.237, 1.608), (0.253, 1.647)),
+                ((0.253, 1.672), (0.253, 1.697)),
+                ((0.243, 1.715), (0.239, 1.733)),
+                ((0.196, 1.782), (0.153, 1.804)),
+                ((0.132, 1.807), (0.111, 1.797)),
+                ((0.090, 1.776), (0.075, 1.754)),
+                ((0.046, 1.680), (0.025, 1.605)),
+                ((0.019, 1.533), (0.004, 1.462)),
+                ((0.025, 1.441), (0.046, 1.419)),
+                ((0.028, 1.398), (0.032, 1.377)),
+                ((0.041, 1.359), (0.061, 1.341)),
+            ],
+        ),
+        # knot
+        (
+            (-0.011, 1.455),
+            [
+                ((-0.030, 1.437), (-0.039, 1.419)),
+                ((-0.043, 1.380), (-0.046, 1.341)),
+                ((-0.032, 1.327), (-0.018, 1.312)),
+                ((0.000, 1.312), (0.018, 1.312)),
+                ((0.032, 1.327), (0.046, 1.341)),
+                ((0.046, 1.362), (0.046, 1.384)),
+                ((0.037, 1.409), (0.032, 1.434)),
+                ((0.021, 1.444), (0.011, 1.455)),
+                ((-0.000, 1.455), (-0.011, 1.455)),
+            ],
+        ),
+    ),
+    holes=(
+        # a slit in the left loop
+        (
+            2,
+            (
+                (-0.111, 1.540),
+                [
+                    ((-0.103, 1.548), (-0.096, 1.555)),
+                    ((-0.096, 1.562), (-0.096, 1.569)),
+                    ((-0.120, 1.622), (-0.132, 1.676)),
+                    ((-0.143, 1.691), (-0.153, 1.690)),
+                    ((-0.160, 1.683), (-0.168, 1.676)),
+                    ((-0.155, 1.658), (-0.160, 1.640)),
+                    ((-0.144, 1.612), (-0.139, 1.583)),
+                    ((-0.129, 1.562), (-0.111, 1.540)),
+                ],
+            ),
+        ),
+        # a slit in the right loop
+        (
+            3,
+            (
+                (0.118, 1.562),
+                [
+                    ((0.132, 1.576), (0.139, 1.590)),
+                    ((0.147, 1.622), (0.160, 1.655)),
+                    ((0.160, 1.662), (0.160, 1.669)),
+                    ((0.153, 1.676), (0.146, 1.683)),
+                    ((0.132, 1.669), (0.125, 1.655)),
+                    ((0.120, 1.622), (0.103, 1.590)),
+                    ((0.103, 1.583), (0.103, 1.576)),
+                    ((0.111, 1.569), (0.118, 1.562)),
+                ],
+            ),
+        ),
+    ),
+    ref_body="tall_slender",
+)
+# (end of the ribbon)
 
 
 def _arms(
@@ -12109,6 +12277,9 @@ def render_character(
         # garment high enough that the head has to be drawn after it. A mock
         # neck is drawn earlier, under the coat; see above.
         _collar(sk, p) if not p.outfit.collar_mock else "",
+        # A bow at the throat: over the collar's wings it is tied under, and still
+        # before the head, so the jaw covers its top as it covers the collar's.
+        _ribbon(sk, p),
         # Before the head, so the jaw covers the mask's top edge and it reads as
         # tucked under the chin; after the collar, which it hangs over.
         _mask(sk, p),

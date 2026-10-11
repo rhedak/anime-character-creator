@@ -516,15 +516,57 @@ render.
 
 ### M6. The ribbon
 
-- [ ] `Outfit.ribbon_color` (default `None`, draws nothing): trace the bow and
+**Status: done pending the owner's sign-off, 2026-10-11.** Findings below the
+checklist.
+
+- [x] `Outfit.ribbon_color` (default `None`, draws nothing): trace the bow and
       its two tails off `segments/blue-ribbon.png` as fills with interior
       line work, a small unoccluded shape, which is what tracing is for. Mapped
       to the collar's landmarks so it lands at the throat.
-- [ ] Draw order: over the shirt and collar, under the blazer's lapels.
-- [ ] Catalogue entry, and a test that the other presets draw no ribbon.
+- [x] Draw order: over the shirt and collar, under the blazer's lapels.
+- [x] Catalogue entry, and a test that the other presets draw no ribbon.
 
 Acceptance: the bow reads at figure size and at 4x, tails over the shirt front,
 lapels crossing the tails the way the reference does; byte-identical elsewhere.
+
+#### M6 findings
+
+**`RIBBON_CUT`**, traced by `harness/mio/trace_ribbon.py`, emitted by
+`emit_ribbon.py`, with `Outfit.ribbon_color` (opt-in, `None` draws nothing) and a
+`RIBBON` slot in the catalogue. The bow is five overlapping pieces drawn in the
+order it is tied, the tails, then the loops over their tops, then the knot over
+both: each a region of the reference's blue between its black outlines, grown by
+half the stroke to the stroke's centre line, 72 segments in all.
+
+**A first pass traced it the other way and it failed.** One silhouette, plus the
+network of fold lines inside it as open strokes. The network is thick and
+branching, and splitting it at its junctions left eight fragments of 6 to 21 pixels
+that did not describe a fold. Building it as the skill says, in drawing order, makes
+the outlines the folds and needs no interior line work at all; the same lesson as
+the skirt's. The branch splitter (`common.branches`) stays in the harness unused.
+
+**Holes in a cut.** The loops' slits are white in the reference with the shirt
+behind them, so a cut can now carry `holes`, `(index into fills, shape)` pairs,
+drawn as extra subpaths of that fill under the even-odd rule: whatever is under the
+bow shows through, the white tunic on Mio and anything else on another wearer.
+Painting them white would have been right only on a white shirt.
+
+**The line weight.** At the figure's own stroke the slits filled in solid black,
+since they are narrower than the line, and the bow came out bulky. The reference
+draws the ribbon in about half the weight of its silhouette, so the bow is drawn
+at `_RIBBON_LINE = 0.55` of it, through `_draw_cut`'s existing `weight` for small
+hardware.
+
+**Placement.** It is traced about the collar's centre line so the bow and the wings
+it is tied under share an axis, and is drawn right after the collar, over it and
+before the head. The blazer's lapels (M7) will have to cross its edges; the
+reference has them beside the loops and not over them.
+
+**Left:** the highlight tick on the left tail and the bow's lighter blue strokes are
+texture and not ported. The crossing of the collar's wings still shows above the
+knot as a small X. Tests: 845 pass; `refresh-ref-out.sh` changed only Mio's render
+(and `catalogue.json`).
+
 
 ### M7. The blazer
 

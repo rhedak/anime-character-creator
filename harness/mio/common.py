@@ -138,3 +138,33 @@ def walk(skel):
     if ring and abs(cur[0] - start[0]) <= 1 and abs(cur[1] - start[1]) <= 1:
         path.append(start)  # a closed loop comes back to where it began
     return [(x, y) for y, x in path]
+
+
+def branches(skel, min_len=6):
+    """The strokes of a branching skeleton, each walked end to end.
+
+    A network of fold lines (the ribbon's) has junctions, which `walk` cannot
+    follow. Taking the junction pixels out leaves one clean stroke per branch;
+    the one-to-three pixel gap at each junction is under the stroke's own width.
+    """
+    pts = {tuple(p) for p in np.argwhere(skel)}
+
+    def count(p):
+        y, x = p
+        return sum((y + dy, x + dx) in pts for dy in (-1, 0, 1) for dx in (-1, 0, 1) if dy or dx)
+
+    junctions = {p for p in pts if count(p) >= 3}
+    # A junction is a small blob, not one pixel: take its neighbours too.
+    cut = set(junctions)
+    for y, x in junctions:
+        cut.update((y + dy, x + dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1))
+    rest = np.zeros_like(skel)
+    for y, x in pts - cut:
+        rest[y, x] = True
+    lab, n = ndi.label(rest, structure=np.ones((3, 3)))
+    out = []
+    for i in range(1, n + 1):
+        path = walk(lab == i)
+        if len(path) >= min_len:
+            out.append(path)
+    return out
