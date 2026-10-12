@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from anime_character_creator import EXPRESSIONS, PRESETS, render_character
+from anime_character_creator.character import skeleton_for
 
 
 def test_a_shut_mouth_is_unchanged_by_the_open_mouth_existing() -> None:
@@ -134,3 +135,18 @@ def test_a_coat_whose_sleeves_are_the_arms_own_is_drawn_as_before_when_the_arm_i
     p = replace(PRESETS["keiko"], right_arm_out=128.0)
     svg = render_character(p)
     assert "sleeve-cutaway" not in svg and "sleeve-cuff" not in svg
+
+
+def test_a_raised_blazer_arm_turns_at_the_shoulder_not_at_the_sleeve_hem() -> None:
+    import re
+
+    risa = PRESETS["risa"]
+    sk = skeleton_for(risa)
+    shoulder_limit = sk.head_cy + 2.0 * sk.head_r  # the sleeve hem it hung from is at 2.26 radii
+    for kw in ({"right_arm_out": 128.0}, {"right_arm_out": 125.0, "left_arm_out": 125.0}):
+        svg = render_character(replace(risa, **kw))
+        pivots = {
+            (float(x), float(y))
+            for x, y in re.findall(r'<g transform="rotate\(1\d\d\.00 ([\d.]+) ([\d.]+)\)">', svg)
+        }
+        assert pivots and all(y < shoulder_limit for _, y in pivots), pivots

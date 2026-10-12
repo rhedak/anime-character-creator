@@ -5410,6 +5410,8 @@ class GarmentCut:
     # (`_sleeve_cutaway`), so the silhouette's sleeve is cut away on that side.
     arm_lines: tuple[int, int] | None = None
     sleeve_hem_y: float | None = None
+    # Where the arm joins the shoulder, in the cut's head radii: a raised arm turns there.
+    shoulder_y: float | None = None
 
 
 def _arm_swing(p: CharacterParams, s: int) -> float:
@@ -5425,7 +5427,25 @@ def _raised_coat_sleeve(p: CharacterParams, s: int) -> bool:
     return COAT_CUTS[p.outfit.coat_cut].arm_lines is not None and _arm_swing(p, s) != 0.0
 
 
+def _raised_shoulder(sk: Skeleton, p: CharacterParams, s: int) -> tuple[float, float] | None:
+    """Where a raised arm whose coat sleeve is part of the coat's silhouette turns: the shoulder,
+    as `(offset from the centre line, y)` in pixels, on the arm's own line extended up to it.
+    The arm is then as long as the real one, from the shoulder; the sleeve hem it hangs from at
+    rest is far below that."""
+    if not _raised_coat_sleeve(p, s):
+        return None
+    cut = COAT_CUTS[p.outfit.coat_cut]  # type: ignore[index]
+    assert cut.shoulder_y is not None
+    y = sk.head_cy + _garment_placement(sk, cut.ref_body)((0.0, cut.shoulder_y))[1] * sk.head_r
+    centre_top, top_y, centre_wrist, wrist_y = _arm_line(sk)
+    return centre_top + (centre_wrist - centre_top) / (wrist_y - top_y) * (y - top_y), y
+
+
 _SLEEVE_CUT_ID = "sleeve-cutaway"
+# How far a raised arm's base runs back into the body past the shoulder joint, in head radii.
+_RAISED_ARM_INTO_BODY = 0.5
+# How far inside a raised arm's upper edge the shoulder is cut, as a share of the arm's half width.
+_SHOULDER_OVERLAP = 0.4
 
 
 def _reversed_chain(chain: Chain) -> Chain:
@@ -5442,12 +5462,15 @@ _SLEEVE_CUT_OUT = 0.1
 
 def _sleeve_cutaway(sk: Skeleton, p: CharacterParams) -> tuple[str, str]:
     """What a raised arm does to a coat whose sleeves are part of its silhouette: a clip
-    path that keeps everything of the coat but that arm's sleeve (the strip beside the
-    torso, from the shoulder joint down), and the line that edges the torso there instead.
+    path that keeps everything of the coat but that arm's sleeve, and the line that edges
+    the torso there instead.
 
-    The strip is bounded by the cut's own side line, moved out a little (`_SLEEVE_CUT_OUT`),
-    and above the armpit, where the traced line has not begun, by a straight line up to the
-    joint. Returns `(defs, edge lines)`, or empty strings when no arm is out.
+    What goes is the strip beside the torso below the arm's own upper edge, which is where the
+    arm takes over: the shoulder above that line stays as the coat's, so the shoulder runs
+    into the arm's upper edge, and the arm's body, drawn under the coat, shows where the
+    sleeve strip was. The strip's inner side is the cut's own side line, moved out a little
+    (`_SLEEVE_CUT_OUT`). The torso's edge line starts at the armpit, where the arm's lower edge
+    meets the torso. Returns `(defs, edge lines)`, or empty strings when no arm is out.
     """
     sides = [s for s in (-1, 1) if _raised_coat_sleeve(p, s)]
     if not sides:
@@ -5462,8 +5485,6 @@ def _sleeve_cutaway(sk: Skeleton, p: CharacterParams) -> tuple[str, str]:
         x, y = xf(pt)
         return (cx + (x + math.copysign(_SLEEVE_CUT_OUT, x)) * r, cy + y * r)
 
-    reach = 6.0 * r
-    top, bottom = cy - reach, cy + reach
     below = cy + xf((0.0, cut.sleeve_hem_y + 0.4))[1] * r
 
     def curve(chain: Chain) -> str:
@@ -5474,30 +5495,67 @@ def _sleeve_cutaway(sk: Skeleton, p: CharacterParams) -> tuple[str, str]:
     def at(pt: Point) -> str:
         return f"{pt[0]:.1f} {pt[1]:.1f}"
 
-    path = f"M {at((cx - reach, top))} L {at((cx + reach, top))} "
+    def across(origin: Point, along: Point, x: float) -> Point:
+        """Where the line from `origin` along `along` crosses the vertical `x`."""
+        t = (x - origin[0]) / along[0] if abs(along[0]) > 1e-6 else 0.0
+        return (x, origin[1] + t * along[1])
+
+    # The whole canvas as one rectangle, and each arm's sleeve strip as a hole in it: wound the
+    # other way, under the clip path's own non-zero rule (`clip-rule` is not honoured everywhere).
+    far = 8.0 * r
+    path = f"M {at((cx - far, cy - far))} L {at((cx + far, cy - far))} L {at((cx + far, cy + far))} L {at((cx - far, cy + far))} Z "
     edges: list[str] = []
-    for s in (1, -1):  # down the right edge round that notch, along the bottom, up the left
-        if s == -1:
-            path += f"L {at((cx + reach, bottom))} L {at((cx - reach, bottom))} "
-        if s not in sides:
-            continue
+    for s in sides:
         chain = cut.lines[cut.arm_lines[0 if s == -1 else 1]]
         first, last = px(chain[0]), px(chain[1][-1][1])
-        joint = (first[0], _arm_pivot(sk, p, s)[1])
-        edges.append(f"M {at(joint)} L {at(first)} {curve(chain)}")
-        if s == 1:
-            path += f"L {at((cx + reach, joint[1]))} L {at(joint)} L {at(first)} {curve(chain)} "
-            path += f"L {at((last[0], below))} L {at((cx + reach, below))} "
+        pivot = _arm_pivot(sk, p, s)
+        turn = math.radians(-s * _arm_swing(p, s))
+        along = (-math.sin(turn), math.cos(turn))  # from the shoulder toward the hand
+        wide = (math.cos(turn), math.sin(turn))  # across the arm
+        down = 1.0 if wide[1] > 0 else -1.0  # which way along `wide` is the lower edge
+        w = sk.arm_half_w
+        lower = (pivot[0] + down * w * wide[0], pivot[1] + down * w * wide[1])
+        # The line the shoulder stops on lies a little inside the arm's upper edge, so the arm's
+        # own outline, which curves a little off a straight line, leaves no sliver under it.
+        inset = _SHOULDER_OVERLAP * w - w
+        upper = (pivot[0] + down * inset * wide[0], pivot[1] + down * inset * wide[1])
+        meet_upper = across(upper, along, first[0])
+        # Along the arm's upper edge, well clear of the body; and back round the outside.
+        k = 5.0 * r
+        out = (upper[0] + k * along[0], upper[1] + k * along[1])
+        corner = (cx + s * 5.0 * r, out[1])
+        # the strip's outline, for which way round it goes: it has to run against the rectangle's
+        loop = [out, corner, (corner[0], below), (last[0], below), last, first, meet_upper]
+        area = sum(
+            a[0] * b[1] - b[0] * a[1] for a, b in zip(loop, [*loop[1:], loop[0]], strict=True)
+        )
+        if area > 0:
+            hole = (
+                f"M {at(out)} L {at(meet_upper)} L {at(first)} {curve(chain)} L {at((last[0], below))} "
+                f"L {at((corner[0], below))} L {at(corner)} Z "
+            )
         else:
-            path += f"L {at((cx - reach, below))} L {at((last[0], below))} L {at(last)} "
-            path += f"{curve(_reversed_chain(chain))} L {at(first)} L {at(joint)} L {at((cx - reach, joint[1]))} "
-    path += "Z"
+            hole = (
+                f"M {at(out)} L {at(corner)} L {at((corner[0], below))} L {at((last[0], below))} "
+                f"L {at(last)} {curve(_reversed_chain(chain))} L {at(first)} L {at(meet_upper)} Z "
+            )
+        path += hole
+        armpit = across(lower, along, first[0])
+        edges.append(f"M {at(armpit)} L {at(first)} {curve(chain)}")
     weight = _interior_w(_stroke_w(sk), cut.line_weight)
     lines = "".join(
         f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{weight:.2f}" stroke-linecap="round" />'
         for d in edges
     )
     return f'<defs><clipPath id="{_SLEEVE_CUT_ID}"><path d="{path}" /></clipPath></defs>', lines
+
+
+def _without_raised_sleeves(layer: str, p: CharacterParams) -> str:
+    """`layer` clipped like the coat is: the body's shoulder under a raised arm's sleeve would
+    show once the sleeve is gone (`_sleeve_cutaway` makes the clip path)."""
+    if not any(_raised_coat_sleeve(p, s) for s in (-1, 1)):
+        return layer
+    return f'<g clip-path="url(#{_SLEEVE_CUT_ID})">{layer}</g>'
 
 
 def _cutaway_side_lines(p: CharacterParams) -> set[int]:
@@ -7890,6 +7948,8 @@ def _arm_pivot(sk: Skeleton, p: CharacterParams, s: int) -> tuple[float, float]:
     """
     cut = _worn_sleeve(sk, p)
     if cut is None:
+        if (shoulder := _raised_shoulder(sk, p, s)) is not None:
+            return sk.head_cx + s * shoulder[0], shoulder[1]
         centre_top, top_y, _, _ = _arm_line(sk)
         return sk.head_cx + s * centre_top, top_y
     jx, jy = _sleeve_placement(sk, cut, s)(cut.pivot)
@@ -9388,6 +9448,7 @@ COAT_CUTS["blazer"] = GarmentCut(
     # end at the hem the white cuff shows below.
     arm_lines=(1, 2),
     sleeve_hem_y=4.34,
+    shoulder_y=1.75,
 )
 
 # A flapped hip pocket, one flap a side: the right one traced, the left its mirror.
@@ -9525,8 +9586,18 @@ def _arms(
         def x(offset: float) -> float:
             return cx + s * offset  # noqa: B023
 
-        top_in, top_out = top_y, top_y
-        if _sleeve_under_cap(sk, p):
+        # A raised arm in a coat whose sleeve is part of its silhouette starts at the shoulder
+        # and is drawn in full from there (`_raised_shoulder`).
+        shoulder = _raised_shoulder(sk, p, s) if _worn_sleeve(sk, p) is None else None
+        arm_top, arm_top_y = shoulder if shoulder is not None else (centre_top, top_y)
+        if shoulder is not None:
+            # Carried on up its own line into the body, where the coat covers it, so the arm's
+            # lower edge runs on until it meets the torso instead of stopping at the joint.
+            lean = (centre_wrist - centre_top) / (wrist_y - top_y)
+            arm_top_y -= _RAISED_ARM_INTO_BODY * sk.head_r
+            arm_top -= lean * _RAISED_ARM_INTO_BODY * sk.head_r
+        top_in, top_out = arm_top_y, arm_top_y
+        if shoulder is None and _sleeve_under_cap(sk, p):
             tip_y = _cap_tip_y(sk)
             top_in = _cap_underside_y(sk, centre_top - w_top, tip_y)
             top_out = _cap_underside_y(sk, centre_top + w_top, tip_y)
@@ -9537,17 +9608,19 @@ def _arms(
         # a straight cut across the top reads as a square shoulder tacked on.
         # It was never visible before, the coat being drawn over the arms; P5
         # flipped that order and put it on show (the owner, 2026-09-21).
-        top_edge = f"M {x(centre_top - w_top):.1f} {top_in:.1f} L {x(centre_top + w_top):.1f} {top_out:.1f} "
+        top_edge = (
+            f"M {x(arm_top - w_top):.1f} {top_in:.1f} L {x(arm_top + w_top):.1f} {top_out:.1f} "
+        )
         body = (
-            f"Q {x(centre_top + w_top * 1.03):.1f} {top_out + (elbow_y - top_out) * 0.55:.1f} "
+            f"Q {x(arm_top + w_top * 1.03):.1f} {top_out + (elbow_y - top_out) * 0.55:.1f} "
             f"{x(centre_elbow + w_elbow):.1f} {elbow_y:.1f} "
             f"Q {x(centre_wrist + w_wrist * 1.06):.1f} {elbow_y + (wrist_y - elbow_y) * 0.5:.1f} "
             f"{x(centre_wrist + w_wrist):.1f} {wrist_y:.1f} "
             f"L {x(centre_wrist - w_wrist):.1f} {wrist_y:.1f} "
             f"Q {x(centre_wrist - w_wrist * 1.06):.1f} {elbow_y + (wrist_y - elbow_y) * 0.5:.1f} "
             f"{x(centre_elbow - w_elbow):.1f} {elbow_y:.1f} "
-            f"Q {x(centre_top - w_top * 1.03):.1f} {top_in + (elbow_y - top_in) * 0.55:.1f} "
-            f"{x(centre_top - w_top):.1f} {top_in:.1f} "
+            f"Q {x(arm_top - w_top * 1.03):.1f} {top_in + (elbow_y - top_in) * 0.55:.1f} "
+            f"{x(arm_top - w_top):.1f} {top_in:.1f} "
         )
         d = top_edge + body + "Z"
         # No tone down the sleeve. It was a turn along the inner side, and a
@@ -9591,7 +9664,7 @@ def _arms(
             # Filled whole, stroked everywhere but across the top. A bare arm
             # too: the shoulder rounds over it, and a line across its top read
             # as a sleeve's hem with no sleeve (`docs/bare-body-plan.md`, 4c).
-            outline = f"M {x(centre_top + w_top):.1f} {top_out:.1f} {body}"
+            outline = f"M {x(arm_top + w_top):.1f} {top_out:.1f} {body}"
             if _hand_traced(p, s):
                 # Open across the wrist: the traced hand runs on from the arm,
                 # and a line there would cut it off (`_traced_hand`).
@@ -9657,12 +9730,10 @@ def _arms(
             # see `_arm_joint_cap` for why this closes the gap the rotation
             # opens at the shoulder. A traced sleeve's cap is a disc about its
             # pivot and needs none.
-            if cut is None and not hands:
-                parts.append(
-                    _arm_joint_cap(
-                        sk, sleeve_fill if raised_sleeve else sleeve, pivot_x, pivot_y, w_top
-                    )
-                )
+            # An arm raised from the shoulder needs none: the coat's own shoulder covers the
+            # joint, and the base of the arm is outlined where it meets the torso.
+            if shoulder is None and cut is None and not hands:
+                parts.append(_arm_joint_cap(sk, sleeve, pivot_x, pivot_y, w_top))
             parts.append(
                 f'<g transform="rotate({angle:.2f} {pivot_x:.1f} {pivot_y:.1f})">'
                 + "".join(limb)
@@ -13386,7 +13457,7 @@ def render_character(
         _hair_mass(sk, p),
         # The body under everything it wears, and under the neck, whose skin
         # covers its top edge; see the function.
-        _torso(sk, p),
+        _without_raised_sleeves(_torso(sk, p), p),
         _neck(sk, p),
         _legs_and_boots(sk, p),
         _underskirt(sk, p),
