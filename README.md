@@ -6,7 +6,9 @@ compositing pre-made art. A small skeleton of proportion anchors
 (head size, shoulder width, hip width, etc.) drives every shape,
 hair, face, clothes, limbs, so style stays consistent by construction
 instead of by curating matching assets. No AI image generation is
-involved anywhere in the pipeline.
+involved when a character is drawn (but see
+[How this was made](#how-this-was-made): the code is AI-written, and the
+designs began from AI-generated references).
 
 Animation is out of scope. Backgrounds and text overlays are a
 possible later addition (they'd slot in as extra SVG layers).
@@ -292,6 +294,25 @@ matches the code.
 `CLAUDE.md` holds the rules a change to this repo has to respect, and
 `STATUS.md` is the running state: what is done, what is weak, what is
 next.
+
+## How this was made
+
+**This project was built with AI coding agents**, directed by its owner: mostly
+**Claude Code** (Anthropic), with some work done with **Cursor** (using Grok models)
+and **opencode** (using the free "Big Pickle" model). AI-written code can be
+wrong; the repository has a test suite, but treat it as you would any software
+you have not read line by line.
+
+- **The drawing** is ordinary code: no image generator runs when a character is
+  drawn. But the characters' designs began from AI-generated reference images
+  (some made with Grok, kept in `ref/`), which set the style and the first
+  roster, and several characters, Katherina and Risa among them, were traced
+  from such references.
+- **The documentation** was written by Claude Code.
+- **Commits** here carry no co-author trailer (this repository's own rule), so
+  the history does not show which were AI-written: assume most of the code was.
+- The companion app that uses this ([anime_ai_companion](https://github.com/rhedak/anime_ai_companion))
+  was built the same way and says so in its own README.
 
 ## Design principles
 
