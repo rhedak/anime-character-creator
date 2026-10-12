@@ -115,3 +115,22 @@ def test_the_blush_is_clipped_to_the_face_outline() -> None:
         replace(PRESETS["risa"], face=replace(PRESETS["risa"].face, blush=0.0))
     )
     assert "blush-clip" not in plain
+
+
+def test_a_raised_arm_takes_the_blazers_sleeve_with_it() -> None:
+    risa = PRESETS["risa"]
+    rest = render_character(risa)
+    assert "sleeve-cutaway" not in rest and "sleeve-cuff" not in rest  # at rest, drawn as before
+    wave = render_character(replace(risa, right_arm_out=128.0))
+    # the blazer's own sleeve is clipped away on that side, and the arm is drawn in the blazer's colour
+    assert 'id="sleeve-cutaway"' in wave and 'clip-path="url(#sleeve-cutaway)"' in wave
+    assert 'id="sleeve-cuff-l"' in wave and "sleeve-cuff-r" not in wave
+    assert wave.count('fill="#4d5159"') > rest.count('fill="#4d5159"')
+    cheer = render_character(replace(risa, right_arm_out=125.0, left_arm_out=125.0))
+    assert 'id="sleeve-cuff-l"' in cheer and 'id="sleeve-cuff-r"' in cheer
+
+
+def test_a_coat_whose_sleeves_are_the_arms_own_is_drawn_as_before_when_the_arm_is_raised() -> None:
+    p = replace(PRESETS["keiko"], right_arm_out=128.0)
+    svg = render_character(p)
+    assert "sleeve-cutaway" not in svg and "sleeve-cuff" not in svg
