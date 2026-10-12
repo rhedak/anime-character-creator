@@ -5412,6 +5412,9 @@ class GarmentCut:
     sleeve_hem_y: float | None = None
     # Where the arm joins the shoulder, in the cut's head radii: a raised arm turns there.
     shoulder_y: float | None = None
+    # Where the coat's own hem ends beside each arm (viewer's left, right), in the cut's head radii:
+    # a raised arm's sleeve strip is cut off level with it, so no sleeve hem is left hanging.
+    hem_corners: tuple[Point, Point] | None = None
 
 
 def _arm_swing(p: CharacterParams, s: int) -> float:
@@ -5446,6 +5449,35 @@ _SLEEVE_CUT_ID = "sleeve-cutaway"
 _RAISED_ARM_INTO_BODY = 0.5
 # How far inside a raised arm's upper edge the shoulder is cut, as a share of the arm's half width.
 _SHOULDER_OVERLAP = 0.4
+
+
+def _chain_until_y(chain: Chain, y: float) -> Chain:
+    """The part of a quadratic chain (whose height only increases) down to height `y`."""
+    start, segs = chain
+    out: list[Segment] = []
+    p0 = start
+    for c, e in segs:
+        if e[1] <= y:
+            out.append((c, e))
+            p0 = e
+            continue
+        # split this segment where it reaches `y`: solve the quadratic's height for t by bisection
+        lo, hi = 0.0, 1.0
+        for _ in range(40):
+            t = (lo + hi) / 2
+            if (1 - t) ** 2 * p0[1] + 2 * t * (1 - t) * c[1] + t * t * e[1] < y:
+                lo = t
+            else:
+                hi = t
+        t = lo
+        ctrl = (p0[0] + (c[0] - p0[0]) * t, p0[1] + (c[1] - p0[1]) * t)
+        end = (
+            (1 - t) ** 2 * p0[0] + 2 * t * (1 - t) * c[0] + t * t * e[0],
+            (1 - t) ** 2 * p0[1] + 2 * t * (1 - t) * c[1] + t * t * e[1],
+        )
+        out.append((ctrl, end))
+        break
+    return start, out
 
 
 def _reversed_chain(chain: Chain) -> Chain:
@@ -5507,6 +5539,10 @@ def _sleeve_cutaway(sk: Skeleton, p: CharacterParams) -> tuple[str, str]:
     edges: list[str] = []
     for s in sides:
         chain = cut.lines[cut.arm_lines[0 if s == -1 else 1]]
+        # The strip ends level with the coat's own hem at the corner, not on the sleeve's lobe below.
+        hem_ref = cut.hem_corners[0 if s == -1 else 1]  # type: ignore[index]
+        chain = _chain_until_y(chain, hem_ref[1])
+        hem_x, hem_y = xf(hem_ref)[0] * r + cx, xf(hem_ref)[1] * r + cy
         first, last = px(chain[0]), px(chain[1][-1][1])
         pivot = _arm_pivot(sk, p, s)
         turn = math.radians(-s * _arm_swing(p, s))
@@ -5525,23 +5561,32 @@ def _sleeve_cutaway(sk: Skeleton, p: CharacterParams) -> tuple[str, str]:
         out = (upper[0] + k * along[0], upper[1] + k * along[1])
         corner = (cx + s * 5.0 * r, out[1])
         # the strip's outline, for which way round it goes: it has to run against the rectangle's
-        loop = [out, corner, (corner[0], below), (last[0], below), last, first, meet_upper]
+        loop = [
+            out,
+            corner,
+            (corner[0], below),
+            (hem_x, below),
+            (hem_x, hem_y),
+            last,
+            first,
+            meet_upper,
+        ]
         area = sum(
             a[0] * b[1] - b[0] * a[1] for a, b in zip(loop, [*loop[1:], loop[0]], strict=True)
         )
         if area > 0:
             hole = (
-                f"M {at(out)} L {at(meet_upper)} L {at(first)} {curve(chain)} L {at((last[0], below))} "
-                f"L {at((corner[0], below))} L {at(corner)} Z "
+                f"M {at(out)} L {at(meet_upper)} L {at(first)} {curve(chain)} L {at((hem_x, hem_y))} "
+                f"L {at((hem_x, below))} L {at((corner[0], below))} L {at(corner)} Z "
             )
         else:
             hole = (
-                f"M {at(out)} L {at(corner)} L {at((corner[0], below))} L {at((last[0], below))} "
-                f"L {at(last)} {curve(_reversed_chain(chain))} L {at(first)} L {at(meet_upper)} Z "
+                f"M {at(out)} L {at(corner)} L {at((corner[0], below))} L {at((hem_x, below))} "
+                f"L {at((hem_x, hem_y))} L {at(last)} {curve(_reversed_chain(chain))} L {at(first)} L {at(meet_upper)} Z "
             )
         path += hole
         armpit = across(lower, along, first[0])
-        edges.append(f"M {at(armpit)} L {at(first)} {curve(chain)}")
+        edges.append(f"M {at(armpit)} L {at(first)} {curve(chain)} L {at((hem_x, hem_y))}")
     weight = _interior_w(_stroke_w(sk), cut.line_weight)
     lines = "".join(
         f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{weight:.2f}" stroke-linecap="round" />'
@@ -9449,6 +9494,7 @@ COAT_CUTS["blazer"] = GarmentCut(
     arm_lines=(1, 2),
     sleeve_hem_y=4.34,
     shoulder_y=1.75,
+    hem_corners=((-1.009, 4.186), (0.973, 4.15)),
 )
 
 # A flapped hip pocket, one flap a side: the right one traced, the left its mirror.
