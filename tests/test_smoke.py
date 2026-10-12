@@ -3075,6 +3075,8 @@ def test_eyes_set_wide_apart_a_mouth_set_low_and_brows_over_the_hair() -> None:
     flat = replace(p, face=replace(p.face, mouth_drop=0.0))
 
     def mouth_y(q: CharacterParams) -> float:
+        # Without the blush, whose clip path would otherwise be the last path in the face.
+        q = replace(q, face=replace(q.face, blush=0.0))
         svg = character._face(character.skeleton_for(q), q)
         return float(svg.split('d="M ')[-1].split(" Q")[0].split()[1])
 

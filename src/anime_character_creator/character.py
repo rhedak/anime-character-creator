@@ -133,7 +133,8 @@ class FaceStyle:
     # to the lids).
     brows_over_hair: bool = False
     # How far the mouth hangs open: 0 is the shut line it has always been, 1 a
-    # mouth about as deep as it is wide. The upper edge is the same curve as the
+    # mouth about as deep as it is wide, and it grows only a little past that (a mouth
+    # taller than wide reads as a slot). The upper edge is the same curve as the
     # shut mouth, so a face moves between the two without the lip jumping.
     mouth_open: float = 0.0
     # Where the eyes look, sideways: 0 straight at the viewer, 1 as far to the
@@ -6464,6 +6465,22 @@ def _coat(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# How far an open mouth drops, as a share of its width, and where that stops growing. Up to
+# `_MOUTH_DEPTH_FREE` it is the opening itself; past it each further step counts for a
+# tenth, so a mouth opened wide stays about as tall as it is wide. Taller than wide
+# it reads as a slot or a tongue rather than a mouth, and on a narrow mouth it ran down
+# past the chin.
+_MOUTH_DEPTH_FREE = 0.85
+_MOUTH_DEPTH_SLOPE = 0.1
+
+
+def _mouth_depth_share(opening: float) -> float:
+    """The drop of an open mouth in widths, for `FaceStyle.mouth_open` = `opening`."""
+    if opening <= _MOUTH_DEPTH_FREE:
+        return opening
+    return _MOUTH_DEPTH_FREE + (opening - _MOUTH_DEPTH_FREE) * _MOUTH_DEPTH_SLOPE
+
+
 # The inside of an open mouth, one flat dark red (`FaceStyle.mouth_open`).
 _MOUTH_INSIDE = "#6b2f2f"
 
@@ -11736,6 +11753,21 @@ def _ears(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+def _head_paths(sk: Skeleton) -> tuple[str, str, str]:
+    """The head as path data: its filled shape, the silhouette line round the skull and
+    cheeks, and the lighter line under the chin (`_head` says why they are two)."""
+    start, segments = _head_shape(sk.face_build)
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    anchors = [start] + [end for _, end in segments]
+    chin_from, chin_to = 3, 5  # the two segments either side of the chin
+    fill = _curve(cx, cy, r, start, segments)
+    silhouette = _curve(
+        cx, cy, r, anchors[chin_to], segments[chin_to:] + segments[:chin_from], close=False
+    )
+    under_chin = _curve(cx, cy, r, anchors[chin_from], segments[chin_from:chin_to], close=False)
+    return fill, silhouette, under_chin
+
+
 def _head(sk: Skeleton, p: CharacterParams) -> str:
     """The face is deliberately the one flat surface on the figure.
 
@@ -11745,9 +11777,7 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     brow ridge for it to fall off, so it has nothing to explain it. The hair
     already darkens one side of the head, which is enough.
     """
-    start, segments = _head_shape(sk.face_build)
-    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    fill = _curve(cx, cy, r, start, segments)
+    fill, silhouette, under_chin = _head_paths(sk)
     parts = [f'<path d="{fill}" fill="{p.skin_tone}" />']
 
     # The outline is drawn in two weights rather than as one closed stroke. Around
@@ -11759,12 +11789,6 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     # weight, the ratio it had before D1's split: drawn as an interior line it
     # fell to 0.44 and read as a different pen (the owner, 2026-09-27,
     # `harness/detail/chin_weight.py`).
-    anchors = [start] + [end for _, end in segments]
-    chin_from, chin_to = 3, 5  # the two segments either side of the chin
-    silhouette = _curve(
-        cx, cy, r, anchors[chin_to], segments[chin_to:] + segments[:chin_from], close=False
-    )
-    under_chin = _curve(cx, cy, r, anchors[chin_from], segments[chin_from:chin_to], close=False)
     sw = _stroke_w(sk)
     parts.append(
         f'<path d="{silhouette}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
@@ -11794,6 +11818,10 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
 # `eye_openness` and `eye_lower_lid`, which are per-character expression values
 # the owner set deliberately, so it is left alone rather than tuned to a ratio.
 _EYE_ASPECT = 1.28
+
+# How far the iris travels at a full look to one side, in eye radii, or the room the aperture
+# leaves it if that is less (`_eye`).
+_GAZE_TRAVEL = 0.34
 
 # The aperture outline's weight, upper half-circle and lower half-circle
 # alike. Used to carry two different multipliers here, 0.85 for the whole
@@ -11984,10 +12012,18 @@ def _eye(
         )
     # Looking sideways moves the iris and everything drawn on it, and nothing else:
     # the lids and lashes stay put, and the aperture's clip crops what overhangs.
-    ix = ex + f.gaze * er * 0.34
-    if f.iris_inset:
-        room = max(0.0, er * f.eye_width * _EYE_ASPECT - iris_r)
-        ix -= side * f.iris_inset * room
+    #
+    # The iris stays inside the white: how far it can travel is the room the aperture leaves
+    # it (its half-width less the iris's own radius), and a look never asks for more than
+    # that. Past it the clip would crop the iris at the corner and it would seem to slide
+    # under the skin instead of turning in the eye. The iris's rest spot (`iris_inset`)
+    # eases into the look, so at a full look both eyes sit at the same offset from their
+    # centres, the way two eyes turn together, and the one already tucked into the corner
+    # on that side stays there instead of being pushed past it.
+    room = max(0.0, er * f.eye_width * _EYE_ASPECT - iris_r)
+    look = max(-1.0, min(1.0, f.gaze))
+    at_rest = -side * f.iris_inset * room
+    ix = ex + at_rest * (1.0 - abs(look)) + look * min(er * _GAZE_TRAVEL, room)
     # Canon iris: a rim of the eye color's own darker tone around the color,
     # with a distinct near-dark pupil inside that. Three flat tones, which is
     # what makes the eye read at a glance where a single disc read as a bead.
@@ -12408,7 +12444,7 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         # Open: the shut mouth's curve is the upper lip, and a second curve below it
         # closes the shape. Filled one flat dark tone, outlined like the rest of the
         # face, with no teeth or tongue drawn.
-        depth = mouth_half * 2.0 * f.mouth_open
+        depth = mouth_half * 2.0 * _mouth_depth_share(f.mouth_open)
         parts.append(
             f'<path d="M {cx - mouth_half:.1f} {mouth_y:.1f} '
             f"Q {cx:.1f} {mouth_y + r * 0.08 * f.mouth_curve:.1f} {cx + mouth_half:.1f} {mouth_y:.1f} "
@@ -12425,16 +12461,37 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         )
 
     if f.blush > 0:
+        blush: list[str] = []
         for side in (-1, 1):
             # Below and outside the eyes, which sit lower than they used to;
             # at the old height the blush clipped under the lower lids.
             bx = cx + side * r * 0.58
-            by = cy + r * 0.44
+            blush_ry = r * 0.09
+            # And never over the eye itself: a face with large or low eyes would have the
+            # blush tint the iris and the lower lid, so it starts below the lower lash line.
+            by = max(cy + r * 0.44, eye_y + eye_r * f.eye_lower_lid + sw + blush_ry)
             color, opacity = _blush(p.skin_tone)
-            parts.append(
-                f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{r * 0.09:.1f}" '
+            blush.append(
+                f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{blush_ry:.1f}" '
                 f'fill="{color}" opacity="{opacity * f.blush:.2f}" />'
             )
+        # Kept inside the face: on a narrow face the blush reaches past the cheek's edge and
+        # would tint the hair behind it, so it is clipped to the face's own shape. The clip
+        # runs to the middle of the outline's stroke, so the outline is drawn again over it:
+        # the blush then stops at the line instead of lightening the line's inner half.
+        fill, silhouette, under_chin = _head_paths(sk)
+
+        def line(d: str, weight: float) -> str:
+            return (
+                f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-linecap="round" '
+                f'stroke-width="{_outline_w(sw, weight):.2f}" />'
+            )
+
+        parts.append(
+            f'<defs><clipPath id="blush-clip"><path d="{fill}" /></clipPath></defs>'
+            f'<g clip-path="url(#blush-clip)">{"".join(blush)}</g>'
+            f"{line(silhouette, 1.0)}{line(under_chin, 0.6)}"
+        )
 
     if f.scar_side:
         parts.append(_scar(sk, 1 if f.scar_side > 0 else -1))
