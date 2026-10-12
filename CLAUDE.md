@@ -141,6 +141,15 @@ wrong, and reformatting them would be editing the evidence.
   different from the defaults, confirms `shade()` derivations still
   look right outside the default hue range, not just coincidentally
   right for blonde/green.
+- Branches and releases: `main` is released code and `dev` is where work happens. Commit to `dev`, and merge
+  into `main` only when the owner says to release and `ruff` and `pytest` pass. Never push `main` or a tag
+  unasked. Every push to `main` is a release with a new version: the last commit on `dev` raises `version`
+  in `pyproject.toml` (minor for a feature or a new look, patch for a fix; the project is 0.x), then the
+  merged commit on `main` gets an annotated `vX.Y.Z` tag, pushed together with `main`. The companion app
+  (`anime_ai_companion`) pins these tags, so a tag must never be moved or deleted once pushed.
+- The owner's app imports this checkout by path (`../anime-character-creator`), so leave that checkout on
+  `main`. Work on `dev` in a second worktree (`git worktree add ../anime-character-creator-dev dev`, then
+  `uv sync` in it) and point the companion at it with `CREATOR_SRC=<worktree>/src` to see a change run.
 - do NOT commit unless asked
 - even if you commit do not write a "co-authored" trailer
 - no em dashes "—" (U+2014), double hyphens "--", or similar pause-substitutes in prose / comments;
