@@ -16,8 +16,9 @@ to showing the body.
 3. **Judge in two views**: the mannequin (adults, nothing worn,
    `harness/bare/mannequin.py`) for the body's shape, the base-layer sheet
    (the cast, tunic off) for what the tool will show.
-4. **Adults only in the mannequin.** No bare render of Katherina or Linnea,
-   or any preset whose age is not an adult's, in any view.
+4. **Adults only in the mannequin.** No bare render of a preset whose age
+   is not an adult's, in any view. Katherina and Linnea are eighteen
+   (2026-10-15), and are not the story characters the younger ages belonged to.
 5. **Chibi first.** The realistic build must render without error; it is not
    judged here.
 

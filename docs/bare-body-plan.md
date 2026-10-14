@@ -20,6 +20,11 @@ follows the skin. The record is `bare-body-status.md`. Left open: the
 men's armpit reads as a narrow flat-topped slot (a small bare-only change if
 wanted), and the realistic build, judged after its own fix pass.
 
+## Owner's decision (2026-10-15)
+
+This repo's Katherina and Linnea are eighteen. They are not the story
+characters the 14 and 15 in the decision below belonged to.
+
 ## Owner's decisions (2026-09-25)
 
 1. **No anatomical detail.** No nipples, no genitals: the body is a smooth

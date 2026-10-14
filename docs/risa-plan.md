@@ -65,8 +65,8 @@ eyeballing the image and exactly what M2 measures.
 ## Decisions that shape the work
 
 1. **Age 18 means an adult face.** `face_age` runs from young (low) to old
-   (high): Katherina 0.35, Linnea 0.4, Lindita 0.7, Satoko 0.8, most of the
-   adult cast 1.0. She starts at 0.8 and is tuned by eye later (the owner's
+   (high): Kyoko 0.6, Lindita 0.7, Risa, Katherina and Linnea 0.75, Satoko 0.8,
+   most of the adult cast 1.0. She starts at 0.8 and is tuned by eye later (the owner's
    call). The reference draws her younger than that; the age is the owner's.
 2. **Trace, do not eyeball (the owner's call, 2026-10-11, replacing this
    plan's first decision to build parametrically).** Every shape that is a

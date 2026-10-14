@@ -26,7 +26,19 @@ from PIL import Image, ImageDraw
 from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 
-ADULTS = ("satoko", "chiyo", "keiko", "krista", "reika", "elara", "gero", "daizen", "tenno")
+ADULTS = (
+    "satoko",
+    "chiyo",
+    "keiko",
+    "krista",
+    "reika",
+    "elara",
+    "katherina",
+    "linnea",
+    "gero",
+    "daizen",
+    "tenno",
+)
 COLOR_FIELDS = [
     f.name for f in dataclasses.fields(c.Outfit) if f.name.endswith("_color") and f.name not in ("boot_color", "underwear_color")
 ]

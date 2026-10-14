@@ -962,9 +962,11 @@ VIKTOR = CharacterParams(
 # tried for the same purpose and rejected: it read as a sticker laid over the
 # drawing rather than part of it.
 KATHERINA = CharacterParams(
-    # Fourteen at the start of her story (the owner, 2026-09-27).
-    face_age=0.35,
-    # Fourteen; the owner's value (`docs/bust-plan.md`, step 7).
+    # Eighteen. The design began from another story's character, who was
+    # younger; this preset is not that character (the owner, 2026-10-15).
+    # The face is the adult one an age of eighteen uses, the same as Risa's.
+    face_age=0.75,
+    # Kept from step 7 (`docs/bust-plan.md`).
     bust=0.2,
     skin_tone="#f2c9a8",
     hair_color="#4b2c5e",
@@ -1088,7 +1090,8 @@ GERO = CharacterParams(
     ),
 )
 
-# Linnea: fifteen, the innkeeper's daughter, fourth of six. Blunt,
+# Linnea: eighteen. Drawn from the innkeeper's daughter in that story, fourth
+# of six, but this preset is not that character (the owner, 2026-10-15). Blunt,
 # unsentimental, practical rather than decorative, which is why she
 # wears trousers and a plain tunic rather than the skirt-and-apron
 # working outfit this roster's other innkeeper's daughter (Satoko)
@@ -1102,9 +1105,9 @@ GERO = CharacterParams(
 # dress bright to catch the little light they have; on the road she has
 # to hood it and later loses the coat binding Gero's wound.
 LINNEA = CharacterParams(
-    # Fifteen (above), a year older than Katherina.
-    face_age=0.4,
-    # Fifteen; the owner's value (`docs/bust-plan.md`, step 7).
+    # Eighteen, the same adult face as Katherina and Risa.
+    face_age=0.75,
+    # Kept from step 7 (`docs/bust-plan.md`).
     bust=0.3,
     skin_tone="#f3d6bd",
     hair_color="#e56a9c",
@@ -1120,8 +1123,7 @@ LINNEA = CharacterParams(
         skirt_color=None,
         tunic_tucked=True,
     ),
-    # Narrower than the frame default, same direction as Satoko's -0.3:
-    # a fifteen-year-old rather than an adult woman.
+    # Narrower than the frame default, same direction as Satoko's -0.3.
     frame=-0.4,
     face=FaceStyle(
         eye_size=0.98,

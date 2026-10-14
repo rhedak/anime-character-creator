@@ -15,10 +15,11 @@ possible later addition (they'd slot in as extra SVG layers).
 
 ## Status
 
-Fourteen named characters for *Valley of Mist*, plus guests from two other
-projects (Katherina from `../time_slider_katharina`; Gero and Linnea, and
-Dritan and Lindita, from `../short_stories`), and Risa, a schoolgirl from no
-story of ours, all rendering at the chibi build. They are all the tall chibi, the one figure since
+Fourteen named characters for *Valley of Mist*, plus guests. Katherina (a
+design from `../time_slider_katharina`) and Linnea (from `../short_stories`)
+are eighteen here, and are not those stories' characters. Gero, Dritan and
+Lindita are from `../short_stories`, and Risa is a schoolgirl from no story of
+ours. They are all the tall chibi, the one figure since
 2026-09-26, when the realistic build and the old compressed chibi were
 retired; a `height` from 0.8 to 1.3 stretches it for a younger or a
 taller character. Risa is the exception in proportion: she is drawn on her own

@@ -68,8 +68,10 @@ valley_of_mist-specific.
   always drawn with a bust), and no anatomical detail is drawn. A fully bare
   figure exists only as a harness view for proportion work
   (`harness/bare/mannequin.py`), adults only, never a web tool option; no
-  bare render of Katherina, Linnea or any preset whose age is not an adult's
-  (the owner's decision, `docs/bare-body-plan.md`).
+  bare render of a preset whose age is not an adult's
+  (the owner's decision, `docs/bare-body-plan.md`). Katherina and Linnea
+  are eighteen in this repo, and are not the story characters the younger
+  ages belonged to.
 - **Flat color, hard-edged, and no shading plane across a garment.**
   Matches the target cel-shaded anime look. Don't add gradients/blur,
   they'd break the flat-vector aesthetic that's the whole point. A

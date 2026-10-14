@@ -2601,6 +2601,14 @@ def test_the_open_hand_is_squared_at_the_wrist() -> None:
     assert max(flat) == pytest.approx(max(wrist), abs=0.02)
 
 
+def test_katherina_and_linnea_are_eighteen() -> None:
+    """This repo's versions are not the story characters, who were younger.
+    Eighteen is the adult face Risa uses."""
+    adult = PRESETS["risa"].face_age
+    assert PRESETS["katherina"].face_age == adult
+    assert PRESETS["linnea"].face_age == adult
+
+
 def test_the_blindfold_is_off_by_default_and_sits_above_the_eyes() -> None:
     """A cloth pushed up onto the forehead, clear of the eyes, drawn only when asked.
 

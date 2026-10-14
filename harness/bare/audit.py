@@ -35,9 +35,23 @@ from anime_character_creator.skeleton import BUILDS
 # Adults by the cast notes: Satoko is twenty (Kyoko's flashback is at
 # seventeen, three years before), Chiyo late forties to mid fifties, Gero late
 # forties, Daizen and Tenno the cast's oldest; Keiko, Krista, Reika and Elara
-# are adult by their design briefs. Anyone not listed is left out of images,
-# including presets whose age the notes do not state.
-ADULTS = ("satoko", "chiyo", "keiko", "krista", "reika", "elara", "gero", "daizen", "tenno")
+# are adult by their design briefs. Katherina and Linnea are eighteen in this
+# repo (2026-10-15), not the story characters those designs were drawn from.
+# Anyone not listed is left out of images, including presets whose age the
+# notes do not state.
+ADULTS = (
+    "satoko",
+    "chiyo",
+    "keiko",
+    "krista",
+    "reika",
+    "elara",
+    "katherina",
+    "linnea",
+    "gero",
+    "daizen",
+    "tenno",
+)
 # The underwear is always worn (step 3), so "all off" leaves it on.
 COLOR_FIELDS = [
     f.name
