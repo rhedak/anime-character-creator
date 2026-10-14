@@ -4059,21 +4059,24 @@ _BREAST_DEPTH = 1.25
 _BREAST_STOP = 170.0
 
 
-def _breast_ellipse(sk: Skeleton, inset: float) -> tuple[float, float, float, float] | None:
+def _breast_ellipse(
+    sk: Skeleton, inset: float, min_ry: float = 0.0
+) -> tuple[float, float, float, float] | None:
     """`(xc, rx, yp, ry)`: the breast's ellipse, one side, as offsets from the
     centre line, or None without a bust. Widest at the fullest point, reaching
     `bust_reach` past the plain side there; its inner edge `_BREAST_GAP` of the
     way out from the sternum; dropping the fold's depth times `_BREAST_DEPTH`
     below. The bare breast is drawn on it (`_bare_breast_spine`) and the
     tunic's line under the bust follows it (`_bust_lines`), so the two agree
-    (`docs/tunic-bust-plan.md`)."""
+    (`docs/tunic-bust-plan.md`). `min_ry` floors that drop, for a bare breast
+    whose reach is too small to read; the clothed line passes none."""
     body = _bust_shape(sk, inset=inset)
     if body is None:
         return None
     x_out, yp = body.peak
     x_in = (x_out - sk.bust_reach) * _BREAST_GAP
     xc, rx = (x_out + x_in) / 2, (x_out - x_in) / 2
-    return xc, rx, yp, (_under_bust_y(sk, yp) - yp) * _BREAST_DEPTH
+    return xc, rx, yp, max((_under_bust_y(sk, yp) - yp) * _BREAST_DEPTH, min_ry)
 
 
 def _bare_breast_spine(sk: Skeleton, p: CharacterParams) -> list[Point]:
@@ -4095,7 +4098,11 @@ def _bare_breast_spine(sk: Skeleton, p: CharacterParams) -> list[Point]:
     It arrives at the widest point vertical: joined lower on the ellipse, the
     ellipse there lay inside the armpit and the curve wiggled in and out.
     """
-    ellipse = _breast_ellipse(sk, _body_inset(sk, p))
+    rib = _rib_skeleton(sk)
+    # Her reach is a couple of pixels, so the top was a band. The cast's own
+    # breast drops about 0.14 of a head; give a tucked rib that much to read by.
+    min_ry = sk.head_r * 0.16 if rib is not sk else 0.0
+    ellipse = _breast_ellipse(rib, _body_inset(sk, p), min_ry)
     if ellipse is None:
         return []
     xc, rx, yp, ry_down = ellipse
@@ -4194,7 +4201,7 @@ def _underwear_top(sk: Skeleton, p: CharacterParams) -> str:
         )
     low = max(range(len(spine)), key=lambda k: spine[k][1])
     outer, inner = spine[: low + 1], spine[low:]
-    (ax, ay), yp = spine[0], _bust_shape(sk, inset=_body_inset(sk, p)).peak[1]
+    (ax, ay), yp = spine[0], _bust_shape(_rib_skeleton(sk), inset=_body_inset(sk, p)).peak[1]
     left = " L ".join(f"{cx - x:.1f} {y:.1f}" for x, y in outer)
     right = " L ".join(f"{cx + x:.1f} {y:.1f}" for x, y in reversed(outer))
     d = f"M {left} L {right} Q {cx:.1f} {ay + (yp - ay) * 0.6:.1f} {cx - ax:.1f} {ay:.1f} Z"
@@ -4272,6 +4279,34 @@ def _navel(sk: Skeleton, p: CharacterParams) -> str:
     )
 
 
+# How far inside the hip a bare waist sits, when the measured waist is wider
+# than the hips. The side still runs back out to the leg, so the briefs meet it.
+_BARE_WAIST_OF_HIP = 0.82
+
+
+def _rib_skeleton(sk: Skeleton) -> Skeleton:
+    """The skeleton a bare rib reads, when the measured waist is wider than the hips.
+
+    Risa's waist was never measured: a blazer covers it, and the guess sits wider
+    than the legs, so bare she is a tube and the top has nothing to tuck into.
+    The waist comes in to just inside the hip the legs already draw. The armpit
+    stays on the arm: a narrower waist would pull it in with the usual blend and
+    open a gap beside the arm. The shoulder that blend needs is only for the rib.
+    The shoulder line, the arm and every clothed cut keep the measured waist.
+    """
+    gap, w_top = _leg_gap_and_top(sk, trousers=False)
+    hip = gap + w_top
+    if sk.waist_half_w <= hip:
+        return sk
+    waist = hip * _BARE_WAIST_OF_HIP
+    centre_top, _, _, _ = _arm_line(sk)
+    armpit = centre_top - sk.arm_half_w
+    # `_torso_at_armpit` is `waist + (shoulder - waist) * 0.12`. Solve the
+    # shoulder that puts the armpit on the arm at this waist.
+    shoulder = waist + (armpit - waist) / 0.12
+    return replace(sk, waist_half_w=waist, shoulder_half_w=shoulder)
+
+
 def _torso(sk: Skeleton, p: CharacterParams) -> str:
     """The body from the shoulders to the hip, in the skin tone.
 
@@ -4293,6 +4328,9 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     past the shoulder line and covers it, so no outline shows in a neckline.
     """
     k = _body_inset(sk, p)
+    # Bare, and only then: the rib tucks where the measured waist is the
+    # garment's. Clothed, `sk` itself, so the shirt does not move.
+    rib = _rib_skeleton(sk) if p.outfit.tunic_color is None else sk
     cx, nw = sk.head_cx, sk.neck_half_w
     # Twice the inset along the shoulder: it slopes, and an inset measured
     # straight down is less than the same inset measured square to the line.
@@ -4300,7 +4338,7 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     centre_top, _, _, _ = _arm_line(sk)
     tip = centre_top + sk.arm_half_w - k
     slope, cuff_y = _shoulder_slope(sk), _sleeve_hem_y(sk)
-    tac, ww, wy = _armpit_x(sk, k), sk.waist_half_w - k, sk.waist_y
+    tac, ww, wy = _armpit_x(rib, k), rib.waist_half_w - k, sk.waist_y
     # The shoulder rounds over the top of the arm and down to where the arm
     # starts, a quarter round from its tip to half way back to the armpit,
     # the way a flat sleeve's shoulder does. It first cut straight from the tip
@@ -4364,7 +4402,11 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     # starts; but an untucked figure's seat starts at the hip, and the page
     # showed between the two (`docs/bust-plan.md`, step 3c).
     gap, w_top = _leg_gap_and_top(sk, trousers=False)
-    hw, hy = min(ww, gap + w_top - k), sk.hip_y + _stroke_w(sk)
+    seat = gap + w_top - k
+    # Wider than the legs, the torso would show beside them. Where the waist
+    # was tucked in, the side runs back out to the leg so it meets the briefs.
+    hw = seat if rib is not sk else min(ww, seat)
+    hy = sk.hip_y + _stroke_w(sk)
     # Where the legs part, the bottom edge rises into a small V to a stroke above
     # the crotch: on the long-torso chibi the crotch sits above the hip anchor,
     # and a straight edge at the hip showed in the notch between the legs of
@@ -4382,12 +4424,12 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
             else f"Q {cx - tip:.1f} {under_y:.1f} {cx - rim:.1f} {under_y:.1f} "
         )
         + under_down.format(x_tac=f"{cx - tac:.1f}", x_in=f"{cx - arm_in:.1f}")
-        + _rib(sk, cx, -1, True, inset=k)
+        + _rib(rib, cx, -1, True, inset=k)
         + f"Q {cx - hw:.1f} {hip_ctrl_y:.1f} {cx - hw:.1f} {hy:.1f} "
         f"L {cx - notch_w:.1f} {hy:.1f} L {cx:.1f} {notch_y:.1f} L {cx + notch_w:.1f} {hy:.1f} "
         f"L {cx + hw:.1f} {hy:.1f} "
         f"Q {cx + hw:.1f} {hip_ctrl_y:.1f} {cx + ww:.1f} {wy:.1f} "
-        + _rib(sk, cx, 1, False, inset=k)
+        + _rib(rib, cx, 1, False, inset=k)
         + under_up.format(
             x_tac=f"{cx + tac:.1f}", x_in=f"{cx + arm_in:.1f}", x_rim=f"{cx + rim:.1f}"
         )
@@ -10642,6 +10684,13 @@ def _legs_and_boots(sk: Skeleton, p: CharacterParams) -> str:
 # heavier line. Correcting for it would move the crotch by well under a percent
 # of the figure's height, and the render is right by eye, so it is left alone.
 _CROTCH_AT = 0.28
+# With the pelvis bare, how far below the hip the legs may part, in head radii.
+# The fraction above is right on the cast, whose thigh is short. On a leg as
+# long as Risa's it lands half a head down and the briefs become a panel over
+# the thigh. The cast's own drop is 0.27 and Katherina's 0.36, so 0.38 holds
+# them and only reins in the longer leg. Dressed, the fraction stays, so a
+# skirt's thigh does not move.
+_BARE_PELVIS = 0.38
 
 
 def _crotch_y(sk: Skeleton, p: CharacterParams) -> float:
@@ -10650,7 +10699,14 @@ def _crotch_y(sk: Skeleton, p: CharacterParams) -> float:
     read a real knee from step 4d of `bare-body-plan.md`; clothed it read the
     boot landmark, above the hip on the long-torso profile, until the knee was
     made real for everyone."""
-    return sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
+    y = sk.hip_y + (sk.knee_y - sk.hip_y) * _CROTCH_AT
+    if (
+        p.outfit.tunic_color is None
+        and p.outfit.skirt_color is None
+        and p.outfit.trouser_color is None
+    ):
+        y = min(y, sk.hip_y + sk.head_r * _BARE_PELVIS)
+    return y
 
 
 def _leg_tuck_top_y(sk: Skeleton, p: CharacterParams) -> float:
@@ -10828,7 +10884,11 @@ def _underpants(
     # Off the real knee: on the long-torso profile the landmark is above the
     # hip, and the hem came out above the top, the underpants gone entirely on
     # every untucked figure (`docs/bare-body-status.md`, steps 1 and 3).
-    hem_y = crotch_y + (sk.knee_y - crotch_y) * 0.22
+    # Capped in head radii: the same fraction of Risa's thigh ran the hem into
+    # a panel. 0.22 is past Katherina's 0.206, the longest brief that still
+    # reads as one, so the cast is unchanged.
+    drop = min((sk.knee_y - crotch_y) * 0.22, sk.head_r * 0.22)
+    hem_y = crotch_y + drop
     # Never below a skirt's hem: a short skirt, Risa's, ends above where this does,
     # and the thigh under it is bare skin in her reference.
     if hem_cap is not None:
@@ -10989,8 +11049,11 @@ def _bare_seat(
     # The underpants start a third of the way up to the waist from there: at
     # the hip itself they were a thin strip, and the torso's notch where the
     # legs part showed above them on the long-torso profile, whose crotch sits
-    # above the hip (`docs/bare-body-status.md`, step 3).
-    brief_y = top_y - (sk.hip_y - sk.waist_y) * 0.35 if p.outfit.tunic_color is None else top_y
+    # above the hip (`docs/bare-body-status.md`, step 3). Capped like the hem,
+    # so a long waist-to-hip does not hike them into a high panel. 0.22 is past
+    # Katherina's 0.200.
+    rise = min((sk.hip_y - sk.waist_y) * 0.35, sk.head_r * 0.22)
+    brief_y = top_y - rise if p.outfit.tunic_color is None else top_y
     crotch_y = _crotch_y(sk, p)
     d = _seat_notch_d(
         sk, cx, gap, top_y, crotch_y, w_top, w_knee, w_calf, w_ankle, _knee_strength(sk)

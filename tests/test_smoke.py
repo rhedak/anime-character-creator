@@ -2840,6 +2840,38 @@ def test_underwear_never_hangs_below_a_skirts_hem() -> None:
     assert character._skirt_bottom_y(sk, bare) is None
 
 
+def test_a_bare_risa_tucks_the_waist_the_blazer_had_hidden() -> None:
+    """Her waist was never measured, a blazer covers it, and the guess sits
+    wider than her hips. Undressed that is a tube, and the long thigh turns
+    the briefs into a panel. Bare, the waist comes in to the hips and the
+    legs part at a pelvis. Dressed, the measured waist and the thigh stay,
+    so the traced clothes do not move."""
+    sk = character.skeleton_for(PRESETS["risa"])
+    rib = character._rib_skeleton(sk)
+    gap, w_top = character._leg_gap_and_top(sk, False)
+    assert rib is not sk
+    assert rib.waist_half_w < gap + w_top < sk.waist_half_w
+    for name, preset in PRESETS.items():
+        if name == "risa":
+            continue
+        other = character.skeleton_for(preset)
+        assert character._rib_skeleton(other) is other, name
+
+    undressed = replace(
+        PRESETS["risa"],
+        outfit=replace(
+            PRESETS["risa"].outfit,
+            tunic_color=None,
+            skirt_color=None,
+            trouser_color=None,
+        ),
+    )
+    pelvis = sk.hip_y + sk.head_r * character._BARE_PELVIS
+    assert character._crotch_y(sk, undressed) == pytest.approx(pelvis)
+    assert character._crotch_y(sk, PRESETS["risa"]) > pelvis
+    assert character._torso(sk, PRESETS["risa"]) != character._torso(sk, undressed)
+
+
 def test_the_shirt_collar_is_two_open_wings_on_her_own_body() -> None:
     cut = character.COLLAR_CUTS["shirt"]
     assert cut.ref_body == "tall_slender" and not cut.per_leg
