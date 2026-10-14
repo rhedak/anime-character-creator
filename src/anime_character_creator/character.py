@@ -3556,7 +3556,12 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
     x = sk.head_cx - w / 2
     # Runs past the shoulder line so the tunic's V notch, which is drawn
     # over it, opens onto skin rather than onto the hair behind the body.
-    h = sk.shoulder_y - sk.neck_y + sk.neck_half_w * 1.1
+    # Bare, and with no coat over it, the shoulder rises so the throat is not
+    # the whole run down to a shoulder measured on a blazer (`_bare_shoulder_sk`).
+    # The arm rises with it and the two still meet.
+    body = _bare_shoulder_sk(sk, p)
+    meet = body.shoulder_y
+    h = meet - sk.neck_y + sk.neck_half_w * 1.1
     rx = w * 0.35
     parts = [
         f'<rect x="{x:.1f}" y="{sk.neck_y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx:.1f}" fill="{p.skin_tone}" />'
@@ -3577,7 +3582,7 @@ def _neck(sk: Skeleton, p: CharacterParams) -> str:
     # not with the skin below it: run on to the skin's end, it drew two lines
     # down a bare chest (`docs/bust-plan.md`, step 3c). The tunic covers it
     # below the shoulder line either way.
-    end = sk.shoulder_y + 2 * _body_inset(sk, p)
+    end = meet + 2 * _body_inset(sk, p)
     for side in (-1, 1):
         nx = sk.head_cx + side * sk.neck_half_w
         parts.append(
@@ -3670,6 +3675,42 @@ def _shoulder_slope(sk: Skeleton) -> float:
     """How far the shoulder line drops from the neck to its outer tip. The body's
     and every garment's shoulder share it; see `_tunic` for why it is this much."""
     return (sk.waist_y - sk.shoulder_y) * 0.24
+
+
+# How far below the chin a bare throat may run, in head radii. The cast sits at
+# about 0.12, the shoulder just under the jaw. A shoulder measured on a blazer
+# can land near half a head down, and undressed that whole run is throat.
+_BARE_NECK_BELOW_CHIN = 0.16
+
+
+def _bare_neck_lift(sk: Skeleton) -> float:
+    """How far above the measured shoulder a bare neck meets the body, or 0.
+
+    The clothes keep the measured shoulder. Bare, the throat is held to
+    `_BARE_NECK_BELOW_CHIN` and the shoulder and the arm rise with it, so a
+    long measured shoulder becomes a slope instead of a column.
+    """
+    below = sk.shoulder_y - (sk.head_cy + sk.head_r)
+    cap = sk.head_r * _BARE_NECK_BELOW_CHIN
+    if below <= cap:
+        return 0.0
+    return below - cap
+
+
+def _bare_shoulder_sk(sk: Skeleton, p: CharacterParams) -> Skeleton:
+    """`sk` with the bare shoulder raised, when a coat is not covering it.
+
+    A tunic or a coat keeps the measured shoulder, which the collar and the
+    traced shoulder sit on. With both off, the neck, the shoulder line and the
+    arm share the raised one (`_bare_neck_lift`), so the arm still meets the
+    shoulder.
+    """
+    if p.outfit.tunic_color is not None or p.outfit.coat_color is not None:
+        return sk
+    lift = _bare_neck_lift(sk)
+    if lift <= 0.0:
+        return sk
+    return replace(sk, shoulder_y=sk.shoulder_y - lift)
 
 
 def _torso_at_armpit(sk: Skeleton) -> float:
@@ -4098,16 +4139,17 @@ def _bare_breast_spine(sk: Skeleton, p: CharacterParams) -> list[Point]:
     It arrives at the widest point vertical: joined lower on the ellipse, the
     ellipse there lay inside the armpit and the curve wiggled in and out.
     """
-    rib = _rib_skeleton(sk)
+    body = _bare_shoulder_sk(sk, p)
+    rib = _rib_skeleton(body)
     # Her reach is a couple of pixels, so the top was a band. The cast's own
     # breast drops about 0.14 of a head; give a tucked rib that much to read by.
-    min_ry = sk.head_r * 0.16 if rib is not sk else 0.0
+    min_ry = sk.head_r * 0.16 if rib is not body else 0.0
     ellipse = _breast_ellipse(rib, _body_inset(sk, p), min_ry)
     if ellipse is None:
         return []
     xc, rx, yp, ry_down = ellipse
     x_out = xc + rx
-    centre_top, top_y, _, _ = _arm_line(sk)
+    centre_top, top_y, _, _ = _arm_line(body)
     ax = centre_top - sk.arm_half_w
     ay = _cap_underside_y(sk, ax, _cap_tip_y(sk)) if _sleeve_under_cap(sk, p) else top_y
     ctrl = (x_out, ay + (yp - ay) * 0.5)
@@ -4187,8 +4229,10 @@ def _underwear_top(sk: Skeleton, p: CharacterParams) -> str:
     cx, sw = sk.head_cx, _stroke_w(sk)
     color = p.outfit.underwear_color
     if not spine:
+        body = _bare_shoulder_sk(sk, p)
         side = _torso_at_armpit(sk) - sw
-        top, bottom = _sleeve_hem_y(sk), sk.bust_y + (sk.waist_y - sk.shoulder_y) * 0.15
+        top = _sleeve_hem_y(body)
+        bottom = sk.bust_y + (sk.waist_y - sk.shoulder_y) * 0.15
         dip = (bottom - top) * 0.3
         d = (
             f"M {cx - side:.1f} {top:.1f} L {cx - side:.1f} {bottom:.1f} "
@@ -4201,7 +4245,10 @@ def _underwear_top(sk: Skeleton, p: CharacterParams) -> str:
         )
     low = max(range(len(spine)), key=lambda k: spine[k][1])
     outer, inner = spine[: low + 1], spine[low:]
-    (ax, ay), yp = spine[0], _bust_shape(_rib_skeleton(sk), inset=_body_inset(sk, p)).peak[1]
+    (ax, ay), yp = (
+        spine[0],
+        _bust_shape(_rib_skeleton(_bare_shoulder_sk(sk, p)), inset=_body_inset(sk, p)).peak[1],
+    )
     left = " L ".join(f"{cx - x:.1f} {y:.1f}" for x, y in outer)
     right = " L ".join(f"{cx + x:.1f} {y:.1f}" for x, y in reversed(outer))
     d = f"M {left} L {right} Q {cx:.1f} {ay + (yp - ay) * 0.6:.1f} {cx - ax:.1f} {ay:.1f} Z"
@@ -4329,15 +4376,17 @@ def _torso(sk: Skeleton, p: CharacterParams) -> str:
     """
     k = _body_inset(sk, p)
     # Bare, and only then: the rib tucks where the measured waist is the
-    # garment's. Clothed, `sk` itself, so the shirt does not move.
-    rib = _rib_skeleton(sk) if p.outfit.tunic_color is None else sk
+    # garment's, and the shoulder rises off a blazer's line. Clothed, `sk`
+    # itself, so the shirt and the coat do not move.
+    body = _bare_shoulder_sk(sk, p)
+    rib = _rib_skeleton(body) if p.outfit.tunic_color is None else sk
     cx, nw = sk.head_cx, sk.neck_half_w
     # Twice the inset along the shoulder: it slopes, and an inset measured
     # straight down is less than the same inset measured square to the line.
-    sy = sk.shoulder_y + 2 * k
-    centre_top, _, _, _ = _arm_line(sk)
-    tip = centre_top + sk.arm_half_w - k
-    slope, cuff_y = _shoulder_slope(sk), _sleeve_hem_y(sk)
+    sy = body.shoulder_y + 2 * k
+    centre_top, _, _, _ = _arm_line(body)
+    tip = centre_top + body.arm_half_w - k
+    slope, cuff_y = _shoulder_slope(body), _sleeve_hem_y(body)
     tac, ww, wy = _armpit_x(rib, k), rib.waist_half_w - k, sk.waist_y
     # The shoulder rounds over the top of the arm and down to where the arm
     # starts, a quarter round from its tip to half way back to the armpit,
@@ -9625,6 +9674,7 @@ def _arms(
     for use inside a `<clipPath>`: the bust's outline is drawn only where it
     lies over an arm (`_bust_over_arms`).
     """
+    sk = _bare_shoulder_sk(sk, p)
     cx = sk.head_cx
     # A coat's sleeve runs to the wrist by definition, so `coat_sleeves` is a
     # long sleeve whether or not anything is worn under it. Without this, a

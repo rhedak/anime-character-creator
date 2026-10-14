@@ -2872,6 +2872,39 @@ def test_a_bare_risa_tucks_the_waist_the_blazer_had_hidden() -> None:
     assert character._torso(sk, PRESETS["risa"]) != character._torso(sk, undressed)
 
 
+def test_a_bare_risa_raises_the_shoulder_the_blazer_measured() -> None:
+    """Her shoulder was measured on the blazer, about half a head below the chin.
+    Undressed that run is throat. Bare, the shoulder and the arm rise until the
+    throat is a short one, and the two still meet. A tunic or a coat keeps the
+    measured shoulder, which the collar and the traced blazer sit on."""
+    sk = character.skeleton_for(PRESETS["risa"])
+    chin = sk.head_cy + sk.head_r
+    assert sk.shoulder_y - chin > sk.head_r * 0.4
+
+    def off(*colors: str):
+        outfit = replace(PRESETS["risa"].outfit, **dict.fromkeys(colors))
+        return replace(PRESETS["risa"], outfit=outfit)
+
+    bare = off("tunic_color", "coat_color")
+    body = character._bare_shoulder_sk(sk, bare)
+    assert body.shoulder_y == pytest.approx(chin + sk.head_r * character._BARE_NECK_BELOW_CHIN)
+    assert character._sleeve_hem_y(body) < character._sleeve_hem_y(sk)
+    assert character._neck(sk, bare) != character._neck(sk, PRESETS["risa"])
+    # The blazer covers the throat, and so does the shirt.
+    assert character._bare_shoulder_sk(sk, PRESETS["risa"]) is sk
+    assert character._bare_shoulder_sk(sk, off("tunic_color")) is sk
+    assert character._bare_shoulder_sk(sk, off("coat_color")) is sk
+    for name, preset in PRESETS.items():
+        if name == "risa":
+            continue
+        other = character.skeleton_for(preset)
+        stripped = replace(
+            preset,
+            outfit=replace(preset.outfit, tunic_color=None, coat_color=None),
+        )
+        assert character._bare_shoulder_sk(other, stripped) is other, name
+
+
 def test_the_shirt_collar_is_two_open_wings_on_her_own_body() -> None:
     cut = character.COLLAR_CUTS["shirt"]
     assert cut.ref_body == "tall_slender" and not cut.per_leg
