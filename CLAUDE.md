@@ -74,6 +74,18 @@ plain preset-name list. Details of the consumers are kept in `local/`.
   sister-repo details go in tracked files: they live in the untracked `local/`
   folder (`local/cover_faces.json` holds the younger face a published cover
   used, which `cover.py` reads when present).
+- **No NSFW or anatomical content, until there is a proper adult body.** The
+  only figure is the tall chibi, and explicit material on it would read as
+  childlike whatever `face_age` says, so the age floor alone is not enough.
+  Underwear, swimwear, sleepwear and similar clothing are fine: flat garments
+  that cover the body like the ones that exist. A garment must never show more
+  of the body than the always-worn underwear does, and these options stay on
+  figures at or above `ADULT_FACE_AGE`. Do not add anatomical detail, a nude
+  option, or any control that exposes the bare view (`harness/bare/` stays a
+  harness). If a real adult build is ever drawn, revisit this as its own
+  decision, with the guard in the render code (an adult-proportioned skeleton
+  and a face at the floor) rather than in a form field, and put the content in a
+  separate package, not in this repository. Requests for it are declined.
 - **Flat color, hard-edged, and no shading plane across a garment.**
   Matches the target cel-shaded anime look. Don't add gradients/blur,
   they'd break the flat-vector aesthetic that's the whole point. A
