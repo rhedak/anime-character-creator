@@ -22,9 +22,9 @@ from __future__ import annotations
 
 import base64
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
-from .character import CharacterParams, FaceStyle, Outfit
+from .character import ADULT_FACE_AGE, CharacterParams, FaceStyle, Outfit
 
 # The query parameter a link carries the character under, short because it
 # sits in a URL a person reads: `?c=...`.
@@ -63,9 +63,16 @@ def params_from_dict(data: dict) -> CharacterParams:
     try:
         outfit = Outfit(**data.pop("outfit", {}))
         face = FaceStyle(**face_data)
-        return CharacterParams(**data, outfit=outfit, face=face)
+        p = CharacterParams(**data, outfit=outfit, face=face)
     except TypeError as e:
         raise ValueError(f"not a valid character: {e}") from e
+    # This is where a character from outside arrives (a link, the web tool, a
+    # companion app's model). Nothing that comes in this way is drawn younger
+    # than the adult floor, whatever it asks for, and a link that did is raised
+    # rather than refused.
+    if p.face_age < ADULT_FACE_AGE:
+        p = replace(p, face_age=ADULT_FACE_AGE)
+    return p
 
 
 def encode_params(p: CharacterParams) -> str:

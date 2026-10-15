@@ -12,7 +12,7 @@ from __future__ import annotations
 import math
 import re
 import xml.etree.ElementTree as ET
-from dataclasses import replace
+from dataclasses import fields, replace
 from pathlib import Path
 
 import pytest
@@ -2609,6 +2609,31 @@ def test_every_preset_is_at_least_twenty_one() -> None:
         assert p.face_age >= character.ADULT_FACE_AGE, name
     for name, p in NEUTRAL_BASES.items():
         assert p.face_age >= 1.0, name
+
+
+def test_a_character_from_outside_is_never_drawn_below_the_floor() -> None:
+    """Links, the web tool and a companion app's model all arrive through
+    `params_from_dict`, which raises a younger face to the adult floor."""
+    from anime_character_creator.urlstate import params_from_dict, params_to_dict
+
+    d = params_to_dict(PRESETS["satoko"])
+    for age in (0.0, 0.5, 0.89):
+        assert params_from_dict({**d, "face_age": age}).face_age == character.ADULT_FACE_AGE
+    assert params_from_dict({**d, "face_age": 1.4}).face_age == 1.4
+
+
+def test_every_garment_off_still_leaves_the_underwear() -> None:
+    """The coverage floor: whatever a consumer switches off, the figure keeps the
+    underwear, so the least that is ever drawn is what it already draws. Anything
+    added later (swimwear, a nightgown) must not draw less than this."""
+    outfit = Outfit(
+        **{
+            **{f.name: None for f in fields(Outfit) if f.name.endswith("_color")},
+            "underwear_color": "#123456",
+        }
+    )
+    svg = render_character(replace(PRESETS["satoko"], outfit=outfit))
+    assert svg.count("#123456") >= 2, "the briefs and the top are both drawn"
 
 
 def test_the_gui_age_slider_starts_at_twenty_one() -> None:
