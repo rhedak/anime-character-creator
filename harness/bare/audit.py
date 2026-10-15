@@ -32,26 +32,13 @@ from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 from anime_character_creator.skeleton import BUILDS
 
-# Adults by the cast notes: Satoko is twenty (Kyoko's flashback is at
-# seventeen, three years before), Chiyo late forties to mid fifties, Gero late
-# forties, Daizen and Tenno the cast's oldest; Keiko, Krista, Reika and Elara
-# are adult by their design briefs. Katherina and Linnea are eighteen in this
-# repo (2026-10-15), not the story characters those designs were drawn from.
-# Anyone not listed is left out of images, including presets whose age the
-# notes do not state.
-ADULTS = (
-    "satoko",
-    "chiyo",
-    "keiko",
-    "krista",
-    "reika",
-    "elara",
-    "katherina",
-    "linnea",
-    "gero",
-    "daizen",
-    "tenno",
-)
+# Every preset is twenty-one or older (2026-10-15): this repository is open
+# source and ../anime_ai_companion draws from it. The stories keep their own
+# ages. Satoko and Satoshi are
+# twenty-four; Kyoko and Tomohiro, three years earlier, are twenty-one.
+# Katherina, Linnea, Risa and Lindita are twenty-one. Chiyo is late forties
+# to mid fifties, Gero late forties, Daizen and Tenno the cast's oldest.
+ADULTS = tuple(PRESETS)
 # The underwear is always worn (step 3), so "all off" leaves it on.
 COLOR_FIELDS = [
     f.name
@@ -78,7 +65,9 @@ def audit(p: c.CharacterParams, heads: float) -> tuple[str, str | None]:
     try:
         svg = c.render_character(p, c.skeleton_for(p, heads), background="#ffffff")
     except Exception as e:
-        frames = [f for f in traceback.extract_tb(e.__traceback__) if f.filename.endswith("character.py")]
+        frames = [
+            f for f in traceback.extract_tb(e.__traceback__) if f.filename.endswith("character.py")
+        ]
         where = f"{frames[-1].name}:{frames[-1].lineno}" if frames else "?"
         return f"RAISES {type(e).__name__} at {where}: {e}", None
     hits = sorted({f"<{m[0]} {m[1]}>" for m in re.findall(r'<(\w+)[^>]*?\b([\w-]+)="None"', svg)})
@@ -86,7 +75,9 @@ def audit(p: c.CharacterParams, heads: float) -> tuple[str, str | None]:
 
 
 def tile(svg: str, label: str) -> Image.Image:
-    im = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), scale=SCALE))).convert("RGB")
+    im = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), scale=SCALE))).convert(
+        "RGB"
+    )
     out = Image.new("RGB", (im.width, im.height + 18), (230, 230, 230))
     out.paste(im, (0, 18))
     ImageDraw.Draw(out).text((4, 3), label, fill=(0, 0, 0))

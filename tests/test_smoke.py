@@ -31,6 +31,7 @@ from anime_character_creator import (
     build_skeleton,
     character,  # for the two private helpers the ceiling check needs
     cover,
+    for_cover,
     render_character,
     sheet,
 )
@@ -1885,6 +1886,13 @@ def test_the_cover_wears_its_chosen_expression() -> None:
     # And it can be taken off, which is what `None` is for.
     _sk, plain, *_ = cover._placement(replace(p, expression=None))
     assert plain.face == PRESETS["satoshi"].face
+    # The preset is the adult. The cover keeps the face the book was published with.
+    assert PRESETS["satoshi"].face_age == 1.0
+    assert plain.face_age == 0.8
+    assert for_cover("katherina").face_age == 0.75
+    assert for_cover("linnea").face_age == 0.75
+    assert for_cover("lindita").face_age == 0.7
+    assert for_cover("gero") is PRESETS["gero"]
 
 
 def test_mist_band_is_the_covers_own_bank():
@@ -2601,12 +2609,23 @@ def test_the_open_hand_is_squared_at_the_wrist() -> None:
     assert max(flat) == pytest.approx(max(wrist), abs=0.02)
 
 
-def test_katherina_and_linnea_are_eighteen() -> None:
-    """This repo's versions are not the story characters, who were younger.
-    Eighteen is the adult face Risa uses."""
-    adult = PRESETS["risa"].face_age
-    assert PRESETS["katherina"].face_age == adult
-    assert PRESETS["linnea"].face_age == adult
+def test_every_preset_is_at_least_twenty_one() -> None:
+    """Every named character is twenty-one or older.
+
+    This repository is open source and anime_ai_companion draws from it, so a
+    preset is an adult even where its story is younger. 0.9 is the twenty-one
+    face. The grown face is 1.0, and older faces sit above it. Katherina,
+    Linnea and Risa share that twenty-one face.
+    """
+    floor = 0.9
+    for name, p in PRESETS.items():
+        assert p.face_age >= floor, name
+    for name, p in NEUTRAL_BASES.items():
+        assert p.face_age >= 1.0, name
+    for name in ("katherina", "linnea", "risa", "kyoko", "tomohiro", "lindita"):
+        assert PRESETS[name].face_age == floor
+    for name in ("satoko", "satoshi"):
+        assert PRESETS[name].face_age == 1.0
 
 
 def test_the_blindfold_is_off_by_default_and_sits_above_the_eyes() -> None:

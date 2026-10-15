@@ -42,7 +42,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from .character import OUTLINE, CharacterParams, render_character, skeleton_for
-from .presets import EXPRESSIONS, PRESETS
+from .presets import EXPRESSIONS, PRESETS, for_cover
 from .skeleton import Skeleton
 
 
@@ -205,7 +205,9 @@ def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float,
     instead put every band 3% of a figure too high: the first attempt cut him
     across the shins and hid the boots entirely.
     """
-    character = p.character or PRESETS[p.preset]
+    # A named preset is drawn at the face its book cover was published with.
+    # An explicit `character` is used as given, so a caller can ask for the adult.
+    character = p.character if p.character is not None else for_cover(p.preset)
     if p.expression:
         character = EXPRESSIONS[p.expression].applied_to(character)
     sk = skeleton_for(character)

@@ -3,6 +3,11 @@
 A preset is just a CharacterParams, so a character is a checked-in artifact
 that gets re-rendered as the shape code improves, rather than a pile of CLI
 flags someone has to remember.
+
+Every preset is twenty-one or older. This repository is open source and
+`../anime_ai_companion` draws its characters from it, so the figures are
+adults even where a story they were drawn from is younger. The stories
+keep their own ages. The README states which is which.
 """
 
 from __future__ import annotations
@@ -37,8 +42,9 @@ BOOTS = "#6d4c33"
 # which keeps chibi eyes big and open even on a wary character. A burn along her
 # left jaw and cheek, which is `scar_side=1`: that field counts from the
 # viewer's side and she faces us, so her left is the right of the picture.
+# Twenty-four. Kyoko, three years earlier, is twenty-one.
 SATOKO = CharacterParams(
-    face_age=0.8,
+    face_age=1.0,
     # Practical and guarded; Kyoko, built from her, takes the same (`docs/bust-plan.md`, step 7).
     bust=0.5,
     skin_tone="#f6dbc2",
@@ -101,8 +107,9 @@ SATOKO = CharacterParams(
 # part of the face rather than something that tells them apart. It is absent
 # from ref/satoshi.png only because the model that drew that reference dropped
 # it, which makes this one of the few places the reference is not the target.
+# Twenty-four, the same age as Satoko. Tomohiro, three years earlier, is twenty-one.
 SATOSHI = CharacterParams(
-    face_age=0.8,
+    face_age=1.0,
     skin_tone="#f2d4bb",
     hair_color=HAIR,
     hair_tip_color=HAIR_TIPS,
@@ -215,8 +222,9 @@ def _before(base: CharacterParams, outfit: Outfit, face_age: float) -> Character
     listed above and the wardrobe are all that differ. The outfit is passed in
     rather than derived because it is the one thing that genuinely *is* different
     rather than a variation: a researcher's layers are not an innkeeper's with a
-    colour changed. So is the face's age: the earlier self is some two years
-    younger (`CharacterParams.face_age`, `docs/detail-plan.md`, D3).
+    colour changed. So is the face's age: the earlier self is three years
+    younger, twenty-one where the present self is twenty-four
+    (`CharacterParams.face_age`, `docs/detail-plan.md`, D3).
     """
     return replace(
         base,
@@ -252,7 +260,7 @@ KYOKO = _before(
         coat_color="#575d67",
         coat_length=0.72,
     ),
-    face_age=0.6,
+    face_age=0.9,
 )
 TOMOHIRO = _before(
     SATOSHI,
@@ -267,7 +275,7 @@ TOMOHIRO = _before(
         coat_color="#4a5442",
         coat_length=0.44,
     ),
-    face_age=0.6,
+    face_age=0.9,
 )
 
 # ---------------------------------------------------------------------------
@@ -302,7 +310,7 @@ TOMOHIRO = _before(
 def aged(face: FaceStyle, years: float = 1.0) -> FaceStyle:
     """A face read older, as a scaling of the fields that already exist.
 
-    The cast runs from teens to seventies and `FaceStyle` has no age field. It
+    The cast runs from twenty-one to the seventies and `FaceStyle` has no age field. It
     does not get one, because everything the references use to say "sixty" is
     brushwork: crow's feet, jowls, slack skin, the texture of a beard. That is
     the painterly half this project discards on purpose, and none of it survives
@@ -856,7 +864,8 @@ TENNO = CharacterParams(
 )
 
 VIKTOR = CharacterParams(
-    face_age=0.8,
+    # The grown adult face, with the other officers.
+    face_age=1.0,
     skin_tone="#f0cfb2",
     # Deep slate-teal rather than plain dark hair, against warm gold eyes:
     # cool and moody on the surface, warmer and sharper underneath than he
@@ -962,10 +971,10 @@ VIKTOR = CharacterParams(
 # tried for the same purpose and rejected: it read as a sticker laid over the
 # drawing rather than part of it.
 KATHERINA = CharacterParams(
-    # Eighteen. The design began from another story's character, who was
+    # Twenty-one. The design began from another story's character, who was
     # younger; this preset is not that character (the owner, 2026-10-15).
-    # The face is the adult one an age of eighteen uses, the same as Risa's.
-    face_age=0.75,
+    # The face is the young-adult one an age of twenty-one uses, the same as Risa's.
+    face_age=0.9,
     # Kept from step 7 (`docs/bust-plan.md`).
     bust=0.2,
     skin_tone="#f2c9a8",
@@ -1090,7 +1099,7 @@ GERO = CharacterParams(
     ),
 )
 
-# Linnea: eighteen. Drawn from the innkeeper's daughter in that story, fourth
+# Linnea: twenty-one. Drawn from the innkeeper's daughter in that story, fourth
 # of six, but this preset is not that character (the owner, 2026-10-15). Blunt,
 # unsentimental, practical rather than decorative, which is why she
 # wears trousers and a plain tunic rather than the skirt-and-apron
@@ -1105,8 +1114,8 @@ GERO = CharacterParams(
 # dress bright to catch the little light they have; on the road she has
 # to hood it and later loses the coat binding Gero's wound.
 LINNEA = CharacterParams(
-    # Eighteen, the same adult face as Katherina and Risa.
-    face_age=0.75,
+    # Twenty-one, the same young-adult face as Katherina and Risa.
+    face_age=0.9,
     # Kept from step 7 (`docs/bust-plan.md`).
     bust=0.3,
     skin_tone="#f3d6bd",
@@ -1146,7 +1155,8 @@ LINNEA = CharacterParams(
 # story's `notes.md` ("Cover appearance briefs"); the cover they are drawn for is
 # planned in its `cover_plan.md`.
 
-# Dritan: a young vampire by his kind's count, born into an old bloodline and
+# Dritan: a young vampire by his kind's count, and an adult here (twenty-one
+# or older). Born into an old bloodline and
 # now a Commander of the Blood Guard, whose coat is the gray of the one rank he
 # did not earn. Black hair, barbered short (a man comes to the house), and a
 # tan from the sun conditioning the Guard goes through, which is the one thing
@@ -1198,7 +1208,7 @@ DRITAN = CharacterParams(
     ),
 )
 
-# Lindita: about twenty at the story's first scene, a human donor in the Blood
+# Lindita: twenty-one at the story's first scene, a human donor in the Blood
 # Service, plainly dressed in muted teal and cream, copper hair in Satoko's long cut
 # and amber eyes, awake and a little tired. The cover draws her as she was at
 # the feeding: the blindfold pushed up onto her forehead, the surgical mask
@@ -1207,7 +1217,8 @@ DRITAN = CharacterParams(
 # usual neutral mouth. The gap between her front teeth and the ink callus on
 # her finger are below this tool's resolution and are not drawn.
 LINDITA = CharacterParams(
-    face_age=0.7,
+    # Twenty-one, the same young-adult face as the others at that age.
+    face_age=0.9,
     bust=0.4,
     skin_tone="#f0d3bc",
     hair_color="#b5602b",
@@ -1245,14 +1256,15 @@ LINDITA = CharacterParams(
     ),
 )
 
-# Risa: a generic Japanese schoolgirl, 18, in her last year of high school. A guest,
-# not one of the Valley of Mist cast (`docs/risa-plan.md`). Dark red hair held back with
+# Risa: twenty-one, a guest in a school uniform, not one of the Valley of Mist
+# cast (`docs/risa-plan.md`). Dark red hair held back with
 # a gold clip, green eyes, a grey blazer with gold buttons over a white shirt, a blue bow
 # and a light blue-grey pleated skirt. Her clothes, hair and body are traced off a
 # reference (`ref-local/mio/`, local only); the colours of hair and blazer are her own
 # (the reference's were black and navy, too like an existing character).
 RISA = CharacterParams(
-    face_age=0.75,
+    # Twenty-one, the same young-adult face as Katherina and Linnea.
+    face_age=0.9,
     bust=0.3,
     skin_tone="#f6dbc2",
     hair_color="#6b1f2a",
@@ -1352,6 +1364,35 @@ PRESETS: dict[str, CharacterParams] = {
     "risa": RISA,
 }
 
+# The face a book cover was published with, where it is younger than the adult
+# preset. The stories keep their own ages, and a regenerate of a cover should
+# leave that face where it was (2026-10-15). Names absent here already match.
+COVER_FACE_AGE: dict[str, float] = {
+    "kyoko": 0.6,
+    "tomohiro": 0.6,
+    "lindita": 0.7,
+    "katherina": 0.75,
+    "linnea": 0.75,
+    "risa": 0.75,
+    "satoko": 0.8,
+    "satoshi": 0.8,
+    "viktor": 0.8,
+}
+
+
+def for_cover(name: str) -> CharacterParams:
+    """The preset as a book cover draws it: the published face, not the adult one.
+
+    The preset itself stays twenty-one or older. A cover of a character whose
+    story is younger keeps the face that cover already uses.
+    """
+    p = PRESETS[name]
+    age = COVER_FACE_AGE.get(name)
+    if age is None or age == p.face_age:
+        return p
+    return replace(p, face_age=age)
+
+
 # What a character is called on a sheet, where the preset key is not it: the
 # reference sheets label "Reinhard von Falkenrath" and "Elara Sturm" while the
 # key stays short enough to type at a CLI.
@@ -1429,7 +1470,8 @@ ROSTERS["everglow"] = ("gero", "linnea")
 # Dritan and Lindita, the leads of another short story (../short_stories,
 # "The Bureaucracy of Blood"): a separate work, its own roster.
 ROSTERS["bureaucracy"] = ("dritan", "lindita")
-# Risa is a generic schoolgirl from no story of ours (`docs/risa-plan.md`): her own roster.
+# Risa is twenty-one, a guest in a school uniform, from no story of ours
+# (`docs/risa-plan.md`): her own roster.
 ROSTERS["risa"] = ("risa",)
 
 # ---------------------------------------------------------------------------
@@ -1447,16 +1489,18 @@ ROSTERS["risa"] = ("risa",)
 # `CharacterParams`' and `Outfit`'s own stock defaults rather than a palette
 # invented for this document: the point of a base is that nothing about it has
 # been decided yet, and the first thing the web tool's colour controls do is
-# override every one of these anyway. What the two differ on is silhouette,
-# because that is the one choice a colour picker cannot make: a skirt or
-# trousers, and a haircut to match. `BASE_FEMALE` changes nothing from
-# `CharacterParams()`'s own defaults, which already draw the skirted silhouette
-# `Outfit` was built around; `BASE_MALE` swaps in trousers and `short_crop`,
-# at 0.65, the length the cut was traced at (see `SATOSHI`, which carries the
-# same value for the same reason).
-BASE_FEMALE = CharacterParams()
+# override every one of these anyway. The age is the exception: the starting
+# figure is an adult (`face_age` 1.0, the grown face). What the two differ on
+# is silhouette, because that is the one choice a colour picker cannot make: a
+# skirt or trousers, and a haircut to match. `BASE_FEMALE` changes nothing else
+# from `CharacterParams()`'s own defaults, which already draw the skirted
+# silhouette `Outfit` was built around; `BASE_MALE` swaps in trousers and
+# `short_crop`, at 0.65, the length the cut was traced at (see `SATOSHI`, which
+# carries the same value for the same reason).
+BASE_FEMALE = CharacterParams(face_age=1.0)
 
 BASE_MALE = CharacterParams(
+    face_age=1.0,
     hairstyle="short_crop",
     hair_length=0.65,
     chest=1.0,

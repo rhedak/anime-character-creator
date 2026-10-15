@@ -22,8 +22,12 @@ wanted), and the realistic build, judged after its own fix pass.
 
 ## Owner's decision (2026-10-15)
 
-This repo's Katherina and Linnea are eighteen. They are not the story
-characters the 14 and 15 in the decision below belonged to.
+Every preset in this repository is twenty-one or older. The repository is
+open source and `../anime_ai_companion` draws its characters from these
+presets, so the figures are adults even where a story they were drawn from
+is younger. The stories keep their own ages. Katherina and Linnea are
+twenty-one here, and are separate from the story characters the 14 and 15
+in the decision below belonged to.
 
 ## Owner's decisions (2026-09-25)
 

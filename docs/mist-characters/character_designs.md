@@ -2,6 +2,8 @@
 
 Purpose: lock each major character's appearance once, in enough prompt-ready detail that every future chapter illustration (`chapter_writing_strategy.md` Step 7) stays consistent without re-deriving the design from scratch each time.
 
+The ages in this file are the novel's. Every preset in `presets.py` is twenty-one or older: this repository is open source and `../anime_ai_companion` draws from it, so the drawn figures are adults where a story is younger. The stories keep their own ages. See the README.
+
 **Reference images exist for all twelve characters** in `style-anchors/` (as `.webp`).
 The descriptions below were updated after generation to match the approved images exactly (not the other way around): several characters drifted from their original prompt during iteration, and the generated result was judged better than the original written spec, so the spec was brought in line with the image rather than regenerating to match old text.
 Discarded iteration passes live in `style-anchors-src/_old/`; source PNGs/JPGs are kept in `style-anchors-src/` and converted to `style-anchors/` via `shell_scripts/convert_to_webp.sh`.

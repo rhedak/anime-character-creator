@@ -18,8 +18,11 @@ be done properly: her clothes **traced** off the reference, her **body
 measured** (the reference has longer legs than our tall chibi), and the work
 taken step by step until she is as close to the reference as is feasible.
 
-She is **18, in the last year of high school in Japan**. She is a guest, not
-one of the *Valley of Mist* cast.
+She is **twenty-one** (raised from 18 on 2026-10-15, with the rest of the cast).
+This repository is open source and `../anime_ai_companion` draws from it, so
+the preset is an adult. She is a guest in a school uniform, not one of the
+*Valley of Mist* cast. The `face_age` 0.75 chosen below was the
+eighteen-year-old face; the preset is 0.9.
 
 Reference: `ref-local/mio/mio.png` (the full figure) and
 `ref-local/mio/segments/` (hair, bangs, eyes, blazer, shirt, ribbon, skirt,

@@ -15,15 +15,27 @@ possible later addition (they'd slot in as extra SVG layers).
 
 ## Status
 
-Fourteen named characters for *Valley of Mist*, plus guests. Katherina (a
-design from `../time_slider_katharina`) and Linnea (from `../short_stories`)
-are eighteen here, and are not those stories' characters. Gero, Dritan and
-Lindita are from `../short_stories`, and Risa is a schoolgirl from no story of
-ours. They are all the tall chibi, the one figure since
+Fourteen named characters for *Valley of Mist*, plus guests. Gero, Dritan
+and Lindita are from `../short_stories`, Katherina from
+`../time_slider_katharina`, and Risa is a guest in a school uniform, from
+no story of ours. They are all the tall chibi, the one figure since
 2026-09-26, when the realistic build and the old compressed chibi were
 retired; a `height` from 0.8 to 1.3 stretches it for a younger or a
 taller character. Risa is the exception in proportion: she is drawn on her own
 longer body, measured off her reference (`docs/risa-plan.md`).
+
+Every preset is **twenty-one or older**. This repository is open source,
+and [anime_ai_companion](https://github.com/rhedak/anime_ai_companion)
+draws its characters from here, so the figures it can show are adults
+even where a story they were drawn from is younger. The stories keep
+their own ages. In *Valley of Mist*, Tomohiro is seventeen when recruited
+and twenty as Satoshi, and Kyoko's flashback is at seventeen. Katherina
+is fourteen at the start of her book, Linnea is fifteen in hers, and
+Lindita is about twenty at her story's first scene. The presets here are
+separate figures: Satoko and Satoshi are twenty-four, and Kyoko,
+Tomohiro, Katherina, Linnea, Risa and Lindita are twenty-one. A book
+cover keeps the younger face it was published with (`for_cover`), so
+rebuilding a cover does not age it.
 
 All are **first drafts**: each carries the colouring, frame and garments
 its design calls for, judged at the size a character is actually seen on a

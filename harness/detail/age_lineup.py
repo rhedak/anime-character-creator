@@ -14,6 +14,9 @@ A record of the proposal as shown. Applied on 2026-09-27 with one correction:
 Kyoko is Satoko's earlier self (`presets._before`), as Tomohiro is Satoshi's,
 so the pair mirrors theirs, Satoko 0.8 and Kyoko 0.6, not 0.5 and 1.0. Since
 then the presets carry their ages, so the "now" row no longer shows age 0.
+Raised again on 2026-10-15 so every preset is twenty-one or older: this
+repository is open source and ../anime_ai_companion draws from it. The
+stories keep their own ages. This file stays the proposal as shown.
 """
 
 import io
@@ -64,9 +67,15 @@ def main() -> None:
     os.makedirs(OUT, exist_ok=True)
     names = list(PROPOSED)
     rows = [
-        [face(PRESETS[n], f"{n} now" + (f" (aged {BAKED[n]})" if n in BAKED else "")) for n in names],
         [
-            face(replace(PRESETS[n], face_age=PROPOSED[n]), f"{n} {PROPOSED[n] + BAKED.get(n, 0.0):.2f}")
+            face(PRESETS[n], f"{n} now" + (f" (aged {BAKED[n]})" if n in BAKED else ""))
+            for n in names
+        ],
+        [
+            face(
+                replace(PRESETS[n], face_age=PROPOSED[n]),
+                f"{n} {PROPOSED[n] + BAKED.get(n, 0.0):.2f}",
+            )
             for n in names
         ],
     ]

@@ -26,21 +26,14 @@ from PIL import Image, ImageDraw
 from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 
-ADULTS = (
-    "satoko",
-    "chiyo",
-    "keiko",
-    "krista",
-    "reika",
-    "elara",
-    "katherina",
-    "linnea",
-    "gero",
-    "daizen",
-    "tenno",
-)
+# Every preset is twenty-one or older (2026-10-15), so the mannequin is the
+# whole cast. This repository is open source and ../anime_ai_companion draws
+# from it. The list used to leave out anyone whose notes did not say adult.
+ADULTS = tuple(PRESETS)
 COLOR_FIELDS = [
-    f.name for f in dataclasses.fields(c.Outfit) if f.name.endswith("_color") and f.name not in ("boot_color", "underwear_color")
+    f.name
+    for f in dataclasses.fields(c.Outfit)
+    if f.name.endswith("_color") and f.name not in ("boot_color", "underwear_color")
 ]
 BASE_LAYER = ("_underpants", "_underwear_top")
 SCALE = 3
@@ -58,7 +51,9 @@ def render(name: str) -> tuple[Image.Image, c.Skeleton]:
     finally:
         for n, fn in saved.items():
             setattr(c, n, fn)
-    im = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), scale=SCALE))).convert("RGB")
+    im = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), scale=SCALE))).convert(
+        "RGB"
+    )
     return im, sk
 
 
@@ -68,7 +63,12 @@ def column(name: str) -> Image.Image:
     whole = im.crop((int(cx - 1.6 * r), 0, int(cx + 1.6 * r), int(sk.canvas_h * s)))
     whole = whole.resize((whole.width // 3, whole.height // 3), Image.LANCZOS)
     torso = im.crop(
-        (int(cx - 1.3 * r), int((sk.shoulder_y - 0.4 * sk.head_r) * s), int(cx + 1.3 * r), int(sk.knee_y * s + 0.9 * r))
+        (
+            int(cx - 1.3 * r),
+            int((sk.shoulder_y - 0.4 * sk.head_r) * s),
+            int(cx + 1.3 * r),
+            int(sk.knee_y * s + 0.9 * r),
+        )
     )
     w = max(whole.width, torso.width)
     out = Image.new("RGB", (w, 18 + whole.height + torso.height), (230, 230, 230))
@@ -83,7 +83,12 @@ def main() -> None:
     cols = [column(n) for n in ADULTS]
     pad = 8
     sheet = Image.new(
-        "RGB", (sum(c_.width for c_ in cols) + pad * (len(cols) + 1), max(c_.height for c_ in cols) + 2 * pad), (200, 200, 200)
+        "RGB",
+        (
+            sum(c_.width for c_ in cols) + pad * (len(cols) + 1),
+            max(c_.height for c_ in cols) + 2 * pad,
+        ),
+        (200, 200, 200),
     )
     x = pad
     for col in cols:

@@ -69,9 +69,15 @@ valley_of_mist-specific.
   figure exists only as a harness view for proportion work
   (`harness/bare/mannequin.py`), adults only, never a web tool option; no
   bare render of a preset whose age is not an adult's
-  (the owner's decision, `docs/bare-body-plan.md`). Katherina and Linnea
-  are eighteen in this repo, and are not the story characters the younger
-  ages belonged to.
+  (the owner's decision, `docs/bare-body-plan.md`).
+- **Every preset is an adult, twenty-one or older.** This repository is
+  open source and `../anime_ai_companion` draws its characters from it,
+  so a preset stays an adult even where the story it was drawn from is
+  younger. The stories keep their own ages (the README states them).
+  Katherina and Linnea are twenty-one here. Satoko and Satoshi are
+  twenty-four, and Kyoko and Tomohiro, three years earlier, are
+  twenty-one. A book cover draws `for_cover`, the face that cover was
+  published with, so a rebuild leaves the sister repos' covers as they were.
 - **Flat color, hard-edged, and no shading plane across a garment.**
   Matches the target cel-shaded anime look. Don't add gradients/blur,
   they'd break the flat-vector aesthetic that's the whole point. A
