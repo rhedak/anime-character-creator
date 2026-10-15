@@ -91,6 +91,9 @@ displayed() {
 # `sheet` does and on a new character besides, which is why it is a page here
 # rather than a one-off render kept in `out/`.
 pages="cover sheet sheet_satoshi"
+# The checked-in cover is the shipped preset, so an untracked `local/cover_faces.json`
+# (a published cover's younger face) must not reach it: point the lookup at nowhere.
+export ACC_LOCAL_DIR=/nonexistent
 npages=$(set -- $pages; echo $#)
 
 # Two command substitutions rather than one call read line by line: bash
