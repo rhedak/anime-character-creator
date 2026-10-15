@@ -1065,13 +1065,16 @@ def test_hair_stays_under_the_canvas_ceiling(hairstyle: str, build: str) -> None
     )
 
 
-def test_ref_out_cover_matches_the_code() -> None:
+def test_ref_out_cover_matches_the_code(monkeypatch, tmp_path) -> None:
     """The cover is checked in like the characters, so it goes stale like them.
 
     Worse, in fact: a character moves only when its own shapes change, but the
     cover embeds one, so *any* shape edit moves the cover too. It is the file
     most likely to be left behind by a change that looks unrelated to it.
     """
+    # The checked-in cover is the shipped preset. A machine's untracked
+    # `local/cover_faces.json` must not change what the test compares against.
+    monkeypatch.setenv("ACC_LOCAL_DIR", str(tmp_path))
     committed = REF_OUT / "cover.svg"
     assert committed.read_text() == cover.render_cover(), (
         "ref-out/cover.svg is stale: ./refresh-ref-out.sh"
