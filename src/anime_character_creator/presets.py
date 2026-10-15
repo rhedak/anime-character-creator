@@ -926,7 +926,7 @@ VIKTOR = CharacterParams(
 # academic rank. `hat_color`/`hat_band_color` add the pointed witch's hat the
 # comment here used to say this tool couldn't draw; `_hat` in character.py
 # was traced off this preset's own reference, `katherina_grok.jpg` in
-# `../time_slider_katherina/style-anchors/` (docs/katherina-accessories-plan.md,
+# `ref-local/` (docs/katherina-accessories-plan.md,
 # milestone 2). Colors are that reference's own fills, each the median of its
 # region: `#201e29` for the crown and the brim's top (the two agree within a
 # unit), the band and bow `#3c2456`, one step darker than the hair here. The
@@ -1013,7 +1013,7 @@ KATHERINA = CharacterParams(
         iris_size=1.10,
         # A level, appraising brow rather than a friendly one: the character
         # reads people as problems to be assessed, not company to be warmed
-        # to (`../time_slider_katharina/docs/characters.md`).
+        # to (a file in the consumer repo).
         brow_tilt=-0.05,
         brow_weight=0.68,
         mouth_curve=0.10,
@@ -1500,7 +1500,7 @@ EXPRESSIONS: dict[str, Expression] = {
     # rather than implied.
     # `hollow`'s lids and brow with the mouth turned up instead of down: still
     # the lid doing the work at thumbnail size, but friendly. Added 2026-09-19
-    # for `../time_slider_katherina`'s cover, whose owner wanted a slight smile
+    # for the consumer repo's cover, whose owner wanted a slight smile
     # on a book whose familiar warms to its witch over the course of it. +0.45
     # rather than more: at that cover's size the arc is about three pixels deep,
     # which is the difference between "not frowning" and "grinning".

@@ -9,7 +9,7 @@ from PIL import Image
 from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 
-REF = "../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = "ref-local/katherina_grok/katherina_grok.jpg"
 OX, OY, SC = 650.0, 481.0, 173.7
 out = sys.argv[1]
 X0, X1, Y0, Y1, PX = (float(v) for v in (sys.argv[2:7] if len(sys.argv) > 6 else (-2.2, 2.2, 0.3, 4.8, 110)))

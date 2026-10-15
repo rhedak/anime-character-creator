@@ -18,7 +18,7 @@ to showing the body.
    (the cast, tunic off) for what the tool will show.
 4. **Adults only in the mannequin.** No bare render of a preset whose age
    is not an adult's, in any view. Every preset is twenty-one or older
-   (2026-10-15): this repository is open source and `../anime_ai_companion`
+   (2026-10-15): this repository is open source and the consumer repo
    draws from it, so the figures are adults even where a story is younger.
    The stories keep their own ages. Katherina and Linnea are twenty-one
    here.

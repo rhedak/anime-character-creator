@@ -233,7 +233,7 @@ mechanism.
 
 ## Not found in this repo (out of scope / external)
 
-Q0's "smallest render sizes `../valley_of_mist` uses" lives in the sibling
-`../valley_of_mist` repo (`render.sh`/`sheet.sh` consumers), not in this
+Q0's "smallest render sizes the consumer repo uses" lives in the sibling
+the consumer repo repo (`render.sh`/`sheet.sh` consumers), not in this
 one; not inventoried here since this task was scoped to
 `anime-character-creator`.

@@ -2,7 +2,7 @@
 
     ./harness/run.sh harness/kou/trace_kou.py
 
-`../time_slider_katherina/style-anchors/kou_grok/kou.png` was generated to be
+`ref-local/kou_grok/kou.png` was generated to be
 traced (`scratchpad/kou/kou_reference_prompt.txt`): flat single-tone surfaces,
 pure-black outlines, a light background, nothing overlapping him. So the regions
 are the reference's own fills, the same method the hat's crown/band/bow and the
@@ -34,7 +34,7 @@ from scipy import ndimage as ndi
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / ".claude/skills/trace-reference"))
 import trace_lib as tl  # noqa: E402
 
-REF = Path(__file__).resolve().parents[3] / "time_slider_katherina/style-anchors/kou_grok/kou.png"
+REF = Path(__file__).resolve().parents[2] / "ref-local/kou_grok/kou.png"
 OUT = Path("out/kou")
 HALF_STROKE = 4  # the reference's outline is about 8 px
 

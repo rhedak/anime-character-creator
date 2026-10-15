@@ -69,9 +69,9 @@ every height, and anything added to the head carries to every height free.
   rigid under any future rig, so head detail is safe to add now; garment
   line work on limbs is last because posable limbs would redraw it.
 - **Legible at the smallest consumer size.** Every study is judged at full
-  size and at the smallest size `../valley_of_mist` renders (its chapter
+  size and at the smallest size the consumer repo renders (its chapter
   inserts and cast sheet), where fine lines can turn to mud.
-- **Nothing downstream moves mid-campaign.** `../valley_of_mist` and the
+- **Nothing downstream moves mid-campaign.** the consumer repo and the
   covers are regenerated only at checkpoints the owner picks.
 
 ## The order
@@ -87,7 +87,7 @@ every height, and anything added to the head carries to every height free.
 - The hands (`_hand`, `_hand_length`, `_hand_centre`), the limbs'
   outlines, and `_KEEP_WS` in `skeleton.py`, which the height stretch holds.
 - The six hairstyles' interior lines.
-- The smallest render sizes `../valley_of_mist` uses.
+- The smallest render sizes the consumer repo uses.
 - A baseline sheet in `harness/detail/`: the face comparison with the
   reference calibrated properly (face width and chin measured twice, as the
   trace skill's step 2 does, instead of the review's by-eye crop), and the
@@ -285,8 +285,8 @@ animation would redraw sleeves.
 
 ### Checkpoints
 
-After D2, after D4 and at the end: regenerate `../valley_of_mist` and the
-two covers (`../time_slider_katherina`, `../short_stories`) if the owner
+After D2, after D4 and at the end: regenerate the consumer repo and the
+two covers (the consumer repo, the consumer repo) if the owner
 asks, pixel-checked against the previous commit so only the intended
 change shows.
 

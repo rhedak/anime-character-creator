@@ -63,7 +63,7 @@ looking rather than by argument.
   Traced hands map by one uniform scale, never per axis.
 - **Legible at the smallest consumer size.** Every candidate is judged at full
   size and at the chapter-insert size (head radius about 21 px).
-- **Nothing downstream moves mid-campaign.** `../valley_of_mist` and the covers
+- **Nothing downstream moves mid-campaign.** the consumer repo and the covers
   are regenerated only at a checkpoint the owner picks.
 - **No commits unless the owner asks.** One line, no trailer.
 
@@ -260,7 +260,7 @@ the owner actually keeps and nothing speculative.
   the web tool's Hands control.
 - **V9, owner checkpoint: the roster.** Every preset at full size and insert
   size with its final hands, before anything downstream moves.
-- Regenerate `../valley_of_mist` and the covers only if the owner asks,
+- Regenerate the consumer repo and the covers only if the owner asks,
   pixel-checked against the previous commit so only the hands change.
 
 ## Checkpoint summary

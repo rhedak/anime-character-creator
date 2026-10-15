@@ -14,7 +14,7 @@ raising the detail level.
    A number off it (the chin's depth, the line's weight) says which way to
    go, not where to stop.
 2. **Judge every study in three views**: full size, the height range (0.8,
-   1.0, 1.3), and the smallest size `../valley_of_mist` shows a figure at
+   1.0, 1.3), and the smallest size the consumer repo shows a figure at
    (`out/detail/smallest.png`: a four-column insert sheet at about 0.23 of
    its PNG, a figure about 180 px tall at 1x). A detail that reads only at
    full size is not done.

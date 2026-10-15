@@ -29,7 +29,7 @@ The RESUME, scoreboard and findings are in `bust-status.md`; how to work and
 the mistakes to avoid are in `bust-strategy.md`. In short, as of 2026-09-25:
 every step is done in this repo (1 to 9, 3c included; 9a tried and deferred
 to the realistic build's fix pass), the cast carries its values, and the web
-tool has the slider. Left: `../valley_of_mist`, on the owner's explicit
+tool has the slider. Left: the consumer repo, on the owner's explicit
 say-so, and the deferred list below.
 
 ## Owner's decisions (2026-09-21)
@@ -409,7 +409,7 @@ Acceptance: the whole cast sheet, looked at together.
 
 The catalogue slider (a `_range` on `CharacterParams`, beside `BUILD`, not a
 garment slot), `catalogue.json`, the web tool, the sheets, the cover, and last
-`../valley_of_mist`, on the owner's explicit say-so, in that repo.
+the consumer repo, on the owner's explicit say-so, in that repo.
 
 ## Acceptance, every step
 

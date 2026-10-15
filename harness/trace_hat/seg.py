@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-REF = "/Users/henrik/git/time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = "ref-local/katherina_grok/katherina_grok.jpg"
 OUT = "out/trace_hat"
 
 rgb = np.asarray(Image.open(REF).convert("RGB")).astype(int)

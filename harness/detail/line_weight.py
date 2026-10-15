@@ -19,7 +19,7 @@ Two sheets, in `out/detail/`:
 - `line_weight_full.png`: the head and torso of four characters at twice
   their render size, one row per variant;
 - `line_weight_small.png`: the same figures at the smallest size
-  `../valley_of_mist` shows them (head radius about 21 px, `detail-status.md`),
+  the consumer repo shows them (head radius about 21 px, `detail-status.md`),
   at 1x and 2x.
 """
 

@@ -453,7 +453,7 @@ untouched. Across the whole campaign `refresh-ref-out.sh` never reported a
 render other than keiko, real/keiko and the two sheets.
 
 Left, and wanting the owner: the web tool restaged and looked at in a browser,
-the cover, and `../valley_of_mist`'s reference sheet and chapter inserts,
+the cover, and the consumer repo's reference sheet and chapter inserts,
 which that repo checks in and regenerates from here. That regeneration stays a
 separate, explicit step at the owner's request, in that repo.
 
@@ -467,7 +467,7 @@ web GUI restaged and looked at, the cast sheet, then the cover.
 where a cut was exposed. Anything else changing is a blast-radius escape and
 stops the milestone.
 
-`../valley_of_mist` checks in Keiko's reference sheet and her chapter inserts
+the consumer repo checks in Keiko's reference sheet and her chapter inserts
 and regenerates them from this repo. That regeneration is a separate,
 explicit step at the owner's request, in that repo, after the campaign is
 signed off here. Nothing in this campaign touches it.

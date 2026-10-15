@@ -12,7 +12,7 @@ for free, since every character is built from the same shape code. No
 animation. Backgrounds/text overlays may be added later as more SVG
 layers.
 
-Fourteen named characters for *Valley of Mist* plus a few guests from
+Fourteen named characters plus a few guests from
 other projects (`presets.py`), each a first draft, all
 drawn as the tall chibi (big head, short body), front-facing: the one
 figure since 2026-09-26, when the realistic build and the old compressed
@@ -150,7 +150,7 @@ wrong, and reformatting them would be editing the evidence.
   unasked. Every push to `main` is a release with a new version: the last commit on `dev` raises `version`
   in `pyproject.toml` (minor for a feature or a new look, patch for a fix; the project is 0.x), then the
   merged commit on `main` gets an annotated `vX.Y.Z` tag, pushed together with `main`. The companion app
-  (`anime_ai_companion`) pins these tags, so a tag must never be moved or deleted once pushed.
+  pins these tags, so a tag must never be moved or deleted once pushed.
 - The owner's app imports this checkout by path (`../anime-character-creator`), so leave that checkout on
   `main`. Work on `dev` in a second worktree (`git worktree add ../anime-character-creator-dev dev`, then
   `uv sync` in it) and point the companion at it with `CREATOR_SRC=<worktree>/src` to see a change run.

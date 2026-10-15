@@ -504,7 +504,7 @@ the library directly. The web tool turns it on.
 A draft, to be read as page copy rather than as a licence. The novel is
 *The Hero of the Mist Tragedy*, published at
 `https://www.honeyfeed.fm/novels/32712`, filled in below. Its source
-lives at `../valley_of_mist/tragic_hero`, a private sister repo; the
+lives at a file in the consumer repo, a private sister repo; the
 published text is the "tragic hero" fork rather than that repo's main
 branch, which matters only if this document is ever asked to link to
 source rather than to the published read.

@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-REF = "../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = "ref-local/katherina_grok/katherina_grok.jpg"
 OX, OY, SC = 650.0, 481.0, 173.7
 rgb = np.asarray(Image.open(REF).convert("RGB")).astype(int)
 lab, _ = ndi.label(rgb.sum(2) > 60)

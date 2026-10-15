@@ -24,8 +24,8 @@ crescent where the tail's band was, the shape one of five (`HAIR_CLIPS`) the
 web tool offers. Open, all the owner's to decide later: which presets take which `hand_style` (all "mitten", the owner's
 call on 2026-09-27 until the traced hands get another pass); a relaxed hand pose of its own; the chin and the
 lid crease (deferred). The consumers were regenerated on 2026-10-03 for D5
-(`regenerate-consumers`): `../valley_of_mist` (Reika's reference and her 23
-Book 1 inserts) and `../time_slider_katherina` (the cover and Katherina's
+(`regenerate-consumers`): the consumer repo (Reika's reference and her 23
+Book 1 inserts) and the consumer repo (the cover and Katherina's
 reference); the Everglow cover came out byte-identical, Gero and Linnea being
 unchanged. Committed there, not pushed.
 Tools: the baseline `harness/detail/baseline.py`, the byte guard
@@ -900,11 +900,11 @@ height (as the limb taper): none at 0.8, light at 1.0 (calf 1.01, ankle
 ### The two other covers regenerated (2026-09-27)
 
 At the owner's request, after the eye and spacing fixes:
-`../short_stories` 3c496e7 (the Everglow cover, `scripts/build_cover_dual.py`)
-and `../time_slider_katherina` 617b37d (the cover by `tools/generate_cover.py`,
+the consumer repo 3c496e7 (the Everglow cover, `scripts/build_cover_dual.py`)
+and the consumer repo 617b37d (the cover by `tools/generate_cover.py`,
 the reference by `render.sh --preset katherina --no-metadata`, as it was made
 before). Both covers byte-identical to the rebuilds the owner reviewed.
-`../valley_of_mist` not regenerated (the owner: not for now).
+the consumer repo not regenerated (the owner: not for now).
 
 ### D3 follow-up: the eyes' spacing follows their size (2026-09-27)
 
@@ -1045,7 +1045,7 @@ baked face at age 1 (Gero's 1.55 included), so the web tool no longer ages
 them twice. `presets.aged` stays as a helper with no preset caller.
 `ref-out/` refreshed (18 changed: every preset but Katherina and Linnea, and
 the sheets); two tests that assumed age 0 now read the mouth's real height
-and set Satoko's baseline to 0. 489 passed, 1 skipped. `../valley_of_mist`
+and set Satoko's baseline to 0. 489 passed, 1 skipped. the consumer repo
 not regenerated (the owner's call: not for now).
 
 ### D3: one moustache rule at every face age (2026-09-27)
@@ -1373,7 +1373,7 @@ component: widest row y 330, x 564 to 707, chin y 399.
 - The review's by-eye crop (88 px) was 5% off; the calibrated sheet is
   `out/detail/face_vs_reference.png`.
 
-**The smallest view** (`out/detail/smallest.png`). `../valley_of_mist`'s
+**The smallest view** (`out/detail/smallest.png`). the consumer repo's
 chapter inserts are `sheet.sh` sheets, up to four columns, 2576 px wide;
 its reader (`.chapter-end`, `max-width: 40rem`) shows them about 600 CSS px
 wide, a scale of 0.233. A tile scales the figure by `0.86 * 400 /

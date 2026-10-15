@@ -13,8 +13,7 @@ Kyoko is Satoko's earlier self (`presets._before`), as Tomohiro is Satoshi's,
 so the pair mirrors theirs, Satoko 0.8 and Kyoko 0.6, not 0.5 and 1.0. Since
 then the presets carry their ages, so the "now" row no longer shows age 0.
 Raised again on 2026-10-15 so every preset is twenty-one or older: this
-repository is open source and ../anime_ai_companion draws from it. The
-stories keep their own ages. This file stays the proposal as shown.
+repository is open source. This file stays the proposal as shown.
 """
 
 import io

@@ -317,7 +317,7 @@ you have not read line by line.
 - **The documentation** was written by Claude Code.
 - **Commits** here carry no co-author trailer (this repository's own rule), so
   the history does not show which were AI-written: assume most of the code was.
-- The companion app that uses this ([anime_ai_companion](https://github.com/rhedak/anime_ai_companion))
+- The companion app that uses this
   was built the same way and says so in its own README.
 
 ## Design principles

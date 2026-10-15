@@ -2,7 +2,7 @@
 
 An intermediate campaign between the accessories plan's milestone 3 (staff)
 and milestone 4 (Kou): porting her clothes and neck off her design
-reference, `../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg`,
+reference, `ref-local/katherina_grok/katherina_grok.jpg`,
 by tracing, the method the hat, the staff and the `tall_chibi` body were built
 with (`.claude/skills/trace-reference/SKILL.md`). Written 2026-09-17 at the
 owner's request: `tall_chibi` has the reference's proportions, but the shared

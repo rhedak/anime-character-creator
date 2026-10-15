@@ -15,7 +15,7 @@ from scipy import ndimage as ndi
 sys.path.insert(0, "/Users/henrik/git/anime-character-creator/.claude/skills/trace-reference")
 import trace_lib as tl  # noqa: E402
 
-REF = "/Users/henrik/git/time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = "ref-local/katherina_grok/katherina_grok.jpg"
 OUT = "out/trace_hat"
 OX, OY, SCALE = 650.0, 481.0, 173.7
 HALF_STROKE = 3

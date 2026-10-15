@@ -33,7 +33,7 @@ def one(name, c, comment):
 
 
 head = f"""{BEGIN} `.claude/skills/trace-reference/SKILL.md`
-# from `../time_slider_katherina/style-anchors/kou_grok/kou.png`
+# from `ref-local/kou_grok/kou.png`
 # (`docs/katherina-accessories-plan.md`, milestone 4). That reference was
 # generated to be traced: flat single-tone surfaces, pure-black outlines, a
 # light background and nothing overlapping him, so every shape below is one of

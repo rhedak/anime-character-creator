@@ -37,7 +37,7 @@ from scipy import ndimage as ndi
 from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 
-REF = Path(__file__).resolve().parents[3] / "time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = Path(__file__).resolve().parents[2] / "ref-local/katherina_grok/katherina_grok.jpg"
 OX, OY, SC = 650.0, 481.0, 173.7
 GRID = 100  # px per head radius on the comparison grid
 X0, X1, Y0, Y1 = -2.0, 2.0, 0.6, 6.1

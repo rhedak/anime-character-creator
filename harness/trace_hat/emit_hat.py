@@ -26,7 +26,7 @@ def chain(name, c, comment=None):
 
 
 HEADER = """# A pointed witch's hat, traced per `.claude/skills/trace-reference/SKILL.md`
-# from `../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg`
+# from `ref-local/katherina_grok/katherina_grok.jpg`
 # (`docs/katherina-accessories-plan.md`, milestone 2).
 #
 # Every chain below is the reference's own contour, not a hand-placed landmark.

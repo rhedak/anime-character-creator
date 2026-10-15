@@ -8,7 +8,7 @@ import cairosvg
 from PIL import Image
 
 OUT = "out/trace_staff"
-REF = "/Users/henrik/git/time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = "ref-local/katherina_grok/katherina_grok.jpg"
 OX, OY, SCALE = 650.0, 481.0, 173.7
 data = json.load(open(f"{OUT}/staff_trace.json"))
 C = data["colors"]

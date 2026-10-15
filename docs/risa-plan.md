@@ -1022,7 +1022,7 @@ Tests: 864 pass, `ruff` green.
 - **Black on black.** Hair, blazer and socks are all very dark: outline and
   `shade()` tones have to keep them apart, checked on black as well as white.
 - **Scope creep.** No poses, no new skeleton, no realistic build (retired).
-  Nothing here touches `../valley_of_mist`.
+  Nothing here touches the consumer repo.
 
 ## Owner's decisions (2026-10-11)
 
