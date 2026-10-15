@@ -230,3 +230,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 /ref-local/
+
+# Local-only notes and overrides: story ages, sister-repo details, cover faces
+/local/

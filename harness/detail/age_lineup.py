@@ -4,9 +4,7 @@ A proposal for the owner, drawn now against proposed: every preset's face,
 top row as it is (face age 0, the four aged characters with `aged()` baked
 into their faces), bottom row at the proposed `face_age`. The aged four keep
 their baked face and take `face_age = 1`, which renders the same as
-`1 + years` on the un-aged face (tested). `../valley_of_mist/docs/characters.md`
-gives few ages: Satoshi twenty and reading older, Tomohiro seventeen to
-nineteen; the rest are by role, and the numbers here are guesses to correct.
+`1 + years` on the un-aged face (tested). The ages here were guesses by role, to correct.
 
 Writes `out/detail/age_lineup.png`.
 

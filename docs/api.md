@@ -9,7 +9,7 @@ Everything below is importable from the top-level package:
 
 ```python
 from anime_character_creator import (
-    BUILDS, DEFAULT_BUILD, DEFAULT_HEADS, HAIRSTYLES, PRESETS, for_cover,
+    BUILDS, DEFAULT_BUILD, DEFAULT_HEADS, HAIRSTYLES, PRESETS,
     CharacterParams, FaceStyle, Hairstyle, Outfit, Skeleton,
     build_skeleton, render_character, shade,
 )
@@ -230,8 +230,7 @@ Named characters as `CharacterParams` values: `PRESETS["satoko"]`,
 `SATOSHI`, `KYOKO` and `TOMOHIRO` from `anime_character_creator.presets`.
 They are checked-in artifacts that get re-rendered as the shape code
 improves, which is what `ref-out/` holds. Every preset is twenty-one or
-older. `for_cover(name)` is that same figure at the younger face a book
-cover was published with, which is what a cover draws.
+older.
 
 Add a character here rather than as a pile of CLI flags. The four share a
 palette through module constants, since they are meant to read as

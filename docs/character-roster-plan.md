@@ -28,7 +28,7 @@ choose by eye.
 
 ## Where the designs actually come from
 
-`docs/mist-characters/character_designs.md` is the authority, not `ref/`.
+the local character notes is the authority, not `ref/`.
 It states hair, eyes, garments, scars and bearing per character, and it
 records which of those were themselves revised to match an approved
 image. Where it and a reference image disagree, it says which one wins

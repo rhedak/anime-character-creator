@@ -32,13 +32,10 @@ from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 from anime_character_creator.skeleton import BUILDS
 
-# Every preset is twenty-one or older (2026-10-15): this repository is open
-# source and ../anime_ai_companion draws from it. The stories keep their own
-# ages. Satoko and Satoshi are
-# twenty-four; Kyoko and Tomohiro, three years earlier, are twenty-one.
-# Katherina, Linnea, Risa and Lindita are twenty-one. Chiyo is late forties
-# to mid fifties, Gero late forties, Daizen and Tenno the cast's oldest.
-ADULTS = tuple(PRESETS)
+# Only a figure whose face is the twenty-one face or older (`ADULT_FACE_AGE`) is
+# ever drawn bare. A consumer of this repository follows the same rule: no
+# character under twenty-one is rendered nude.
+ADULTS = tuple(n for n, p in PRESETS.items() if p.face_age >= c.ADULT_FACE_AGE)
 # The underwear is always worn (step 3), so "all off" leaves it on.
 COLOR_FIELDS = [
     f.name

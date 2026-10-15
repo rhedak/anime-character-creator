@@ -30,7 +30,7 @@ from .character import (
     skeleton_for,
 )
 from .colorutil import shade
-from .presets import DISPLAY_NAMES, EXPRESSIONS, NEUTRAL_BASES, PRESETS, ROSTERS, for_cover
+from .presets import DISPLAY_NAMES, EXPRESSIONS, NEUTRAL_BASES, PRESETS, ROSTERS
 from .skeleton import BUILDS, DEFAULT_BUILD, DEFAULT_HEADS, Skeleton, build_skeleton
 
 __all__ = [
@@ -50,7 +50,6 @@ __all__ = [
     "Outfit",
     "Skeleton",
     "build_skeleton",
-    "for_cover",
     "render_character",
     "shade",
     "skeleton_for",

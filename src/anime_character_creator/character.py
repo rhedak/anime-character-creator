@@ -529,6 +529,13 @@ class Outfit:
     crystal_tongs: bool = False
 
 
+# The youngest face a shipped preset or the GUI offers: twenty-one. The age of
+# majority differs by country and twenty-one is the highest of the common ones.
+# `face_age` is a drawing setting, not a number of years; this is the value the
+# project reads as twenty-one (`docs/detail-plan.md`, D3).
+ADULT_FACE_AGE = 0.9
+
+
 @dataclass(frozen=True)
 class CharacterParams:
     """Everything about a character that is not its proportions.
@@ -10899,7 +10906,7 @@ def _trousers(
 
 
 # A fixed placeholder, not a character trait: nobody's design in
-# docs/mist-characters/character_designs.md specifies underwear, so there is
+# the local character notes specifies underwear, so there is
 # nothing for a per-character field to hold, the way there is for a tunic or a
 # skirt. A plain neutral cotton tone, the way OUTLINE is a plain neutral line
 # regardless of what it outlines.

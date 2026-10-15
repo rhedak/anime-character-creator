@@ -936,16 +936,15 @@ checked by eye; 544 passed, 1 skipped. Both covers rebuilt to scratch again
 
 ### D3 follow-up: the eye and the age, one story at a time (2026-09-27)
 
-The owner, on a rebuilt Everglow cover: Gero (face age 1.55) and Linnea (0,
-though she is fifteen) looked inconsistent; eye sizes should not differ this
+The owner, on a rebuilt Everglow cover: Gero (face age 1.55) and Linnea (0)
+looked inconsistent; eye sizes should not differ this
 dramatically within one story; scaling them is fine but as its own choice.
 Measured: the eye's area fell to 0.87 at age 0.4, 0.70 at 1, 0.46 at 2.
 `harness/detail/eye_age_study.py` (now, light, none); the owner's pick
 **light**: `_MATURE_EYE_SHARE` 0.5 to 0.2, `aged_face`'s eye terms at a
 third. The area is now 0.95 at 0.4, 0.87 at 1, 0.76 at 2; how big a
 character's eyes are is `FaceStyle.eye_size`'s (the web tool's Eye size).
-Ages set: Linnea 0.4 (fifteen), Katherina 0.35 (fourteen at the start of her
-story, the owner).
+Ages set then; since raised to the twenty-one floor (`ADULT_FACE_AGE`).
 
 **The eye inside the face.** On the study's "none" row the eyes reached and
 ran over the face's edge, which read as creepy (the owner). Measured with

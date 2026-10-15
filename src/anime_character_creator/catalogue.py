@@ -32,6 +32,7 @@ import json
 from dataclasses import dataclass, fields
 
 from .character import (
+    ADULT_FACE_AGE,
     BELT_CUTS,
     BODY_TYPES,
     BOOT_CUTS,
@@ -558,7 +559,7 @@ HEIGHT = RangeField("height", "Height", 0.8, 1.3)
 assert HEIGHT.field in _CHARACTER_FIELDS
 # One axis from child to old (`CharacterParams.face_age`): 0 to 1 the face
 # growing up, 1 to 2 it ageing.
-AGE = RangeField("face_age", "Age (child, adult, old)", 0.0, 2.0)
+AGE = RangeField("face_age", "Age (adult to old)", ADULT_FACE_AGE, 2.0)
 assert AGE.field in _CHARACTER_FIELDS
 BUST = RangeField("bust", "Bust", 0.0, 1.0)
 assert BUST.field in _CHARACTER_FIELDS

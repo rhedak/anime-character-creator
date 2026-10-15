@@ -4,17 +4,16 @@ A preset is just a CharacterParams, so a character is a checked-in artifact
 that gets re-rendered as the shape code improves, rather than a pile of CLI
 flags someone has to remember.
 
-Every preset is twenty-one or older. This repository is open source and
-`../anime_ai_companion` draws its characters from it, so the figures are
-adults even where a story they were drawn from is younger. The stories
-keep their own ages. The README states which is which.
+Every preset is twenty-one or older (`ADULT_FACE_AGE`). This repository is
+open source, so no preset is a minor. Twenty-one is the age used because the
+age of majority differs by country and it is the highest of the common ones.
 """
 
 from __future__ import annotations
 
 from dataclasses import replace
 
-from .character import CharacterParams, Expression, FaceStyle, Outfit, aged_face
+from .character import ADULT_FACE_AGE, CharacterParams, Expression, FaceStyle, Outfit, aged_face
 
 # The men's upper lash (`FaceStyle.lash`): the full flick read as winged
 # eyeliner on their narrow, sharp-cornered eyes; at this it is a firm upper line
@@ -42,7 +41,6 @@ BOOTS = "#6d4c33"
 # which keeps chibi eyes big and open even on a wary character. A burn along her
 # left jaw and cheek, which is `scar_side=1`: that field counts from the
 # viewer's side and she faces us, so her left is the right of the picture.
-# Twenty-four. Kyoko, three years earlier, is twenty-one.
 SATOKO = CharacterParams(
     face_age=1.0,
     # Practical and guarded; Kyoko, built from her, takes the same (`docs/bust-plan.md`, step 7).
@@ -107,7 +105,6 @@ SATOKO = CharacterParams(
 # part of the face rather than something that tells them apart. It is absent
 # from ref/satoshi.png only because the model that drew that reference dropped
 # it, which makes this one of the few places the reference is not the target.
-# Twenty-four, the same age as Satoko. Tomohiro, three years earlier, is twenty-one.
 SATOSHI = CharacterParams(
     face_age=1.0,
     skin_tone="#f2d4bb",
@@ -178,7 +175,7 @@ SATOSHI = CharacterParams(
 # **before**, and the book they come from calls this "the single most important
 # design": one person styled to read as two, where the resemblance should be
 # visible once someone is told to look for it and should announce itself
-# otherwise (`docs/mist-characters/character_designs.md`). The disguise is a
+# otherwise (the local character notes). The disguise is a
 # maintained blonde dye over black regrowth, a burn scar, and plain clothes in
 # place of a researcher's. It is not a different face.
 #
@@ -222,9 +219,9 @@ def _before(base: CharacterParams, outfit: Outfit, face_age: float) -> Character
     listed above and the wardrobe are all that differ. The outfit is passed in
     rather than derived because it is the one thing that genuinely *is* different
     rather than a variation: a researcher's layers are not an innkeeper's with a
-    colour changed. So is the face's age: the earlier self is three years
-    younger, twenty-one where the present self is twenty-four
-    (`CharacterParams.face_age`, `docs/detail-plan.md`, D3).
+    colour changed. So is the face's age: the earlier self reads a little
+    younger, but never below the adult floor
+    (`ADULT_FACE_AGE`, `CharacterParams.face_age`, `docs/detail-plan.md`, D3).
     """
     return replace(
         base,
@@ -293,7 +290,7 @@ TOMOHIRO = _before(
 # preset. See `docs/character-roster-plan.md` for the order they get built in.
 #
 # Colours: the design document
-# (`docs/mist-characters/character_designs.md`) is the authority on what a
+# (the local character notes) is the authority on what a
 # character *is*, and it names hair, eyes and garments per person. Where it says
 # "slate gray-blue" rather than a number, the number was sampled off the
 # reference as the modal exact colour inside a flat patch, the way Satoko's were
@@ -916,10 +913,8 @@ VIKTOR = CharacterParams(
     ),
 )
 
-# Katherina Beaumont, protagonist of ../time_slider_katharina (working title
-# "The Shifted Hours"), a separate book from Valley of Mist's own cast above.
-# Dark purple hair and amber eyes are canon from the book's own Ch1 prose
-# (`../time_slider_katharina/docs/continuity_reference.md`); the amber-flecks
+# Katherina Beaumont, a separate design from the cast above.
+# Dark purple hair and amber eyes; the amber-flecks
 # detail described there (a mark near the left pupil, not a uniform iris
 # tone) has no field to carry it here, so the base iris colour alone stands
 # in for it. Hair worn tied back (`hair_tail`) per the same chapter's "hair
@@ -971,9 +966,7 @@ VIKTOR = CharacterParams(
 # tried for the same purpose and rejected: it read as a sticker laid over the
 # drawing rather than part of it.
 KATHERINA = CharacterParams(
-    # Twenty-one. The design began from another story's character, who was
-    # younger; this preset is not that character (the owner, 2026-10-15).
-    # The face is the young-adult one an age of twenty-one uses, the same as Risa's.
+    # The young-adult face at the adult floor, the same as Risa's.
     face_age=0.9,
     # Kept from step 7 (`docs/bust-plan.md`).
     bust=0.2,
@@ -1029,10 +1022,8 @@ KATHERINA = CharacterParams(
     ),
 )
 
-# Gero and Linnea are the cast of "The Hunt for the Everglow Crystals"
-# (../short_stories/stories/everglow_crystals), a story with no reference
-# art of its own, designed directly per the CLAUDE.md path for a cast
-# outside this tool's own novels.
+# Gero and Linnea are designed directly, with no reference art of their own,
+# per the CLAUDE.md path for a cast outside the original roster.
 
 # Gero: late 40s, thirty years a wandering treasure hunter before the
 # story opens, lean rather than broad from the road rather than from
@@ -1099,8 +1090,7 @@ GERO = CharacterParams(
     ),
 )
 
-# Linnea: twenty-one. Drawn from the innkeeper's daughter in that story, fourth
-# of six, but this preset is not that character (the owner, 2026-10-15). Blunt,
+# Linnea: Blunt,
 # unsentimental, practical rather than decorative, which is why she
 # wears trousers and a plain tunic rather than the skirt-and-apron
 # working outfit this roster's other innkeeper's daughter (Satoko)
@@ -1114,7 +1104,7 @@ GERO = CharacterParams(
 # dress bright to catch the little light they have; on the road she has
 # to hood it and later loses the coat binding Gero's wound.
 LINNEA = CharacterParams(
-    # Twenty-one, the same young-adult face as Katherina and Risa.
+    # The young-adult face at the adult floor, the same as Katherina and Risa.
     face_age=0.9,
     # Kept from step 7 (`docs/bust-plan.md`).
     bust=0.3,
@@ -1149,14 +1139,10 @@ LINNEA = CharacterParams(
     ),
 )
 
-# Dritan and Lindita are the two leads of "The Bureaucracy of Blood"
-# (../short_stories/stories/bureaucracy_of_blood), a story with no reference art
-# of its own, designed directly like Gero and Linnea. The briefs are in that
-# story's `notes.md` ("Cover appearance briefs"); the cover they are drawn for is
-# planned in its `cover_plan.md`.
+# Dritan and Lindita are designed directly, with no reference art, like Gero
+# and Linnea.
 
-# Dritan: a young vampire by his kind's count, and an adult here (twenty-one
-# or older). Born into an old bloodline and
+# Dritan: a vampire, born into an old bloodline and
 # now a Commander of the Blood Guard, whose coat is the gray of the one rank he
 # did not earn. Black hair, barbered short (a man comes to the house), and a
 # tan from the sun conditioning the Guard goes through, which is the one thing
@@ -1208,7 +1194,7 @@ DRITAN = CharacterParams(
     ),
 )
 
-# Lindita: twenty-one at the story's first scene, a human donor in the Blood
+# Lindita: a human donor in the Blood
 # Service, plainly dressed in muted teal and cream, copper hair in Satoko's long cut
 # and amber eyes, awake and a little tired. The cover draws her as she was at
 # the feeding: the blindfold pushed up onto her forehead, the surgical mask
@@ -1217,7 +1203,7 @@ DRITAN = CharacterParams(
 # usual neutral mouth. The gap between her front teeth and the ink callus on
 # her finger are below this tool's resolution and are not drawn.
 LINDITA = CharacterParams(
-    # Twenty-one, the same young-adult face as the others at that age.
+    # The young-adult face at the adult floor.
     face_age=0.9,
     bust=0.4,
     skin_tone="#f0d3bc",
@@ -1256,14 +1242,13 @@ LINDITA = CharacterParams(
     ),
 )
 
-# Risa: twenty-one, a guest in a school uniform, not one of the Valley of Mist
-# cast (`docs/risa-plan.md`). Dark red hair held back with
+# Risa: a guest in a school uniform (`docs/risa-plan.md`). Dark red hair held back with
 # a gold clip, green eyes, a grey blazer with gold buttons over a white shirt, a blue bow
 # and a light blue-grey pleated skirt. Her clothes, hair and body are traced off a
 # reference (`ref-local/mio/`, local only); the colours of hair and blazer are her own
 # (the reference's were black and navy, too like an existing character).
 RISA = CharacterParams(
-    # Twenty-one, the same young-adult face as Katherina and Linnea.
+    # The young-adult face at the adult floor, the same as Katherina and Linnea.
     face_age=0.9,
     bust=0.3,
     skin_tone="#f6dbc2",
@@ -1364,34 +1349,7 @@ PRESETS: dict[str, CharacterParams] = {
     "risa": RISA,
 }
 
-# The face a book cover was published with, where it is younger than the adult
-# preset. The stories keep their own ages, and a regenerate of a cover should
-# leave that face where it was (2026-10-15). Names absent here already match.
-COVER_FACE_AGE: dict[str, float] = {
-    "kyoko": 0.6,
-    "tomohiro": 0.6,
-    "lindita": 0.7,
-    "katherina": 0.75,
-    "linnea": 0.75,
-    "risa": 0.75,
-    "satoko": 0.8,
-    "satoshi": 0.8,
-    "viktor": 0.8,
-}
-
-
-def for_cover(name: str) -> CharacterParams:
-    """The preset as a book cover draws it: the published face, not the adult one.
-
-    The preset itself stays twenty-one or older. A cover of a character whose
-    story is younger keeps the face that cover already uses.
-    """
-    p = PRESETS[name]
-    age = COVER_FACE_AGE.get(name)
-    if age is None or age == p.face_age:
-        return p
-    return replace(p, face_age=age)
-
+assert all(p.face_age >= ADULT_FACE_AGE for p in PRESETS.values()), "a preset is under twenty-one"
 
 # What a character is called on a sheet, where the preset key is not it: the
 # reference sheets label "Reinhard von Falkenrath" and "Elara Sturm" while the
@@ -1460,18 +1418,13 @@ ROSTERS["satoshi"] = (
     "satoshi",
     *sorted(n for n in ROSTERS["cast"] if n not in ("satoshi", "satoko", "kyoko")),
 )
-# Katherina belongs to a separate book (../time_slider_katharina) and has no
-# overlap with the Valley of Mist cast, so she gets her own roster.
+# Katherina has no overlap with the original cast, so she gets her own roster.
 ROSTERS["katherina"] = ("katherina",)
-# Gero and Linnea are the cast of a short story (../short_stories,
-# "The Hunt for the Everglow Crystals"), same as Katherina: a separate work,
-# no overlap with the Valley of Mist cast, its own roster.
+# Gero and Linnea, likewise: no overlap with the original cast, their own roster.
 ROSTERS["everglow"] = ("gero", "linnea")
-# Dritan and Lindita, the leads of another short story (../short_stories,
-# "The Bureaucracy of Blood"): a separate work, its own roster.
+# Dritan and Lindita, likewise: their own roster.
 ROSTERS["bureaucracy"] = ("dritan", "lindita")
-# Risa is twenty-one, a guest in a school uniform, from no story of ours
-# (`docs/risa-plan.md`): her own roster.
+# Risa is a guest in a school uniform (`docs/risa-plan.md`): her own roster.
 ROSTERS["risa"] = ("risa",)
 
 # ---------------------------------------------------------------------------
