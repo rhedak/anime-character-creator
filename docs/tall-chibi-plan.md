@@ -15,7 +15,7 @@ signs off, one-line commits without a trailer.
 ## Why
 
 - Every preset draws on a tall-chibi body profile (`tall_chibi` for
-  Katherina, `tall_chibi_long_torso` for the rest); `../valley_of_mist` only
+  Katherina, `tall_chibi_long_torso` for the rest); the consumer repo only
   ever renders the chibi.
 - The realistic build has its own unfinished fix pass, and the last two
   campaigns deferred or skipped judging it at every step; 59 places in
@@ -35,7 +35,7 @@ signs off, one-line commits without a trailer.
 
 **Every tall-chibi render stays byte-identical** through the retirement
 (R1 to R3): `./refresh-ref-out.sh --check` on the chibi renders, the bases,
-and `../valley_of_mist` by pixel check at the end. Only R4 (the height
+and the consumer repo by pixel check at the end. Only R4 (the height
 slider) may move a figure, and at its default height it must not.
 
 ## The order
@@ -47,7 +47,7 @@ slider: `BUILDS`, `heads`, `sk.build` and what it gates, `body=None`,
 `BODY_TYPES`, `_wears_cuts`, `REALISTIC_REFS`, `ref-out/real/`, the CLI's
 `--build`/`--heads`, `cover.py`, `sheet.py`, the web tool, `urlstate`, the
 tests, the skills (`gap-analysis`), the docs, and the consumers in
-`../valley_of_mist` (`generate_assets.py`, the trailer's `figures.py`). Each
+the consumer repo (`generate_assets.py`, the trailer's `figures.py`). Each
 item classed: remove, collapse to the chibi's value, or keep.
 
 **Acceptance:** the inventory in the status file, each item with its step.
@@ -121,7 +121,7 @@ line, so a height shows; until then each figure fills its tile as now.
 
 `CLAUDE.md` (its "Direction" and the realistic references), `README.md`,
 `STATUS.md`, `docs/api.md`, the plans that mention the realistic fix pass;
-`../valley_of_mist` checked by pixels and regenerated only if anything moved.
+the consumer repo checked by pixels and regenerated only if anything moved.
 
 ## What goes away
 

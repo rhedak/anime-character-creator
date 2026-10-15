@@ -8,7 +8,7 @@ rendered by name from here (`SUPPORTING["kenzo"]`); they are simply not offered.
 Each is a first draft built from what the book says of them, judged by eye, and
 none of it is more than the text gives: no reference exists, so nothing here is
 traced from one. The book's own descriptions are in
-`valley_of_mist/books/book1_hero_of_the_mist_tragedy/docs/continuity_reference.md`.
+a file in the consumer repo.
 """
 
 from __future__ import annotations

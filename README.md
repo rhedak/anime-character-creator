@@ -15,27 +15,23 @@ possible later addition (they'd slot in as extra SVG layers).
 
 ## Status
 
-Fourteen named characters for *Valley of Mist*, plus guests. Gero, Dritan
-and Lindita are from `../short_stories`, Katherina from
-`../time_slider_katharina`, and Risa is a guest in a school uniform, from
-no story of ours. They are all the tall chibi, the one figure since
-2026-09-26, when the realistic build and the old compressed chibi were
-retired; a `height` from 0.8 to 1.3 stretches it for a younger or a
+Fourteen named characters, plus guests. They are all the tall chibi, the one
+figure since 2026-09-26, when the realistic build and the old compressed chibi
+were retired; a `height` from 0.8 to 1.3 stretches it for a shorter or a
 taller character. Risa is the exception in proportion: she is drawn on her own
 longer body, measured off her reference (`docs/risa-plan.md`).
 
-Every preset is **twenty-one or older**. This repository is open source,
-and [anime_ai_companion](https://github.com/rhedak/anime_ai_companion)
-draws its characters from here, so the figures it can show are adults
-even where a story they were drawn from is younger. The stories keep
-their own ages. In *Valley of Mist*, Tomohiro is seventeen when recruited
-and twenty as Satoshi, and Kyoko's flashback is at seventeen. Katherina
-is fourteen at the start of her book, Linnea is fifteen in hers, and
-Lindita is about twenty at her story's first scene. The presets here are
-separate figures: Satoko and Satoshi are twenty-four, and Kyoko,
-Tomohiro, Katherina, Linnea, Risa and Lindita are twenty-one. A book
-cover keeps the younger face it was published with (`for_cover`), so
-rebuilding a cover does not age it.
+Every preset is **twenty-one or older**. The age of majority differs by
+country, and twenty-one is the highest of the common ones, so that is the
+floor: `ADULT_FACE_AGE` in `character.py`, which the tests, the web tool's age
+slider and the bare-body harness all read. `face_age` is a drawing setting, not
+a number of years, so it is the floor that keeps a figure an adult, not a label.
+
+**A rule for anything that uses this repository: never render a character
+under twenty-one nude.** This tool draws the body bare only in a harness view
+for proportion work, and only for faces at or above that floor
+(`harness/bare/`). A consumer that draws a younger face of its own (the library
+renders any `face_age`) must keep the figure clothed.
 
 All are **first drafts**: each carries the colouring, frame and garments
 its design calls for, judged at the size a character is actually seen on a
@@ -102,12 +98,9 @@ characters as `sheet.svg`; `presets.ROSTERS["satoshi"]` is the one place
 that says which two swap. Render it with `./sheet_satoshi.sh`.
 
 `sheet.py` also takes `--members name1,name2,...`, an arbitrary subset
-overriding `--roster`, which is the hook `../valley_of_mist` (the novel
-this cast is for) uses to generate one character sheet per chapter,
-restricted to whoever that chapter actually names: see that repo's
-`valley_of_mist_tools/generate_assets.py`, which also draws its character
-references and cover from here (`render.sh`, `cover.sh`). This repo stays
-the generic drawing tool; that repo owns the chapter-scanning and
+overriding `--roster`, a hook for a consumer that generates one character
+sheet per chapter, restricted to whoever that chapter names (`render.sh`,
+`cover.sh`). This repo stays the generic drawing tool; the consumer owns the chapter-scanning and
 publication-specific detail.
 
 The tables above link `ref-out/on-white/`, which is the same characters
@@ -324,7 +317,7 @@ you have not read line by line.
 - **The documentation** was written by Claude Code.
 - **Commits** here carry no co-author trailer (this repository's own rule), so
   the history does not show which were AI-written: assume most of the code was.
-- The companion app that uses this ([anime_ai_companion](https://github.com/rhedak/anime_ai_companion))
+- The companion app that uses this
   was built the same way and says so in its own README.
 
 ## Design principles

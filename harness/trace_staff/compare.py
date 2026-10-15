@@ -8,7 +8,7 @@ from anime_character_creator.character import hat_hair_margin
 from anime_character_creator.presets import PRESETS
 from anime_character_creator.skeleton import BUILDS, build_skeleton
 
-REF = "/Users/henrik/git/time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = "ref-local/katherina_grok/katherina_grok.jpg"
 OUT = "out/trace_staff"
 OX, OY, SCALE = 650.0, 481.0, 173.7
 name = sys.argv[1]

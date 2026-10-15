@@ -26,10 +26,10 @@ from PIL import Image, ImageDraw
 from anime_character_creator import character as c
 from anime_character_creator.presets import PRESETS
 
-# Every preset is twenty-one or older (2026-10-15), so the mannequin is the
-# whole cast. This repository is open source and ../anime_ai_companion draws
-# from it. The list used to leave out anyone whose notes did not say adult.
-ADULTS = tuple(PRESETS)
+# Only a figure whose face is the twenty-one face or older (`ADULT_FACE_AGE`) is
+# ever drawn bare. A consumer of this repository follows the same rule: no
+# character under twenty-one is rendered nude.
+ADULTS = tuple(n for n, p in PRESETS.items() if p.face_age >= c.ADULT_FACE_AGE)
 COLOR_FIELDS = [
     f.name
     for f in dataclasses.fields(c.Outfit)

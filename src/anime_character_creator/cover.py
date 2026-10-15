@@ -36,13 +36,15 @@ mist under a stacked title, and nothing else on the page.
 from __future__ import annotations
 
 import argparse
+import json
 import math
+import os
 import re
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from .character import OUTLINE, CharacterParams, render_character, skeleton_for
-from .presets import EXPRESSIONS, PRESETS, for_cover
+from .presets import EXPRESSIONS, PRESETS
 from .skeleton import Skeleton
 
 
@@ -196,6 +198,26 @@ def _backdrop(p: CoverParams) -> str:
     )
 
 
+def _preset_for_cover(name: str) -> CharacterParams:
+    """The preset, with a face age from an untracked local file when one names it.
+
+    Every shipped preset is twenty-one or older. A cover that was published with
+    another face keeps it by listing `{"<preset>": <face_age>}` in
+    `local/cover_faces.json` (next to `src/`; `ACC_LOCAL_DIR` moves the folder), which is not in
+    the repository. Without the file a cover draws the preset as shipped.
+    """
+    character = PRESETS[name]
+    path = (
+        Path(os.environ.get("ACC_LOCAL_DIR") or Path(__file__).resolve().parents[2] / "local")
+        / "cover_faces.json"
+    )
+    if path.is_file():
+        ages = json.loads(path.read_text())
+        if name in ages:
+            character = replace(character, face_age=float(ages[name]))
+    return character
+
+
 def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float, float]:
     """Where the figure lands on the page: its skeleton, its scale, its offset.
 
@@ -205,9 +227,7 @@ def _placement(p: CoverParams) -> tuple[Skeleton, CharacterParams, float, float,
     instead put every band 3% of a figure too high: the first attempt cut him
     across the shins and hid the boots entirely.
     """
-    # A named preset is drawn at the face its book cover was published with.
-    # An explicit `character` is used as given, so a caller can ask for the adult.
-    character = p.character if p.character is not None else for_cover(p.preset)
+    character = p.character if p.character is not None else _preset_for_cover(p.preset)
     if p.expression:
         character = EXPRESSIONS[p.expression].applied_to(character)
     sk = skeleton_for(character)

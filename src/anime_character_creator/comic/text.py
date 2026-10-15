@@ -1,6 +1,6 @@
 """Set text in the bundled font as SVG outlines.
 
-Copied from `../valley_of_mist`'s trailer (`valley_of_mist_tools/trailer/text.py`),
+Copied from the consumer repo's trailer,
 which wrote it first; the trailer is to switch to this copy, and nothing here is
 specific to it. Needs the optional `comic` extra (`uharfbuzz`, `fonttools`). The font
 is Gelasio, under the SIL Open Font License (`fonts/OFL.txt`).

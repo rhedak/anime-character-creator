@@ -4,9 +4,7 @@ A proposal for the owner, drawn now against proposed: every preset's face,
 top row as it is (face age 0, the four aged characters with `aged()` baked
 into their faces), bottom row at the proposed `face_age`. The aged four keep
 their baked face and take `face_age = 1`, which renders the same as
-`1 + years` on the un-aged face (tested). `../valley_of_mist/docs/characters.md`
-gives few ages: Satoshi twenty and reading older, Tomohiro seventeen to
-nineteen; the rest are by role, and the numbers here are guesses to correct.
+`1 + years` on the un-aged face (tested). The ages here were guesses by role, to correct.
 
 Writes `out/detail/age_lineup.png`.
 
@@ -15,8 +13,7 @@ Kyoko is Satoko's earlier self (`presets._before`), as Tomohiro is Satoshi's,
 so the pair mirrors theirs, Satoko 0.8 and Kyoko 0.6, not 0.5 and 1.0. Since
 then the presets carry their ages, so the "now" row no longer shows age 0.
 Raised again on 2026-10-15 so every preset is twenty-one or older: this
-repository is open source and ../anime_ai_companion draws from it. The
-stories keep their own ages. This file stays the proposal as shown.
+repository is open source. This file stays the proposal as shown.
 """
 
 import io

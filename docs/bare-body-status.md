@@ -8,7 +8,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 - **Now:** the plan is done and signed off (2026-09-26). Open: the men's
   armpit slot (a small bare-only change if wanted) and the realistic build's
   own fix pass. Follow-on: `tunic-bust-plan.md`, making the clothed bust
-  agree with the bare one: done (T1 to T4); `../valley_of_mist` regenerated
+  agree with the bare one: done (T1 to T4); the consumer repo regenerated
   and waiting for the owner's commit call there.
 - **Tree:** clean at `611c50b` when the plan was written.
 - **Invariant:** `./refresh-ref-out.sh --check` byte-identical after every
@@ -32,7 +32,7 @@ decided, newest first. The method lives in `bare-body-strategy.md`.
 
 ## Findings, newest first
 
-### Outer layers: valley_of_mist regenerated (2026-09-26)
+### Outer layers: the consumer repo regenerated (2026-09-26)
 
 At the owner's say-so, after the coat line: 32 files, every one with pixels
 moved and each one Keiko, Kyoko or Reika (their references 254, 4164 and
@@ -102,7 +102,7 @@ and bare renders byte-identical by `cmp`, `ref-out/` matches. Study:
 ### Tunic bust plan, T4: the cast and the downstream (2026-09-26)
 
 T3 signed off. The cast sheet (`ref-out/sheet.png`) looked at: the busts
-read alike across the tunics, nothing else moved. `../valley_of_mist`
+read alike across the tunics, nothing else moved. the consumer repo
 regenerated (`generate-refs`, `generate-covers`, `generate-inserts`): 52
 files. Per file, pixels and PNG metadata compared with `HEAD`: every man's
 reference, the cover (Satoshi) and chapter 26 (no woman in it) change **0

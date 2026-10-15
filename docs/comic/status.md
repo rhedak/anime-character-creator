@@ -6,7 +6,7 @@ The record for `plan.md`. Procedure: `../detail-strategy.md`.
 
 **Proof two is built** (2026-10-09): beat A redrawn as the ten-panel shot list the owner
 confirmed (C0b), with R1 to R4 built for it: a camera and named shot sizes, named gaps, gaze,
-and lettering checks. `valley_of_mist/books/book1_hero_of_the_mist_tragedy/build/comic/ch01.png`
+and lettering checks. a file in the consumer repo
 (proof one is `ch01_v1.png`, kept for comparison; build either with `build_comic.sh ch01`
 or `ch01_v1`). **C1 answered in part (2026-10-10, see Owner's answers): the samples' choices are applied to `ch01.py`.**
 Still open: panels 7 and 9 and the elbow bend.
@@ -41,7 +41,7 @@ One line per checkpoint, dated, as the owner answers.
 - **Direction, 2026-10-08.** Webcomic first, animation later. "Start with what works
   and then iterate": the cast stays the tall chibi, front-facing, and more angles come
   later by iteration.
-- **C0, 2026-10-09.** The scene is `../valley_of_mist` book 1 from chapter 1 on, the
+- **C0, 2026-10-09.** The scene is the consumer repo book 1 from chapter 1 on, the
   prologue skipped for now. Format: a vertical scroll strip. Language: English.
   The script itself is not yet confirmed.
 - **K2 follow-up, 2026-10-09.** The flip problem (a flipped Satoshi moves his scar), answered
@@ -56,7 +56,7 @@ One line per checkpoint, dated, as the owner answers.
   (`catalogue.py`), so they go in a separate registry and not in `PRESETS` (K6).
 - **Placement, 2026-10-09.** "In principle functionality should be here and application
   in vom." The generic comic engine goes in this repo, the book's script, strips and
-  scenery in `valley_of_mist`.
+  scenery in the consumer repo.
 - **Order, 2026-10-09.** Start from the missing capabilities and build them as the
   panels need them, instead of drawing a rough page first. Simplifying the script is
   fine.
@@ -113,7 +113,7 @@ study in K7 answers it.
 
 ### Code reading, 2026-10-09
 
-The trailer in `../valley_of_mist` has already built the id prefix, a silhouette, a
+The trailer in the consumer repo has already built the id prefix, a silhouette, a
 placement, outline text and mist backdrops (`plan.md`). 
 Seen in `character.py` and `cover.py`; the experiments are still to do. Two figures in
 one document repeat the ids `hair-front`, `eye-l` and `eye-r` (checked on satoshi and
@@ -223,7 +223,7 @@ Two redraws taught something: the open mouth first drew as a pointed wedge that 
 so its lower edge became a fuller cubic; and a bubble placed over its speaker's head draws no tail,
 so the caller leaves headroom.
 
-**Built in `valley_of_mist`:** `valley_of_mist_tools/comic/` (`places.py`: the common room by day,
+**Built in the consumer repo:** a file in the consumer repo (`places.py`: the common room by day,
 the room at night, the mist wall; `ch01.py`: panels A1 to A6; `build.py`) and
 `shell_scripts/build_comic.sh`.
 
@@ -257,9 +257,9 @@ which shifts the iris and its marks inside the aperture; at 0 every render is by
 (a speech bubble as an object) and `comic/checks.py`: a bubble over the face (from the brows
 down, so hair and a hat may be covered), at the frame, overlapping another, a tail crossing or
 running through one, reading order (top left first), more than three bubbles, more than four
-sentences, type under 17 px. 742 tests pass here, 3 more in `valley_of_mist`.
+sentences, type under 17 px. 742 tests pass here, 3 more in the consumer repo.
 
-**Built in `valley_of_mist`.** `places.bed`, `places.village`, `ch01.py` (ten panels) and
+**Built in the consumer repo.** `places.bed`, `places.village`, `ch01.py` (ten panels) and
 `ch01_v1.py` (proof one), `tests/test_comic_ch01.py` (ten panels, lettering clean, no id
 twice), and `build.py` prints the lettering problems as sentences.
 
@@ -285,9 +285,9 @@ panel 6 to panel 5, so panel 6 is silent; and panel 10 keeps the arm swing as a 
 
 The owner said it was better and asked for samples to look at together. They are option sheets
 for the open questions, not changes to the canon strip. Built by
-`valley_of_mist_tools/comic/samples.py`, in `valley_of_mist/books/book1_hero_of_the_mist_tragedy/build/comic/samples/`
+a file in the consumer repo, in a file in the consumer repo
 (ignored by git, rebuilt with `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib uv run python
--m valley_of_mist_tools.comic.samples` in `valley_of_mist`).
+-m the consumer repo_tools.comic.samples` in the consumer repo).
 
 | sheet | question | what it shows |
 |---|---|---|

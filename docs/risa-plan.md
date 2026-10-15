@@ -19,10 +19,8 @@ measured** (the reference has longer legs than our tall chibi), and the work
 taken step by step until she is as close to the reference as is feasible.
 
 She is **twenty-one** (raised from 18 on 2026-10-15, with the rest of the cast).
-This repository is open source and `../anime_ai_companion` draws from it, so
-the preset is an adult. She is a guest in a school uniform, not one of the
-*Valley of Mist* cast. The `face_age` 0.75 chosen below was the
-eighteen-year-old face; the preset is 0.9.
+This repository is open source, so the preset is an adult. The `face_age`
+0.75 chosen below was an earlier, younger face; the preset is 0.9.
 
 Reference: `ref-local/mio/mio.png` (the full figure) and
 `ref-local/mio/segments/` (hair, bangs, eyes, blazer, shirt, ribbon, skirt,
@@ -842,7 +840,7 @@ checklist.
 - [x] Brows, mouth, blush: calm and neutral, a short mouth low in the face, a tiny nose mark.
 - [x] `face_age` by eye, from 0.75 to 0.85: **0.75**, the low end, for the rounder jaw.
 
-Acceptance: a calm, neutral, clearly 18-year-old face that reads beside the reference at one
+Acceptance: a calm, neutral, clearly young-adult face that reads beside the reference at one
 head scale.
 
 #### M9 findings
@@ -1024,7 +1022,7 @@ Tests: 864 pass, `ruff` green.
 - **Black on black.** Hair, blazer and socks are all very dark: outline and
   `shade()` tones have to keep them apart, checked on black as well as white.
 - **Scope creep.** No poses, no new skeleton, no realistic build (retired).
-  Nothing here touches `../valley_of_mist`.
+  Nothing here touches the consumer repo.
 
 ## Owner's decisions (2026-10-11)
 

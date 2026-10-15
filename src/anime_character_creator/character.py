@@ -442,7 +442,7 @@ class Outfit:
     # A pointed witch's hat: crown, brim and the band at the crown's base. Its
     # own color rather than reusing `hair_color`/`coat_color`, because a hat
     # is not necessarily dyed to match either, and the reference this shipped
-    # for (`../time_slider_katherina/style-anchors/katherina_grok/`) wears a
+    # for (`ref-local/katherina_grok/`) wears a
     # near-black hat over purple hair and a navy coat, three tones, not one.
     # `None` draws nothing, same convention as every optional garment above.
     hat_color: str | None = None
@@ -509,7 +509,7 @@ class Outfit:
     coat_button_color: str | None = None
     # Four mana crystals clipped to the belt, two a side, the carrying rig
     # Elara and Krista wear instead of a pouch: a crystal is dangerous to grip
-    # bare-handed (`valley_of_mist/docs/design.md`, "Donarsblut"), so it rides
+    # bare-handed (a file in the consumer repo, "Donarsblut"), so it rides
     # in a loop rather than a pocket, and stays visible rather than stowed.
     # Four fields rather than one `crystal_color`, because the point of a
     # working mage's rig is that the stock is not all the same type; each
@@ -527,6 +527,13 @@ class Outfit:
     # deliberate enough about the kit to ask for it explicitly. Draws nothing
     # unless a belt is worn.
     crystal_tongs: bool = False
+
+
+# The youngest face a shipped preset or the GUI offers: twenty-one. The age of
+# majority differs by country and twenty-one is the highest of the common ones.
+# `face_age` is a drawing setting, not a number of years; this is the value the
+# project reads as twenty-one (`docs/detail-plan.md`, D3).
+ADULT_FACE_AGE = 0.9
 
 
 @dataclass(frozen=True)
@@ -4880,7 +4887,7 @@ def _headscarf(sk: Skeleton, p: CharacterParams) -> str:
 
 
 # A pointed witch's hat, traced per `.claude/skills/trace-reference/SKILL.md`
-# from `../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg`
+# from `ref-local/katherina_grok/katherina_grok.jpg`
 # (`docs/katherina-accessories-plan.md`, milestone 2).
 #
 # Every chain below is the reference's own contour, not a hand-placed landmark.
@@ -5131,7 +5138,7 @@ _HAT_CREASES: list[Chain] = [
 # Named body types, laid over the chibi build by `skeleton_for`. The shared
 # chibi (2.4 heads) is the unnamed default, `body=None`.
 #
-# `tall_chibi` was measured off `../time_slider_katherina/style-anchors/
+# `tall_chibi` was measured off `ref-local/
 # katherina_grok/katherina_grok.jpg` (Katherina's design reference) on the
 # witch hat's calibration, 173.7 px per head radius, head centre (650, 481);
 # the scripts are `harness/body/`. It keeps only what describes a figure, not
@@ -8114,7 +8121,7 @@ def _hand_centre(sk: Skeleton, p: CharacterParams, s: int) -> Point:
 
 
 # A wizard's staff, traced per `.claude/skills/trace-reference/SKILL.md`
-# from `../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg`
+# from `ref-local/katherina_grok/katherina_grok.jpg`
 # (`docs/katherina-accessories-plan.md`, milestone 3), on the witch hat's own
 # calibration (173.7 px per head radius, head centre at (650, 481); see the
 # comment above `_HAT_UNDERSIDE`). Every chain is in the reference's head radii,
@@ -10899,7 +10906,7 @@ def _trousers(
 
 
 # A fixed placeholder, not a character trait: nobody's design in
-# docs/mist-characters/character_designs.md specifies underwear, so there is
+# the local character notes specifies underwear, so there is
 # nothing for a per-character field to hold, the way there is for a tunic or a
 # skirt. A plain neutral cotton tone, the way OUTLINE is a plain neutral line
 # regardless of what it outlines.
@@ -11660,7 +11667,7 @@ def _crystal_harness(sk: Skeleton, p: CharacterParams) -> str:
     """Up to four mana crystals clipped along the belt band, two a side.
 
     Flat kite-shaped gems, no glow: a crystal is dangerous to grip
-    bare-handed (`valley_of_mist/docs/design.md`, "Donarsblut"), which is
+    bare-handed (a file in the consumer repo, "Donarsblut"), which is
     what the rig is about, not a light source, and a glow at chibi scale
     reads as clutter before it reads as danger anyway. The shape, the flat
     color and the loop clipping it to the belt are what say "crystal", the
@@ -12963,7 +12970,7 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
 
 
 # Kou, Katherina's bat familiar, traced per `.claude/skills/trace-reference/SKILL.md`
-# from `../time_slider_katherina/style-anchors/kou_grok/kou.png`
+# from `ref-local/kou_grok/kou.png`
 # (`docs/katherina-accessories-plan.md`, milestone 4). That reference was
 # generated to be traced: flat single-tone surfaces, pure-black outlines, a
 # light background and nothing overlapping him, so every shape below is one of

@@ -1,7 +1,7 @@
 # Katherina accessories plan
 
 Plan for closing the gap between the current `katherina` preset and the
-owner's AI reference (`../time_slider_katharina/style-anchors/katherina_grok/katherina_grok.jpg`),
+owner's AI reference (a file in the consumer repo),
 across four milestones: hairstyle, witch hat, staff, and Kou (her bat
 familiar). Written 2026-09-17. Each milestone is its own piece of work,
 not a quick pass, per the owner's explicit framing: this is a campaign,
@@ -112,7 +112,7 @@ Task:
       that this milestone doesn't touch); add a line citing the grok
       reference and this doc.
 - [ ] **1b.** Re-render `style-anchors/katherina.png`/`.svg` and the
-      cover in `../time_slider_katharina` (`tools/generate_cover.py`,
+      cover in the consumer repo (`tools/generate_cover.py`,
       per that repo's own docstring) so the book's checked-in art
       actually reflects the change.
 - [ ] **1c.** Look at both builds (chibi and realistic), per this
@@ -333,7 +333,7 @@ is the composite's own look, not a collision.
 No part of this generator has ever drawn anything that isn't a human
 figure or something worn or held by one. Kou is a small bat-like
 creature, established in the book's own prose
-(`../time_slider_katharina/docs/continuity_reference.md`'s Kou entry):
+(a file in the consumer repo's Kou entry):
 small, dark-furred, wings that fold tight or snap flat depending on his
 mood, usually perched on Katherina's shoulder (repeatedly stated on the
 page, e.g. "Kou landed light on my shoulder"). That last detail is

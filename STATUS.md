@@ -906,7 +906,7 @@ Some ideas for the three items above, not yet decided on:
   pattern as the current fourteen, designed from written/described
   intent rather than a reference image; reuse the `Hairstyle`/`Outfit`
   registries as the menu of what's expressible before adding a one-off
-  field. An explicit non-`valley_of_mist` preset namespace/roster entry
+  field. An explicit non-the consumer repo preset namespace/roster entry
   once a second setting has more than one or two characters, so
   `sheet.py --members` and the web catalogue don't have to assume one
   cast.
@@ -1715,7 +1715,7 @@ two thirds in the legs. Heights in sheets, covers and the book's inserts
 
 ## Story props, 2026-10-06
 
-Four small props added for the cover of a short story in `../short_stories`
+Four small props added for the cover of a short story in the consumer repo
 (`stories/bureaucracy_of_blood`, `cover_plan.md` there), each an `Outfit` field that
 draws nothing at its default, with a catalogue slot and a test, and no existing
 render changed (`./refresh-ref-out.sh` reported 0 changed each time):

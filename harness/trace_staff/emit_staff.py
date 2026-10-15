@@ -43,7 +43,7 @@ def chains(name, cs, comment):
 
 
 HEADER = f"""{BEGIN}
-# from `../time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg`
+# from `ref-local/katherina_grok/katherina_grok.jpg`
 # (`docs/katherina-accessories-plan.md`, milestone 3), on the witch hat's own
 # calibration (173.7 px per head radius, head centre at (650, 481); see the
 # comment above `_HAT_UNDERSIDE`). Every chain is in the reference's head radii,

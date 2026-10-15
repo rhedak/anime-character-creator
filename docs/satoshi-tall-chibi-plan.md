@@ -196,7 +196,7 @@ cleanly); judged against the reference on `tall_chibi` only.
       and the flag is ignored there. Looked at across the whole roster at both
       builds against the previous renders: the caps read tidier, and at the
       realistic build the sleeve now comes out from under the cap closer to
-      the canon than the shelf did. `../valley_of_mist` consumes these
+      the canon than the shelf did. the consumer repo consumes these
       renders, so its references, cover and inserts need regenerating.
 - [x] **T3c-i.** The tan line trimming the tunic's V, which the reference does
       not draw: `Outfit.neckline_trim` (default `True`, the canon's), off on
@@ -369,7 +369,7 @@ one; not yet fixed unless ticked above.
       renders and the cover moved. It now uses `skeleton_for` with the hat taken
       off for that call alone (the hat's headroom shrinks the figure and every tile
       has to stand at one body scale); the realistic build's sheets are unchanged.
-      `../valley_of_mist`'s references, cover and all 37 chapter inserts were
+      the consumer repo's references, cover and all 37 chapter inserts were
       regenerated from it (`generate-refs`, `generate-covers`, `generate-inserts`);
       ch36, the appendix, had no insert before and now has one.
 

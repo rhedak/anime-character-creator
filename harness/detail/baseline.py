@@ -12,7 +12,7 @@ Three sheets, written to `out/detail/`:
   are printed: they disagree by design (a round chibi face against a slim
   one), so the comparison uses the face-width scale, the one that answers
   "same head, how is it drawn".
-- `smallest.png`: the smallest size `../valley_of_mist` shows a figure at, a
+- `smallest.png`: the smallest size the consumer repo shows a figure at, a
   four-column chapter-insert sheet (`sheet.sh --columns 4`, 2576 px wide)
   shown about 600 CSS px wide in its reader, so a figure about 0.23 of its
   render size. Drawn at 1x and 2x device pixels.

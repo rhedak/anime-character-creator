@@ -12,7 +12,7 @@ for free, since every character is built from the same shape code. No
 animation. Backgrounds/text overlays may be added later as more SVG
 layers.
 
-Fourteen named characters for *Valley of Mist* plus a few guests from
+Fourteen named characters plus a few guests from
 other projects (`presets.py`), each a first draft, all
 drawn as the tall chibi (big head, short body), front-facing: the one
 figure since 2026-09-26, when the realistic build and the old compressed
@@ -40,14 +40,10 @@ mitten stays the default, `hand_style`/`grip_style` are the options) and the
 chin off a reference whose body is not ours; `harness/hair_audit/gate.py`
 checks that first.
 
-Since 2026-08-10, `../valley_of_mist` (the novel this cast is written
-for) consumes this repo's output directly: `render.sh`/`cover.sh`/`sheet.sh`
-generate its character references, cover, and per-chapter inserts,
-replacing an AI image pipeline it used before (see that repo's
-`docs/character_designs.md`). This repo has no knowledge of that
-consumer; `sheet.py --members` is the one generic hook it added to make
-that possible, and it stays a plain preset-name list, not anything
-valley_of_mist-specific.
+Since 2026-08-10 a sibling project consumes this repo's output directly
+(`render.sh`/`cover.sh`/`sheet.sh`). This repo has no knowledge of that
+consumer; `sheet.py --members` is the one generic hook it added, and it stays a
+plain preset-name list. Details of the consumers are kept in `local/`.
 
 ## Hard constraints
 
@@ -70,14 +66,14 @@ valley_of_mist-specific.
   (`harness/bare/mannequin.py`), adults only, never a web tool option; no
   bare render of a preset whose age is not an adult's
   (the owner's decision, `docs/bare-body-plan.md`).
-- **Every preset is an adult, twenty-one or older.** This repository is
-  open source and `../anime_ai_companion` draws its characters from it,
-  so a preset stays an adult even where the story it was drawn from is
-  younger. The stories keep their own ages (the README states them).
-  Katherina and Linnea are twenty-one here. Satoko and Satoshi are
-  twenty-four, and Kyoko and Tomohiro, three years earlier, are
-  twenty-one. A book cover draws `for_cover`, the face that cover was
-  published with, so a rebuild leaves the sister repos' covers as they were.
+- **Every preset is an adult, twenty-one or older** (`ADULT_FACE_AGE`). This
+  repository is open source, and the age of majority differs by country;
+  twenty-one is the highest of the common ones. The tests, the web tool's age
+  slider and the bare-body harness enforce the floor. **Consumers must never
+  render a character under twenty-one nude.** No story ages, story names or
+  sister-repo details go in tracked files: they live in the untracked `local/`
+  folder (`local/cover_faces.json` holds the younger face a published cover
+  used, which `cover.py` reads when present).
 - **Flat color, hard-edged, and no shading plane across a garment.**
   Matches the target cel-shaded anime look. Don't add gradients/blur,
   they'd break the flat-vector aesthetic that's the whole point. A
@@ -154,7 +150,7 @@ wrong, and reformatting them would be editing the evidence.
   unasked. Every push to `main` is a release with a new version: the last commit on `dev` raises `version`
   in `pyproject.toml` (minor for a feature or a new look, patch for a fix; the project is 0.x), then the
   merged commit on `main` gets an annotated `vX.Y.Z` tag, pushed together with `main`. The companion app
-  (`anime_ai_companion`) pins these tags, so a tag must never be moved or deleted once pushed.
+  pins these tags, so a tag must never be moved or deleted once pushed.
 - The owner's app imports this checkout by path (`../anime-character-creator`), so leave that checkout on
   `main`. Work on `dev` in a second worktree (`git worktree add ../anime-character-creator-dev dev`, then
   `uv sync` in it) and point the companion at it with `CREATOR_SRC=<worktree>/src` to see a change run.

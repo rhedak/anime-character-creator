@@ -6,7 +6,7 @@ The record for `tall-chibi-plan.md`, newest first.
 
 - **Now:** the plan is done but R4c (heights in compositions), deferred at
   the owner's call. The owner signed off the knee and the slider ("all
-  values look good") and `../valley_of_mist` is regenerated. The owner picked distribution C and the range
+  values look good") and the consumer repo is regenerated. The owner picked distribution C and the range
   0.8 to 1.3, asked for the knee planned properly and shown on the bare
   render, and deferred heights in compositions (R4c). Autonomous, per the
   owner; R4's study is the next stop for input.
@@ -27,15 +27,15 @@ The record for `tall-chibi-plan.md`, newest first.
 | R2 retire the realistic outputs | done, not yet reviewed | `ref-out/` chibi, bases, catalogue unchanged; 606 passed |
 | R3 delete the dead code | done | snapshot 108/108 byte-identical; 484 passed |
 | R4 the height slider | R4a, R4b done, signed off; R4c dropped (the owner: heights do not matter for the story) | 1.0 byte-identical; 483 passed; browser checked |
-| R5 docs and the downstream | done | valley_of_mist regenerated |
+| R5 docs and the downstream | done | the consumer repo regenerated |
 
 ## Findings, newest first
 
 ### The two other covers: done (2026-09-26)
 
-`../time_slider_katherina` `362d98d`: `tools/generate_cover.py` rerun
+the consumer repo `362d98d`: `tools/generate_cover.py` rerun
 unchanged, `style-anchors/katherina.svg/png` refreshed from `ref-out/` (same
-format). `../short_stories` `19245e3`: `scripts/build_cover_dual.py` on
+format). the consumer repo `19245e3`: `scripts/build_cover_dual.py` on
 `skeleton_for` (it drew the compressed chibi) with its `build` field
 removed, and the layout retuned from a sweep (figure height 0.63 to 0.70,
 gap 0.34 to 0.32; 0.74 and up ran into the title, a closer gap overlapped
@@ -43,11 +43,11 @@ the pair); Linnea's `right_scale` 0.88 kept.
 
 #### What was found before starting
 
-The owner asked for `../time_slider_katherina`'s and
-`../short_stories/stories/everglow_crystals`'s covers updated. Found:
-`time_slider_katherina/tools/generate_cover.py` uses only `render_cover` and
+The owner asked for the consumer repo's and
+a file in the consumer repo's covers updated. Found:
+a file in the consumer repo uses only `render_cover` and
 needs a rerun, plus a re-render of `style-anchors/katherina.svg/png` (no
-metadata in the current one). `short_stories/scripts/build_cover_dual.py`
+metadata in the current one). a file in the consumer repo
 builds each figure's skeleton with `build_skeleton(heads=BUILDS[build])`,
 the retired compressed chibi without a body profile: it should use
 `skeleton_for(character)` and drop its `build` field, which changes Gero's
@@ -57,7 +57,7 @@ and Linnea's proportions on that cover to the tall chibi's, and its
 asked, no trailer. Also fixed on the way: `skeleton_for` was not exported
 from the package although its docstring imported it.
 
-### R5: `../valley_of_mist` regenerated (2026-09-26)
+### R5: the consumer repo regenerated (2026-09-26)
 
 At the owner's say-so: 52 images, 51 with pixels moved (Satoko 10, Reika
 64, the trousered figures and the inserts they stand in up to 29,328), and
@@ -122,7 +122,7 @@ in the renders from before; `--pixels`: trousers 6,200 to 7,500 pixels at 2x
 (Keiko), the cover, the sheets and both bases. Before and after:
 `out/tall_chibi/k1_cast.png` (on trousers the inseam now runs to a narrow
 pointed arch and the thighs converge a little; skirts and coats unchanged to
-the eye). 480 passed; `ref-out/` refreshed. `../valley_of_mist` now stale,
+the eye). 480 passed; `ref-out/` refreshed. the consumer repo now stale,
 regenerated at R5 on the owner's say-so.
 
 ### R4a K0: the knee study (2026-09-26)
@@ -295,7 +295,7 @@ it.
 | lerps evaluated at 0.1 (arm, leg, hat, hair, head shape, mouth, nose, eyes, stroke width at `43`, the moustache at `5335`, and about 25 more) | many | **freeze at their 0.1 value, never delete** | R3 |
 | `long_traced_real` | `character.py:2431`, `catalogue.py:534` | no preset uses it; tuned for the realistic build | owner's call, R3 |
 | docs | `CLAUDE.md:18,32,95,123`, `docs/api.md:152,218`, `README.md`, `STATUS.md` (a new dated section, history left) | reword | R5 |
-| `../valley_of_mist` | `generate_assets.py`, `trailer/figures.py` | no `heads`, `build` or `body` anywhere: nothing to change | R5 (pixel check only) |
+| the consumer repo | `generate_assets.py`, `trailer/figures.py` | no `heads`, `build` or `body` anywhere: nothing to change | R5 (pixel check only) |
 
 **Checked by hand, against the delegate:**
 

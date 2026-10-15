@@ -147,8 +147,8 @@
   },
   "face_age": {
     "field": "face_age",
-    "label": "Age (child, adult, old)",
-    "min": 0.0,
+    "label": "Age (adult to old)",
+    "min": 0.9,
     "max": 2.0
   },
   "colors": [

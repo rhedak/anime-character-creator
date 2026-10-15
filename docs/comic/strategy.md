@@ -7,7 +7,7 @@ and the orchestrator skill; this file holds what this campaign taught.
 
 - **Build only what a panel needs** (the owner, 2026-10-09). Name the panel before the capability.
   Speculative items are written down as deferred, not built.
-- **Functionality here, application in `../valley_of_mist`.** Page primitives, text, props, faces,
+- **Functionality here, application in the consumer repo.** Page primitives, text, props, faces,
   poses in this repo; the script, the strips, the places and the build in the book's repo.
 - **Defaults stay byte-identical.** Every new knob at its default leaves every existing render
   unchanged; the suite's `ref-out/` comparison is the control.

@@ -16,7 +16,7 @@ from anime_character_creator.character import render_character
 from anime_character_creator.presets import PRESETS
 from anime_character_creator.skeleton import build_skeleton
 
-REF = "/Users/henrik/git/time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = "ref-local/katherina_grok/katherina_grok.jpg"
 OUT = "out/trace_hat"
 
 p = PRESETS["katherina"]

@@ -23,7 +23,7 @@ wanted), and the realistic build, judged after its own fix pass.
 ## Owner's decision (2026-10-15)
 
 Every preset in this repository is twenty-one or older. The repository is
-open source and `../anime_ai_companion` draws its characters from these
+open source and the consumer repo draws its characters from these
 presets, so the figures are adults even where a story they were drawn from
 is younger. The stories keep their own ages. Katherina and Linnea are
 twenty-one here, and are separate from the story characters the 14 and 15
@@ -83,7 +83,7 @@ in the decision below belonged to.
 **Every preset wears a tunic and boots, so `ref-out/` must stay
 byte-identical at every step** (`./refresh-ref-out.sh --check`). A step that
 moves a clothed preset has leaked; it is a bug, not a refresh. The same holds
-for `../valley_of_mist`, which needs no regeneration from this plan.
+for the consumer repo, which needs no regeneration from this plan.
 
 ## The order
 

@@ -37,7 +37,7 @@ from scipy.spatial import ConvexHull
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / ".claude/skills/trace-reference"))
 import trace_lib as tl  # noqa: E402
 
-REF = Path(__file__).resolve().parents[3] / "time_slider_katherina/style-anchors/katherina_grok/katherina_grok.jpg"
+REF = Path(__file__).resolve().parents[2] / "ref-local/katherina_grok/katherina_grok.jpg"
 OX, OY, SC = 650.0, 481.0, 173.7
 OUT = Path("out/clothes")
 

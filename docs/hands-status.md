@@ -91,8 +91,8 @@ One line per checkpoint, dated, as the owner answers.
   105; the snapshot has grown since.
 - `harness/README.md` says numpy is not a dependency. It is: `pyproject.toml`
   lists `numpy>=1.26`. That README line is stale; not changed here.
-- `ref-local/` and `../valley_of_mist`, `../time_slider_katherina`,
-  `../short_stories` are absent from this machine.
+- `ref-local/` and the consumer repo, the consumer repo,
+  the consumer repo are absent from this machine.
 
 ## H1 and H2, 2026-10-08
 

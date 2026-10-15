@@ -68,8 +68,8 @@ Read, not guessed.
 
 - **Two figures in one document collide.** Every figure's `<defs>` use fixed ids.
   Satoshi and Chiyo together repeat `hair-front`, `eye-l` and `eye-r`. The trailer in
-  `../valley_of_mist` hit this and namespaces each figure's ids itself
-  (`valley_of_mist_tools/trailer/figures.py`, `_namespace`); its docstring says two
+  the consumer repo hit this and namespaces each figure's ids itself
+  (a file in the consumer repo, `_namespace`); its docstring says two
   figures in one document would clip each other's hair. `sheet.py` and `cover.py` embed
   figures the same way without it. Not yet looked for in a rendered sheet.
 - **There are no stable layer ids**, so the "layers keep stable ids" invariant below is
@@ -81,18 +81,18 @@ Read, not guessed.
   into the shape (the elbow at 35% of the way down). A hand at the hip needs the elbow
   as a parameter.
 - **The trailer already built generic pieces, in the wrong repo for them.** In
-  `valley_of_mist_tools/trailer/`: the per-figure id prefix, a flat one-tone silhouette
+  a file in the consumer repo: the per-figure id prefix, a flat one-tone silhouette
   of a figure, a figure placed by feet and height (`place`), text set as outlines with
   HarfBuzz from a bundled OFL font (`measure`, `wrap`, `block_svg`), and the cover's
   mist banks as a backdrop. None of it is specific to the trailer.
 
-## Where it lives: functionality here, application in `valley_of_mist`
+## Where it lives: functionality here, application in the consumer repo
 
-The owner's principle, 2026-10-09. **This repo holds what a comic can do; `../valley_of_mist`
+The owner's principle, 2026-10-09. **This repo holds what a comic can do; the consumer repo
 holds the comic that is made with it.** It is the same line the covers and the trailer
 already follow, and `CLAUDE.md` keeps this repo ignorant of its consumer.
 
-| here (`anime_character_creator`) | in `valley_of_mist` |
+| here (`anime_character_creator`) | in the consumer repo |
 |---|---|
 | character capabilities: props, poses, expressions, new presets, the id prefix, the silhouette | the script and design doc (`<book>/docs/comic_design.md`) |
 | page primitives: `Strip`, `Panel`, `Placement`, cropping | the strips as data (`<book>/comic/*.toml`), like `trailer/timeline.toml` |
@@ -151,7 +151,7 @@ what a bent elbow costs). (3) Build the smallest thing that draws the panel. (4)
 defaults stay byte-identical: `./refresh-ref-out.sh --check`, `ruff`, `pytest`.
 (5) Draw the panel and look at it at panel size. (6) Record what it cost.
 
-**The script comes first, and may be cut.** `../valley_of_mist/books/book1_hero_of_the_mist_tragedy/docs/comic_design.md`
+**The script comes first, and may be cut.** a file in the consumer repo
 is the source of the needs. The owner has said simplifying it is fine, so a capability that turns out
 dear is a reason to change a panel, and that is raised with the owner, not patched
 around.
@@ -167,7 +167,7 @@ Cheapest and most reused first; each names the beat A panel that forces it.
 | K1 | **Figure ids per figure** | A4, a second figure in one panel | `render_character` takes an id prefix; the default prefix is empty, so every existing render is unchanged. Copied from the trailer's `_namespace`. Then give each body part's `<g>` a stable id with the same prefix, which the invariant promises and an animation will need. Check a rendered sheet for the collision first (a control). |
 | K2 | **The strip and the panel** | A1, the first panel at all | `comic/layout.py`: a strip is a list of panels; a panel is a frame, a backdrop and placed figures (position, scale, flip, order), clipped to its frame so a figure can be cropped. Placement is the trailer's `place` and the cover's `_figure`, generalised. Export to SVG and PNG. |
 | K3 | **Text** | A1 (a caption), A3 (a bubble) | `comic/text.py`: the trailer's outline text (HarfBuzz, bundled font, `measure`, `wrap`) copied over, then what it lacks: caption boxes and speech bubbles with a tail that points at the speaker. Behind the optional `comic` extra. |
-| K4 | **Backdrops** | A1, A2 | Generic flat-shape helpers here (`comic/scenery.py`: window, wall, floor, the mist band from `cover.mist_band`); the places themselves (the inn's common room, the mist wall at the head of the valley) are drawn in `valley_of_mist` from those. No gradients. |
+| K4 | **Backdrops** | A1, A2 | Generic flat-shape helpers here (`comic/scenery.py`: window, wall, floor, the mist band from `cover.mist_band`); the places themselves (the inn's common room, the mist wall at the head of the valley) are drawn in the consumer repo from those. No gradients. |
 | K5 | **Props** | A4 (a tray), A5 (a mug) | A held-object mechanism: a prop is a shape and a grip point, and a hand takes it. The staff is the one prop that exists and is the model. Tray, mug, cloth. |
 | K6 | **New characters** | A5, A6 (the driver); beats B, D (Kenzo, Dieter) | Presets designed from the book's descriptions, and the owner looks at each before a page uses it. Older male faces may need `face_age` and wrinkle features that the roster does not have; a study first. |
 | K7 | **Acting range** | A6 (a startled face), A3 (a tired, tally-keeping look) | A study of what the face can already say, then the mouth shapes it cannot (open, a smile) and new `Expression` deltas. **C: every new expression on three presets at panel size and at full size.** |
@@ -201,7 +201,7 @@ K8 (poses) and K10 (effects) are renumbered below, and K8 is no longer next.
 | R3 | **Eyelines (done)** | `gaze`, a horizontal look direction on the face (the iris and its marks shift inside the aperture, clipped by it), default 0 so existing renders are unchanged. Characters that cannot turn can still look at each other. Close-ups also test the faces at a size they have not been seen at. Head tilt is not cheap (the hair mass is drawn before the neck and the head's layers are not adjacent), so it waits for R7. | no |
 | R4 | **Lettering checks (done)** | A check over a panel, in `comic/`: a bubble over a head or face, a bubble tangent to a border or to another bubble, crossing tails, a first bubble that is not top-left, more than three bubbles, more than four sentences, type below a size floor. Plus the font question below. | no |
 | R5 | **Marks (formerly K10), deferred** | Flat vector emanata: sweat drop, anger vein, gloom lines, blush marks, sparkle, speed lines; and beat C's gust of air and the scar's flare. Tone is the owner's: this is a tragedy, so likely sparing. | no |
-| R6 | **Depth and mood in the places** | Three zones (a large foreground that frames the shot, the figures, a soft low-contrast background), mood carried by palette (night cool and dark, tension desaturated), and the counter redrawn. The places in `valley_of_mist` get named camera presets. | no |
+| R6 | **Depth and mood in the places** | Three zones (a large foreground that frames the shot, the figures, a soft low-contrast background), mood carried by palette (night cool and dark, tension desaturated), and the counter redrawn. The places in the consumer repo get named camera presets. | no |
 | R7 | **Poses (formerly K8)** | Silhouette-changing poses first (a lean, arms crossed, hands on hips, pointing, hands up, a braced crouch), then sitting, then the head tilt. A pose earns its place by changing the silhouette at panel size, not by a different face. **Turning the characters** (three-quarter, profile) and the flipped-scar fix follow, as the owner said. | yes |
 | R8 | Beats B to D, and a second strip | With all of the above. | |
 

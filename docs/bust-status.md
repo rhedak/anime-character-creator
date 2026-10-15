@@ -6,7 +6,7 @@ lessons live in `bust-strategy.md`.
 
 ## RESUME (for a fresh context)
 
-- **Now:** the plan is done. `../valley_of_mist` is regenerated and waits for
+- **Now:** the plan is done. the consumer repo is regenerated and waits for
   the owner's commit call there. Left: the realistic build's own fix pass.
 - **Owner's calls 2026-09-24 (after 5a):** 5a signed off; the realistic build
   needs its own fix pass later, deferred; step 6 then 5b then 4; the fixed
@@ -35,7 +35,7 @@ lessons live in `bust-strategy.md`.
 | 6 traced cuts follow | done, signed off | zero case byte-identical; widening tested |
 | 9 fit and drape (added 2026-09-25) | 9a deferred; 9b done, signed off | zero case byte-identical; drape tested |
 | 7 cast values | done, applied at the owner's call | cast sheet looked at |
-| 8 integration | done; valley_of_mist regenerated, uncommitted there | catalogue test; bridge checked; browser checked |
+| 8 integration | done; the consumer repo regenerated, uncommitted there | catalogue test; bridge checked; browser checked |
 
 ## Step 1 preparation
 
@@ -99,12 +99,12 @@ expect the rendered sweep to look unchanged.
 
 ## Findings, newest first
 
-### 2026-09-25: `../valley_of_mist` regenerated (uncommitted there)
+### 2026-09-25: the consumer repo regenerated (uncommitted there)
 
 **Owner's call:** regenerate its character references, cover and chapter
 images.
 
-**Done** with that repo's own `valley_of_mist_tools.generate_assets`
+**Done** with that repo's own a file in the consumer repo
 (`generate-refs`, `generate-covers`, `generate-inserts`, Book 1; Book 2 has no
 images yet). 52 files rewritten; the 9 with no pixel changed (the cover,
 every male reference, ch26) were restored, leaving 43. Pixels changed: the
@@ -121,7 +121,7 @@ not rebuilt.
 
 ### 2026-09-25: step 3c, the bare body where it shows
 
-**Owner's call:** do 3c now, before `../valley_of_mist`, "for good measure".
+**Owner's call:** do 3c now, before the consumer repo, "for good measure".
 
 **Four changes, each pixel-checked on the clothed cast** (the acceptance: no
 garment may stop covering the body):
@@ -189,7 +189,7 @@ The armpit test now checks nothing above the sleeve's tip moves, since the
 slanted underside tilts with the bust by design. `ref-out/`: the nine women
 and the sheets; bases unchanged. Suite: 529 passed, 1 skipped.
 
-### 2026-09-25: step 8, integration (up to `../valley_of_mist`)
+### 2026-09-25: step 8, integration (up to the consumer repo)
 
 **Change.** `catalogue.BUST`, a plain `RangeField` from 0 to 1 beside the belt
 line, in `build_catalogue()` as `"bust"`; `ref-out/catalogue.json` refreshed
@@ -207,7 +207,7 @@ URL carries `"bust":0`; clicked back to the end, the bust and its lines return
 and the URL carries `"bust":1`. Sheets, cover and
 bases were refreshed at step 7 (the cover did not move).
 
-**Not done:** `../valley_of_mist`, which waits for the owner's explicit say-so.
+**Not done:** the consumer repo, which waits for the owner's explicit say-so.
 
 ### 2026-09-25: step 7, the cast's values applied
 
