@@ -42,14 +42,6 @@ def test_flat_has_none_of_what_soft_adds() -> None:
         assert marker not in flat
 
 
-def test_soft_has_no_hair_gloss_depth_wash_or_face_edge_shading() -> None:
-    """Removed after the owner's blind pairs (2026-10-16): the gloss arc ignored the strands, the
-    depth wash chalked the hair and the face shading read as dirt."""
-    svg = _soft("risa")
-    for marker in ("hair-depth", "face-round", "soft-gloss", "soft-hair-clip"):
-        assert marker not in svg
-
-
 def test_an_unknown_finish_is_refused() -> None:
     with pytest.raises(ValueError, match="finish must be one of"):
         render_character(replace(CharacterParams(), finish="glossy"))

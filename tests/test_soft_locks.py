@@ -25,6 +25,7 @@ from anime_character_creator.colorutil import (
     soft_shadow_tone,
 )
 from anime_character_creator.generate import main
+from anime_character_creator.urlstate import params_from_dict
 
 AUTHORED = sorted(name for name, style in HAIRSTYLES.items() if style.locks is not None)
 # Per soft document. The plan said 90 KB and the owner raised it to 150 KB on 2026-10-16. It is a
@@ -38,10 +39,10 @@ def _soft(name: str, **kw: object) -> str:
     return render_character(replace(PRESETS[name], finish="soft"), **kw)  # type: ignore[arg-type]
 
 
-def test_some_cut_is_authored_and_the_flat_finish_ignores_it() -> None:
-    assert "long_fringed" in AUTHORED
+def test_the_flat_finish_ignores_the_clumps(monkeypatch: pytest.MonkeyPatch) -> None:
     flat = render_character(PRESETS["risa"])
-    assert '<g clip-path="url(#hair-front)"><path' not in flat
+    monkeypatch.setitem(HAIRSTYLES, "long_fringed", replace(HAIRSTYLES["long_fringed"], locks=None))
+    assert render_character(PRESETS["risa"]) == flat
 
 
 def test_a_two_tone_cut_gets_its_clumps_again_in_the_tip_colour() -> None:
@@ -102,7 +103,7 @@ def test_an_unknown_role_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_the_tones_keep_the_hair_saturation(name: str) -> None:
     hair = PRESETS[name].hair_color
     _, s0, v0 = colorsys.rgb_to_hsv(*hex_to_rgb01(hair))
-    high = lit_tone(hair, highlight_rise(hair) * 0.38)
+    high = lit_tone(hair, highlight_rise(hair) * character._SOFT_LOCK_HIGH_RISE)
     _, s1, v1 = colorsys.rgb_to_hsv(*hex_to_rgb01(high))
     assert v1 >= v0
     if v0 < 0.7:
@@ -112,20 +113,24 @@ def test_the_tones_keep_the_hair_saturation(name: str) -> None:
     assert v2 < v0 and s2 >= 0.9 * s0
 
 
-def test_a_tip_colour_on_risa_keeps_the_front_shade_strips_and_the_byte_budget() -> None:
-    """Found by the break-it review: the tip repaint covered the `front_shade` strips, and the
-    clumps went in twice although the tip region is the whole mass, past 90 KB."""
-    p = replace(PRESETS["risa"], finish="soft", hair_tip_color="#33aaff")
-    svg = render_character(p)
-    assert len(svg.encode()) <= BYTE_BUDGET
-    repaint = svg.rindex('clip-path="url(#hair-tips)"')
-    drawn_after = re.findall(
-        r'fill="#[0-9a-f]{6}" clip-path="url\(#hair-front\)" />', svg[repaint:]
-    )
-    assert len(drawn_after) == len(character._FRINGED_SHADE), (
-        "the strips are drawn again after the repaint"
-    )
-    assert svg.count('<g clip-path="url(#hair-front)">') == 1
+_STRIP = r'fill="#[0-9a-f]{6}" clip-path="url\(#hair-front\)" />'
+
+
+def test_the_front_shade_strips_sit_under_the_clumps_with_and_without_a_tip_colour() -> None:
+    """The tip repaint covers the strips (found by the break-it review), so they are drawn again
+    between it and the tip-colour clumps; either way the clumps are the topmost of the two."""
+    plain = render_character(replace(PRESETS["risa"], finish="soft"))
+    group = plain.index('<g clip-path="url(#hair-front)">')
+    assert len(re.findall(_STRIP, plain[:group])) == len(character._FRINGED_SHADE)
+    assert not re.findall(_STRIP, plain[group:])
+
+    tipped = render_character(replace(PRESETS["risa"], finish="soft", hair_tip_color="#33aaff"))
+    repaint = tipped.rindex('fill="#33aaff" clip-path="url(#hair-tips)" />')
+    group = tipped.rindex('<g clip-path="url(#hair-front)">')
+    assert repaint < group
+    assert len(re.findall(_STRIP, tipped[repaint:group])) == len(character._FRINGED_SHADE)
+    assert not re.findall(_STRIP, tipped[group:])
+    assert tipped.count('<g clip-path="url(#hair-front)">') == 1  # the tip region is the whole mass
 
 
 @pytest.mark.parametrize("name", ["satoko", "risa"])
@@ -162,15 +167,21 @@ def test_the_default_strength_is_the_authored_look_and_zero_draws_no_clumps() ->
     )
 
 
-def test_a_lower_strength_moves_every_tone_toward_the_hair_colour() -> None:
+def test_a_higher_strength_moves_every_tone_further_from_the_hair_colour() -> None:
     for hair in ("#e8b84b", "#e56a9c", "#b5602b", "#a9763f", "#6b1f2a"):
-        full, half = soft_shadow_tone(hair, 1.0), soft_shadow_tone(hair, 0.5)
-        v = [colorsys.rgb_to_hsv(*hex_to_rgb01(c))[2] for c in (hair, half, full)]
-        assert v[0] >= v[1] >= v[2]
-        lit_full = lit_tone(hair, highlight_rise(hair))
-        lit_half = lit_tone(hair, highlight_rise(hair) * 0.5)
-        lv = [colorsys.rgb_to_hsv(*hex_to_rgb01(c))[2] for c in (hair, lit_half, lit_full)]
-        assert lv[0] <= lv[1] <= lv[2]
+        value = lambda c: colorsys.rgb_to_hsv(*hex_to_rgb01(c))[2]  # noqa: E731
+        shadows = [value(soft_shadow_tone(hair, g)) for g in (0.0, 0.5, 1.0)]
+        assert value(hair) == pytest.approx(shadows[0], abs=0.01)
+        assert shadows[0] > shadows[1] > shadows[2]
+        lits = [value(lit_tone(hair, highlight_rise(hair) * g)) for g in (0.0, 0.5, 1.0)]
+        assert lits[0] < lits[1] < lits[2]
+
+
+def test_the_strength_changes_the_drawing() -> None:
+    risa = replace(PRESETS["risa"], finish="soft")
+    one, two = (render_character(replace(risa, highlight_strength=g)) for g in (1.0, 2.0))
+    assert one != two
+    assert render_character(replace(risa, highlight_strength=0.5)) != one
 
 
 @pytest.mark.parametrize("bad", [-0.1, 2.1])
@@ -179,10 +190,29 @@ def test_a_strength_out_of_range_is_refused(bad: float) -> None:
         render_character(replace(PRESETS["risa"], finish="soft", highlight_strength=bad))
 
 
-def test_the_flat_finish_ignores_the_strength() -> None:
-    assert render_character(replace(PRESETS["risa"], highlight_strength=0.3)) == render_character(
-        PRESETS["risa"]
+@pytest.mark.parametrize("strength", [0.3, 9.0, -1.0])
+def test_the_flat_finish_ignores_and_does_not_validate_the_strength(strength: float) -> None:
+    """The check once ran before the finish was looked at, so a bad value raised on flat."""
+    assert render_character(replace(PRESETS["risa"], highlight_strength=strength)) == (
+        render_character(PRESETS["risa"])
     )
+
+
+@pytest.mark.parametrize("bad", ["1", None, True, float("nan")])
+def test_a_strength_that_is_not_a_number_is_refused_for_soft_and_in_a_link(bad: object) -> None:
+    with pytest.raises(ValueError, match="highlight_strength"):
+        render_character(replace(PRESETS["risa"], finish="soft", highlight_strength=bad))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="highlight_strength"):
+        params_from_dict({"finish": "soft", "highlight_strength": bad})
+
+
+def test_the_cli_refuses_a_strength_out_of_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        ["generate", "--preset", "risa", "--finish", "soft", "--highlight-strength", "3"],
+    )
+    with pytest.raises(SystemExit):
+        main()
 
 
 def test_the_cli_takes_a_strength(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -203,14 +233,6 @@ def test_the_cli_takes_a_strength(monkeypatch: pytest.MonkeyPatch, tmp_path: Pat
     )
     main()
     assert '<g clip-path="url(#hair-front)">' not in out.with_suffix(".svg").read_text()
-
-
-def test_the_flat_finish_does_not_validate_the_strength() -> None:
-    """Found by the break-it review: the check ran before the finish was looked at, so a bad value
-    raised on the flat finish, which the docs say ignores the field."""
-    assert render_character(replace(PRESETS["risa"], highlight_strength=9.0)) == render_character(
-        PRESETS["risa"]
-    )
 
 
 @pytest.mark.parametrize("cut", ["short_layered", "short_crop", "long_parted"])

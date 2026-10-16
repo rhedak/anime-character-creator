@@ -74,8 +74,9 @@ between the named ones.
 ## The soft finish
 
 `CharacterParams.finish` is `"flat"` (the default, the house style, and the
-only finish the presets, `ref-out/` and the web tool use) or `"soft"`, an
-opt-in experiment for a caller that wants the figure beside painted art:
+only finish the presets and `ref-out/` use; the web tool has no control for it,
+though a link can carry it) or `"soft"`, an opt-in experiment for a caller that
+wants the figure beside painted art:
 
 ```python
 svg = render_character(replace(PRESETS["risa"], finish="soft"))
@@ -85,14 +86,17 @@ svg = render_character(replace(PRESETS["risa"], finish="soft"))
 Soft adds gradients and tinted lines and moves no shape: the fringe's shadow
 on the forehead, a graded iris with light bouncing up into it, a soft blush,
 outlines in a dark tone of the hair or skin they bound, and every line 0.66 of
-its weight. A cut that describes its clumps (`Hairstyle.locks`, today
-`long_fringed` and `long_traced`) also gets shadow and lit tone clumps over the
-front hair, each lit one with a faint highlight, inside the hair's own
-silhouette. `highlight_strength` (0 to 2, default 1, soft only) scales those
-clumps: 0 draws none, 2 is the strength they were first judged at (a bit strong on pale
-hair), 1 the default the owner picked; `--highlight-strength` on the command line. Gradients only, no blur, so the
-cairosvg PNGs match what a browser draws. An unknown value raises
-`ValueError`. `FINISHES` lists the two.
+its weight. A cut that describes its clumps (`Hairstyle.locks`: `long_fringed`,
+`long_traced`, `long_parted`, `short_layered` and `short_crop`) also gets shadow
+and lit tone clumps over the hair, each lit one with a faint highlight, inside
+the hair's own silhouette. Gradients only, no blur, so the cairosvg PNGs match
+what a browser draws. An unknown finish raises `ValueError`. `FINISHES` lists
+the two.
+
+`highlight_strength` scales the clumps, 0 to 2, soft only (the flat finish
+ignores it and a bad value is refused only for soft). 0 draws none, 1 is the
+default, and 2 is the strength they were first drawn at, a bit strong on pale
+hair. `--highlight-strength` sets it on the command line.
 
 ## CharacterParams
 
@@ -121,6 +125,8 @@ angry_satoko = replace(SATOKO, face=replace(SATOKO.face, brow_tilt=0.8))
 | `chest` | `0.0` | Chest definition shown bare, 0 to 1: two soft arcs under the pectorals, drawn only with the tunic off and no bust. See `docs/bare-body-plan.md`, step 6. |
 | `waist_shift` | `0.0` | Moves the waist and hip lines together, in head radii: negative up, positive down. Ignored when a skeleton is passed. |
 | `shaded` | `True` | `False` drops every shadow shape, leaving flat silhouettes. |
+| `finish` | `"flat"` | `"flat"` or `"soft"`, see "The soft finish" above. |
+| `highlight_strength` | `1.0` | How strong the soft finish's hair clumps are, 0 to 2. Soft only. |
 | `right_arm_out`, `left_arm_out` | `0.0` | Swings that whole arm out from the body about the shoulder, in degrees, positive away from the body. `right_arm_out` is the character's own right arm, which is the viewer's left. Past 90 degrees the arm rises above the shoulder: about 115 to 140 reads as hands raised. The elbow does not bend. |
 | `hand_style` | `"mitten"` | The relaxed hand, one of `HAND_STYLES`: `mitten` (the default), `notched`, `stroked`, `curled`, `traced`. Every preset wears the mitten. See `docs/hands-status.md`. |
 | `grip_style` | `"mitten"` | The hand that holds a staff, one of `GRIP_STYLES`: `mitten` (the default) or `fist`, the canon's rounded fist kept level against the arm's swing. |
@@ -237,6 +243,7 @@ with each other, plus an optional fifth:
 | `openings` | Optional patches of skin drawn over the front hair, an ear between two locks. |
 | `front_shade` | Optional regions of the front hair painted in a second, darker tone. |
 | `underside` | Optional darker hair behind, where the mass shows. |
+| `locks` | Optional clumps for the soft finish: `(role, centre line, width, length)` tuples in head radii, `role` being `"shadow"` or `"lit"`. `mass_locks` also draws them on the mass behind the head, for a short cut whose crown is the mass. |
 | `tip_range` | What `hair_length` 0 and 1 mean for this cut, as depth below the head centre. `None` measures the body instead, chin to hip. |
 | `volume` | How much bigger the cut is at the chibi end than at the adult end, as `(chibi, adult)` multipliers on `tip_range`'s answer. `None` keeps one size against the head at every build. The canon gives a chibi about 1.3 times an adult's hair, so a cut traced off one reference wants this to reach the other. A cut that raises it needs `hair_margin` to have room for it, and the ceiling test says so. |
 

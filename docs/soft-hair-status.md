@@ -5,6 +5,9 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Gate 2 approved by the owner (2026-10-16): "you can tell at a glance which is which". Gate 3 code review
+  done and applied (Review 9 below); shipped presets render byte-identically before and after the refactor.
+
 - Chrome swap on the two biggest documents after the lighter paths (median sync cost with and without the
   clumps): Satoshi 1.9 to 2.9 ms, Katherina 2.8 to 3.1 ms, frame p95 within 0.5 ms (vsync-limited 17 ms median).
 
@@ -295,3 +298,20 @@ characters; deterministic; 1.7 to 6.4 ms per preset; 400 random characters on th
 | A grey, stain-like oval on Satoshi's pale tip hair, near the tip boundary. | minor | Not changed: it is the tip-coloured shadow clump crossing the boundary; the owner judges Satoshi in the Gate 2 pairs. |
 | `highlight_strength` 0.01 draws the whole clump set at near-invisible tones; a hat can hide every clump yet the markup is emitted. | minor | Left (size only). |
 | Intermittent `refresh-ref-out.sh --check` failure while the reviewers ran. | minor | Passes three times in a row with nothing else running: it was concurrent renders. |
+
+## Review 9: Gate 3 code review of the whole soft-finish change (a fresh agent, read-only)
+
+Verdict: sound and mergeable, no blockers. Clean: no em dashes or double hyphens in prose, no hardcoded
+pixel coordinates, neutral defaults, flat ignores the strength.
+
+| Finding | What we did |
+| --- | --- |
+| Nothing tested that `highlight_strength` changes the drawing; the tone test used `>=` and passed if it was ignored. | Strict inequalities, strength 2 against 1 and 0.5 against 1 compared. |
+| Draw order differed with and without a tip colour (the strips under the clumps, or on top). | One order: the strips sit under the clumps either way, drawn again between the tip repaint and the tip-colour clumps. Shipped presets are byte-identical; test added. |
+| Two scales both called strength, and a dead `min(strength, 1)`. | The internal one is `gain`, the cap is gone. |
+| A link can carry `finish` and `highlight_strength`; a non-numeric strength raised `TypeError` at render. | `validate_finish` runs in `render_character`, in `params_from_dict` (a `ValueError`) and in the CLI (an `ap.error`). Docs say the web tool has no control for it, though a link can carry it. |
+| `_soft(p)` was a validator that looked like a predicate; the strength check was repeated four times. | `_soft` is a predicate, `_soft_locks_on(p, style)` is the one check. |
+| Stale docs: five cuts have locks, the tables lacked `finish`, `highlight_strength`, `locks`, `mass_locks`. | Fixed in `docs/api.md`; `CLAUDE.md` paragraph rewrapped and made accurate. |
+| Duplication: the restretch closure twice; `Lock` defined far from use; `_lock_shape` built points before its early return. | `_restretch_locks`, `Lock` beside `Point`, early return at the top. |
+| Tests: a history test, two flat tests that were one, magic numbers. | History test deleted, flat tests parametrized, constants used. |
+| Left: the blush defs inside a loop (older soft code), the two Catmull passes, `_lock_line` against the mock-up's `catmull` (a record). | Not changed: working, covered, outside the clump work. |

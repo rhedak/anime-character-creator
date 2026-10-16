@@ -20,7 +20,14 @@ import argparse
 from dataclasses import replace
 from pathlib import Path
 
-from .character import BODY_TYPES, FINISHES, HAIRSTYLES, CharacterParams, render_character
+from .character import (
+    BODY_TYPES,
+    FINISHES,
+    HAIRSTYLES,
+    CharacterParams,
+    render_character,
+    validate_finish,
+)
 from .presets import EXPRESSIONS, PRESETS
 
 COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color")
@@ -158,6 +165,10 @@ def main() -> None:
         highlight_strength=strength,
         **colors,
     )
+    try:
+        validate_finish(params)
+    except ValueError as e:
+        ap.error(str(e))
     if outfit:
         params = replace(params, outfit=replace(params.outfit, **outfit))
     if face:

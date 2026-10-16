@@ -57,13 +57,13 @@ def highlight_rise(hex_color: str) -> float:
     return min(0.28, max(0.06, 0.30 * (1.0 - v) + 0.08))
 
 
-def soft_shadow_tone(hex_color: str, strength: float = 1.0) -> str:
+def soft_shadow_tone(hex_color: str, gain: float = 1.0) -> str:
     """A step darker than the colour, gentler than `shade` so a shadow clump is a tone and not a
     stripe, quieter still on pale or grey colours, and with yellow pulled a little toward orange
-    so its shadow is warm and not olive. `strength` scales the step: 1 as designed, 0 the colour."""
+    so its shadow is warm and not olive. `gain` scales the step: 1 as first designed, 0 the colour."""
     _, s0, v0 = colorsys.rgb_to_hsv(*hex_to_rgb01(hex_color))
     factor = 0.92 if s0 < 0.35 else 0.87 - 0.05 * v0
-    factor = max(0.3, 1.0 - (1.0 - factor) * strength)
+    factor = max(0.3, 1.0 - (1.0 - factor) * gain)
     h, s, v = colorsys.rgb_to_hsv(*hex_to_rgb01(shade(hex_color, factor, saturation_boost=1.3)))
     if 30.0 / 360.0 < h < 70.0 / 360.0:
         h -= 7.0 / 360.0
