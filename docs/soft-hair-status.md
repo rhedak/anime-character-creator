@@ -5,6 +5,11 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Highlight strength added (owner's request after Gate 1): `CharacterParams.highlight_strength`, 0 to 2,
+  default 1 (the authored look, byte-identical), 0 draws no clumps; it scales the lit steps, the highlights,
+  the shadow depth and the separation. Flat ignores it. Sheet for picking a default by eye on pale and
+  vivid hair: `out/soft/strength-61`.
+
 - Gate 1 passed 2026-10-16 (owner: "easy to tell at a glance"): clumps chosen on all eight authored
   presets (risa, krista, chiyo, keiko, linnea, kyoko, satoko, lindita), the control row read as no
   difference. Owner's note: the dark highlights are a bit strong on the lighter colours (blonde, pink,

@@ -89,6 +89,10 @@ def _soft(p: CharacterParams) -> bool:
     """Whether `p` asks for the soft finish."""
     if p.finish not in FINISHES:
         raise ValueError(f"finish must be one of {', '.join(FINISHES)}, not {p.finish!r}")
+    if not 0.0 <= p.highlight_strength <= 2.0:
+        raise ValueError(
+            f"highlight_strength must be between 0 and 2, not {p.highlight_strength!r}"
+        )
     return p.finish == "soft"
 
 
@@ -713,6 +717,11 @@ class CharacterParams:
     # beside painted art (a companion app's picture packs): see `_soft` and the
     # `_SOFT_*` constants. It adds gradients and tinted lines and changes no shape.
     finish: str = "flat"
+    # How strong the soft finish's hair clumps are, 1 as authored: the lit steps and the highlights
+    # rise by this much of their amount and the shadow steps sink by it, and 0 draws none. A caller
+    # putting a pale cut beside painted art can lower it (the owner found the shadows a bit strong
+    # on blonde, pink, orange and light brown). The flat finish ignores it.
+    highlight_strength: float = 1.0
 
 
 Point = tuple[float, float]
@@ -3566,7 +3575,7 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
     if (
         style.strands is not None
         or style.front_shade is not None
-        or (style.locks is not None and _soft(p))
+        or (style.locks is not None and _soft(p) and p.highlight_strength > 0)
     ):
         # Strands are open chains, so nothing stops one running out past the
         # silhouette; clipping them to the shape they divide means a strand can be
@@ -13215,12 +13224,14 @@ def _lock_shape(
     return f"M {left[0][0]:.2f} {left[0][1]:.2f} {_smooth_path(left)} {_smooth_path([left[-1], *right])} Z"
 
 
-def _soft_locks(sk: Skeleton, hair: str, locks: list[Lock], tip_clip: bool = False) -> str:
+def _soft_locks(
+    sk: Skeleton, hair: str, locks: list[Lock], strength: float, tip_clip: bool = False
+) -> str:
     """The soft finish's clumps for the front hair in the tones of `hair`, as one group clipped to
     the front piece, and with `tip_clip` to the tip-toned region too."""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    rise = highlight_rise(hair)
-    shadow = soft_shadow_tone(hair)
+    rise = highlight_rise(hair) * strength
+    shadow = soft_shadow_tone(hair, strength)
     mid, high = (
         lit_tone(hair, rise * _SOFT_LOCK_MID_RISE),
         lit_tone(hair, rise * _SOFT_LOCK_HIGH_RISE),
@@ -13239,7 +13250,7 @@ def _soft_locks(sk: Skeleton, hair: str, locks: list[Lock], tip_clip: bool = Fal
             sep_d = _lock_shape(
                 cx, cy, r, points, 0.035, t0=0.10, t1=min(length, 0.9), power=0.5, offset=-1.7
             )
-            add(sep_d, sep, _SOFT_LOCK_SEP_OPACITY)
+            add(sep_d, sep, round(_SOFT_LOCK_SEP_OPACITY * min(strength, 1.0), 3))
         elif role == "lit":
             add(_lock_shape(cx, cy, r, points, width, t1=length, power=0.55), mid)
             high_d = _lock_shape(
@@ -13278,7 +13289,7 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
                 f'clip-path="url(#{_HAIR_FRONT_CLIP_ID})" />'
             )
     parts.extend(strips)
-    if style.locks is not None and _soft(p):
+    if style.locks is not None and _soft(p) and p.highlight_strength > 0:
         # A two-tone cut gets its clumps twice: in the hair's tones, then, over a repaint of the tip
         # region, in the tip colour's. A cut whose tip region is the whole mass skips the first
         # pass, which the repaint would hide entirely. The repaint covers the `front_shade` strips
@@ -13286,12 +13297,12 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
         locks = style.locks(fall)
         tips = _hair_tip_tone(p)
         if tips is None or style.tip_edge(fall) != [style.mass(fall)]:
-            parts.append(_soft_locks(sk, p.hair_color, locks))
+            parts.append(_soft_locks(sk, p.hair_color, locks, p.highlight_strength))
         if tips is not None:
             parts.append(
                 f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />'
             )
-            parts.append(_soft_locks(sk, tips, locks, tip_clip=True))
+            parts.append(_soft_locks(sk, tips, locks, p.highlight_strength, tip_clip=True))
             parts.extend(strips)
     parts.append(
         f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '

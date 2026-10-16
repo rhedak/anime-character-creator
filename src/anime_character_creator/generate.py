@@ -111,6 +111,11 @@ def main() -> None:
         help="'soft' adds gradients and tinted lines (an opt-in experiment); the default is the flat house style",
     )
     ap.add_argument(
+        "--highlight-strength",
+        type=float,
+        help="how strong the soft finish's hair clumps are, 1 as authored, 0 none (soft finish only)",
+    )
+    ap.add_argument(
         "--expression",
         choices=sorted(EXPRESSIONS),
         help="a named mood laid over the character's resting face, leaving the rest of it alone",
@@ -143,7 +148,16 @@ def main() -> None:
     ):
         if getattr(args, extra) is not None:
             colors[extra] = getattr(args, extra)
-    params = replace(base, shaded=not args.flat, finish=args.finish or base.finish, **colors)
+    strength = (
+        base.highlight_strength if args.highlight_strength is None else args.highlight_strength
+    )
+    params = replace(
+        base,
+        shaded=not args.flat,
+        finish=args.finish or base.finish,
+        highlight_strength=strength,
+        **colors,
+    )
     if outfit:
         params = replace(params, outfit=replace(params.outfit, **outfit))
     if face:

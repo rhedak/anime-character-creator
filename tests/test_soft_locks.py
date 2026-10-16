@@ -7,16 +7,24 @@ from __future__ import annotations
 import colorsys
 import re
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
-from anime_character_creator import HAIRSTYLES, PRESETS, character, render_character
+from anime_character_creator import (
+    HAIRSTYLES,
+    PRESETS,
+    CharacterParams,
+    character,
+    render_character,
+)
 from anime_character_creator.colorutil import (
     hex_to_rgb01,
     highlight_rise,
     lit_tone,
     soft_shadow_tone,
 )
+from anime_character_creator.generate import main
 
 AUTHORED = sorted(name for name, style in HAIRSTYLES.items() if style.locks is not None)
 BYTE_BUDGET = 90_000  # per soft document, `docs/soft-hair-plan.md`
@@ -138,3 +146,56 @@ def test_a_yellow_green_colour_is_not_nudged_toward_green() -> None:
     h0 = colorsys.rgb_to_hsv(*hex_to_rgb01("#fff700"))[0]
     h1 = colorsys.rgb_to_hsv(*hex_to_rgb01(lit_tone("#fff700", 0.0)))[0]
     assert h1 == pytest.approx(h0, abs=0.002)
+
+
+def test_the_default_strength_is_the_authored_look_and_zero_draws_no_clumps() -> None:
+    assert CharacterParams().highlight_strength == 1.0
+    base = PRESETS["risa"]
+    soft = render_character(replace(base, finish="soft"))
+    assert soft == render_character(replace(base, finish="soft", highlight_strength=1.0))
+    assert '<g clip-path="url(#hair-front)">' not in render_character(
+        replace(base, finish="soft", highlight_strength=0.0)
+    )
+
+
+def test_a_lower_strength_moves_every_tone_toward_the_hair_colour() -> None:
+    for hair in ("#e8b84b", "#e56a9c", "#b5602b", "#a9763f", "#6b1f2a"):
+        full, half = soft_shadow_tone(hair, 1.0), soft_shadow_tone(hair, 0.5)
+        v = [colorsys.rgb_to_hsv(*hex_to_rgb01(c))[2] for c in (hair, half, full)]
+        assert v[0] >= v[1] >= v[2]
+        lit_full = lit_tone(hair, highlight_rise(hair))
+        lit_half = lit_tone(hair, highlight_rise(hair) * 0.5)
+        lv = [colorsys.rgb_to_hsv(*hex_to_rgb01(c))[2] for c in (hair, lit_half, lit_full)]
+        assert lv[0] <= lv[1] <= lv[2]
+
+
+@pytest.mark.parametrize("bad", [-0.1, 2.1])
+def test_a_strength_out_of_range_is_refused(bad: float) -> None:
+    with pytest.raises(ValueError, match="highlight_strength"):
+        render_character(replace(PRESETS["risa"], finish="soft", highlight_strength=bad))
+
+
+def test_the_flat_finish_ignores_the_strength() -> None:
+    assert render_character(replace(PRESETS["risa"], highlight_strength=0.3)) == render_character(
+        PRESETS["risa"]
+    )
+
+
+def test_the_cli_takes_a_strength(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    out = tmp_path / "char"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "generate",
+            "--out",
+            str(out),
+            "--preset",
+            "risa",
+            "--finish",
+            "soft",
+            "--highlight-strength",
+            "0",
+        ],
+    )
+    main()
+    assert '<g clip-path="url(#hair-front)">' not in out.with_suffix(".svg").read_text()
