@@ -97,6 +97,14 @@ plain preset-name list. Details of the consumers are kept in `local/`.
   covering a third of the torso and most of the apron, up to 15% of
   the figure's ink; the owner's call on 2026-08-06 was to drop them
   (task 56, see `docs/gap-analysis.md`).
+  **One opt-in exception, 2026-10-16:** `CharacterParams.finish = "soft"` adds
+  gradients and tinted lines (hair depth and gloss, a graded iris, a soft blush,
+  the fringe's shadow, a rounder face, lines in a dark tone of what they
+  bound, thinner strokes) for a caller that sets the figure beside painted art.
+  It is an experiment on `dev`, off by default, never used by the presets,
+  `ref-out/` or the web tool, and it moves no shape. `"flat"` stays the house
+  style and every rule above still holds for it. Gradients only, no blur:
+  cairosvg has none.
 
 ## Structure
 

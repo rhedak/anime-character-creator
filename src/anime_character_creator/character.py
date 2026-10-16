@@ -14,7 +14,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
 from xml.sax.saxutils import escape
 
-from .colorutil import hex_to_rgb01, rgb01_to_hex, shade
+from .colorutil import hex_to_rgb01, rgb01_to_hex, shade, tint
 from .skeleton import (
     BUILDS,
     BodyProfile,
@@ -57,6 +57,56 @@ def _stroke_w(sk: Skeleton) -> float:
 # 0.55 still read at the smallest size a chapter insert shows a figure.
 _OUTLINE_SCALE = 0.75
 _INTERIOR_SCALE = 0.55
+
+
+# The soft finish (`CharacterParams.finish`). Everything it draws is behind
+# `_soft(p)`, so "flat", the default, is byte for byte what it always was.
+# Gradients rather than blur: cairosvg, which writes the PNGs, has no gaussian
+# blur, and a gradient reads the same at this scale.
+FINISHES = ("flat", "soft")
+# Every stroke width in the document, by this. The line is drawn for the full
+# figure; a caller that crops to the head draws it about 1.5 times heavier on
+# screen, which is most of why the flat figure reads as clip art next to a
+# painted one (an experiment, 2026-10-16, judged by eye).
+_SOFT_LINE_SCALE = 0.66
+# Lines in the hair take a dark tone of the hair itself, not the black outline.
+_SOFT_HAIR_LINE_VALUE = 0.30
+# The face's outline in a dark tone of the skin, and the roundness shading that
+# darkens the face toward its edge (a gradient from transparent at `_SOFT_FACE_CLEAR`
+# of the head radius out to the tone at the edge; symmetric, so it is not the
+# one-sided cheek shadow `_head` records as a smudge).
+_SOFT_FACE_LINE_VALUE = 0.40
+_SOFT_FACE_CLEAR = 0.60
+_SOFT_FACE_EDGE_VALUE = 0.80
+_SOFT_FACE_EDGE_OPACITY = 0.40
+
+
+def _soft(p: CharacterParams) -> bool:
+    """Whether `p` asks for the soft finish."""
+    if p.finish not in FINISHES:
+        raise ValueError(f"finish must be one of {', '.join(FINISHES)}, not {p.finish!r}")
+    return p.finish == "soft"
+
+
+def _soft_lines(svg: str, tone: str) -> str:
+    """`svg` with the black outline colour swapped for `tone` on its strokes."""
+    return svg.replace(f'stroke="{OUTLINE}"', f'stroke="{tone}"')
+
+
+def _soft_stroke_widths(svg: str) -> str:
+    """Every line's `stroke-width` in `svg` scaled by `_SOFT_LINE_SCALE`: every
+    stroke but the hair gloss, which is paint and not a line."""
+
+    def scaled(tag: re.Match[str]) -> str:
+        if f'class="{_SOFT_GLOSS_CLASS}"' in tag.group(0):
+            return tag.group(0)
+        return re.sub(
+            r'stroke-width="([0-9.]+)"',
+            lambda m: f'stroke-width="{float(m.group(1)) * _SOFT_LINE_SCALE:.2f}"',
+            tag.group(0),
+        )
+
+    return re.sub(r"<[a-zA-Z][^>]*>", scaled, svg)
 
 
 def _outline_w(sw: float, k: float = 1.0) -> float:
@@ -656,6 +706,12 @@ class CharacterParams:
     right_arm_out: float = 0.0
     left_arm_out: float = 0.0
     shaded: bool = True
+    # How the figure is finished. "flat" is the house style and the only one the
+    # presets, `ref-out/` and the web tool use: flat colour, hard edges, one black
+    # line. "soft" is an opt-in experiment for a caller that wants the figure to sit
+    # beside painted art (a companion app's picture packs): see `_soft` and the
+    # `_SOFT_*` constants. It adds gradients and tinted lines and changes no shape.
+    finish: str = "flat"
 
 
 Point = tuple[float, float]
@@ -3425,6 +3481,13 @@ def _hair_tip_tone(p: CharacterParams) -> str | None:
     return p.hair_tip_color
 
 
+def _hair_lines(svg: str, p: CharacterParams) -> str:
+    """A hair layer, its lines in the hair's own dark tone when the finish is soft."""
+    if not _soft(p):
+        return svg
+    return _soft_lines(svg, shade(p.hair_color, _SOFT_HAIR_LINE_VALUE))
+
+
 def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
     style = HAIRSTYLES[p.hairstyle]
     fall = _hair_fall(sk, p)
@@ -3449,6 +3512,8 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
         region, _ = style.underside(fall)
         d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *region)
         clips.append(f'<clipPath id="{_HAIR_UNDERSIDE_CLIP_ID}"><path d="{d}" /></clipPath>')
+    if _soft(p):
+        clips.append(_soft_hair_depth_defs(sk, p))
     return f"<defs>{''.join(clips)}</defs>" if clips else ""
 
 
@@ -3471,6 +3536,8 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
     parts = _two_tone_hair(d, p)
     if style.underside is not None:
         parts.append(_hair_underside(sk, p, d, style.underside(fall)[1]))
+    if _soft(p):
+        parts.append(f'<path d="{d}" fill="url(#hair-depth)" />')
     parts.append(
         f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
@@ -12189,6 +12256,18 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     """
     fill, silhouette, under_chin = _head_paths(sk)
     parts = [f'<path d="{fill}" fill="{p.skin_tone}" />']
+    soft = _soft(p)
+    line = shade(p.skin_tone, _SOFT_FACE_LINE_VALUE) if soft else OUTLINE
+    if soft:
+        edge = shade(p.skin_tone, _SOFT_FACE_EDGE_VALUE)
+        parts.append(
+            f'<defs><radialGradient id="face-round" gradientUnits="userSpaceOnUse" '
+            f'cx="{sk.head_cx:.1f}" cy="{sk.head_cy:.1f}" r="{sk.head_r:.1f}">'
+            f'<stop offset="0" stop-color="{edge}" stop-opacity="0" />'
+            f'<stop offset="{_SOFT_FACE_CLEAR}" stop-color="{edge}" stop-opacity="0" />'
+            f'<stop offset="1" stop-color="{edge}" stop-opacity="{_SOFT_FACE_EDGE_OPACITY}" /></radialGradient></defs>'
+            f'<path d="{fill}" fill="url(#face-round)" />'
+        )
 
     # The outline is drawn in two weights rather than as one closed stroke. Around
     # the skull and cheeks it is silhouette, so it carries full weight. Under the
@@ -12201,11 +12280,11 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     # `harness/detail/chin_weight.py`).
     sw = _stroke_w(sk)
     parts.append(
-        f'<path d="{silhouette}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
+        f'<path d="{silhouette}" fill="none" stroke="{line}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linecap="round" />'
     )
     parts.append(
-        f'<path d="{under_chin}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.6):.2f}" '
+        f'<path d="{under_chin}" fill="none" stroke="{line}" stroke-width="{_outline_w(sw, 0.6):.2f}" '
         f'stroke-linecap="round" />'
     )
     return "".join(parts)
@@ -12390,6 +12469,7 @@ def _eye(
     sw: float,
     pupil_ratio: float = 0.40,
     reach: float | None = None,
+    soft: bool = False,
 ) -> str:
     d, _lid = _eye_shape(ex, ey, er, side, f)
     clip_id = f"eye-{'l' if side < 0 else 'r'}"
@@ -12448,8 +12528,21 @@ def _eye(
     parts.append(
         f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(eye_color, 0.45)}" />'
     )
+    iris_fill = eye_color
+    if soft:
+        # The colour darker at the top, where the lid shades it, and lighter at the
+        # bottom, where light comes through: the one gradient that makes a flat disc
+        # read as a glassy iris.
+        grad_id = f"iris-grad-{'l' if side < 0 else 'r'}"
+        parts.append(
+            f'<defs><linearGradient id="{grad_id}" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0" stop-color="{shade(eye_color, 0.62)}" />'
+            f'<stop offset="0.55" stop-color="{eye_color}" />'
+            f'<stop offset="1" stop-color="{tint(eye_color, 0.38)}" /></linearGradient></defs>'
+        )
+        iris_fill = f"url(#{grad_id})"
     parts.append(
-        f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{eye_color}" />'
+        f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{iris_fill}" />'
     )
     band_r = iris_r * 0.84
     cut = band_r * _IRIS_BAND_CUT
@@ -12462,6 +12555,18 @@ def _eye(
         f'<circle cx="{ix:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * pupil_ratio:.1f}" '
         f'fill="{shade(eye_color, 0.18)}" />'
     )
+    if soft:
+        # Light bouncing up into the lower iris, a glow that fades out before the
+        # iris's edge, kept inside the iris disc by its own clip.
+        side_id = "l" if side < 0 else "r"
+        clip, glow = f"iris-clip-{side_id}", f"iris-glow-{side_id}"
+        parts.append(
+            f'<defs><clipPath id="{clip}"><circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" /></clipPath>'
+            f'<radialGradient id="{glow}"><stop offset="0" stop-color="{tint(eye_color, 0.5)}" stop-opacity="0.60" />'
+            f'<stop offset="1" stop-color="{tint(eye_color, 0.5)}" stop-opacity="0" /></radialGradient></defs>'
+            f'<ellipse cx="{ix:.1f}" cy="{iris_cy + iris_r * 0.50:.1f}" rx="{iris_r * 0.62:.1f}" '
+            f'ry="{iris_r * 0.40:.1f}" fill="url(#{glow})" clip-path="url(#{clip})" />'
+        )
     if stretch:
         parts.append("</g>")
     up = f.iris_aspect
@@ -12841,7 +12946,9 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         if f.eyes_closed:
             parts.append(_eye_closed(ex, eye_y, eye_r, side, f, sw))
         else:
-            parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio, reach))
+            parts.append(
+                _eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio, reach, soft=_soft(p))
+            )
 
     if f.nose_dot:
         parts.append(_nose_dot(sk, sw))
@@ -12881,6 +12988,20 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             # blush tint the iris and the lower lid, so it starts below the lower lash line.
             by = max(cy + r * 0.44, eye_y + eye_r * f.eye_lower_lid + sw + blush_ry)
             color, opacity = _blush(p.skin_tone)
+            if _soft(p):
+                # The same pink, fading to nothing at the ellipse's edge, a little wider
+                # so the flush is as large as the hard one looked.
+                if side < 0:
+                    blush.append(
+                        f'<defs><radialGradient id="blush-grad"><stop offset="0" stop-color="{color}" '
+                        f'stop-opacity="{min(1.0, opacity * f.blush * 1.5):.2f}" />'
+                        f'<stop offset="1" stop-color="{color}" stop-opacity="0" /></radialGradient></defs>'
+                    )
+                blush.append(
+                    f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.21:.1f}" ry="{blush_ry * 1.35:.1f}" '
+                    f'fill="url(#blush-grad)" />'
+                )
+                continue
             blush.append(
                 f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{blush_ry:.1f}" '
                 f'fill="{color}" opacity="{opacity * f.blush:.2f}" />'
@@ -12909,6 +13030,71 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# The soft finish's hair gloss: an arc concentric with the skull, over the crown,
+# with a gap at the parting, built of a few strokes of falling opacity so its
+# edges fade (no blur, see `FINISHES`). Angles are degrees clockwise from the
+# right, so -90 is straight up.
+_SOFT_GLOSS_RADIUS = 1.02
+_SOFT_GLOSS_ARCS = ((-158.0, -101.0), (-79.0, -22.0))
+_SOFT_GLOSS_LAYERS = ((0.224, 0.05), (0.178, 0.06), (0.132, 0.07), (0.092, 0.09), (0.053, 0.12))
+# What marks a stroke that is not a line, so `_soft_stroke_widths` leaves it alone.
+_SOFT_GLOSS_CLASS = "soft-gloss"
+_SOFT_GLOSS_TINT = 0.55
+# Depth in the hair: lighter over the crown, darker toward the tips, one gradient
+# in the figure's own coordinates so the mass and the fringe share it.
+_SOFT_HAIR_DEPTH_TOP = (0.22, 0.38)
+_SOFT_HAIR_DEPTH_BOTTOM = (0.55, 0.55)
+
+
+def _soft_hair_depth_defs(sk: Skeleton, p: CharacterParams) -> str:
+    top, bottom = sk.head_cy - 1.5 * sk.head_r, sk.hem_y
+    light, dark = (
+        tint(p.hair_color, _SOFT_HAIR_DEPTH_TOP[0]),
+        shade(p.hair_color, _SOFT_HAIR_DEPTH_BOTTOM[0]),
+    )
+    return (
+        f'<linearGradient id="hair-depth" gradientUnits="userSpaceOnUse" x1="0" y1="{top:.1f}" x2="0" y2="{bottom:.1f}">'
+        f'<stop offset="0" stop-color="{light}" stop-opacity="{_SOFT_HAIR_DEPTH_TOP[1]}" />'
+        f'<stop offset="0.3" stop-color="{light}" stop-opacity="0" />'
+        f'<stop offset="0.55" stop-color="{dark}" stop-opacity="0" />'
+        f'<stop offset="1" stop-color="{dark}" stop-opacity="{_SOFT_HAIR_DEPTH_BOTTOM[1]}" /></linearGradient>'
+    )
+
+
+# How far the fringe's shadow falls on the forehead, in head radii, and how dark.
+_SOFT_BROW_SHADOW_DROP = 0.09
+_SOFT_BROW_SHADOW_VALUE = 0.80
+_SOFT_BROW_SHADOW_OPACITY = 0.55
+
+
+def _soft_hair_front(sk: Skeleton, p: CharacterParams, fill_d: str) -> tuple[str, str]:
+    """The soft finish's two additions to the front hair: the fringe's shadow on
+    the face (drawn under the hair) and the gloss on the hair (drawn over it)."""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    face_fill = _head_paths(sk)[0]
+    shadow = (
+        f'<defs><clipPath id="soft-face-clip"><path d="{face_fill}" /></clipPath>'
+        f'<clipPath id="soft-hair-clip"><path d="{fill_d}" /></clipPath></defs>'
+        f'<g clip-path="url(#soft-face-clip)"><path d="{fill_d}" '
+        f'fill="{shade(p.skin_tone, _SOFT_BROW_SHADOW_VALUE)}" opacity="{_SOFT_BROW_SHADOW_OPACITY}" '
+        f'transform="translate(0 {_SOFT_BROW_SHADOW_DROP * r:.2f})" /></g>'
+    )
+    rho = _SOFT_GLOSS_RADIUS * r
+    tone = tint(p.hair_color, _SOFT_GLOSS_TINT)
+    arcs = []
+    for a0, a1 in _SOFT_GLOSS_ARCS:
+        x0, y0 = cx + rho * math.cos(math.radians(a0)), cy + rho * math.sin(math.radians(a0))
+        x1, y1 = cx + rho * math.cos(math.radians(a1)), cy + rho * math.sin(math.radians(a1))
+        arcs.append(f"M {x0:.2f} {y0:.2f} A {rho:.2f} {rho:.2f} 0 0 1 {x1:.2f} {y1:.2f}")
+    gloss = "".join(
+        f'<path d="{d}" fill="none" stroke="{tone}" stroke-width="{width * r:.2f}" '
+        f'stroke-linecap="round" opacity="{opacity}" class="{_SOFT_GLOSS_CLASS}" clip-path="url(#soft-hair-clip)" />'
+        for width, opacity in _SOFT_GLOSS_LAYERS
+        for d in arcs
+    )
+    return shadow, gloss
+
+
 def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk)
@@ -12922,6 +13108,9 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     fill_d = _curve(cx, cy, r, start, line + back)
     line_d = _curve(cx, cy, r, start, line, close=False)
     parts = _two_tone_hair(fill_d, p)
+    if _soft(p):
+        shadow, gloss = _soft_hair_front(sk, p, fill_d)
+        parts = [shadow, *parts, f'<path d="{fill_d}" fill="url(#hair-depth)" />', gloss]
     if style.front_shade is not None:
         tone = shade(p.hair_color, value_factor=_HAIR_UNDERSIDE_VALUE)
         for region in style.front_shade(fall):
@@ -13620,7 +13809,7 @@ def render_character(
         # hairstyles: a cut owns the outline around the skull, and these two are
         # by definition outside it.
         _hair_tail(sk, p),
-        _hair_mass(sk, p),
+        _hair_lines(_hair_mass(sk, p), p),
         # The body under everything it wears, and under the neck, whose skin
         # covers its top edge; see the function.
         _without_raised_sleeves(_torso(sk, p), p),
@@ -13696,7 +13885,7 @@ def render_character(
         # arms here is what lets the hair mass cover their ends the way it
         # already covers the ear and the beard's sideburns.
         _goggles_strap(sk, p),
-        _hair_front(sk, p),
+        _hair_lines(_hair_front(sk, p), p),
         # Over the fringe, for a face that draws them there.
         _brows_over_hair(sk, p),
         # Last of the hair, unlike the tail, which is first. See `_hair_knot`: a
@@ -13725,6 +13914,8 @@ def render_character(
     ]
 
     body = "\n  ".join(layer for layer in layers if layer)
+    if _soft(p):
+        body = _soft_stroke_widths(body)
     if id_prefix:
         body = _namespace_ids(body, id_prefix)
     # Emitted only when asked for, rather than always drawn and sometimes

@@ -25,3 +25,10 @@ def shade(hex_color: str, value_factor: float = 0.80, saturation_boost: float = 
     s = min(1.0, s * saturation_boost)
     v = max(0.0, v * value_factor)
     return rgb01_to_hex(colorsys.hsv_to_rgb(h, s, v))
+
+
+def tint(hex_color: str, amount: float = 0.5) -> str:
+    """Lighter variant, `amount` of the way to white. For the soft finish's
+    highlights and glows, which `shade()` has no counterpart for."""
+    r, g, b = hex_to_rgb01(hex_color)
+    return rgb01_to_hex((r + (1 - r) * amount, g + (1 - g) * amount, b + (1 - b) * amount))

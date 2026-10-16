@@ -20,7 +20,7 @@ import argparse
 from dataclasses import replace
 from pathlib import Path
 
-from .character import BODY_TYPES, HAIRSTYLES, CharacterParams, render_character
+from .character import BODY_TYPES, FINISHES, HAIRSTYLES, CharacterParams, render_character
 from .presets import EXPRESSIONS, PRESETS
 
 COLOR_ARGS = ("skin_tone", "hair_color", "hair_tip_color", "eye_color")
@@ -106,6 +106,11 @@ def main() -> None:
     )
     ap.add_argument("--flat", action="store_true", help="disable cel-shading shadow shapes")
     ap.add_argument(
+        "--finish",
+        choices=FINISHES,
+        help="'soft' adds gradients and tinted lines (an opt-in experiment); the default is the flat house style",
+    )
+    ap.add_argument(
         "--expression",
         choices=sorted(EXPRESSIONS),
         help="a named mood laid over the character's resting face, leaving the rest of it alone",
@@ -138,7 +143,7 @@ def main() -> None:
     ):
         if getattr(args, extra) is not None:
             colors[extra] = getattr(args, extra)
-    params = replace(base, shaded=not args.flat, **colors)
+    params = replace(base, shaded=not args.flat, finish=args.finish or base.finish, **colors)
     if outfit:
         params = replace(params, outfit=replace(params.outfit, **outfit))
     if face:
