@@ -102,11 +102,14 @@ plain preset-name list. Details of the consumers are kept in `local/`.
   shadow, lines in a dark tone of what they bound, thinner strokes) and, on the
   cuts that describe them (`Hairstyle.locks`), tone clumps laid inside the
   hair's own silhouette: shadow and lit steps with one faint highlight each,
-  for a caller that sets the figure beside painted art. It is an experiment on
-  `dev`, off by default, never used by the presets or `ref-out/`, offered in the web
-  tool as a "Finish" choice that starts on flat, and it moves no shape. `"flat"` stays the house style and
-  every rule above still holds for it. Gradients only, no blur: cairosvg has
-  none.
+  scaled by `highlight_strength`. It is for a caller that sets the figure
+  beside painted art. It is off by default, never used by the presets, the
+  covers, the sheets or `ref-out/` (`tests/test_consumers_stay_flat.py` pins
+  that), offered in the web tool as a "Finish" choice that starts on flat, and
+  it moves no shape. `"flat"` stays the house style and every rule above still
+  holds for it. Gradients only, no blur: cairosvg has none. Anything further in
+  the soft finish needs the owner's say, judged by blind pairs, and its record
+  is `docs/soft-hair-plan.md` and `docs/soft-hair-status.md`.
 
 ## Structure
 

@@ -59,6 +59,12 @@ are Krista and Chiyo, whose references lean hardest on a head accessory.
 | --- | --- | --- | --- |
 | <img src="ref-out/on-white/linnea.png" width="140" alt="Linnea"> | <img src="ref-out/on-white/dritan.png" width="140" alt="Dritan"> | <img src="ref-out/on-white/lindita.png" width="140" alt="Lindita"> | <img src="ref-out/on-white/risa.png" width="140" alt="Risa"> |
 
+There are two finishes. **Flat** is the house style, the default, and what every preset, cover and
+sheet uses: flat colour, hard edges, one black line. **Soft** is an opt-in for a figure that has to
+sit beside painted art: gradients in the iris and blush, tinted lines, and tone clumps in the hair on
+five of the cuts. `highlight_strength` (0 to 2, default 1) sets how strong those are. See "The soft
+finish" in `docs/api.md`; the web tool has a Finish choice and a strength slider.
+
 All of them live in `ref-out/` as both `.png` and `.svg`. **They are
 transparent**, so a render drops onto a scene as it is.
 
@@ -210,6 +216,14 @@ Expression flags, each neutral at its default: eye shape
 `resolute`) over the character's resting face, changing only what the
 face is *doing* and leaving what it *is* alone, so the same mood works on
 any character. Individual knobs still win over it.
+
+`--finish soft` draws the soft finish (gradients, tinted lines and tone clumps in the
+hair) instead of the flat house style, and `--highlight-strength` (0 to 2, default 1,
+soft only) sets how strong the hair clumps are:
+
+```bash
+./render.sh --out out/risa-soft --preset risa --finish soft --highlight-strength 0.7
+```
 
 Add `--flat` to disable the cel-shading shadow shapes and see the flat
 silhouette only. Output is written as both `.svg` (inspect/edit
