@@ -286,3 +286,31 @@ record why.
 **Alongside:** land the r3 repairs (no gloss arc, no depth wash, no jaw shading) in the package first,
 flat output byte-identical. `CLAUDE.md` wording is approved by the owner only if a variant wins and goes
 into the package.
+
+### Round 2 revisions after the method review (see `docs/soft-hair-status.md`, Review 4)
+
+- **Diagnosis, measured:** hue holds (350 to 352) and saturation halves (0.71 base to about 0.35 in a
+  composited highlight). A second plausible cause is paired thin lit and near-black lines reading as
+  scratches, and a third is that the owner simply dislikes any highlight on dark red. All three are tested.
+- **Fix the mock-up first.** `lens()` chose the lit side per point, which flips mid-guide on four right
+  side guides (b5, b6, o3, o4), so the lit edge and the separation jumped sideways. The side is now chosen
+  once per guide. Widths, spacing and lengths get deterministic jitter so the clumps are not a comb.
+- **New candidates before any new generator:** SS (value steps only, no lit tone, soft separations),
+  SH (one small sheen of saturated lighter hair colour on the crown, nothing else), S2 (three solid tone
+  steps, one highlight per lit clump, no paired lines), LS2 (S2 plus a ring highlight), P2 (LS2 with the
+  pointed fringe).
+- **Blinding:** the owner has seen the key, so Gate 0b adds a hidden duplicate of r3 (the judge's own
+  noise) and uses new letters and a different crop. Pairs are counterbalanced and run in two sessions.
+- **Win rule, fixed before looking:** a candidate wins only if it is chosen over r3 in at least 5 of 6
+  judgments (three hair colours, two sessions) and is not called broken on any of them. "No difference"
+  is a valid answer and counts against the candidate. A candidate that beats r3 but loses to today's soft
+  does not ship, and we decide with the owner. If none wins, stop as in the kill rule.
+- **Palette:** red plus at least a dark, a light and a grey hair, shown to the owner. Light and grey hair
+  get shadow-led tones (value cannot rise on V 0.89, and grey has no hue to keep).
+- **Guard:** measured on composited rendered pixels, saturation as a ratio to the clump's base with an
+  absolute floor for grey, hue compared with wraparound and skipped for near-grey. It prevents a
+  failure, it is never tuned to look good on Risa.
+- **Size:** the mock-up emits 14-point polylines (S render 127 KB against 63 KB for r3). Production must
+  emit curves to stay inside 90 KB; this is checked at Phase 1, not here.
+- **Landing r3:** held until the pairs include r3 against today's soft, since r3 won on one judge in a
+  ten-way ranking. The jaw shading removal stays easy to reverse.

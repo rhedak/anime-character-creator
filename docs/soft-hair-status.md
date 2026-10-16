@@ -83,3 +83,17 @@ Reading against the Gate 0 rule (does L, S or LS read as clearly more like hair 
 - Only LS reached the top three, beside today's soft and r3. It did not beat them, so the rule says stop on structure and light.
 - S, P, D and L were named as broken. In the face crops the S highlights are a pale, desaturated pink grey wash over saturated red, which is a colour and placement defect, not proof that structure fails. This is an inference from one judge and one hair colour.
 - r3 (gloss arc, depth wash and jaw shading all removed) is in the top three, and r2 (jaw shading still on) is in the bottom two. One judge, not a pair test, but it points at the jaw shading.
+
+## Review 4: method review of the round 2 plan (a fresh agent, ran code and looked at the images)
+
+| Finding | What we did |
+| --- | --- |
+| Diagnosis holds numerically: hue 350 to 352, saturation 0.71 to about 0.35 in composited highlights. | Confirmed by my own run as well. |
+| Mock-up bug: `lens()` picks the lit side per point, and four right side guides flip it mid-guide, so the lit edge and the separation jump sideways. | Verified (b5, b6, o4, o3 flip once). Side chosen once per guide in round 2. |
+| S and LS read as equal width stripes radiating from the crown; each highlight is paired with a near-black line, which may be the real "wishy". | Jitter plus no paired lines in S2. Separations softened. |
+| Missing cheaper candidates: value steps without a lit tone; a single sheen. | Added SS and SH. |
+| Gate 0b is not blind and the kill rule has no number. | Hidden duplicate of r3, new letters and crop; win rule written down in advance (plan section 11). |
+| The guard was partly vacuous (hue passes on the failing S; hue meaningless for grey hair; constants are not the composited result). | Guard on rendered pixels, ratio with floor, wraparound. |
+| Palette check was Risa only, no judge, and "raise value" fails at the extremes. | Owner sees red, dark, light and grey. Shadow-led for light and grey. |
+| Size: the mock-up S is 127 KB (budget 90). | Production emits curves; checked in Phase 1. |
+| Landing r3 first rests on one ranking. | Held until r3 is paired with today's soft. |
