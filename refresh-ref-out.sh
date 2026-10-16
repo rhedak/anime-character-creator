@@ -39,8 +39,14 @@
 # realistic build and the compressed chibi were retired and the tall chibi
 # became the one figure (`docs/tall-chibi-plan.md`, R2, 2026-09-26).
 #
-# Characters come from `presets.PRESETS`, read out of the installed package, so adding a character here is adding it there. Nothing about
-# the names below is baked in.
+# Who draws what: the characters (SVG) come from the TypeScript package, `ts/bin/render.ts`,
+# which is the source of truth for the drawing. Each PNG, and the on-white PNG, is then made
+# from that SVG by cairosvg in Python (`harness/svg2png.py`, through the project's .venv), so
+# the PNGs are what the Python CLI made from the same SVG, pixel for pixel. The three pages
+# (cover, sheet, sheet_satoshi) stay on the frozen Python, through `cover.sh` and `sheet.sh`.
+#
+# Characters come from `PRESETS` in `ts/src/presets.ts`, read through `render.ts --list-presets`, so adding a character here is adding it
+# there. Nothing about the names below is baked in.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -49,6 +55,16 @@ if [ ! -x "$py" ]; then
     echo "no .venv here; create one with:  uv sync" >&2
     exit 1
 fi
+if ! command -v node >/dev/null 2>&1; then
+    echo "no node on PATH; the drawing is TypeScript and needs Node 22.18 or newer" >&2
+    exit 1
+fi
+render_ts="$root/ts/bin/render.ts"
+
+# cairosvg finds libcairo through dlopen, which on macOS does not look in Homebrew's prefix,
+# so the fallback path is set before any Python starts, as render.sh does. Both prefixes,
+# Apple Silicon and Intel.
+export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-}:/opt/homebrew/lib:/usr/local/lib"
 
 check_only=false
 pixels_only=false
@@ -96,18 +112,10 @@ pages="cover sheet sheet_satoshi"
 export ACC_LOCAL_DIR=/nonexistent
 npages=$(set -- $pages; echo $#)
 
-# Two command substitutions rather than one call read line by line: bash
-# implements here-strings and here-documents by writing a temp file, so anything
-# using `<<<` breaks wherever TMPDIR is not writable. Command substitution uses a
-# pipe and needs nothing on disk.
-listing() {
-    MOD="anime_character_creator.$1" NAME="$2" "$py" -c '
-import importlib, os
-mod = importlib.import_module(os.environ["MOD"])
-print(" ".join(sorted(getattr(mod, os.environ["NAME"]))))
-' 2>/dev/null || return 1
-}
-presets=$(listing presets PRESETS) || { echo "could not read PRESETS; is the package installed?  uv sync" >&2; exit 1; }
+# A command substitution rather than a here-string: bash implements here-strings and
+# here-documents by writing a temp file, so anything using `<<<` breaks wherever TMPDIR is
+# not writable. Command substitution uses a pipe and needs nothing on disk.
+presets=$(node "$render_ts" --list-presets 2>/dev/null) || { echo "could not read PRESETS from ts/bin/render.ts; is Node 22.18 or newer installed?" >&2; exit 1; }
 # One build since the realistic build was retired (`docs/tall-chibi-plan.md`).
 builds=chibi
 
@@ -119,11 +127,10 @@ for build in $builds; do
 done
 
 # Render into a staging directory and only copy over ref-out/ once every file has
-# come out. The CLI's PNG export is best effort: it warns and carries on if
-# cairo is missing, so rendering straight into ref-out/ could refresh the SVGs and
-# leave the PNGs the README actually displays untouched and stale. Staging also
-# makes the change report unambiguous, since an unchanged file and a file that was
-# never written are otherwise the same bytes.
+# come out. The PNG export needs cairo, which may be missing, so rendering straight
+# into ref-out/ could refresh the SVGs and leave the PNGs the README actually displays
+# untouched and stale. Staging also makes the change report unambiguous, since an
+# unchanged file and a file that was never written are otherwise the same bytes.
 #
 # Under out/ rather than the system temp directory, so the script needs nothing
 # outside the project and does not care how TMPDIR is set or sandboxed. out/ is
@@ -166,6 +173,9 @@ done
 characters=${#rel_of[@]}
 count=$((characters + npages))
 
+# The SVGs first, one node process each; the PNGs afterwards from those files, in one
+# Python process, listed in `png_args` as source and destination pairs.
+png_args=()
 i=0
 while [ "$i" -lt "$characters" ]; do
     rel=${rel_of[$i]}
@@ -173,30 +183,42 @@ while [ "$i" -lt "$characters" ]; do
     # is compared byte for byte (test_ref_out_matches_the_code calls
     # render_character() directly, whose own default is off), and the block
     # would also touch every committed file at once on a wording change to
-    # attribution.py's TOOL_URL or LICENSE_STATEMENT, the exact churn this
+    # attribution's TOOL_URL or LICENSE_STATEMENT, the exact churn this
     # comparison exists to avoid.
-    "$root/render.sh" --out "$stage/$rel" --preset "${preset_of[$i]}" \
+    node "$render_ts" --out "$stage/$rel" --preset "${preset_of[$i]}" \
         --no-metadata >/dev/null
-    for ext in svg png; do
-        if [ ! -s "$stage/$rel.$ext" ]; then
-            echo "render produced no $rel.$ext, leaving ref-out/ alone" >&2
-            if [ "$ext" = png ]; then
-                echo "  PNG export needs the system cairo library: brew install cairo" >&2
-            fi
-            exit 1
-        fi
-    done
+    if [ ! -s "$stage/$rel.svg" ]; then
+        echo "render produced no $rel.svg, leaving ref-out/ alone" >&2
+        exit 1
+    fi
+    png_args+=("$stage/$rel.svg" "$stage/$rel.png")
     if displayed "${build_of[$i]}"; then
         # The README's copy. Rendered rather than composited afterwards, so it
         # goes through exactly the same path as the art and cannot drift from it.
-        "$root/render.sh" --out "$stage/on-white/$rel" --preset "${preset_of[$i]}" \
+        node "$render_ts" --out "$stage/on-white/$rel" --preset "${preset_of[$i]}" \
             --background white --no-metadata >/dev/null
-        if [ ! -s "$stage/on-white/$rel.png" ]; then
-            echo "render produced no on-white/$rel.png, leaving ref-out/ alone" >&2
+        if [ ! -s "$stage/on-white/$rel.svg" ]; then
+            echo "render produced no on-white/$rel.svg, leaving ref-out/ alone" >&2
             exit 1
         fi
+        png_args+=("$stage/on-white/$rel.svg" "$stage/on-white/$rel.png")
     fi
     i=$((i + 1))
+done
+"$py" "$root/harness/svg2png.py" "${png_args[@]}" || {
+    echo "PNG export failed, leaving ref-out/ alone" >&2
+    echo "  PNG export needs the system cairo library: brew install cairo" >&2
+    exit 1
+}
+for png in "${png_args[@]}"; do
+    case "$png" in
+        *.png)
+            if [ ! -s "$png" ]; then
+                echo "render produced no ${png#"$stage"/}, leaving ref-out/ alone" >&2
+                exit 1
+            fi
+            ;;
+    esac
 done
 
 # The pages. Neither gets an on-white copy, because each paints its own opaque

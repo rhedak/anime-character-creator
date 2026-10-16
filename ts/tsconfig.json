@@ -18,5 +18,5 @@
     "outDir": "out/js",
     "rootDir": "."
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "web-check/**/*.ts", "bench/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "web-check/**/*.ts", "bench/**/*.ts", "bin/**/*.ts"]
 }

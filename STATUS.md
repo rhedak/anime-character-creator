@@ -1780,6 +1780,72 @@ Known and left, accepted: Satoshi's gold shadows read a little heavy; near-black
 near-invisible clumps (white is shadow-led by design); eight more cuts have no clumps yet and draw as
 the plain soft finish.
 
+## The TypeScript port, 2026-10-16
+
+The drawing code is now TypeScript (`ts/src/`, version 0.4.0 in `ts/package.json`) and is the source of truth.
+The Python package in `src/` is frozen at the tag `python-final` and is only the reference the port was proved
+against; it stays in the tree for one more release. Nothing about the look changed: the point of the port is the
+runtime. The web tool used to download Pyodide and the Python files to draw in the browser, and a Windows or
+Android release would have had to bundle Python. The record is `docs/ts-port-plan.md` (the plan and its
+decisions D1 to D12), `docs/ts-port-spike.md` (the first measurements), `docs/ts-port-coverage.md`,
+`docs/ts-port-test-audit.md` and `docs/ts-port-errors*.md`; `ts/README.md` is the map of the package.
+
+**What was proved, against the frozen Python (every figure is from a command run on 2026-10-16):**
+
+| Claim | Result |
+| --- | --- |
+| The whole SVG, on the corpus | 7,662 documents byte-equal (444,396 stages), built from the dataclass fields, not the catalogue |
+| The committed art | the 20 presets and 2 neutral bases equal `ref-out/`; `catalogue.json` equal |
+| Errors | 333 of 333 inputs on which Python raises raise the same exception class |
+| The functions | 329 functions replayed from 52 million recorded calls |
+| Does the corpus reach the code? | 99.66 percent of `character.py`'s statements |
+| Other Python versions | the manifest is equal on CPython 3.11, 3.12 and 3.13 |
+| Would a mistake be noticed? | a 150-mutation check: 138 caught by the corpus alone, the survivors re-tested against the full suite |
+| A real browser | headless Chrome 155 draws 1,916 whole characters byte-equal |
+| Size | about 570 KB of compiled JavaScript, against about 5.5 MB of Pyodide plus about 800 KB of Python before |
+| Speed | not the reason: CPython renders a character in a median 0.94 ms flat and 2.29 ms soft, V8 does the one non-trivial layer measured 2.2 times faster |
+
+The kernel (`ts/src/pynum.ts`) reproduces what Python does and JavaScript does not: float formatting
+(`f"{x:.1f}"`, half to even on the exact value), `round`, `sum`'s compensation, CPython's own `hypot`, `%`, slices,
+`json.dumps`, `colorsys`, `re.sub` templates. Against Python's own answers it showed zero differences on 1.56
+million real formatting calls and 240,000 adversarial ones, and the same on `round`, `sum`, `hypot` and the rest
+(`docs/ts-port-spike.md`, section 2). The maths library is the one thing not reproduced bit for bit: V8's `sin`,
+`cos`, `atan2` and fractional `pow` differ from Apple's libm in the last bit on 0.2 to 24 percent of distinct
+inputs, and in 13.6 million printed numbers (400,000 random head outlines) not one digit changed. That is
+measured on V8; Safari and Firefox use other libms and are not promised.
+
+**What moved in the repository:**
+
+- `ts/bin/render.ts` is the SVG command line (`--preset`, `--out`, `--background`, `--no-metadata`, `--finish`,
+  `--highlight-strength`, `--id-prefix`, `--list`); its SVG equals the Python CLI's byte for byte, the metadata
+  block included, which is on by default as before. `ts/bin/catalogue.ts` writes the catalogue.
+- `refresh-ref-out.sh`, `refresh-bases.sh` and `refresh-catalogue.sh` render through TypeScript. The PNGs, and
+  the on-white PNGs, are made from the SVG by cairosvg (`harness/svg2png.py`), and `--check` and `--pixels`
+  pass: all 23 SVGs unchanged, all 43 PNGs equal in pixels. The cover and the two sheets still come from the frozen
+  Python (`cover.sh`, `sheet.sh`).
+- The web tool runs the TypeScript compiled by `tsc` (`web-stage.mjs`; `web-stage.sh` is a wrapper). No Pyodide.
+- CI: `pages.yml` runs Node 22, the typecheck, the TypeScript tests, then the frozen Python's tests and the three
+  refresh checks, then stages the site with `node web-stage.mjs`. `ts-check.yml` runs only the typecheck and the
+  TypeScript tests on pull requests and on pushes to every branch but main, and deploys nothing.
+- Tests: over 800 in `ts/test/` (830 passed on 2026-10-16, with the `.venv` present so the comparisons with the
+  Python CLI run), `tsc` strict clean. The frozen Python's own suite still passes (1,051 passed, 1 skipped).
+
+**What stays Python, on purpose (the owner's decisions D5 and D6):** `generate.py` (the full command line, with
+every colour, garment and face flag, `--expression`, `--flat` and the PNG), `cover.py`, `sheet.py` and the `comic/`
+package, which is deprecated and not maintained. The tracing tools (`harness/hair_parted/emit.py`, the
+`trace-reference` skill's `trace_lib.py`) write Python source into `character.py` (plan, section 8); a new trace
+needs a TypeScript emitter, which is not written. The sibling project that consumes `render.sh`, `cover.sh` and
+`sheet.sh` keeps running on the frozen package.
+
+**Not done, plainly:** the Python-side tests of internals were not ported one for one (the audit lists each one's
+fate); the companion app (`anime_ai_companion`) still runs the Python and moves to the TypeScript in its own
+change; Safari and Firefox have not run the check page; the Linux CI history of the `ref-out/` comparison and
+whether a non-main branch may deploy to Pages were not read.
+
+**After a deliberate change to the look** the oracle (the corpus manifest, the recorded calls, `ref-out/`) describes
+the frozen Python and goes red where the change moved a byte. That is intended: see `ts/README.md`, "The oracle",
+and the rule in `CLAUDE.md`.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.
@@ -1814,7 +1880,7 @@ the plain soft finish.
   formula in `character.py`.
 - Check a palette far from the defaults after touching `shade()`
   derivations.
-- Leave the tooling green: `uv run ruff check .`, `uv run ruff format .`,
-  `uv run pytest`. The tests are a smoke check (imports, every preset at
-  every build, `ref-out/` freshness), not a judge of whether a shape
-  looks right, which is still decided by eye.
+- Leave the tooling green: in `ts/`, `npm run typecheck` and `npm test`; at the root the three
+  `refresh-*.sh --check` scripts, and, while the frozen Python is in the tree, `uv run pytest` and
+  `uv run ruff check .`. The tests are a guard against a moved byte and a broken rule (imports, every
+  preset, `ref-out/` freshness), not a judge of whether a shape looks right, which is still decided by eye.
