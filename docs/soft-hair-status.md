@@ -5,6 +5,12 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Gate 1 passed 2026-10-16 (owner: "easy to tell at a glance"): clumps chosen on all eight authored
+  presets (risa, krista, chiyo, keiko, linnea, kyoko, satoko, lindita), the control row read as no
+  difference. Owner's note: the dark highlights are a bit strong on the lighter colours (blonde, pink,
+  orange, light brown); a tunable highlight strength would be worth having, fine as is for now.
+  Open: the break-it review, a second day of the same pairs, Gate 2 (the other cuts).
+
 - Phase 1 built (8e1df9d, d40cde8): `Hairstyle.locks`, authored for `long_fringed` (Risa) and `long_traced`
   (seven presets), two-tone cuts get tip-colour clumps. Flat output byte-identical, 963 tests green. The
   Risa render matches the judged mock-up (mean pixel difference under 1.1 of 255). Budget measured: soft
@@ -221,3 +227,14 @@ colours and two sessions") was applied per session, not per colour.
 What it says: structure beats r3 and the crown sheen. Without the added hairlines it wins more clearly
 (S2n beats SH, S2h only ties it), so the added hairlines are dropped. Left open: S2n against LS2n (the
 crown band), and the colour by colour picture. Both go to the owner in `out/soft/v4/h2h-41`.
+
+## Gate 1: the owner's pairs on real generated hair (`out/soft/gate1-51`, app size and zoom)
+
+Key: 1 risa clumps right, 2 krista clumps left, 3 chiyo control, 4 keiko clumps right, 5 linnea clumps right,
+6 chiyo clumps left, 7 kyoko clumps right, 8 satoko clumps left, 9 lindita clumps right.
+
+Answers: 1 right, 2 left, 3 no difference, 4 right, 5 right, 6 left, 7 right, 8 left, 9 right. So the clumps
+won on all eight characters and the control read as identical. "Easy to tell at a glance." The dark
+highlights are a bit strong against the lighter colours (blonde, pink, orange, light brown). A tunable
+highlight strength is a good idea; as is it is fine for now (owner). Not done: it is a new parameter on the
+public interface and was not asked for.
