@@ -5,8 +5,8 @@
 Coordinates are the body's own: depth d in head heights below the chin (row 434 of the reference canvas is d = 0, a head
 height is 352 px) and x in head heights from the body's centre line (column 668.2), so `place()` in body-adult-parts.ts maps
 them onto the skeleton exactly as it does the body outline. The mask is eroded 3 px so the traced line sits on the centre
-of our stroke, and the two halter straps are extended up to the sides of the neck, where the reference's segment stops short
-and the strap goes behind the neck. Made symmetric from the right half. Writes out/franzi/top.json and ts/src/body-adult-top-data.ts and prints the extents.
+of our stroke, and the two halter straps are extended up and in under the neck, where the reference's segment stops short and the strap
+goes behind the neck (the top is drawn in the torso layer, below the neck). Made symmetric from the right half. Writes out/franzi/top.json and ts/src/body-adult-top-data.ts and prints the extents.
 """
 
 import json
@@ -32,8 +32,10 @@ for side in (-1, 1):
     tip_x = pick[pick < CX].mean() if side < 0 else pick[pick > CX].mean()
     tip_y = ys.min() + 3
     # on up and in to the neck's edge (half-width 0.135 H), a strap 16 px wide: the strap goes behind the neck there
-    nx, ny = CX + side * 0.135 * H, CHIN + 0.115 * H
-    dr.line([(tip_x, tip_y + 2), ((tip_x + nx) / 2 + side * 3, (tip_y + ny) / 2), (nx, ny)], fill=255, width=16)
+    # on up and in, well inside the neck's edge: the top is drawn under the neck (it is part of the torso layer), so the strap
+    # ends hidden behind the neck, as a halter strap does
+    nx, ny = CX + side * 0.06 * H, CHIN + 0.10 * H
+    dr.line([(tip_x, tip_y + 3), (nx, ny)], fill=255, width=15)
 mask = np.array(img) > 128
 mask = ndimage.binary_erosion(ndimage.binary_fill_holes(mask), iterations=3)
 # the straps come out too thin once the stroke takes its share: grow what lies above the cups back by 2 px

@@ -171,7 +171,8 @@ function inkAttrs(sk: Skeleton, fill: string): string {
 
 /** The figure's skin: the whole body outline in one piece. */
 export function adultTorso(sk: Skeleton, p: CharacterParams): string {
-  return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />`;
+  // The bikini top is drawn here, not in the chest layers, so the neck (the next layer) covers where its straps go behind it.
+  return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />` + adultBand(sk, p);
 }
 
 /** Underwear below the waist, always worn: briefs from the hip line to the top of the thigh. */
@@ -288,7 +289,7 @@ export const ADULT_PARTS = {
   _torso: adultTorso,
   _legs_and_boots: adultBriefs,
   _arms: adultDetail,
-  _underwear_top: adultBand,
+  _underwear_top: none,
   _navel: none,
   _chest_lines: none,
   _bust_lines: none,
