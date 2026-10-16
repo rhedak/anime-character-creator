@@ -44,9 +44,9 @@ def lit_tone(hex_color: str, rise: float) -> str:
     if v2 > 1.0:
         s = max(0.0, s - (v2 - 1.0) * 0.6)
         v2 = 1.0
-    if (
-        s >= 0.35
-    ):  # a warm nudge means nothing on near-grey or near-black hair and turns it lavender
+    # A warm nudge means nothing on near-grey or near-black hair (it turns it lavender), and on
+    # yellow-green it is a nudge toward green, so it is left out there too.
+    if s >= 0.35 and not 55.0 / 360.0 <= h < 90.0 / 360.0:
         h = (h + 4.0 / 360.0) % 1.0
     return rgb01_to_hex(colorsys.hsv_to_rgb(h, s, v2))
 

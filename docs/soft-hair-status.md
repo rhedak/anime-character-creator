@@ -238,3 +238,22 @@ won on all eight characters and the control read as identical. "Easy to tell at 
 highlights are a bit strong against the lighter colours (blonde, pink, orange, light brown). A tunable
 highlight strength is a good idea; as is it is fine for now (owner). Not done: it is a new parameter on the
 public interface and was not asked for.
+
+## Review 7: break-it review of Phase 1 (a fresh agent, ran code, did not edit tracked files)
+
+No blocker. Verified clean: flat bytes identical to 12a44f3 on 1,512 cases (every preset, hair lengths, every cut
+by body type by tip by face age by height, hats, clips, knot, tail, 12 colours); soft on cuts without locks
+unchanged; clumps never change a pixel outside the hair (about 100 cases rasterised at 3x, locks on and off,
+alpha identical); ids defined once and resolving with and without `id_prefix` and across five frames of one
+character; deterministic under three hash seeds; 1,500 random soft renders without an exception or NaN;
+render at most 8.4 ms per preset.
+
+| Finding | Severity | What we did |
+| --- | --- | --- |
+| A `hair_tip_color` on `long_fringed` erased the `front_shade` strips: the tip repaint is drawn after them. | important | The strips are drawn again after the tip pass (as the flat finish has them). Test added. |
+| Soft SVG over 90 KB on `long_fringed` with any tip colour (97,855 B; 218 of 1,500 fuzz cases). The tip region is the whole mass, so the first clump pass was fully hidden. | important | The first pass is skipped when the tip region equals the mass. Risa with a tip colour is now 81,929 B. Budget tests added for a tip colour on each authored cut. Cuts with a partial tip region still draw both passes; the fuzz maximum before the fix was 121 KB, not re-run after it. |
+| Degenerate lock input crashes (`t0>=t1`, a length under about 0.1, a single point). | minor | A shape too short to draw is skipped. Not reachable with the authored data. |
+| The warm hue nudge turns yellow-green toward lime (#fff700 to #f6ff01). | minor | No nudge between 55 and 90 degrees. All 20 soft presets render byte-identically before and after. |
+| Pure black gets near-invisible clumps (shadow equals base); pure white shows only the shadow. | minor | Left. White is shadow-led by the plan; pure black is not a cast colour. |
+| kyoko and keiko have a duplicate `coat-bust-` id, in flat as well as soft, in the old tree too. | minor, not ours | Not touched: fixing it moves flat output, which this experiment forbids. Reported to the owner. |
+| Not tested: Chrome's rendering of nested clip-path groups (only cairosvg in this review). | | Chrome ran the frame-time page on Risa and Satoko (Satoko is the nested case) with no visible fault in the numbers; not compared pixel by pixel. |

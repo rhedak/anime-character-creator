@@ -5,11 +5,12 @@ the hair's saturation. Flat output is covered by `refresh-ref-out.sh --check` an
 from __future__ import annotations
 
 import colorsys
+import re
 from dataclasses import replace
 
 import pytest
 
-from anime_character_creator import HAIRSTYLES, PRESETS, render_character
+from anime_character_creator import HAIRSTYLES, PRESETS, character, render_character
 from anime_character_creator.colorutil import (
     hex_to_rgb01,
     highlight_rise,
@@ -97,3 +98,43 @@ def test_the_tones_keep_the_hair_saturation(name: str) -> None:
     shadow = soft_shadow_tone(hair)
     _, s2, v2 = colorsys.rgb_to_hsv(*hex_to_rgb01(shadow))
     assert v2 < v0 and s2 >= 0.9 * s0
+
+
+def test_a_tip_colour_on_risa_keeps_the_front_shade_strips_and_the_byte_budget() -> None:
+    """Found by the break-it review: the tip repaint covered the `front_shade` strips, and the
+    clumps went in twice although the tip region is the whole mass, past 90 KB."""
+    p = replace(PRESETS["risa"], finish="soft", hair_tip_color="#33aaff")
+    svg = render_character(p)
+    assert len(svg.encode()) <= BYTE_BUDGET
+    repaint = svg.rindex('clip-path="url(#hair-tips)"')
+    drawn_after = re.findall(
+        r'fill="#[0-9a-f]{6}" clip-path="url\(#hair-front\)" />', svg[repaint:]
+    )
+    assert len(drawn_after) == len(character._FRINGED_SHADE), (
+        "the strips are drawn again after the repaint"
+    )
+    assert svg.count('<g clip-path="url(#hair-front)">') == 1
+
+
+@pytest.mark.parametrize("name", ["satoko", "risa"])
+def test_the_byte_budget_holds_with_a_tip_colour_on_each_authored_cut(name: str) -> None:
+    p = replace(PRESETS[name], finish="soft", hair_tip_color="#33aaff")
+    assert len(render_character(p).encode()) <= BYTE_BUDGET
+
+
+def test_a_clump_too_short_to_draw_is_skipped_not_a_crash(monkeypatch: pytest.MonkeyPatch) -> None:
+    style = replace(
+        HAIRSTYLES["long_fringed"],
+        locks=lambda fall: [
+            ("shadow", ((0, -1), (0, 0), (0, 1)), 0.1, 0.05),
+            ("lit", ((0, -1), (0, 0), (0, 1)), 0.1, 0.02),
+        ],
+    )
+    monkeypatch.setitem(HAIRSTYLES, "long_fringed", style)
+    assert _soft("risa")
+
+
+def test_a_yellow_green_colour_is_not_nudged_toward_green() -> None:
+    h0 = colorsys.rgb_to_hsv(*hex_to_rgb01("#fff700"))[0]
+    h1 = colorsys.rgb_to_hsv(*hex_to_rgb01(lit_tone("#fff700", 0.0)))[0]
+    assert h1 == pytest.approx(h0, abs=0.002)

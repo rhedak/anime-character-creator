@@ -13205,6 +13205,8 @@ def _lock_shape(
         mx, my = x + nx * side * offset * w, y + ny * side * offset * w
         left.append((cx + (mx + nx * w / 2) * r, cy + (my + ny * w / 2) * r))
         right.append((cx + (mx - nx * w / 2) * r, cy + (my - ny * w / 2) * r))
+    if t1 - t0 < 0.05 or len(left) < 3:
+        return ""  # too short to draw: nothing but its two tapered ends
     keep = sorted(
         {round(k * (len(left) - 1) / (_SOFT_LOCK_POINTS - 1)) for k in range(_SOFT_LOCK_POINTS)}
     )
@@ -13225,23 +13227,25 @@ def _soft_locks(sk: Skeleton, hair: str, locks: list[Lock], tip_clip: bool = Fal
     )
     sep = shade(hair, _SOFT_LOCK_SEP_VALUE)
     parts = []
+
+    def add(d: str, fill: str, opacity: float | None = None) -> None:
+        if d:
+            extra = "" if opacity is None else f' opacity="{opacity}"'
+            parts.append(f'<path d="{d}" fill="{fill}"{extra} />')
+
     for role, points, width, length in locks:
         if role == "shadow":
-            parts.append(
-                f'<path d="{_lock_shape(cx, cy, r, points, width, t1=length, power=0.55)}" fill="{shadow}" />'
-            )
+            add(_lock_shape(cx, cy, r, points, width, t1=length, power=0.55), shadow)
             sep_d = _lock_shape(
                 cx, cy, r, points, 0.035, t0=0.10, t1=min(length, 0.9), power=0.5, offset=-1.7
             )
-            parts.append(f'<path d="{sep_d}" fill="{sep}" opacity="{_SOFT_LOCK_SEP_OPACITY}" />')
+            add(sep_d, sep, _SOFT_LOCK_SEP_OPACITY)
         elif role == "lit":
-            parts.append(
-                f'<path d="{_lock_shape(cx, cy, r, points, width, t1=length, power=0.55)}" fill="{mid}" />'
-            )
+            add(_lock_shape(cx, cy, r, points, width, t1=length, power=0.55), mid)
             high_d = _lock_shape(
                 cx, cy, r, points, width * 0.30, t0=0.10, t1=0.62, power=0.8, offset=0.45
             )
-            parts.append(f'<path d="{high_d}" fill="{high}" />')
+            add(high_d, high)
         else:
             raise ValueError(f"a lock's role is shadow or lit, not {role!r}")
     body = "".join(parts)
@@ -13265,25 +13269,30 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     parts = _two_tone_hair(fill_d, p)
     if _soft(p):
         parts = [_soft_brow_shadow(sk, p, fill_d), *parts]
+    strips: list[str] = []
     if style.front_shade is not None:
         tone = shade(p.hair_color, value_factor=_HAIR_UNDERSIDE_VALUE)
         for region in style.front_shade(fall):
-            parts.append(
+            strips.append(
                 f'<path d="{_curve(cx, cy, r, *region)}" fill="{tone}" '
                 f'clip-path="url(#{_HAIR_FRONT_CLIP_ID})" />'
             )
+    parts.extend(strips)
     if style.locks is not None and _soft(p):
         # A two-tone cut gets its clumps twice: in the hair's tones, then, over a repaint of the tip
-        # region, in the tip colour's. (The repaint would also cover a `front_shade` strip in that
-        # region; no cut with both is authored yet.)
+        # region, in the tip colour's. A cut whose tip region is the whole mass skips the first
+        # pass, which the repaint would hide entirely. The repaint covers the `front_shade` strips
+        # in that region, so they are drawn again over it, as the flat finish has them.
         locks = style.locks(fall)
-        parts.append(_soft_locks(sk, p.hair_color, locks))
         tips = _hair_tip_tone(p)
+        if tips is None or style.tip_edge(fall) != [style.mass(fall)]:
+            parts.append(_soft_locks(sk, p.hair_color, locks))
         if tips is not None:
             parts.append(
                 f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />'
             )
             parts.append(_soft_locks(sk, tips, locks, tip_clip=True))
+            parts.extend(strips)
     parts.append(
         f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
