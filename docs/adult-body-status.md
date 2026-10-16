@@ -40,6 +40,25 @@ hip_half_w 1.23, arm_half_w 0.14, arm_x 1.14, leg_half_w 0.38, neck_half_w 0.22,
 Predicted gate: the chibi limb and torso code on these anchors, so landmarks within 0.05 H but IoU about 0.80 to 0.88
 and a width failure at the hip and thigh (no hip curve, straight legs): G0 FAIL, which is expected at this stage.
 
+### 2026-10-17, stage 4 redo: the top traced from the reference
+
+Owner at checkpoint 2: the lower piece works, the top does not look good, is far from the reference, does not connect to
+the shoulders, and the cups read as odd shapes. Honest cause: the first top and its cup lines were drawn by me, not
+traced, and every gate I had (body silhouette, agent reviews of coverage and drawing errors) was blind to the chest, so
+I accepted it though the straps visibly stopped short. Owner's rulings in the same exchange: a bare view in the harness is
+allowed for control of anatomical shapes (CLAUDE.md: never a web tool option or API control; no nipples or other sensitive
+parts, not even in the harness), and the adult body's baseline may be lower than the chibi's, so the triangle halter top
+of ref 04 is the always-worn top.
+
+Done: the top is traced from the bikini-top layer (`segments/04-bikini-fullbody/white-bikini-top.png`) with
+`harness/franzi/top_trace.py` (mask eroded 3 px for the stroke centre, straps grown 2 px, straps extended up and in to the
+neck's edge where the layer stops short, made symmetric by joining the right half to its mirror, smoothed, fitted to 35
+quadratics) into `body-adult-top-data.ts` in the body's own units, drawn through `place()`. New gate
+`harness/franzi/gate_top.py`: IoU against the same layer through the body gate's mapping, threshold 0.90 fixed before the
+run: 0.918. The cup lines of the first version are gone: the bust is read from the cloth's outline alone. A separate bare
+chest view was not built: the garment's outline is the trace of the bust as the cloth shows it, and a skin-coloured copy
+of it would show nothing more; to be built if the owner wants it.
+
 ### 2026-10-17, stage 5c: hands and feet, and the whole-figure review
 
 Feet: a rounded sole (little-toe side highest, big toe lowest) replacing the flat block, with four toe ticks and a

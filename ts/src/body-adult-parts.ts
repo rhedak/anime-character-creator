@@ -11,6 +11,7 @@ import { OUTLINE, curve, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
+import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_EAR_L, ADULT_EAR_R, ADULT_HEAD } from "./body-adult-head-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
@@ -204,39 +205,17 @@ export function adultBriefs(sk: Skeleton, p: CharacterParams): string {
 }
 
 /**
- * Underwear above the waist, always worn: a scoop-necked sports top with straps, from the base of the neck to under the
- * bust. It covers the whole chest, and the bust is read from the garment alone: two curved lines under the cups. A flat
- * garment, as the rest of the project's clothing is; nothing of the body is drawn on it.
+ * Underwear above the waist, always worn: a halter bikini top, traced from the bikini-top layer of ref 04
+ * (body-adult-top-data.ts), the two cups and the straps up to the sides of the neck. The bust is read from the cloth's
+ * outline alone: a flat garment, with nothing of the body drawn on it and no line on the cups.
  */
 export function adultBand(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
-  const hs = outlineW(strokeW(sk)) / 2;
-  const hem = 1.14;
-  const tors = at(TORSO_SIDE, hem) - 0.02;
-  const P = (sign: number, v: number, d: number): Pt => [cx + sign * (w(d, v) - hs), y(d)];
-  // Down the left: strap, armhole, side, in to the hem; the hem lifts a little at the centre; up the right the same.
-  const side = (sign: number): Pt[] => [P(sign, 0.36, 0.27), P(sign, 0.385, 0.36), P(sign, 0.425, 0.52), P(sign, 0.43, 0.7), P(sign, 0.43, 0.95), P(sign, 0.405, 1.05), P(sign, tors, hem)];
-  const left = side(-1);
-  const right = side(1);
-  const scoop = (sign: number): Pt[] => [P(sign, 0.27, 0.25), P(sign, 0.24, 0.42), P(sign, 0.12, 0.53), P(sign, 0.0, 0.56)];
-  const first = left[0] as Pt;
-  let d = `M ${fmt1(first[0])} ${fmt1(first[1])} `;
-  d += smooth(left);
-  d += quad([cx, y(hem - 0.05)], right[right.length - 1] as Pt);
-  d += smooth([...right].reverse());
-  d += line(scoop(1)[0] as Pt);
-  d += smooth(scoop(1));
-  d += smooth([...scoop(-1)].reverse());
-  d += `Z`;
-  const ink = `fill="${colorStr(p.outfit.underwear_color)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round"`;
-  // Each cup: a thin curve from the neckline round the inside, under and out to the armhole, so the chest reads as two
-  // rounded forms inside the one flat garment.
-  const arc = (sign: number): string => {
-    const q = [P(sign, 0.05, 0.62), P(sign, 0.035, 0.8), P(sign, 0.2, 1.01), P(sign, 0.385, 0.84), P(sign, 0.4, 0.68)];
-    const first = q[0] as Pt;
-    return `<path d="M ${fmt1(first[0])} ${fmt1(first[1])} ${smooth(q)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.7))}" stroke-linecap="round" />`;
-  };
-  return `<path d="${d}" ${ink} />` + arc(-1) + arc(1);
+  const [start, segs] = ADULT_TOP;
+  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1])];
+  const s0 = map(start);
+  const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
+  return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.underwear_color))} />`;
 }
 
 /**
