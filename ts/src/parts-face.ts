@@ -1,0 +1,6 @@
+// The face domain's parts, by the Python name `render_character` calls them with. See `src/parts.ts`.
+
+import { mask, neck } from "./character.ts";
+import type { PartTable } from "./parts.ts";
+
+export const PARTS: PartTable = { _neck: neck, _mask: mask };
