@@ -147,3 +147,14 @@ pair a close call, so a judgment call to land them); the gloss arc and depth was
 complaints and the face shading read as dirt. `ref-out/` is byte-identical, 907 tests pass, `CLAUDE.md`
 and `docs/api.md` describe the narrower soft finish. `mockup.py` (round 1) can no longer draw `today`;
 check out f432f7b for it.
+
+## Review 6: defect-only review of the round 3 pairs (a fresh agent, images only, no key)
+
+| Finding | What we did |
+| --- | --- |
+| The clump variants' highlights still read as glossy vertical stripes through the fringe; worse on dark (lavender), blond (olive with brown bands) and grey (smudged dark bands). | Highlights cut again (mid 0.12, high 0.38 of the full rise), no warm hue nudge on near-grey or near-black hair, quieter shadow step on pale and grey hair. |
+| A dark band hugging the outer contour (LS2h on red) reads as a seam. | The rim clumps are no longer drawn. |
+| Added hairlines fan evenly over the crown, look combed and scratch-like (blond, grey), cross onto the fringe, the outermost run parallel to the contour and double it. | Not on the outer clumps, one or two per clump, start lower, shorter, uneven offsets, lighter and fainter on light hair. |
+| Sheen cap (SH): reads as a flat cap, edge slightly hard. | Left as the owner's round 2 winner. |
+| Base defects on both sides: dark wedge behind the cheeks, pale tan band under the fringe, sparse uneven ticks, ear slivers, ragged side-lock tips. | Shared with r3, outside this treatment. Listed as soft-finish candidates. |
+| Not judged: hairlines under 1 px, seams at 1 px, spacing regularity, dark hair detail. | |

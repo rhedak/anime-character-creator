@@ -71,7 +71,8 @@ def lit_tone(hair: str, dv: float) -> str:
     if v2 > 1.0:
         s = max(0.0, s - (v2 - 1.0) * 0.6)
         v2 = 1.0
-    h = (h + 4.0 / 360.0) % 1.0
+    if s >= 0.35:  # a warm nudge means nothing on near-grey or near-black hair and turns it lavender
+        h = (h + 4.0 / 360.0) % 1.0
     return rgb01_to_hex(colorsys.hsv_to_rgb(h, s, v2))
 
 
@@ -84,7 +85,10 @@ def dv_high(hair: str) -> float:
 def shadow_tone(hair: str) -> str:
     """A step darker, gentler than `shade` default so a shadow clump is a tone and not a stripe,
     and with yellow hair pulled a little toward orange so its shadow is warm and not olive."""
-    h, s, v = _hsv(shade(hair, 0.87 - 0.05 * _hsv(hair)[2], saturation_boost=1.3))
+    factor = 0.87 - 0.05 * _hsv(hair)[2]
+    if _hsv(hair)[1] < 0.35:  # pale or grey hair: a shadow is a quieter step, or it smudges
+        factor = 0.92
+    h, s, v = _hsv(shade(hair, factor, saturation_boost=1.3))
     if 30.0 / 360.0 < h < 70.0 / 360.0:
         h -= 7.0 / 360.0
     return rgb01_to_hex(colorsys.hsv_to_rgb(h, s, v))

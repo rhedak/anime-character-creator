@@ -46,21 +46,27 @@ HAIRLINE_VALUE = 0.50  # a dark tone of the hair, not the black outline
 
 
 def hairlines(f: M.Frame, hair: str) -> str:
-    """Fine dark tapered lines along the clump edges: each starts below the crown and stops before
-    the tip, two or three per clump, none in pairs with a lit line, none random across the hair."""
-    tone = shade(hair, HAIRLINE_VALUE)
+    """Fine dark tapered lines along the clump edges of the fringe and the inner curtains: one or two
+    per clump, starting below the crown and stopping before the tip. Not on the outer clumps, where
+    they ran parallel to the contour and doubled it, and not evenly spaced."""
+    h, s, v = K._hsv(hair)
+    light = v > 0.6
+    tone = shade(hair, 0.66 if light else HAIRLINE_VALUE)
+    opacity = 0.55 if light else 0.7
     parts = []
     for name, (pts, w) in M.GUIDES.items():
-        rng = random.Random(f"hl-{name}")
+        if name.startswith("o"):
+            continue
+        rng = random.Random(f"hl3-{name}")
         side = K.light_side(pts)
-        for _ in range(rng.choice((2, 3))):
-            t0 = rng.uniform(0.04, 0.34)
-            t1 = min(0.96, t0 + rng.uniform(0.34, 0.56))
-            edge = rng.choice((-0.5, 0.5)) * 0.5 + rng.uniform(-0.08, 0.08)  # a share of the clump's width, in from its edge
+        for _ in range(rng.choice((1, 2))):
+            t0 = rng.uniform(0.12, 0.42)
+            t1 = min(0.96, t0 + rng.uniform(0.26, 0.46))
+            edge = rng.uniform(-0.30, 0.30)  # a share of the clump's width from its centre line
             width = rng.uniform(0.014, 0.024)
             parts.append(
                 f'<path d="{K.lens2(f, pts, width, side, t0=t0, t1=t1, power=0.5, offset=edge * w / width)}" '
-                f'fill="{tone}" opacity="0.7" />'
+                f'fill="{tone}" opacity="{opacity}" />'
             )
     return "".join(parts)
 
@@ -69,13 +75,13 @@ def clumps_subtle(f: M.Frame, hair: str, lit: bool) -> str:
     """Round 2's clumps with the highlights cut to about the strength of the crown band."""
     shadow = K.shadow_tone(hair)
     dv = K.dv_high(hair)
-    mid = K.lit_tone(hair, dv * 0.22)
-    hi = K.lit_tone(hair, dv * 0.55)
+    mid = K.lit_tone(hair, dv * 0.12)
+    hi = K.lit_tone(hair, dv * 0.38)
     sep = shade(hair, 0.74)
     parts = []
     for name, (pts, w) in M.GUIDES.items():
         role = K.ROLE[name]
-        if role == "base":
+        if role == "base" or name in M.RIM:  # the rim clumps hugged the contour and read as a seam
             continue
         wf, lf = K.jitter(name)
         side = K.light_side(pts)
