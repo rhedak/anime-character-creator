@@ -217,6 +217,22 @@
       "label": "Short, tousled"
     }
   ],
+  "finishes": [
+    {
+      "id": "flat",
+      "label": "Flat (house style)"
+    },
+    {
+      "id": "soft",
+      "label": "Soft (for painted art)"
+    }
+  ],
+  "highlight_strength": {
+    "field": "highlight_strength",
+    "label": "Hair shading strength",
+    "min": 0.0,
+    "max": 2.0
+  },
   "hair_length": {
     "field": "hair_length",
     "label": "Hair length",

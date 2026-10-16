@@ -38,6 +38,7 @@ from .character import (
     BOOT_CUTS,
     COAT_CUTS,
     COLLAR_CUTS,
+    FINISHES,
     GRIP_STYLES,
     HAIR_CLIPS,
     HAIRSTYLES,
@@ -525,6 +526,17 @@ for _c in COLORS:
 HAIR_LENGTH = RangeField("hair_length", "Hair length", 0.0, 1.0)
 assert HAIR_LENGTH.field in _CHARACTER_FIELDS
 
+# How the figure is finished, and how strong the soft finish's hair shading is
+# (`docs/api.md`, "The soft finish"). The house style is flat; soft is for a figure
+# set beside painted art. The strength only means anything for soft, so the web
+# layer shows its slider only then. 0 draws no clumps, 1 is the default the owner picked,
+# 2 is the strength they were first drawn at.
+FINISH_LABELS: dict[str, str] = {"flat": "Flat (house style)", "soft": "Soft (for painted art)"}
+assert set(FINISH_LABELS) == set(FINISHES)
+assert "finish" in _CHARACTER_FIELDS
+HIGHLIGHT_STRENGTH = RangeField("highlight_strength", "Hair shading strength", 0.0, 2.0)
+assert HIGHLIGHT_STRENGTH.field in _CHARACTER_FIELDS
+
 # A gathered tail and a crown knot: both drawn over any cut (`_hair_tail`,
 # `_hair_knot`), not part of `Hairstyle` itself, and both already carried by a
 # real preset (Krista's tail, Daizen's and Haruto's knots) but never exposed
@@ -761,6 +773,8 @@ def build_catalogue() -> dict[str, object]:
         "hairstyles": [
             {"id": name, "label": HAIRSTYLE_LABELS[name]} for name in sorted(HAIRSTYLES)
         ],
+        "finishes": [{"id": name, "label": FINISH_LABELS[name]} for name in FINISHES],
+        "highlight_strength": _range_json(HIGHLIGHT_STRENGTH),
         "hair_length": _range_json(HAIR_LENGTH),
         "hair_tail": _range_json(HAIR_TAIL),
         "waist_shift": _range_json(WAIST_SHIFT),

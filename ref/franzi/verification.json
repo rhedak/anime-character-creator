@@ -1,0 +1,277 @@
+{
+ "alpha_iou": {
+  "00-base-dirndl vs 01-swimsuit": 0.8826,
+  "00-base-dirndl vs 02-blouse": 0.917,
+  "00-base-dirndl vs 03-bodice": 0.8959,
+  "00-base-dirndl vs 04-bikini-fullbody": 0.8411,
+  "01-swimsuit vs 02-blouse": 0.9287,
+  "01-swimsuit vs 03-bodice": 0.9274,
+  "01-swimsuit vs 04-bikini-fullbody": 0.9179,
+  "02-blouse vs 03-bodice": 0.9685,
+  "02-blouse vs 04-bikini-fullbody": 0.8728,
+  "03-bodice vs 04-bikini-fullbody": 0.8917
+ },
+ "head_iou(y<445)": {
+  "00-base-dirndl vs 01-swimsuit": 0.9817,
+  "00-base-dirndl vs 02-blouse": 0.9833,
+  "00-base-dirndl vs 03-bodice": 0.9858,
+  "00-base-dirndl vs 04-bikini-fullbody": 0.9802,
+  "01-swimsuit vs 02-blouse": 0.9938,
+  "01-swimsuit vs 03-bodice": 0.9861,
+  "01-swimsuit vs 04-bikini-fullbody": 0.9828,
+  "02-blouse vs 03-bodice": 0.9877,
+  "02-blouse vs 04-bikini-fullbody": 0.9855,
+  "03-bodice vs 04-bikini-fullbody": 0.9908
+ },
+ "segments": {
+  "01-swimsuit/black-hair.png": {
+   "solid_px": 52567,
+   "mean_abs_rgb_diff_vs_image": 0.08,
+   "alpha_outside_image_px": 0
+  },
+  "01-swimsuit/brown-eyes/brown-eyes-1.png": {
+   "solid_px": 2209,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "01-swimsuit/brown-eyes/brown-eyes-2.png": {
+   "solid_px": 4945,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "01-swimsuit/brown-eyes/brown-eyes-3.png": {
+   "solid_px": 2445,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "01-swimsuit/white-one-piece-swimsuit.png": {
+   "solid_px": 168257,
+   "mean_abs_rgb_diff_vs_image": 0.05,
+   "alpha_outside_image_px": 0
+  },
+  "01-swimsuit/woman.png": {
+   "solid_px": 525779,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "01-swimsuit/_union_cover_of_image_alpha": 0.4162,
+  "02-blouse/beige-shorts.png": {
+   "solid_px": 80544,
+   "mean_abs_rgb_diff_vs_image": 0.04,
+   "alpha_outside_image_px": 0
+  },
+  "02-blouse/black-hair.png": {
+   "solid_px": 51956,
+   "mean_abs_rgb_diff_vs_image": 0.08,
+   "alpha_outside_image_px": 0
+  },
+  "02-blouse/white-blouse.png": {
+   "solid_px": 213084,
+   "mean_abs_rgb_diff_vs_image": 0.06,
+   "alpha_outside_image_px": 0
+  },
+  "02-blouse/yellow-eyes/yellow-eyes-1.png": {
+   "solid_px": 2103,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "02-blouse/yellow-eyes/yellow-eyes-2.png": {
+   "solid_px": 2113,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "02-blouse/yellow-eyes/yellow-eyes-3.png": {
+   "solid_px": 4891,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "02-blouse/_union_cover_of_image_alpha": 0.6238,
+  "03-bodice/black-hair.png": {
+   "solid_px": 51708,
+   "mean_abs_rgb_diff_vs_image": 0.07,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/brown-eyes/brown-eyes-1.png": {
+   "solid_px": 2126,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/brown-eyes/brown-eyes-2.png": {
+   "solid_px": 2236,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/brown-eyes/brown-eyes-3.png": {
+   "solid_px": 4839,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-1.png": {
+   "solid_px": 185,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-10.png": {
+   "solid_px": 171,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-11.png": {
+   "solid_px": 179,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-12.png": {
+   "solid_px": 161,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-13.png": {
+   "solid_px": 170,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-14.png": {
+   "solid_px": 160,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-15.png": {
+   "solid_px": 166,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-16.png": {
+   "solid_px": 161,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-2.png": {
+   "solid_px": 186,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-3.png": {
+   "solid_px": 171,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-4.png": {
+   "solid_px": 171,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-5.png": {
+   "solid_px": 171,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-6.png": {
+   "solid_px": 170,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-7.png": {
+   "solid_px": 176,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-8.png": {
+   "solid_px": 164,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/gold-buttons/gold-buttons-9.png": {
+   "solid_px": 182,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/green-corset.png": {
+   "solid_px": 116058,
+   "mean_abs_rgb_diff_vs_image": 0.01,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/lace-up-front/lace-up-front-1.png": {
+   "solid_px": 20806,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/lace-up-front/lace-up-front-2.png": {
+   "solid_px": 115653,
+   "mean_abs_rgb_diff_vs_image": 0.01,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/puffed-sleeves/puffed-sleeves-1.png": {
+   "solid_px": 22242,
+   "mean_abs_rgb_diff_vs_image": 0.16,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/puffed-sleeves/puffed-sleeves-2.png": {
+   "solid_px": 26512,
+   "mean_abs_rgb_diff_vs_image": 0.07,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/white-blouse.png": {
+   "solid_px": 72752,
+   "mean_abs_rgb_diff_vs_image": 0.05,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/white-shorts.png": {
+   "solid_px": 84312,
+   "mean_abs_rgb_diff_vs_image": 0.02,
+   "alpha_outside_image_px": 0
+  },
+  "03-bodice/woman.png": {
+   "solid_px": 530026,
+   "mean_abs_rgb_diff_vs_image": 0.0,
+   "alpha_outside_image_px": 1
+  },
+  "03-bodice/_union_cover_of_image_alpha": 0.6032,
+  "04-bikini-fullbody/bare-feet/bare-feet-1.png": {
+   "solid_px": 14368,
+   "mean_abs_rgb_diff_vs_image": 0.36,
+   "alpha_outside_image_px": 0
+  },
+  "04-bikini-fullbody/bare-feet/bare-feet-2.png": {
+   "solid_px": 14792,
+   "mean_abs_rgb_diff_vs_image": 0.34,
+   "alpha_outside_image_px": 0
+  },
+  "04-bikini-fullbody/black-hair.png": {
+   "solid_px": 49892,
+   "mean_abs_rgb_diff_vs_image": 0.23,
+   "alpha_outside_image_px": 18
+  },
+  "04-bikini-fullbody/brown-eyes/brown-eyes-1.png": {
+   "solid_px": 4537,
+   "mean_abs_rgb_diff_vs_image": 0.93,
+   "alpha_outside_image_px": 0
+  },
+  "04-bikini-fullbody/brown-eyes/brown-eyes-2.png": {
+   "solid_px": 2018,
+   "mean_abs_rgb_diff_vs_image": 0.93,
+   "alpha_outside_image_px": 0
+  },
+  "04-bikini-fullbody/brown-eyes/brown-eyes-3.png": {
+   "solid_px": 2106,
+   "mean_abs_rgb_diff_vs_image": 0.74,
+   "alpha_outside_image_px": 0
+  },
+  "04-bikini-fullbody/white-bikini-bottom.png": {
+   "solid_px": 23013,
+   "mean_abs_rgb_diff_vs_image": 0.56,
+   "alpha_outside_image_px": 0
+  },
+  "04-bikini-fullbody/white-bikini-top.png": {
+   "solid_px": 35145,
+   "mean_abs_rgb_diff_vs_image": 0.58,
+   "alpha_outside_image_px": 0
+  },
+  "04-bikini-fullbody/woman.png": {
+   "solid_px": 634909,
+   "mean_abs_rgb_diff_vs_image": 0.21,
+   "alpha_outside_image_px": 3
+  },
+  "04-bikini-fullbody/_union_cover_of_image_alpha": 0.2221
+ }
+}

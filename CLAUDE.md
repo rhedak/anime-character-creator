@@ -97,6 +97,19 @@ plain preset-name list. Details of the consumers are kept in `local/`.
   covering a third of the torso and most of the apron, up to 15% of
   the figure's ink; the owner's call on 2026-08-06 was to drop them
   (task 56, see `docs/gap-analysis.md`).
+  **One opt-in exception, 2026-10-16:** `CharacterParams.finish = "soft"` adds
+  gradients and tinted lines (a graded iris, a soft blush, the fringe's
+  shadow, lines in a dark tone of what they bound, thinner strokes) and, on the
+  cuts that describe them (`Hairstyle.locks`), tone clumps laid inside the
+  hair's own silhouette: shadow and lit steps with one faint highlight each,
+  scaled by `highlight_strength`. It is for a caller that sets the figure
+  beside painted art. It is off by default, never used by the presets, the
+  covers, the sheets or `ref-out/` (`tests/test_consumers_stay_flat.py` pins
+  that), offered in the web tool as a "Finish" choice that starts on flat, and
+  it moves no shape. `"flat"` stays the house style and every rule above still
+  holds for it. Gradients only, no blur: cairosvg has none. Anything further in
+  the soft finish needs the owner's say, judged by blind pairs, and its record
+  is `docs/soft-hair-plan.md` and `docs/soft-hair-status.md`.
 
 ## Structure
 

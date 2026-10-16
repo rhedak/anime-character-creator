@@ -1745,6 +1745,41 @@ arm's swing). The web tool has a control for each. Nothing was assigned to a pre
 the owner's call (`docs/hands-status.md`, V8). The record is `docs/hands-plan.md` and
 `docs/hands-status.md`, the tools `harness/hands/`. No existing render changed.
 
+## The soft finish, 2026-10-16
+
+An opt-in second finish for a caller that sets the figure beside painted art (a companion app's
+picture packs): `CharacterParams.finish = "soft"`, with `"flat"` still the default and the only finish
+the presets, the covers, the sheets and `ref-out/` use. Soft adds gradients and tinted lines (a graded
+iris, a soft blush, the fringe's shadow, lines in a dark tone of what they bound, strokes at 0.66 of
+their weight) and, on five cuts (`long_fringed`, `long_traced`, `long_parted`, `short_layered`,
+`short_crop`), tone clumps over the hair: shadow and lit steps with one faint highlight each, inside
+the hair's own silhouette so no contour moves. `highlight_strength` (0 to 2, default 1) scales them.
+The web tool offers both as a "Finish" choice and a slider, starting on flat.
+
+How it was decided: the owner judged by blind, randomised forced-choice pairs, never by metrics, over
+three rounds (a hand mock-up first, with an early kill point; then the generated hair on Risa's cut and
+the long traced cut; then the other three cuts). The clumps won every pair they were put in; the first
+ones lost for lacking hairlines (the cut's own strand lines were switched off) and for highlights that
+washed toward white, and were rebuilt with hue-true tones and the strands kept. A tint toward white
+halves a colour's saturation, which on dark red read as frosting; the tones now raise value and keep
+saturation. The record is `docs/soft-hair-plan.md` and `docs/soft-hair-status.md`, with every review.
+
+Budget: a soft SVG at most 150 KB (the shipped presets are 45 to 77 KB, a flat one 20 to 63 KB);
+render about 2 to 7 ms; in Chrome a frame swap costs about 1 ms more than the soft finish without the
+clumps. `harness/soft_hair/` holds the mock-ups, the pair-sheet builders, `frametime.py` and
+`strength.py`.
+
+Fixed before the release: Satoshi's pale tips showed a grey, stain-like oval where a crown shadow clump
+crossed the tone boundary, so a near-white tip colour now takes no clumps (the repaint still covers the
+hair-colour clumps under it); and kyoko and keiko defined a `coat-bust-` id twice, because the layers
+worn on the torso are drawn a second time over the arms for a bust. The second copy now has its own
+ids. No pixel of any `ref-out/` PNG moved; the four SVGs that carry the id (keiko, kyoko and the two
+sheets) were refreshed, and `tests/test_ids.py` checks every preset and base in both finishes.
+
+Known and left, accepted: Satoshi's gold shadows read a little heavy; near-black and white hair get
+near-invisible clumps (white is shadow-led by design); eight more cuts have no clumps yet and draw as
+the plain soft finish.
+
 ## Conventions worth remembering
 
 - Render and *look* at the PNG before calling a shape change done.

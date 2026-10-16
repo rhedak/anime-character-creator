@@ -6,6 +6,7 @@ scales as one unit via the skeleton's head_r.
 
 from __future__ import annotations
 
+import colorsys
 import hashlib
 import itertools
 import math
@@ -14,7 +15,15 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, field, replace
 from xml.sax.saxutils import escape
 
-from .colorutil import hex_to_rgb01, rgb01_to_hex, shade
+from .colorutil import (
+    hex_to_rgb01,
+    highlight_rise,
+    lit_tone,
+    rgb01_to_hex,
+    shade,
+    soft_shadow_tone,
+    tint,
+)
 from .skeleton import (
     BUILDS,
     BodyProfile,
@@ -57,6 +66,66 @@ def _stroke_w(sk: Skeleton) -> float:
 # 0.55 still read at the smallest size a chapter insert shows a figure.
 _OUTLINE_SCALE = 0.75
 _INTERIOR_SCALE = 0.55
+
+
+# The soft finish (`CharacterParams.finish`). Everything it draws is behind
+# `_soft(p)`, so "flat", the default, is byte for byte what it always was.
+# Gradients rather than blur: cairosvg, which writes the PNGs, has no gaussian
+# blur, and a gradient reads the same at this scale.
+FINISHES = ("flat", "soft")
+# Every stroke width in the document, by this. The line is drawn for the full
+# figure; a caller that crops to the head draws it about 1.5 times heavier on
+# screen, which is most of why the flat figure reads as clip art next to a
+# painted one (an experiment, 2026-10-16, judged by eye).
+_SOFT_LINE_SCALE = 0.66
+# Lines in the hair take a dark tone of the hair itself, not the black outline.
+_SOFT_HAIR_LINE_VALUE = 0.30
+# The face's outline in a dark tone of the skin. A shading gradient toward the face's
+# edge was tried and removed (owner's blind pairs, 2026-10-16: it read as dirt at the
+# zoomed size), so the face stays one flat surface as `_head` says.
+_SOFT_FACE_LINE_VALUE = 0.40
+
+
+def validate_finish(p: CharacterParams) -> None:
+    """Raise `ValueError` if `p.finish` is not a finish, or if the soft finish's
+    `highlight_strength` is not a number from 0 to 2. The flat finish ignores the strength, so
+    it is only checked for the soft one."""
+    if p.finish not in FINISHES:
+        raise ValueError(f"finish must be one of {', '.join(FINISHES)}, not {p.finish!r}")
+    if p.finish == "soft":
+        strength = p.highlight_strength
+        ok = isinstance(strength, int | float) and not isinstance(strength, bool)
+        if not ok or not 0.0 <= strength <= 2.0:
+            raise ValueError(f"highlight_strength must be between 0 and 2, not {strength!r}")
+
+
+def _soft(p: CharacterParams) -> bool:
+    """Whether `p` asks for the soft finish. `render_character` has already validated it."""
+    return p.finish == "soft"
+
+
+def _soft_locks_on(p: CharacterParams, style: Hairstyle) -> bool:
+    """Whether the soft finish draws `style`'s clumps for `p`: the finish is soft, the cut has
+    clumps, and the strength is not zero."""
+    return style.locks is not None and _soft(p) and p.highlight_strength > 0
+
+
+def _soft_lines(svg: str, tone: str) -> str:
+    """`svg` with the black outline colour swapped for `tone` on its strokes."""
+    return svg.replace(f'stroke="{OUTLINE}"', f'stroke="{tone}"')
+
+
+def _soft_stroke_widths(svg: str) -> str:
+    """Every line's `stroke-width` in `svg` scaled by `_SOFT_LINE_SCALE`."""
+
+    def scaled(tag: re.Match[str]) -> str:
+        return re.sub(
+            r'stroke-width="([0-9.]+)"',
+            lambda m: f'stroke-width="{float(m.group(1)) * _SOFT_LINE_SCALE:.2f}"',
+            tag.group(0),
+        )
+
+    return re.sub(r"<[a-zA-Z][^>]*>", scaled, svg)
 
 
 def _outline_w(sw: float, k: float = 1.0) -> float:
@@ -656,9 +725,25 @@ class CharacterParams:
     right_arm_out: float = 0.0
     left_arm_out: float = 0.0
     shaded: bool = True
+    # How the figure is finished. "flat" is the house style and the only one the
+    # presets, `ref-out/` and the web tool use: flat colour, hard edges, one black
+    # line. "soft" is an opt-in experiment for a caller that wants the figure to sit
+    # beside painted art (a companion app's picture packs): see `_soft` and the
+    # `_SOFT_*` constants. It adds gradients and tinted lines and changes no shape.
+    finish: str = "flat"
+    # How strong the soft finish's hair clumps are: the lit steps and the highlights rise by this
+    # much and the shadow steps sink by it, and 0 draws none. 1 is the default look, the owner's pick
+    # from five strengths on five hair colours (2026-10-16): half the strength the clumps were
+    # first judged at, which was a bit strong on pale colours. 2 is that first strength. The flat
+    # finish ignores it.
+    highlight_strength: float = 1.0
 
 
 Point = tuple[float, float]
+# One clump of hair for the soft finish: its role ("shadow" or "lit"), the points of its centre
+# line in head radii (x right, y down, origin at the head centre, the units the chains use), its
+# widest width in head radii, and how far down the line it runs, 0 to 1.
+Lock = tuple[str, tuple[Point, ...], float, float]
 Segment = tuple[Point, Point]
 
 
@@ -697,6 +782,7 @@ def _curve(
 _HAIR_CHEEK_Y = 0.72
 _HAIR_TIP_CLIP_ID = "hair-tips"
 _HAIR_FRONT_CLIP_ID = "hair-front"
+_HAIR_MASS_CLIP_ID = "hair-mass"
 _HAIR_UNDERSIDE_CLIP_ID = "hair-underside"
 # How far a lock's line runs on past its tip (`Hairstyle.tip_lines`), in head
 # radii: the parted cut's reference carries it 0.09 to 0.16 past where its
@@ -1534,6 +1620,98 @@ def _lifted_tip_edge(
         chain.append((((here[0] + q[0]) / 2, (here[1] + q[1]) / 2), q))
         here = q
     return [((-wide, fade), chain)]
+
+
+# The clumps the soft finish lays over the long traced cut (`Hairstyle.locks`), placed by hand on
+# `harness/soft_hair/grid.py` at a fall of 2.0 and re-stretched to the fall the cut is drawn at the
+# way `_long_scaled` stretches the contour: only y below the cheek line, x as authored. Per side:
+# the crown along the contour, the sweep off the parting, the outer curtain and the inner curtain.
+# The flow is the cut's own: from the parting out over the skull and down. See `_FRINGED_LOCKS`.
+_LONG_LOCKS_FALL = 2.0
+_LONG_LOCKS: list[Lock] = [
+    ("lit", ((-0.10, -1.02), (-0.55, -0.95), (-0.92, -0.62), (-1.08, -0.25), (-1.14, 0.05)), 0.19, 0.97),
+    ("shadow", ((-0.30, -0.90), (-0.60, -0.68), (-0.82, -0.34), (-0.98, -0.02)), 0.12, 0.90),
+    ("lit", ((-1.17, 0.15), (-1.19, 0.80), (-1.22, 1.30), (-1.25, 1.75)), 0.17, 0.96),
+    ("shadow", ((-1.00, 0.40), (-1.02, 0.90), (-1.00, 1.40), (-0.92, 1.90)), 0.13, 0.88),
+    ("lit", ((0.08, -1.04), (0.52, -0.96), (0.90, -0.64), (1.06, -0.26), (1.12, 0.05)), 0.17, 0.95),
+    ("shadow", ((0.36, -0.90), (0.62, -0.70), (0.84, -0.36), (0.99, -0.02)), 0.13, 0.94),
+    ("lit", ((1.16, 0.15), (1.19, 0.80), (1.23, 1.30), (1.27, 1.75)), 0.20, 0.98),
+    ("shadow", ((0.99, 0.40), (1.01, 0.90), (0.99, 1.40), (0.92, 1.90)), 0.15, 0.90),
+]  # fmt: skip
+
+
+def _restretch_locks(locks: list[Lock], authored_fall: float, fall: float) -> list[Lock]:
+    """Clumps authored at a tip depth of `authored_fall`, drawn at `fall`: only y below the cheek
+    line is remapped, x as authored, the way `_long_scaled` stretches the contour."""
+    k = (fall - _HAIR_CHEEK_Y) / (authored_fall - _HAIR_CHEEK_Y)
+
+    def q(pt: Point) -> Point:
+        y = pt[1]
+        return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
+
+    return [(role, tuple(q(pt) for pt in pts), w, ln) for role, pts, w, ln in locks]
+
+
+def _long_traced_locks(fall: float) -> list[Lock]:
+    return _restretch_locks(_LONG_LOCKS, _LONG_LOCKS_FALL, fall)
+
+
+# The clumps the soft finish lays over the short layered cut's front hair (`Hairstyle.locks`),
+# placed by hand on `harness/soft_hair/grid.py`. The cut is pinned to the skull above the cheek
+# line, where nothing stretches with the fall, so they are used as authored. The flow is the
+# crop's own: from the crown out and down over the temples, the fringe falling in pieces off it.
+_SHORT_LOCKS: list[Lock] = [
+    ("lit", ((-0.10, -1.20), (-0.55, -1.12), (-0.92, -0.82), (-1.10, -0.40), (-1.18, 0.05)), 0.19, 0.97),
+    ("shadow", ((-0.25, -1.10), (-0.62, -0.90), (-0.88, -0.55), (-0.98, -0.20)), 0.14, 0.92),
+    ("lit", ((-0.20, -1.05), (-0.35, -0.80), (-0.45, -0.50), (-0.42, -0.22)), 0.13, 0.90),
+    ("shadow", ((-1.14, 0.02), (-1.17, 0.26), (-1.12, 0.50)), 0.10, 0.90),
+    ("shadow", ((0.10, -1.10), (0.18, -0.80), (0.25, -0.50), (0.20, -0.30)), 0.12, 0.90),
+    ("lit", ((0.30, -1.10), (0.65, -0.92), (0.90, -0.58), (1.00, -0.28)), 0.15, 0.94),
+    ("lit", ((0.12, -1.20), (0.58, -1.12), (0.95, -0.82), (1.12, -0.40), (1.19, 0.05)), 0.18, 0.96),
+    ("shadow", ((1.14, 0.02), (1.17, 0.26), (1.12, 0.50)), 0.10, 0.90),
+]  # fmt: skip
+
+
+def _short_locks(fall: float) -> list[Lock]:
+    return list(_SHORT_LOCKS)
+
+
+# The clumps for the traced crop (`Hairstyle.locks`): a spiky crown swept to the viewer's right with a
+# fringe of four pieces, placed by hand on `harness/soft_hair/grid.py`. Pinned to the skull above the
+# cheek line, so used as authored. Drawn on the mass too, since its spikes stand outside the front piece.
+_CROP_LOCKS: list[Lock] = [
+    ("lit", ((-0.10, -1.45), (0.40, -1.30), (0.90, -0.95), (1.25, -0.55)), 0.20, 0.96),
+    ("shadow", ((-0.30, -1.25), (-0.70, -1.05), (-1.00, -0.70), (-1.15, -0.40)), 0.17, 0.92),
+    ("lit", ((-0.05, -1.30), (-0.45, -1.18), (-0.85, -0.95), (-1.20, -0.75)), 0.14, 0.88),
+    ("shadow", ((-0.55, -1.00), (-0.60, -0.75), (-0.62, -0.50)), 0.12, 0.92),
+    ("lit", ((-0.20, -1.00), (-0.25, -0.75), (-0.30, -0.50)), 0.12, 0.90),
+    ("shadow", ((0.20, -1.00), (0.28, -0.70), (0.30, -0.45)), 0.12, 0.90),
+    ("lit", ((0.55, -1.00), (0.62, -0.70), (0.68, -0.45)), 0.13, 0.92),
+    ("shadow", ((0.30, -1.20), (0.70, -1.05), (1.00, -0.75), (1.20, -0.50)), 0.15, 0.90),
+]  # fmt: skip
+
+
+def _crop_locks(fall: float) -> list[Lock]:
+    return list(_CROP_LOCKS)
+
+
+# The clumps for the parted cut (`Hairstyle.locks`): the bangs off the parting and, down each side, the
+# one long lock in front of the shoulder, placed by hand on `harness/soft_hair/grid.py` at a fall of
+# 2.62 (Katherina's) and re-stretched to the fall drawn the way `_long_traced_locks` is. Most of the
+# crown sits under the hat in the presets that wear one, so the clumps are on the parts that show.
+_PARTED_LOCKS_FALL = 2.62
+_PARTED_LOCKS: list[Lock] = [
+    ("lit", ((-0.15, -0.90), (-0.40, -0.60), (-0.60, -0.30), (-0.82, -0.05)), 0.12, 0.92),
+    ("lit", ((-1.14, 0.15), (-1.15, 0.80), (-1.10, 1.50), (-0.98, 2.10)), 0.13, 0.95),
+    ("shadow", ((-0.98, 0.20), (-0.98, 0.80), (-0.90, 1.50), (-0.78, 2.10)), 0.10, 0.92),
+    ("shadow", ((0.15, -0.85), (0.40, -0.60), (0.60, -0.35), (0.80, -0.10)), 0.12, 0.90),
+    ("lit", ((1.08, 0.15), (1.12, 0.80), (1.05, 1.50), (0.92, 2.00)), 0.13, 0.96),
+    ("shadow", ((0.95, 0.20), (0.93, 0.80), (0.85, 1.50), (0.74, 2.00)), 0.10, 0.90),
+]  # fmt: skip
+
+
+def _parted_locks(fall: float) -> list[Lock]:
+    return _restretch_locks(_PARTED_LOCKS, _PARTED_LOCKS_FALL, fall)
 
 
 def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
@@ -3185,6 +3363,28 @@ def _fringed_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
     return [_fringed(c, fall) for c in _FRINGED_STRANDS]
 
 
+# The clumps the soft finish lays over Risa's front hair (`Hairstyle.locks`), placed by hand on
+# `harness/soft_hair/grid.py`'s grid of the traced pieces and judged in the owner's blind pairs
+# (`docs/soft-hair-status.md`). Left to right across the fringe, then the two outer falls and the
+# two curtains; the base-tone clumps and the two outermost, which hugged the contour and read as a
+# seam, are not drawn. The widths and lengths carry a fixed variation so they are not a comb.
+_FRINGED_LOCKS: list[Lock] = [
+    ("lit", ((-0.14, -1.46), (-0.36, -1.15), (-0.5, -0.7), (-0.56, -0.27)), 0.212, 0.99),
+    ("shadow", ((-0.18, -1.42), (-0.56, -1.22), (-0.8, -0.82), (-0.88, -0.3), (-0.85, 0.06)), 0.172, 0.88),
+    ("lit", ((-0.3, -1.48), (-0.68, -1.3), (-0.94, -0.9), (-1.05, -0.3), (-1.1, 0.5), (-1.12, 1.3), (-1.2, 2.2), (-1.28, 3.0)), 0.174, 0.87),
+    ("shadow", ((-0.84, -0.1), (-0.94, 0.3), (-1.0, 0.9), (-1.03, 1.5), (-1.1, 2.3), (-1.17, 3.05)), 0.183, 0.99),
+    ("lit", ((0.06, -1.47), (0.3, -1.15), (0.5, -0.68), (0.6, -0.14)), 0.172, 0.95),
+    ("shadow", ((0.2, -1.42), (0.62, -1.2), (0.88, -0.8), (0.98, -0.28), (0.96, 0.1)), 0.187, 0.96),
+    ("lit", ((0.3, -1.48), (0.72, -1.28), (0.98, -0.88), (1.08, -0.3), (1.13, 0.5), (1.17, 1.3), (1.27, 2.2), (1.36, 3.05)), 0.223, 0.98),
+    ("shadow", ((0.84, -0.1), (0.95, 0.3), (1.01, 0.9), (1.06, 1.5), (1.13, 2.3), (1.22, 3.0)), 0.143, 0.87),
+]  # fmt: skip
+
+
+def _fringed_locks(fall: float) -> list[Lock]:
+    q = _fall_q(fall, _FRINGED_BASE_TIP)
+    return [(role, tuple(q(pt) for pt in pts), w, ln) for role, pts, w, ln in _FRINGED_LOCKS]
+
+
 def _fringed_underside(fall: float) -> tuple[Chain, list[Chain]]:
     return _fringed(_FRINGED_UNDERSIDE, fall), []
 
@@ -3290,6 +3490,14 @@ class Hairstyle:
     # How heavy the strand lines are against the outline. A cut traced from a reference
     # that draws its locks' edges boldly says so.
     strand_weight: float = 0.55
+    # The clumps the soft finish lays over the front hair, `Lock`s given at the tip depth. None
+    # leaves the cut without them, so a cut that has not been authored says nothing and the soft
+    # finish draws it as before. The flat finish never reads this.
+    locks: Callable[[float], list[Lock]] | None = None
+    # Whether the clumps are laid on the mass behind the head as well as on the front piece. A short
+    # cut's crown is the mass, since the front piece is only the fringe and the temples, so a clump
+    # there has to be drawn on both, in the same shape, and meets itself at the seam.
+    mass_locks: bool = False
 
 
 def _long_fall_edges(length: float) -> list[tuple[Point, list[Segment]]]:
@@ -3319,6 +3527,8 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _short_fall_edges,
         _short_tip_edge,
         strands=_short_strands,
+        locks=_short_locks,
+        mass_locks=True,
         # Where the side tips end: a tight crop pinned to the skull at 0, a
         # shaggy ear-length cut at 1. The old (0.42, 1.00) range described the
         # bob this used to be, with locks reaching for the jaw.
@@ -3340,6 +3550,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _long_traced_fall_edge,
         _long_traced_tip_edge,
         strands=_long_traced_strands,
+        locks=_long_traced_locks,
         # No `tip_range`, so `hair_length` measures the body, chin to hip. That
         # is what keeps a long haircut the same haircut when the build changes;
         # a head-relative range would freeze her hair at one length and it would
@@ -3357,6 +3568,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         covers_ears=True,
         underside=_parted_underside,
         tip_lines=_parted_tip_lines,
+        locks=_parted_locks,
     ),
     # Blunt fringe across the brow, long straight locks in front of the shoulders and
     # the ears peeping out between them, traced off Risa's reference
@@ -3372,6 +3584,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         front_shade=_fringed_shade,
         underside=_fringed_underside,
         strand_weight=0.8,
+        locks=_fringed_locks,
     ),
     "short_crop": Hairstyle(
         _crop_mass_shape,
@@ -3379,6 +3592,8 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _crop_fall_edge,
         _crop_tip_edge,
         strands=_crop_strands,
+        locks=_crop_locks,
+        mass_locks=True,
         # Where the side tips reach. `hair_length` 0.65, which is what Satoshi
         # carries, puts the cut at exactly the size it was traced at.
         tip_range=(0.800, 0.911),
@@ -3425,6 +3640,13 @@ def _hair_tip_tone(p: CharacterParams) -> str | None:
     return p.hair_tip_color
 
 
+def _hair_lines(svg: str, p: CharacterParams) -> str:
+    """A hair layer, its lines in the hair's own dark tone when the finish is soft."""
+    if not _soft(p):
+        return svg
+    return _soft_lines(svg, shade(p.hair_color, _SOFT_HAIR_LINE_VALUE))
+
+
 def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
     style = HAIRSTYLES[p.hairstyle]
     fall = _hair_fall(sk, p)
@@ -3437,7 +3659,7 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
             for start, segments in style.tip_edge(fall)
         )
         clips.append(f'<clipPath id="{_HAIR_TIP_CLIP_ID}">{regions}</clipPath>')
-    if style.strands is not None or style.front_shade is not None:
+    if style.strands is not None or style.front_shade is not None or _soft_locks_on(p, style):
         # Strands are open chains, so nothing stops one running out past the
         # silhouette; clipping them to the shape they divide means a strand can be
         # drawn long enough to reach its lock's tip without having to end exactly on
@@ -3449,6 +3671,10 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
         region, _ = style.underside(fall)
         d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *region)
         clips.append(f'<clipPath id="{_HAIR_UNDERSIDE_CLIP_ID}"><path d="{d}" /></clipPath>')
+    if style.mass_locks and _soft_locks_on(p, style):
+        start, segments = style.mass(fall)
+        d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
+        clips.append(f'<clipPath id="{_HAIR_MASS_CLIP_ID}"><path d="{d}" /></clipPath>')
     return f"<defs>{''.join(clips)}</defs>" if clips else ""
 
 
@@ -3471,6 +3697,8 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
     parts = _two_tone_hair(d, p)
     if style.underside is not None:
         parts.append(_hair_underside(sk, p, d, style.underside(fall)[1]))
+    if style.mass_locks and _soft_locks_on(p, style):
+        parts.extend(_soft_lock_layers(sk, p, style, fall, d, _HAIR_MASS_CLIP_ID))
     parts.append(
         f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
@@ -3933,6 +4161,17 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
     )
 
 
+def _redefine_ids(body: str, prefix: str) -> str:
+    """`body` with every id it defines, and every reference to one of those, under `prefix`; ids
+    it only points at (defined elsewhere in the document) are left alone. For drawing a layer a
+    second time without defining its masks and clips a second time."""
+    for name in dict.fromkeys(re.findall(r'\bid="([^"]+)"', body)):
+        body = body.replace(f'id="{name}"', f'id="{prefix}-{name}"')
+        body = body.replace(f"url(#{name})", f"url(#{prefix}-{name})")
+        body = body.replace(f'href="#{name}"', f'href="#{prefix}-{name}"')
+    return body
+
+
 def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     """The bust in front of the arms: `chest`, the layers worn on the torso up
     to the arms, drawn again masked to the lobe a bust adds to the torso, then
@@ -3973,6 +4212,8 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     bust = _bust_shape(sk, drape=True)
     if bust is None:
         return ""
+    # The same layers a second time: what they define (a coat's panel mask) goes under another name.
+    chest = _redefine_ids(chest, "again")
     cx, sw = sk.head_cx, _stroke_w(sk)
     if p.outfit.tunic_color is None:
         d = " ".join(
@@ -12189,6 +12430,8 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     """
     fill, silhouette, under_chin = _head_paths(sk)
     parts = [f'<path d="{fill}" fill="{p.skin_tone}" />']
+    soft = _soft(p)
+    line = shade(p.skin_tone, _SOFT_FACE_LINE_VALUE) if soft else OUTLINE
 
     # The outline is drawn in two weights rather than as one closed stroke. Around
     # the skull and cheeks it is silhouette, so it carries full weight. Under the
@@ -12201,11 +12444,11 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     # `harness/detail/chin_weight.py`).
     sw = _stroke_w(sk)
     parts.append(
-        f'<path d="{silhouette}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
+        f'<path d="{silhouette}" fill="none" stroke="{line}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linecap="round" />'
     )
     parts.append(
-        f'<path d="{under_chin}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw, 0.6):.2f}" '
+        f'<path d="{under_chin}" fill="none" stroke="{line}" stroke-width="{_outline_w(sw, 0.6):.2f}" '
         f'stroke-linecap="round" />'
     )
     return "".join(parts)
@@ -12390,6 +12633,7 @@ def _eye(
     sw: float,
     pupil_ratio: float = 0.40,
     reach: float | None = None,
+    soft: bool = False,
 ) -> str:
     d, _lid = _eye_shape(ex, ey, er, side, f)
     clip_id = f"eye-{'l' if side < 0 else 'r'}"
@@ -12448,8 +12692,21 @@ def _eye(
     parts.append(
         f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r:.1f}" fill="{shade(eye_color, 0.45)}" />'
     )
+    iris_fill = eye_color
+    if soft:
+        # The colour darker at the top, where the lid shades it, and lighter at the
+        # bottom, where light comes through: the one gradient that makes a flat disc
+        # read as a glassy iris.
+        grad_id = f"iris-grad-{'l' if side < 0 else 'r'}"
+        parts.append(
+            f'<defs><linearGradient id="{grad_id}" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0" stop-color="{shade(eye_color, 0.62)}" />'
+            f'<stop offset="0.55" stop-color="{eye_color}" />'
+            f'<stop offset="1" stop-color="{tint(eye_color, 0.38)}" /></linearGradient></defs>'
+        )
+        iris_fill = f"url(#{grad_id})"
     parts.append(
-        f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{eye_color}" />'
+        f'<circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" fill="{iris_fill}" />'
     )
     band_r = iris_r * 0.84
     cut = band_r * _IRIS_BAND_CUT
@@ -12462,6 +12719,18 @@ def _eye(
         f'<circle cx="{ix:.1f}" cy="{iris_cy + iris_r * 0.10:.1f}" r="{iris_r * pupil_ratio:.1f}" '
         f'fill="{shade(eye_color, 0.18)}" />'
     )
+    if soft:
+        # Light bouncing up into the lower iris, a glow that fades out before the
+        # iris's edge, kept inside the iris disc by its own clip.
+        side_id = "l" if side < 0 else "r"
+        clip, glow = f"iris-clip-{side_id}", f"iris-glow-{side_id}"
+        parts.append(
+            f'<defs><clipPath id="{clip}"><circle cx="{ix:.1f}" cy="{iris_cy:.1f}" r="{iris_r * 0.84:.1f}" /></clipPath>'
+            f'<radialGradient id="{glow}"><stop offset="0" stop-color="{tint(eye_color, 0.5)}" stop-opacity="0.60" />'
+            f'<stop offset="1" stop-color="{tint(eye_color, 0.5)}" stop-opacity="0" /></radialGradient></defs>'
+            f'<ellipse cx="{ix:.1f}" cy="{iris_cy + iris_r * 0.50:.1f}" rx="{iris_r * 0.62:.1f}" '
+            f'ry="{iris_r * 0.40:.1f}" fill="url(#{glow})" clip-path="url(#{clip})" />'
+        )
     if stretch:
         parts.append("</g>")
     up = f.iris_aspect
@@ -12841,7 +13110,9 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
         if f.eyes_closed:
             parts.append(_eye_closed(ex, eye_y, eye_r, side, f, sw))
         else:
-            parts.append(_eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio, reach))
+            parts.append(
+                _eye(ex, eye_y, eye_r, side, f, p.eye_color, sw, pupil_ratio, reach, soft=_soft(p))
+            )
 
     if f.nose_dot:
         parts.append(_nose_dot(sk, sw))
@@ -12881,6 +13152,20 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
             # blush tint the iris and the lower lid, so it starts below the lower lash line.
             by = max(cy + r * 0.44, eye_y + eye_r * f.eye_lower_lid + sw + blush_ry)
             color, opacity = _blush(p.skin_tone)
+            if _soft(p):
+                # The same pink, fading to nothing at the ellipse's edge, a little wider
+                # so the flush is as large as the hard one looked.
+                if side < 0:
+                    blush.append(
+                        f'<defs><radialGradient id="blush-grad"><stop offset="0" stop-color="{color}" '
+                        f'stop-opacity="{min(1.0, opacity * f.blush * 1.5):.2f}" />'
+                        f'<stop offset="1" stop-color="{color}" stop-opacity="0" /></radialGradient></defs>'
+                    )
+                blush.append(
+                    f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.21:.1f}" ry="{blush_ry * 1.35:.1f}" '
+                    f'fill="url(#blush-grad)" />'
+                )
+                continue
             blush.append(
                 f'<ellipse cx="{bx:.1f}" cy="{by:.1f}" rx="{r * 0.16:.1f}" ry="{blush_ry:.1f}" '
                 f'fill="{color}" opacity="{opacity * f.blush:.2f}" />'
@@ -12909,6 +13194,226 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
+# How far the fringe's shadow falls on the forehead, in head radii, and how dark.
+_SOFT_BROW_SHADOW_DROP = 0.09
+_SOFT_BROW_SHADOW_VALUE = 0.80
+_SOFT_BROW_SHADOW_OPACITY = 0.55
+
+
+def _soft_brow_shadow(sk: Skeleton, p: CharacterParams, fill_d: str) -> str:
+    """The fringe's shadow on the face, drawn under the hair."""
+    face_fill = _head_paths(sk)[0]
+    return (
+        f'<defs><clipPath id="soft-face-clip"><path d="{face_fill}" /></clipPath></defs>'
+        f'<g clip-path="url(#soft-face-clip)"><path d="{fill_d}" '
+        f'fill="{shade(p.skin_tone, _SOFT_BROW_SHADOW_VALUE)}" opacity="{_SOFT_BROW_SHADOW_OPACITY}" '
+        f'transform="translate(0 {_SOFT_BROW_SHADOW_DROP * sk.head_r:.2f})" /></g>'
+    )
+
+
+# The soft finish's clumps (`Hairstyle.locks`): shadow clumps and lit clumps in solid tone steps of
+# the hair colour, a soft separation along each shadow clump's dark edge and one faint highlight
+# in each lit clump, all inside the hair's own silhouette so no contour moves. Tuned by eye over
+# three rounds of the owner's blind pairs (2026-10-16, `docs/soft-hair-status.md`): the tones keep
+# the hair's saturation (a tint toward white read as frosting on dark red), the highlights stay
+# faint, and the clumps sit on the cut's own strand dashes, which are drawn over them.
+_SOFT_LOCK_LIGHT = (-0.55, -0.83)  # toward the light: up and to the left
+# `highlight_strength` 1 is this share of the strength the clumps were first drawn and judged at.
+_SOFT_LOCK_STRENGTH_SCALE = 0.5
+# A tip colour at least this pale and this grey stays clean: no clumps in it. A shadow clump that
+# crosses from the hair's own colour into a white tip came out as a grey oval that read as a stain
+# (Satoshi, found by the break-it review of the cuts added after Gate 1), and a lit step cannot
+# rise on white anyway. The tip repaint still covers the hair-colour clumps under it.
+_SOFT_LOCK_PALE_TIP_SATURATION = 0.15
+_SOFT_LOCK_PALE_TIP_VALUE = 0.85
+_SOFT_LOCK_MID_RISE = 0.12  # a lit clump's body, as a share of `highlight_rise`
+_SOFT_LOCK_HIGH_RISE = 0.38  # its highlight
+_SOFT_LOCK_SEP_VALUE = 0.74
+_SOFT_LOCK_SEP_OPACITY = 0.6
+_SOFT_LOCK_POINTS = 9  # points kept per side of a clump's outline before it is drawn as curves
+
+
+def _lock_line(points: tuple[Point, ...], per: int = 14) -> list[Point]:
+    """A smooth curve through `points`, sampled."""
+    p = [points[0], *points, points[-1]]
+    out: list[Point] = []
+    for i in range(1, len(p) - 2):
+        p0, p1, p2, p3 = p[i - 1], p[i], p[i + 1], p[i + 2]
+        for k in range(per):
+            t = k / per
+            t2, t3 = t * t, t * t * t
+            out.append(
+                (
+                    0.5
+                    * (
+                        2 * p1[0]
+                        + (-p0[0] + p2[0]) * t
+                        + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2
+                        + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3
+                    ),
+                    0.5
+                    * (
+                        2 * p1[1]
+                        + (-p0[1] + p2[1]) * t
+                        + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2
+                        + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
+                    ),
+                )
+            )
+    out.append(points[-1])
+    return out
+
+
+def _lock_normals(line: list[Point]) -> list[Point]:
+    out = []
+    for i in range(len(line)):
+        a = line[max(0, i - 1)]
+        b = line[min(len(line) - 1, i + 1)]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        n = math.hypot(dx, dy) or 1.0
+        out.append((-dy / n, dx / n))
+    return out
+
+
+def _lock_side(line: list[Point], normals: list[Point]) -> float:
+    """+1 where a clump's normal faces the light on the whole, else -1. Chosen once for the whole
+    clump: chosen point by point it flips mid-clump where the line bends past the light."""
+    total = sum(nx * _SOFT_LOCK_LIGHT[0] + ny * _SOFT_LOCK_LIGHT[1] for nx, ny in normals)
+    return 1.0 if total >= 0 else -1.0
+
+
+def _smooth_path(points: list[tuple[float, float]]) -> str:
+    """Cubic curves through `points` (Catmull-Rom), as the tail of a path already at the first."""
+    out = []
+    n = len(points)
+    for i in range(n - 1):
+        p0, p1, p2, p3 = points[max(i - 1, 0)], points[i], points[i + 1], points[min(i + 2, n - 1)]
+        c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
+        c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
+        out.append(f"C {c1[0]:.1f} {c1[1]:.1f} {c2[0]:.1f} {c2[1]:.1f} {p2[0]:.1f} {p2[1]:.1f}")
+    return " ".join(out)
+
+
+def _lock_shape(
+    cx: float,
+    cy: float,
+    r: float,
+    points: tuple[Point, ...],
+    width: float,
+    t0: float = 0.0,
+    t1: float = 1.0,
+    power: float = 0.75,
+    offset: float = 0.0,
+) -> str:
+    """A tapered shape along a clump's line, nothing at either end and `width` (head radii) at the
+    widest. `offset` shifts it across the line by that share of its local width, positive toward
+    the light."""
+    if t1 - t0 < 0.05:
+        return ""  # too short to draw: nothing but its two tapered ends
+    line = _lock_line(points)
+    nrm = _lock_normals(line)
+    side = _lock_side(line, nrm)
+    n = len(line)
+    left: list[tuple[float, float]] = []
+    right: list[tuple[float, float]] = []
+    for i, ((x, y), (nx, ny)) in enumerate(zip(line, nrm, strict=True)):
+        t = i / (n - 1)
+        if t < t0 or t > t1:
+            continue
+        u = (t - t0) / (t1 - t0)
+        w = width * math.sin(math.pi * u) ** power
+        mx, my = x + nx * side * offset * w, y + ny * side * offset * w
+        left.append((cx + (mx + nx * w / 2) * r, cy + (my + ny * w / 2) * r))
+        right.append((cx + (mx - nx * w / 2) * r, cy + (my - ny * w / 2) * r))
+    if len(left) < 3:
+        return ""
+    keep = sorted(
+        {round(k * (len(left) - 1) / (_SOFT_LOCK_POINTS - 1)) for k in range(_SOFT_LOCK_POINTS)}
+    )
+    left = [left[k] for k in keep]
+    right = [right[k] for k in keep][::-1]
+    return f"M {left[0][0]:.1f} {left[0][1]:.1f} {_smooth_path(left)} {_smooth_path([left[-1], *right])} Z"
+
+
+def _soft_locks(
+    sk: Skeleton,
+    hair: str,
+    locks: list[Lock],
+    gain: float,
+    clip_id: str = _HAIR_FRONT_CLIP_ID,
+    tip_clip: bool = False,
+) -> str:
+    """The soft finish's clumps in the tones of `hair`, as one group clipped to a hair layer
+    (`clip_id`, the front piece by default) and with `tip_clip` to the tip-toned region too.
+    `gain` is the internal strength, 1 the strength the clumps were first drawn and judged at."""
+    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+    rise = highlight_rise(hair) * gain
+    shadow = soft_shadow_tone(hair, gain)
+    mid, high = (
+        lit_tone(hair, rise * _SOFT_LOCK_MID_RISE),
+        lit_tone(hair, rise * _SOFT_LOCK_HIGH_RISE),
+    )
+    sep = shade(hair, _SOFT_LOCK_SEP_VALUE)
+    parts = []
+
+    def add(d: str, fill: str, opacity: float | None = None) -> None:
+        if d:
+            extra = "" if opacity is None else f' opacity="{opacity}"'
+            parts.append(f'<path d="{d}" fill="{fill}"{extra} />')
+
+    for role, points, width, length in locks:
+        if role == "shadow":
+            add(_lock_shape(cx, cy, r, points, width, t1=length, power=0.55), shadow)
+            sep_d = _lock_shape(
+                cx, cy, r, points, 0.035, t0=0.10, t1=min(length, 0.9), power=0.5, offset=-1.7
+            )
+            add(sep_d, sep, round(_SOFT_LOCK_SEP_OPACITY * gain, 3))
+        elif role == "lit":
+            add(_lock_shape(cx, cy, r, points, width, t1=length, power=0.55), mid)
+            high_d = _lock_shape(
+                cx, cy, r, points, width * 0.30, t0=0.10, t1=0.62, power=0.8, offset=0.45
+            )
+            add(high_d, high)
+        else:
+            raise ValueError(f"a lock's role is shadow or lit, not {role!r}")
+    body = "".join(parts)
+    if tip_clip:
+        body = f'<g clip-path="url(#{_HAIR_TIP_CLIP_ID})">{body}</g>'
+    return f'<g clip-path="url(#{clip_id})">{body}</g>'
+
+
+def _soft_lock_layers(
+    sk: Skeleton,
+    p: CharacterParams,
+    style: Hairstyle,
+    fall: float,
+    fill_d: str,
+    clip_id: str,
+    after_repaint: list[str] | None = None,
+) -> list[str]:
+    """The soft finish's clumps on one hair layer (`fill_d` its shape, `clip_id` its clip). A
+    two-tone cut gets them twice: in the hair's tones, then, over a repaint of the tip region, in
+    the tip colour's. A cut whose tip region is the whole mass skips the first pass, which the
+    repaint would hide entirely. `after_repaint` is drawn between the repaint and the tip-colour
+    pass, for what the repaint would otherwise cover (the front piece's `front_shade` strips)."""
+    assert style.locks is not None
+    after_repaint = after_repaint or []
+    locks = style.locks(fall)
+    gain = p.highlight_strength * _SOFT_LOCK_STRENGTH_SCALE
+    tips = _hair_tip_tone(p)
+    parts = []
+    if tips is None or style.tip_edge(fall) != [style.mass(fall)]:
+        parts.append(_soft_locks(sk, p.hair_color, locks, gain, clip_id))
+    if tips is not None:
+        parts.append(f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />')
+        parts.extend(after_repaint)
+        _, tip_s, tip_v = colorsys.rgb_to_hsv(*hex_to_rgb01(tips))
+        pale = tip_s < _SOFT_LOCK_PALE_TIP_SATURATION and tip_v > _SOFT_LOCK_PALE_TIP_VALUE
+        if not pale:
+            parts.append(_soft_locks(sk, tips, locks, gain, clip_id, tip_clip=True))
+    return parts
+
+
 def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
     sw = _stroke_w(sk)
@@ -12922,13 +13427,21 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     fill_d = _curve(cx, cy, r, start, line + back)
     line_d = _curve(cx, cy, r, start, line, close=False)
     parts = _two_tone_hair(fill_d, p)
+    if _soft(p):
+        parts = [_soft_brow_shadow(sk, p, fill_d), *parts]
+    strips: list[str] = []
     if style.front_shade is not None:
         tone = shade(p.hair_color, value_factor=_HAIR_UNDERSIDE_VALUE)
         for region in style.front_shade(fall):
-            parts.append(
+            strips.append(
                 f'<path d="{_curve(cx, cy, r, *region)}" fill="{tone}" '
                 f'clip-path="url(#{_HAIR_FRONT_CLIP_ID})" />'
             )
+    parts.extend(strips)
+    if _soft_locks_on(p, style):
+        # The strips sit under the clumps, with or without a tip colour: a tip repaint would cover
+        # them, so they are drawn again between it and the tip-colour clumps.
+        parts.extend(_soft_lock_layers(sk, p, style, fall, fill_d, _HAIR_FRONT_CLIP_ID, strips))
     parts.append(
         f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
@@ -13559,6 +14072,7 @@ def render_character(
     unrelated change: the web tool is what turns it on.
     """
     p = p or CharacterParams()
+    validate_finish(p)
     sk = sk or skeleton_for(p)
 
     # Back to front. The legs go under the skirts so a hem covers the thigh, and
@@ -13620,7 +14134,7 @@ def render_character(
         # hairstyles: a cut owns the outline around the skull, and these two are
         # by definition outside it.
         _hair_tail(sk, p),
-        _hair_mass(sk, p),
+        _hair_lines(_hair_mass(sk, p), p),
         # The body under everything it wears, and under the neck, whose skin
         # covers its top edge; see the function.
         _without_raised_sleeves(_torso(sk, p), p),
@@ -13696,7 +14210,7 @@ def render_character(
         # arms here is what lets the hair mass cover their ends the way it
         # already covers the ear and the beard's sideburns.
         _goggles_strap(sk, p),
-        _hair_front(sk, p),
+        _hair_lines(_hair_front(sk, p), p),
         # Over the fringe, for a face that draws them there.
         _brows_over_hair(sk, p),
         # Last of the hair, unlike the tail, which is first. See `_hair_knot`: a
@@ -13725,6 +14239,8 @@ def render_character(
     ]
 
     body = "\n  ".join(layer for layer in layers if layer)
+    if _soft(p):
+        body = _soft_stroke_widths(body)
     if id_prefix:
         body = _namespace_ids(body, id_prefix)
     # Emitted only when asked for, rather than always drawn and sometimes

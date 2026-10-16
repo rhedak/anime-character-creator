@@ -24,7 +24,7 @@ import base64
 import json
 from dataclasses import asdict, replace
 
-from .character import ADULT_FACE_AGE, CharacterParams, FaceStyle, Outfit
+from .character import ADULT_FACE_AGE, CharacterParams, FaceStyle, Outfit, validate_finish
 
 # The query parameter a link carries the character under, short because it
 # sits in a URL a person reads: `?c=...`.
@@ -72,6 +72,9 @@ def params_from_dict(data: dict) -> CharacterParams:
     # rather than refused.
     if p.face_age < ADULT_FACE_AGE:
         p = replace(p, face_age=ADULT_FACE_AGE)
+    # A link can carry the soft finish's two fields although the web tool has no control for
+    # them; a bad value is refused here rather than failing later inside the renderer.
+    validate_finish(p)
     return p
 
 
