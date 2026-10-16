@@ -253,3 +253,36 @@ Answers, 2026-10-16: (1) yes. (2) Risa first, since she is the face of the compa
 characters follow. (3) yes, up to about 90 KB per document. (4) not off the table: the contour is
 not set, and what looks best on visual confirmation goes to the next round, so pointed fringe locks
 are a Phase 0 variant. (5) yes.
+
+## 11. Round 2 (after Gate 0, 2026-10-16)
+
+Gate 0 result (`docs/soft-hair-status.md`): only LS reached the owner's top three, beside today's soft
+and r3. S, P, D and L were named broken because their highlights do not match the hair colour (S, D, P)
+or sit in odd places (L). The owner chose one more bounded round instead of stopping.
+
+**Diagnosis from the code, to be confirmed by measurement:** `tint()` mixes toward white in RGB, so a
+highlight on dark red is a pale pink grey; it is then laid over the base at 30 to 60 percent opacity,
+giving a muddy third colour; and the L pieces (crown band, streaks) belong to no clump.
+
+**Steps**
+
+1. Measure the highlight, base and shadow tones of S and LS in HSV (confirms or refutes the diagnosis).
+2. Hue-true tones: raise value, keep saturation near the base, nudge hue slightly warm. Clumps and
+   highlights as solid computed colours, not low-opacity washes.
+3. Highlights belong to clumps: one per clump, one light side, strongest at the crown and fading down,
+   ending before the tip, none on the outermost clumps. The crown band becomes a ring highlight that
+   follows the head and breaks at clump gaps.
+4. New mock-up variants on the same Risa guides, shuffled to new letters: r3 (control), old LS (control),
+   S2, LS2, LS2 with ring, P2.
+5. Palette check: Risa's cut in five other cast hair colours (light, vivid, orange, dark, white).
+6. Defect-only reviewer on images; automatic guard that a highlight's hue stays near its clump's base
+   and its saturation does not fall far below it. The guard prevents the failure, it is not a taste target.
+7. Gate 0b (owner): randomised pairs, new against r3 and against today's soft, at close-up and app
+   scale, plus "does anything look wishy at zoom".
+
+**Kill rule:** if no variant clearly beats r3 at Gate 0b, stop: keep the r3 repairs, close the hair work,
+record why.
+
+**Alongside:** land the r3 repairs (no gloss arc, no depth wash, no jaw shading) in the package first,
+flat output byte-identical. `CLAUDE.md` wording is approved by the owner only if a variant wins and goes
+into the package.
