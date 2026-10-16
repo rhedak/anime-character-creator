@@ -44,6 +44,10 @@ falsy `background=0`, and `render_character`'s positional parameters. The indepe
   (`core-limbs-pow.ts`). A flip on another engine would be recorded, rasterised and signed, not hidden (plan, section 4).
 * **Platform.** The reference is one machine (macOS libm). The manifest agrees across four CPython versions but has not been
   regenerated on Linux, and Python itself can differ from `x * x` in `x ** 2` on Apple's libm in 0.12 percent of calls.
+* **Huge integers.** Python does exact integer arithmetic, so an integer above 2**53 in a float field (`bust=12345678901234567890`)
+  draws with exact products; JavaScript doubles round it first. The companion's oracle found three such cases (the SVG has the same
+  length and different digits). No slider, preset or link the tools produce can reach it; the port keeps the value as given
+  (`PyInt`) for the link and draws from its nearest double.
 * **Error text.** Exception classes equal Python's everywhere; the texts are the port's own where listed in `docs/ts-port-errors*.md`.
 * **Python-only things left alone by decision:** the full command line (`generate.py`), `cover.py`, `sheet.py`, the comic package, PNG
   export (cairosvg), and the picture-pack tools of the companion.
