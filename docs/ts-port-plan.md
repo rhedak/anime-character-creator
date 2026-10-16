@@ -275,7 +275,7 @@ Pages (environment rules; inferred unknown).
 Gate 1 (owner): continue, change course, or stop, on measured numbers. The cost sunk by then is Phase 0 and the
 spike only; the freeze has not started.
 
-**Phase 2. Full oracle, test audit, freeze starts.**
+**Phase 2. Full oracle, test audit, freeze starts.** (Started 2026-10-16 after the owner's answers on D5, D6, D10, D12.)
 Full corpus as data, stage hashes, coverage gate, mutation harness, second platform manifest, audit of the 288
 tests (output-level and portable, tied to a function, Python-only, comic). Freeze begins (section 11).
 Gate 2: manifest reproduces on the second platform or the differences are understood and written down; coverage
@@ -411,15 +411,24 @@ oracle.
   npm.
 * **D3 Reference.** Tag `v0.3.0`, CPython 3.13.11, macOS arm64, plus a second platform for the manifest.
 * **D4 Naming.** camelCase functions mirroring Python names; snake_case parameter keys on the wire.
-* **D5 `generate`, `cover`, `sheet`, and the sibling project.** Recommend port them in Phase 6b so the README art and
-  the sibling consumer both become "node renders the SVG, cairosvg makes the PNG". Needs your answer on what the
-  sibling calls, because `local/` is not on this machine. Alternative: leave that consumer on the frozen Python.
-* **D6 Comic.** `comic/` imports the Python renderer. It stays on the frozen Python and stops following look
-  changes, unless you want it ported (adds harfbuzz) or retired. I do not know whether it is used.
-* **D7 Python tests.** Port output and rule tests, drop tests of Python internals, reconcile against the audit.
+* **D5 `generate`, `cover`, `sheet`, and the sibling project.** DECIDED 2026-10-16 by the owner: do what can be done for
+  now and worry about these later. They stay on the frozen Python, out of scope until the owner raises them; the
+  sibling project keeps running on the frozen package. (The README art `ref-out/` is regenerated from Python until then.)
+* **D6 Comic.** DECIDED 2026-10-16 by the owner: the idea is abandoned for now and deprecation is fine. Out of scope;
+  `comic/` stays on the frozen Python and is not maintained.
+* **D7 Python tests.** Port output and rule tests, drop tests of Python internals, reconcile against the audit
+  (`docs/ts-port-test-audit.md`, Phase 2).
 * **D8 Python source after cutover.** Keep for one release under `python-final`, then remove on your say.
 * **D9 Versions.** Creator v0.4.0, companion v0.8.0.
-* **D10 Freeze or not,** section 11. Recommend freeze, starting after Gate 1.
+* **D10 Freeze.** DECIDED 2026-10-16: the owner left the details to me; I chose the freeze, as the easier option. From the
+  start of Phase 2 until cutover there are no look changes, new parameters or `ref-out` movement in Python. Requests
+  go on a queue (`docs/ts-port-queue.md`) and are built after cutover, in TypeScript. A bug fix is allowed only with
+  the manifest regenerated, and the same fix in the TS in the same change once there is a TS for that code.
+* **D12 Error text.** DECIDED 2026-10-16: the owner left the details to me. The port keeps Python's exception class
+  names (the companion's tests and the model see them) and defines its own stable messages, listing every place the
+  text differs from CPython 3.13 in `docs/ts-port-errors.md` as the port goes. Reference for class names: CPython 3.12
+  (what Pyodide ships, 3.12.1) wherever 3.12 and 3.13 differ (`re.error`, not `PatternError`); the kernel's
+  `reError` is to be switched accordingly.
 * **D11 Companion rendering location.** Worker thread with a timeout (recommended) or in process.
 
 ## 13. Effort (inferred; Gate 1 replaces it with measurements)
