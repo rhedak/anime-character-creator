@@ -5,7 +5,7 @@
 
 import { shade } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
-import { fmt0, fmt1, fmt2, pyCos, pyFloat, pyMin, pyPow, pySin, radians } from "./pynum.ts";
+import { fmt0, fmt1, fmt2, pyCos, pyFloat, pyMin, pyPow, pySin, radians, truthy } from "./pynum.ts";
 import { pySub } from "./pyre.ts";
 import { replace, type Skeleton } from "./skeleton.ts";
 import type { Chain, Point, Segment } from "./tables.ts";
@@ -161,7 +161,7 @@ export function neck(sk: Skeleton, p: CharacterParams): string {
   const parts = [
     `<rect x="${fmt1(x)}" y="${fmt1(sk.neck_y)}" width="${fmt1(w)}" height="${fmt1(h)}" rx="${fmt1(rx)}" fill="${p.skin_tone}" />`,
   ];
-  if (p.face.chin_shadow) {
+  if (truthy(p.face.chin_shadow)) {
     parts.push(
       chinShadow(
         sk,

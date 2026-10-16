@@ -8,7 +8,7 @@
 import { metadataBlock } from "./attribution.ts";
 import { skeletonFor } from "./body.ts";
 import { documentWrap, namespaceIds, soft, softStrokeWidths } from "./character.ts";
-import { characterParams, validateFinish } from "./model.ts";
+import { FIELDS, characterParams, validateFinish, type ClassName } from "./model.ts";
 import type { CharacterParams } from "./params.ts";
 import { PARTS as arms } from "./parts-arms.ts";
 import { PARTS as body } from "./parts-body.ts";
@@ -17,6 +17,9 @@ import { PARTS as garments } from "./parts-garments.ts";
 import { PARTS as hair } from "./parts-hair.ts";
 import { PARTS as props } from "./parts-props.ts";
 import type { PartTable } from "./parts.ts";
+import { PyInt } from "./pyjson.ts";
+import { PyFloat, numberOf } from "./pyvalue.ts";
+import { truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
 
 export const ALL_PARTS: PartTable = { ...hair, ...face, ...body, ...arms, ...garments, ...props };
@@ -43,8 +46,34 @@ export class NotPorted extends Error {
   }
 }
 
-export function renderStages(p: CharacterParams, opts: RenderOptions = {}, parts: PartTable = ALL_PARTS): Stages {
-  validateFinish(p);
+/** One dataclass with its numeric fields as plain numbers (the markers that keep Python's int against float are for links). */
+function plainClass<T extends object>(cls: ClassName, obj: T): T {
+  const out = { ...obj } as Record<string, unknown>;
+  for (const f of FIELDS[cls]) {
+    const v = out[f.name];
+    if (f.type === "float" || f.type === "int") {
+      const n = numberOf(v);
+      if (n !== undefined) out[f.name] = n;
+    } else if (f.type === "bool") {
+      // A number in a bool field is only ever tested for truth.
+      if (v instanceof PyInt || v instanceof PyFloat || typeof v === "number") out[f.name] = (numberOf(v) as number) !== 0;
+    }
+  }
+  return Object.freeze(out) as T;
+}
+
+/**
+ * `p` as the drawing reads it: every numeric field a plain number. A link or a model can put the int `1` in a float field and
+ * Python keeps it and writes it back as `1`; the parts only compute with it, and the metadata block gets the original.
+ */
+export function plainParams(p: CharacterParams): CharacterParams {
+  const top = plainClass("CharacterParams", p);
+  return Object.freeze({ ...top, outfit: plainClass("Outfit", p.outfit), face: plainClass("FaceStyle", p.face) });
+}
+
+export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, parts: PartTable = ALL_PARTS): Stages {
+  validateFinish(typed);
+  const p = plainParams(typed);
   const sk = opts.sk ?? skeletonFor(p);
   const missing = new Set<string>();
   const stages = new Map<string, string | null>();
@@ -80,7 +109,7 @@ export function renderStages(p: CharacterParams, opts: RenderOptions = {}, parts
     part("_strap"),
     part("_apron"),
     when(coat, "_belt"),
-    when(p.outfit.collar_mock, "_collar"),
+    when(truthy(p.outfit.collar_mock), "_collar"),
     part("_coat"),
     when(!coat, "_belt"),
     part("_pouches"),
@@ -112,7 +141,7 @@ export function renderStages(p: CharacterParams, opts: RenderOptions = {}, parts
     [17, part("_traced_coat_and_belt", true)],
     [18, handsAfterCoat === null ? null : handsAfterCoat ? part("_arms", true) : ""],
     [19, part("_shoulder_bars")],
-    [20, when(!p.outfit.collar_mock, "_collar")],
+    [20, when(!truthy(p.outfit.collar_mock), "_collar")],
     [21, part("_ribbon")],
     [22, part("_mask")],
     [23, part("_ears")],
@@ -149,7 +178,7 @@ export function renderStages(p: CharacterParams, opts: RenderOptions = {}, parts
   const prefix = opts.id_prefix ?? "";
   if (text !== null && prefix) text = namespaceIds(text, prefix);
   record("body_ns", text);
-  record("doc", text === null ? null : documentWrap(sk, text, opts.background ?? null, opts.metadata ? metadataBlock(p) : ""));
+  record("doc", text === null ? null : documentWrap(sk, text, opts.background ?? null, opts.metadata ? metadataBlock(typed) : ""));
   return { stages, missing: [...missing].sort() };
 }
 

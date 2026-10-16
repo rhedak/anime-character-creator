@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import type { CharacterParams } from "../src/params.ts";
 import { renderStages } from "../src/render.ts";
+import { loadFullCorpus, loadFullManifest, loadFullStages, sha256 as shaFull } from "./corpus.ts";
 import { REPO_ROOT, loadJson } from "./fixtures.ts";
 
 type Case = { id: string; params: CharacterParams; kwargs: { id_prefix?: string; background?: string } };
@@ -47,4 +48,44 @@ test("every stage the port can produce equals Python's, on the 68 mini cases", (
   t.diagnostic(`compared ${compared} stages, skipped ${skipped} (need an unported part); ${nonEmpty.size} stage names produced text; ${stillMissing.size} parts still to port`);
   assert.deepEqual(bad.slice(0, 20), [], `${bad.length} stages differ`);
   assert.ok(compared > 0);
+});
+
+test("every stage the port can produce equals Python's, on the full corpus", (t) => {
+  const stages = loadFullStages();
+  const manifest = loadFullManifest();
+  const corpus = loadFullCorpus();
+  assert.equal(corpus.length, manifest.header.case_count);
+  const bad: string[] = [];
+  let compared = 0;
+  let skipped = 0;
+  let docs = 0;
+  const stillMissing = new Set<string>();
+  for (const c of corpus) {
+    const { stages: got, missing } = renderStages(c.params, { id_prefix: c.kw.id_prefix ?? "", background: c.kw.background ?? null, metadata: c.kw.metadata ?? false });
+    for (const m of missing) stillMissing.add(m);
+    const want = stages?.[c.id];
+    if (want) {
+      for (const [name, wsha, wlen] of want.stages) {
+        const g = got.get(name);
+        if (g === undefined) {
+          bad.push(`${c.id}: no stage ${name}`);
+          continue;
+        }
+        if (g === null) {
+          skipped++;
+          continue;
+        }
+        compared++;
+        if (g.length !== wlen && [...g].length !== wlen) bad.push(`${c.id}: ${name} length`);
+        else if (shaFull(g) !== wsha) bad.push(`${c.id}: ${name}`);
+      }
+    }
+    const doc = got.get("doc");
+    if (doc !== null && doc !== undefined) {
+      docs++;
+      if (!shaFull(doc).startsWith(manifest.cases[c.id]![0])) bad.push(`${c.id}: doc`);
+    }
+  }
+  t.diagnostic(`${corpus.length} cases; compared ${compared} stages${stages ? "" : " (per-stage manifest absent: run manifest_full.py build)"}, skipped ${skipped}; ${docs} whole documents; ${stillMissing.size} parts still to port`);
+  assert.deepEqual(bad.slice(0, 20), [], `${bad.length} stages differ`);
 });
