@@ -7,10 +7,11 @@
 // The arms are part of the one outline for now: a garment that needs the arm in front of it (a sleeve over the
 // upper arm is drawn over the body anyway) will split them off at stage 6.
 
-import { OUTLINE, outlineW, strokeW } from "./character.ts";
+import { OUTLINE, curve, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
+import { ADULT_EAR_L, ADULT_EAR_R, ADULT_HEAD } from "./body-adult-head-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
@@ -225,6 +226,23 @@ export function adultBand(sk: Skeleton, p: CharacterParams): string {
   return `<path d="${d}" ${ink} />` + arc(-1) + arc(1);
 }
 
+/**
+ * The adult head: the skin of the face traced from ref/franzi/ (body-adult-head-data.ts), narrower than the chibi's round
+ * skull, with the jaw coming down to a point at the chin. The hair drawn over it hides the skull's top and sides.
+ */
+export function adultHead(sk: Skeleton, p: CharacterParams): string {
+  const [start, segs] = ADULT_HEAD;
+  const d = curve(sk.head_cx, sk.head_cy, sk.head_r, start, segs);
+  return `<path d="${d}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" />`;
+}
+
+/** The ears, drawn before the head so the face covers their inner edge. */
+export function adultEars(sk: Skeleton, p: CharacterParams): string {
+  return [ADULT_EAR_L, ADULT_EAR_R]
+    .map(([start, segs]) => `<path d="${curve(sk.head_cx, sk.head_cy, sk.head_r, start, segs)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.8))}" stroke-linejoin="round" />`)
+    .join("");
+}
+
 const none = (): string => "";
 
 /** The parts an adult body replaces. Everything else (head, hair, face, garments) is the shared code. */
@@ -237,4 +255,6 @@ export const ADULT_PARTS = {
   _chest_lines: none,
   _bust_lines: none,
   _bust_over_arms: none,
+  _head: adultHead,
+  _ears: adultEars,
 };

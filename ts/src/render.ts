@@ -6,6 +6,7 @@
 // that slot `null` too; `renderCharacter` refuses to return a document while anything is missing and names what is.
 
 import { metadataBlock } from "./attribution.ts";
+import "./body-adult-hair.ts";
 import { ADULT_BODY_TYPES } from "./body-adult.ts";
 import { ADULT_PARTS } from "./body-adult-parts.ts";
 import { skeletonFor } from "./body.ts";

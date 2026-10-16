@@ -16,7 +16,7 @@ export const ADULT_REF = {
   arm_half_w: 0.14,
   arm_x: 1.14,
   leg_half_w: 0.38,
-  neck_half_w: 0.22,
+  neck_half_w: 0.27,
 } as const;
 
 export const ADULT_BODY_TYPES: Readonly<Record<string, BodyProfile>> = {

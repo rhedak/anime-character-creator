@@ -42,3 +42,15 @@ test("the adult skeleton stands about 6.4 heads tall with its anchors in order",
   for (let i = 1; i < order.length; i++) assert.ok((order[i] as number) > (order[i - 1] as number), `anchor ${i} below anchor ${i - 1}`);
   assert.ok(Math.abs((sk.foot_y - (sk.head_cy - sk.head_r)) / (2 * sk.head_r) - 6.4) < 0.05);
 });
+
+test("the adult cuts are reachable by name but stay out of HAIRSTYLES, the Python-mirrored table", async () => {
+  const { HAIRSTYLES, hairstyleFor } = await import("../src/core-head.ts");
+  await import("../src/body-adult-hair.ts");
+  assert.ok(!("swept_ponytail" in HAIRSTYLES));
+  assert.equal(typeof hairstyleFor("swept_ponytail").mass, "function");
+});
+
+test("Franzi's hair draws: the cut closes, and its mass and front piece come out as paths", () => {
+  const svg = renderCharacter(characterParams({ body: "adult_female", face_age: 1.0, hairstyle: "swept_ponytail", hair_length: 0.5, outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null }) }));
+  assert.ok((svg.match(/<path [^>]*fill="#e8b84b"/g) ?? []).length >= 2);
+});
