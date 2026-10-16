@@ -84,7 +84,9 @@ src = ["src", "tests"]
 # formatter over the evidence is not an improvement. Linting them cold reports
 # 199 errors, almost all `sys.path` juggling and unused imports left from
 # bisecting a bad reading.
-extend-exclude = ["*.md", "harness"]
+# `ref/franzi/scripts/` is the same kind of thing: the one-off scripts that prepared the Franzi
+# reference images (added from another machine, 2026-10-16), kept as the record of how.
+extend-exclude = ["*.md", "harness", "ref/franzi/scripts"]
 
 [tool.ruff.lint]
 select = [
