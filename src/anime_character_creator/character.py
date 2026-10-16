@@ -6,6 +6,7 @@ scales as one unit via the skeleton's head_r.
 
 from __future__ import annotations
 
+import colorsys
 import hashlib
 import itertools
 import math
@@ -4160,6 +4161,17 @@ def _bust_shape(sk: Skeleton, inset: float = 0.0, drape: bool = False) -> _Bust 
     )
 
 
+def _redefine_ids(body: str, prefix: str) -> str:
+    """`body` with every id it defines, and every reference to one of those, under `prefix`; ids
+    it only points at (defined elsewhere in the document) are left alone. For drawing a layer a
+    second time without defining its masks and clips a second time."""
+    for name in dict.fromkeys(re.findall(r'\bid="([^"]+)"', body)):
+        body = body.replace(f'id="{name}"', f'id="{prefix}-{name}"')
+        body = body.replace(f"url(#{name})", f"url(#{prefix}-{name})")
+        body = body.replace(f'href="#{name}"', f'href="#{prefix}-{name}"')
+    return body
+
+
 def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     """The bust in front of the arms: `chest`, the layers worn on the torso up
     to the arms, drawn again masked to the lobe a bust adds to the torso, then
@@ -4200,6 +4212,8 @@ def _bust_over_arms(sk: Skeleton, p: CharacterParams, chest: str) -> str:
     bust = _bust_shape(sk, drape=True)
     if bust is None:
         return ""
+    # The same layers a second time: what they define (a coat's panel mask) goes under another name.
+    chest = _redefine_ids(chest, "again")
     cx, sw = sk.head_cx, _stroke_w(sk)
     if p.outfit.tunic_color is None:
         d = " ".join(
@@ -13206,6 +13220,12 @@ def _soft_brow_shadow(sk: Skeleton, p: CharacterParams, fill_d: str) -> str:
 _SOFT_LOCK_LIGHT = (-0.55, -0.83)  # toward the light: up and to the left
 # `highlight_strength` 1 is this share of the strength the clumps were first drawn and judged at.
 _SOFT_LOCK_STRENGTH_SCALE = 0.5
+# A tip colour at least this pale and this grey stays clean: no clumps in it. A shadow clump that
+# crosses from the hair's own colour into a white tip came out as a grey oval that read as a stain
+# (Satoshi, found by the break-it review of the cuts added after Gate 1), and a lit step cannot
+# rise on white anyway. The tip repaint still covers the hair-colour clumps under it.
+_SOFT_LOCK_PALE_TIP_SATURATION = 0.15
+_SOFT_LOCK_PALE_TIP_VALUE = 0.85
 _SOFT_LOCK_MID_RISE = 0.12  # a lit clump's body, as a share of `highlight_rise`
 _SOFT_LOCK_HIGH_RISE = 0.38  # its highlight
 _SOFT_LOCK_SEP_VALUE = 0.74
@@ -13387,7 +13407,10 @@ def _soft_lock_layers(
     if tips is not None:
         parts.append(f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />')
         parts.extend(after_repaint)
-        parts.append(_soft_locks(sk, tips, locks, gain, clip_id, tip_clip=True))
+        _, tip_s, tip_v = colorsys.rgb_to_hsv(*hex_to_rgb01(tips))
+        pale = tip_s < _SOFT_LOCK_PALE_TIP_SATURATION and tip_v > _SOFT_LOCK_PALE_TIP_VALUE
+        if not pale:
+            parts.append(_soft_locks(sk, tips, locks, gain, clip_id, tip_clip=True))
     return parts
 
 

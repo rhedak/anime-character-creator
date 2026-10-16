@@ -1769,11 +1769,16 @@ render about 2 to 7 ms; in Chrome a frame swap costs about 1 ms more than the so
 clumps. `harness/soft_hair/` holds the mock-ups, the pair-sheet builders, `frametime.py` and
 `strength.py`.
 
-Known and left: Satoshi's pale tips show a grey, stain-like oval where a crown shadow clump crosses
-the tone boundary, and his gold shadows read a little heavy; near-black and white hair get
+Fixed before the release: Satoshi's pale tips showed a grey, stain-like oval where a crown shadow clump
+crossed the tone boundary, so a near-white tip colour now takes no clumps (the repaint still covers the
+hair-colour clumps under it); and kyoko and keiko defined a `coat-bust-` id twice, because the layers
+worn on the torso are drawn a second time over the arms for a bust. The second copy now has its own
+ids. No pixel of any `ref-out/` PNG moved; the four SVGs that carry the id (keiko, kyoko and the two
+sheets) were refreshed, and `tests/test_ids.py` checks every preset and base in both finishes.
+
+Known and left, accepted: Satoshi's gold shadows read a little heavy; near-black and white hair get
 near-invisible clumps (white is shadow-led by design); eight more cuts have no clumps yet and draw as
-the plain soft finish; kyoko and keiko share a `coat-bust-` id in both finishes (fixing it would move
-flat output).
+the plain soft finish.
 
 ## Conventions worth remembering
 

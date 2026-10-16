@@ -5,6 +5,12 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Before the release the owner asked for two fixes, both done: Satoshi's grey stain (a near-white tip colour
+  now takes no clumps; the cut was isolated to the front-layer tip pass first) and the duplicate
+  `coat-bust-` id on kyoko and keiko (the chest drawn a second time over the arms now renames the ids it
+  defines). The owner accepted the rest as is: gold shadows a little heavy, near-black and white hair, and
+  the eight cuts without clumps. `ref-out/` PNG pixels are unchanged; four SVGs were refreshed.
+
 - Gate 2 approved by the owner (2026-10-16): "you can tell at a glance which is which". Gate 3 code review
   done and applied (Review 9 below); shipped presets render byte-identically before and after the refactor.
 

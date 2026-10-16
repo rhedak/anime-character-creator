@@ -46,9 +46,21 @@ def test_the_flat_finish_ignores_the_clumps(monkeypatch: pytest.MonkeyPatch) -> 
 
 
 def test_a_two_tone_cut_gets_its_clumps_again_in_the_tip_colour() -> None:
-    svg = _soft("satoko")
+    svg = render_character(replace(PRESETS["satoko"], finish="soft", hair_tip_color="#33aaff"))
     assert svg.count('<g clip-path="url(#hair-front)">') == 2
     assert 'clip-path="url(#hair-tips)"' in svg
+
+
+@pytest.mark.parametrize("name", ["satoko", "satoshi"])
+def test_a_near_white_tip_stays_clean_with_no_clumps_in_it(name: str) -> None:
+    """A shadow clump crossing from the hair's colour into a white tip read as a grey stain on
+    Satoshi, so a pale tip takes none, while the hair colour above it keeps its clumps."""
+    svg = _soft(name)
+    assert 'clip-path="url(#hair-tips)">' not in svg  # no clump group clipped to the tip region
+    assert svg.count('<g clip-path="url(#hair-front)">') == 1
+    assert (
+        'fill="#eceae3" clip-path="url(#hair-tips)" />' in svg
+    )  # the repaint that covers the rest
 
 
 def test_the_clumps_are_one_group_clipped_to_the_front_hair() -> None:
