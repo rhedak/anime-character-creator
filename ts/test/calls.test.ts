@@ -12,7 +12,7 @@ import { pathToFileURL } from "node:url";
 import { test } from "node:test";
 import { PyError } from "../src/pynum.ts";
 import { NotPorted } from "../src/render.ts";
-import { decode, same, type Enc, type Tally } from "./calls-codec.ts";
+import { asAnnotatedParam, decode, normalizeForFlow, same, type Enc, type Tally } from "./calls-codec.ts";
 import { REPO_ROOT, TS_ROOT, loadJson } from "./fixtures.ts";
 
 const SAMPLE = join(REPO_ROOT, "harness/ts_port/fixtures/calls");
@@ -46,7 +46,9 @@ async function replayAll(dir: string, t: { diagnostic: (m: string) => void }): P
     return v;
   };
   const signatures = loadJson<Record<string, string[]>>(join(SAMPLE, "_signatures.json"));
-  const files = readdirSync(dir).filter((f) => f.endsWith(".json") && !f.startsWith("_")).sort();
+  const paramTypes = loadJson<Record<string, Record<string, string>>>(join(SAMPLE, "_param_types.json"));
+  // The index files are `_index`, `_registry` and `_signatures`; a private function's own file starts with an underscore too.
+  const files = readdirSync(dir).filter((f) => f.endsWith(".json") && !["_index.json", "_registry.json", "_signatures.json", "_param_types.json"].includes(f)).sort();
   let ported = 0;
   let calls = 0;
   let notPortedCalls = 0;
@@ -54,6 +56,8 @@ async function replayAll(dir: string, t: { diagnostic: (m: string) => void }): P
   const bad: string[] = [];
   for (const f of files) {
     const rec = loadJson<Rec>(join(dir, f));
+    const stem = f.replace(/\.json$/, "");
+    if (typeof rec.function !== "string") continue; // an index file (`_index`, `_registry`, `_wrapped_hashes`), not a function
     const fn = exportsMap.get(camel(rec.function)) ?? exportsMap.get(rec.function);
     if (typeof fn !== "function") continue;
     ported++;
@@ -61,15 +65,25 @@ async function replayAll(dir: string, t: { diagnostic: (m: string) => void }): P
       calls++;
       let args: unknown[];
       try {
-        args = c.args.map((a) => decode(a, refs));
+        // urlstate takes the typed form a link produces; everything else is handed what the real flow hands it.
+        // `validate_finish` and `render_character` take the character as it arrived (a bool or a string in a number field is what they check).
+        const typed = rec.module === "urlstate" || rec.function === "validate_finish" || rec.function === "render_character";
+        const prep = (d: unknown): unknown => (typed ? d : normalizeForFlow(d));
+        args = c.args.map((a) => prep(decode(a, refs)));
         // A keyword argument goes to its position; the gap is `undefined`, which takes the TypeScript default.
         for (const [name, v] of Object.entries(c.kwargs ?? {})) {
-          const at = (signatures[rec.function] ?? []).indexOf(name);
+          const at = (signatures[stem] ?? []).indexOf(name);
           if (at < 0) throw new Error(`keyword ${name} is not in the signature of ${rec.function}`);
           while (args.length < at) args.push(undefined);
-          args[at] = decode(v, refs);
+          args[at] = prep(decode(v, refs));
         }
+        const names = signatures[stem] ?? [];
+        args = args.map((a, i) => (typed ? a : asAnnotatedParam(paramTypes[stem]?.[names[i] as string], a)));
       } catch (e) {
+        if (/is not ported/.test((e as Error).message)) {
+          notPortedCalls++;
+          continue;
+        }
         bad.push(`${rec.function}: cannot decode arguments (${(e as Error).message})`);
         continue;
       }

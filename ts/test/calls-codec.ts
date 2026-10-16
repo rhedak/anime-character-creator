@@ -7,7 +7,8 @@
 
 import { PyInt } from "../src/pyjson.ts";
 import { BadValue } from "../src/pynum.ts";
-import { FIELDS, type ClassName } from "../src/model.ts";
+import { FIELDS, classOf, type ClassName } from "../src/model.ts";
+import { plainParams } from "../src/plain.ts";
 import { PyFloat } from "../src/pyvalue.ts";
 import { decodeFloat, encodeFloat } from "./fixtures.ts";
 
@@ -111,4 +112,36 @@ export function same(py: Enc, got: unknown, refs: Refs, tol: number, tally: Tall
   }
   if ("ref" in py) return got === refs(py.ref as string) || JSON.stringify(got) === JSON.stringify(refs(py.ref as string));
   return false;
+}
+
+/**
+ * A recorded argument as the real flow hands it to a function. The codec decodes a dataclass as its raw fields, with the int
+ * markers a link needs; the drawing is handed `plainParams(p)` and a skeleton as `buildSkeleton` stores one: a number field
+ * holding a string or a list is a `BadValue`, an int is a plain number. `urlstate` functions take the raw, typed form.
+ */
+export function normalizeForFlow(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(normalizeForFlow);
+  if (v === null || typeof v !== "object" || v instanceof Set || v instanceof Map) return v;
+  const o = v as Record<string, unknown>;
+  if (classOf(o) === "CharacterParams") return plainParams(o as never);
+  if ("canvas_w" in o && "waist_half_w" in o && "head_cx" in o) {
+    return Object.fromEntries(
+      Object.entries(o).map(([k, x]) => {
+        if (x instanceof PyInt) return [k, Number(x.value)];
+        if (x instanceof PyFloat) return [k, x.value];
+        // `wrist_x` and `wrist_y` are the two fields that may be None.
+        if ((x === null && (k === "wrist_x" || k === "wrist_y")) || typeof x === "number" || typeof x === "boolean" || x instanceof BadValue) return [k, x];
+        return [k, new BadValue(x)];
+      }),
+    );
+  }
+  return v;
+}
+
+/** An argument for a parameter annotated `float` or `int`: a string, list or None there is what `plainParams` would make a `BadValue`. */
+export function asAnnotatedParam(annotation: string | undefined, v: unknown): unknown {
+  const nullable = annotation?.includes("None") ?? false;
+  const base = annotation?.replace(/\s*\|\s*None/, "");
+  if ((base === "float" || base === "int") && (typeof v === "string" || Array.isArray(v) || (v === null && !nullable))) return new BadValue(v);
+  return v;
 }

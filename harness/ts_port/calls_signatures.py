@@ -20,6 +20,7 @@ _bootstrap.assert_package_location() if False else None
 def main() -> None:
     index = json.loads((HERE / "out/calls/_index.json").read_text())["functions"]
     out: dict[str, list[str]] = {}
+    types: dict[str, dict[str, str]] = {}
     for e in index:
         mod = importlib.import_module(f"anime_character_creator.{e['module']}")
         obj = mod
@@ -30,8 +31,12 @@ def main() -> None:
             sig = inspect.signature(obj)
         except (AttributeError, ValueError, TypeError):
             continue
-        out[e["function"]] = [n for n, p in sig.parameters.items() if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD, p.KEYWORD_ONLY)]
+        params = [(n, p) for n, p in sig.parameters.items() if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD, p.KEYWORD_ONLY)]
+        out[e["stem"]] = [n for n, _ in params]
+        # the annotation text (`from __future__ import annotations` makes these strings): "float", "int", "float | None", "Skeleton"...
+        types[e["stem"]] = {n: ("" if p.annotation is inspect.Parameter.empty else str(p.annotation)) for n, p in params}
     (HERE / "fixtures/calls/_signatures.json").write_text(json.dumps(out, indent=0, sort_keys=True))
+    (HERE / "fixtures/calls/_param_types.json").write_text(json.dumps(types, indent=0, sort_keys=True))
     print(len(out), "signatures")
 
 

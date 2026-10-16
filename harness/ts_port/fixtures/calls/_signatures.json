@@ -748,11 +748,6 @@
 "sk",
 "p"
 ],
-"_lerp": [
-"a",
-"b",
-"t"
-],
 "_lid_points": [
 "quads",
 "first",
@@ -1338,6 +1333,11 @@
 "bottom_margin",
 "min_hair_margin"
 ],
+"character._lerp": [
+"a",
+"b",
+"f"
+],
 "character_url": [
 "p",
 "base_url"
@@ -1384,6 +1384,11 @@
 "hex_color",
 "value_factor",
 "saturation_boost"
+],
+"skeleton._lerp": [
+"a",
+"b",
+"t"
 ],
 "skeleton_for": [
 "p"

@@ -448,6 +448,8 @@ export function truthy(v: unknown): boolean {
   if (typeof v === "boolean") return v;
   if (Array.isArray(v)) return v.length > 0;
   if (v instanceof Set || v instanceof Map) return v.size > 0;
+  // An empty plain object is an empty dict (a dataclass instance always has fields, so it is never empty).
+  if (Object.getPrototypeOf(v) === Object.prototype && Object.keys(v as object).length === 0) return false;
   return true;
 }
 
