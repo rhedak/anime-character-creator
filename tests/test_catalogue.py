@@ -240,3 +240,27 @@ def test_the_height_slider_covers_every_preset_and_its_ends_render() -> None:
         assert height["min"] <= p.height <= height["max"]
         for h in (height["min"], height["max"]):
             ET.fromstring(render_character(replace(p, height=h)))
+
+
+def test_the_finish_controls_are_real_fields_with_a_label_for_every_finish() -> None:
+    from anime_character_creator import FINISHES
+    from anime_character_creator.catalogue import FINISH_LABELS, HIGHLIGHT_STRENGTH
+
+    assert set(FINISH_LABELS) == set(FINISHES)
+    assert HIGHLIGHT_STRENGTH.field in {f.name for f in fields(CharacterParams)}
+    cat = build_catalogue()
+    assert [f["id"] for f in cat["finishes"]] == list(FINISHES)  # type: ignore[index]
+    assert cat["highlight_strength"]["min"] == 0.0  # type: ignore[index]
+    assert cat["highlight_strength"]["max"] == 2.0  # type: ignore[index]
+
+
+def test_a_soft_character_survives_a_link_and_renders() -> None:
+    from dataclasses import replace
+
+    from anime_character_creator.character import render_character
+    from anime_character_creator.urlstate import decode_params, encode_params
+
+    p = replace(PRESETS["risa"], finish="soft", highlight_strength=0.4)
+    back = decode_params(encode_params(p))
+    assert (back.finish, back.highlight_strength) == ("soft", 0.4)
+    assert render_character(back) == render_character(p)

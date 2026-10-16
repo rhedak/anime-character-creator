@@ -74,8 +74,8 @@ between the named ones.
 ## The soft finish
 
 `CharacterParams.finish` is `"flat"` (the default, the house style, and the
-only finish the presets and `ref-out/` use; the web tool has no control for it,
-though a link can carry it) or `"soft"`, an opt-in experiment for a caller that
+only finish the presets and `ref-out/` use; the web tool offers it as a "Finish"
+choice that starts on flat, and a link carries it) or `"soft"`, an opt-in experiment for a caller that
 wants the figure beside painted art:
 
 ```python

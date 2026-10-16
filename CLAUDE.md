@@ -103,8 +103,8 @@ plain preset-name list. Details of the consumers are kept in `local/`.
   cuts that describe them (`Hairstyle.locks`), tone clumps laid inside the
   hair's own silhouette: shadow and lit steps with one faint highlight each,
   for a caller that sets the figure beside painted art. It is an experiment on
-  `dev`, off by default, never used by the presets or `ref-out/`, has no control
-  in the web tool, and it moves no shape. `"flat"` stays the house style and
+  `dev`, off by default, never used by the presets or `ref-out/`, offered in the web
+  tool as a "Finish" choice that starts on flat, and it moves no shape. `"flat"` stays the house style and
   every rule above still holds for it. Gradients only, no blur: cairosvg has
   none.
 

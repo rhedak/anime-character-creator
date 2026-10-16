@@ -67,6 +67,7 @@ const castGallery = document.getElementById("cast-gallery");
 const baseGallery = document.getElementById("base-gallery");
 const editorSection = document.getElementById("editor-section");
 const previewEl = document.getElementById("preview");
+const finishControls = document.getElementById("finish-controls");
 const buildControls = document.getElementById("build-controls");
 const colorsControls = document.getElementById("colors-controls");
 const hairControls = document.getElementById("hair-controls");
@@ -231,6 +232,32 @@ function boolRow(container, field, label, value, onInput) {
   row.append(input, lbl);
   container.appendChild(row);
   return input;
+}
+
+// `catalogue.finishes`: the house style or the soft finish for a figure set beside painted
+// art, and, for soft only, how strong its hair shading is (`docs/api.md`, "The soft finish").
+// Both are plain CharacterParams fields, so the link already carries them.
+function buildFinishControls() {
+  finishControls.innerHTML = "";
+  selectRow(
+    finishControls,
+    "finish",
+    "Finish",
+    catalogue.finishes.map((f) => ({ value: f.id, label: f.label })),
+    state.finish ?? "flat",
+    (v) => {
+      state.finish = v;
+      buildFinishControls();
+      scheduleRender();
+    },
+  );
+  if ((state.finish ?? "flat") === "soft") {
+    const hs = catalogue.highlight_strength;
+    rangeRow(finishControls, hs.field, hs.label, hs.min, hs.max, state.highlight_strength ?? 1, (v) => {
+      state.highlight_strength = v;
+      scheduleRender();
+    });
+  }
 }
 
 // The build slider and its snaps are retired with the realistic build and the
@@ -670,6 +697,7 @@ function selectStartingPoint(id) {
   state = JSON.parse(stateJson);
   gallerySection.hidden = true;
   editorSection.hidden = false;
+  buildFinishControls();
   buildBuildControls();
   buildColorControls();
   buildHairControls();
@@ -877,6 +905,7 @@ async function main() {
       state = JSON.parse(stateJson);
       gallerySection.hidden = true;
       editorSection.hidden = false;
+      buildFinishControls();
       buildBuildControls();
       buildColorControls();
       buildHairControls();
