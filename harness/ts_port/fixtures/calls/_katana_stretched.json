@@ -1,0 +1,3 @@
+{"function":"_katana_stretched","module":"character","line":9144,"kind":"function","total_calls":3365,"calls_by_phase":{"import":0,"build":0,"drive":3365},"distinct":78,"unrecordable":3364,"skipped_large":0,"raised_distinct":1,"kept":1,"calls":[
+{"args":["s:1"],"kwargs":{},"result":{"exc":"TypeError","msg":"unsupported operand type(s) for -: 'str' and 'float'"},"count":1,"why":["raises","sample"]}
+]}

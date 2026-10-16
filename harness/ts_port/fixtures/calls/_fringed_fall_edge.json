@@ -1,0 +1,5 @@
+{"function":"_fringed_fall_edge","module":"character","line":3354,"kind":"function","total_calls":606,"calls_by_phase":{"import":0,"build":0,"drive":606},"distinct":87,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":3,"calls":[
+{"args":["f:400b8ae71005c85a"],"kwargs":{},"result":{"l":[]},"count":242,"why":["first"]},
+{"args":["f:401f4b4b4b4b4b4f"],"kwargs":{},"result":{"l":[]},"count":2,"why":["sample"]},
+{"args":["f:3fe8dbb1cdbb1cdf"],"kwargs":{},"result":{"l":[]},"count":2,"why":["min:a0"]}
+]}

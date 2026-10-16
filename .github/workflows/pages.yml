@@ -1,17 +1,19 @@
 name: Deploy the web tool to GitHub Pages
 
 # docs/web-gui-plan.md: GitHub Pages serves static files; the visitor's own
-# browser runs the real Python via Pyodide. This workflow's only job is to
-# assemble that static site with web-stage.sh (index.html/app.js/style.css
-# plus ref-out/ and src/anime_character_creator/, which the page fetches as
-# plain relative paths) and hand it to Pages. No server-side rendering, no
-# build step beyond a file copy.
+# browser runs the drawing, which is the TypeScript package in ts/ compiled to
+# plain ES modules by tsc. This workflow's job is to check that package, assemble
+# the static site with web-stage.mjs (index.html/app.js/style.css, ref-out/ and
+# the compiled js/, which the page loads as plain relative paths) and hand it to
+# Pages. No server-side rendering.
 #
-# Gated on the same test suite CLAUDE.md requires green locally, so a push
-# that forgot to run refresh-ref-out.sh, refresh-catalogue.sh or
-# refresh-bases.sh fails here
-# rather than publishing a page whose gallery or controls disagree with the
-# code that draws them.
+# Gated on the TypeScript typecheck and tests, and on the frozen Python's own
+# suite and refresh checks. The Python is the reference the TypeScript was proved
+# against (docs/ts-port-plan.md), and ref-out/ is made by the TypeScript with PNGs
+# from cairosvg, so the refresh checks are what show nothing moved. A push that
+# forgot to run refresh-ref-out.sh, refresh-catalogue.sh or refresh-bases.sh
+# fails here rather than publishing a page whose gallery or controls disagree
+# with the code that draws them.
 #
 # One manual step this workflow cannot do for you: Settings -> Pages ->
 # Build and deployment -> Source must be set to "GitHub Actions" once, by
@@ -37,19 +39,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+
+      - name: Install the TypeScript toolchain
+        working-directory: ts
+        run: npm ci
+
+      - name: Typecheck the TypeScript
+        working-directory: ts
+        run: npm run typecheck
+
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
 
       - name: Install cairo
-        # For cairosvg, which the test suite's ref-out/ comparisons and
-        # PNG-producing tests need. The web tool itself never touches cairo:
-        # its PNG export runs in the visitor's browser off a <canvas>.
+        # For cairosvg, which the refresh scripts' PNGs, the frozen Python's
+        # tests and the TypeScript tests that compare with the Python CLI need.
+        # The web tool itself never touches cairo: its PNG export runs in the
+        # visitor's browser off a <canvas>.
         run: sudo apt-get update && sudo apt-get install -y libcairo2
 
       - run: uv sync
 
-      - name: Run the test suite
+      - name: Run the TypeScript tests
+        # After uv sync, so the tests that compare with the Python CLI run too.
+        working-directory: ts
+        run: npm test
+
+      - name: Run the frozen Python's test suite
         run: uv run pytest -q
 
       - name: Check ref-out/, catalogue.json and bases/ are current
@@ -59,7 +81,7 @@ jobs:
           ./refresh-bases.sh --check
 
       - name: Assemble the site
-        run: ./web-stage.sh
+        run: node web-stage.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:

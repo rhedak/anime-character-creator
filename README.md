@@ -13,6 +13,13 @@ designs began from AI-generated references).
 Animation is out of scope. Backgrounds and text overlays are a
 possible later addition (they'd slot in as extra SVG layers).
 
+**The drawing code is TypeScript** (`ts/src/`, version 0.4.0). It draws the same bytes the Python
+package drew, proved on a corpus of 7,662 characters (see "The TypeScript port" in `STATUS.md`),
+and it is what the web tool, the SVG command line and the committed `ref-out/` art come from. The
+Python package in `src/` is **frozen** at the tag `python-final`, as the reference the port was
+measured against; it stays in the tree for one more release and is not developed. Work on the
+drawing happens in `ts/`: see `ts/README.md`.
+
 ## Status
 
 Fourteen named characters, plus guests. They are all the tall chibi, the one
@@ -23,8 +30,8 @@ longer body, measured off her reference (`docs/risa-plan.md`).
 
 Every preset is **twenty-one or older**. The age of majority differs by
 country, and twenty-one is the highest of the common ones, so that is the
-floor: `ADULT_FACE_AGE` in `character.py`, which the tests, the web tool's age
-slider and the bare-body harness all read. `face_age` is a drawing setting, not
+floor: `ADULT_FACE_AGE` (`ts/src/model.ts`; `character.py` in the frozen Python),
+which the tests, the web tool's age slider and the bare-body harness all read. `face_age` is a drawing setting, not
 a number of years, so it is the floor that keeps a figure an adult, not a label.
 
 **A rule for anything that uses this repository: never render a character
@@ -125,8 +132,12 @@ the code no longer produces:
 ./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
 ```
 
-It renders every character in `PRESETS` and both pages, so adding a character means adding it to `presets.py` and
-nothing else.
+It renders every character in `PRESETS` and both pages, so adding a character means adding it to
+`ts/src/presets.ts` and nothing else. The characters' SVG comes from the TypeScript (`ts/bin/render.ts`), each
+PNG is made from that SVG by cairosvg in Python (`harness/svg2png.py`), and the cover and the two sheets are
+still drawn by the frozen Python (`cover.sh`, `sheet.sh`). `./refresh-catalogue.sh` and `./refresh-bases.sh`
+do the same for `ref-out/catalogue.json` and `ref-out/bases/`, and `./refresh-ref-out.sh --pixels` compares
+decoded PNG pixels when a change moves the SVG's text and no visible pixel.
 Everything else generated goes to `out/`, which is not checked in.
 
 Current shape set: head (a circle at chibi scale, narrowing to a jaw as
@@ -140,7 +151,7 @@ strap, tall boot shaft), an open coat at any length, and robe pieces
 cel-shaded. A garment is worn when its color is set, so characters differ
 by which layers they have rather than by bespoke code.
 
-Named characters live in `presets.py`, so a character is a checked-in
+Named characters live in `ts/src/presets.ts`, so a character is a checked-in
 artifact that gets re-rendered as the shape code improves.
 
 Not yet built: no pose variety, no picker UI, and no hair that leaves the
@@ -152,21 +163,79 @@ on.
 ## Setup
 
 ```bash
-uv sync            # venv, dependencies, dev tools, and this package (editable)
+cd ts && npm ci    # typescript and @types/node, for the typecheck and the web build
+```
+
+Node 22.18 or newer runs the `.ts` files directly, with no build step, and the drawing has no runtime
+dependencies: an SVG document is text. `npm ci` is only for the checks and for compiling the web tool.
+
+PNG export, the cover and the sheets are the frozen Python (`cairosvg` needs the system `cairo` library):
+
+```bash
+uv sync            # venv, dependencies, dev tools, and the frozen package (editable)
 brew install cairo # for PNG export
 ```
 
-Drawing needs nothing but the standard library: an SVG document is text.
-`cairosvg` turns that text into a PNG and needs the system `cairo`
-library, so it is an extra rather than a requirement. Without it,
-rendering still writes a valid `.svg`, you just don't get a `.png`.
+## Usage
+
+The SVG command line is TypeScript:
 
 ```bash
-uv sync --no-dev --extra png   # just the package and PNG export
-pip install anime-character-creator[png]   # or without uv, from a checkout
+node ts/bin/render.ts --out out/satoko --preset satoko        # writes out/satoko.svg
+node ts/bin/render.ts --out out/risa-soft --preset risa --finish soft --highlight-strength 0.7
+node ts/bin/render.ts --out out/white --preset satoshi --background white --no-metadata
+node ts/bin/render.ts --list                                  # the names --preset takes
 ```
 
-## Usage
+`--preset` takes any character in `PRESETS` or either neutral base (`female`, `male`). `--finish soft`
+draws the soft finish and `--highlight-strength` (0 to 2, default 1, soft only) sets how strong the hair
+clumps are. `--background` is any SVG paint; the default is transparent. `--id-prefix` namespaces every id
+in the drawing, for a page that holds several figures. Every render embeds a link that reproduces the exact
+character in an SVG `<metadata>` block by default (`--no-metadata` for a plain, minimal file); the file is
+byte for byte the one the Python CLI writes for the same arguments. It has no colour, garment or face
+flags: take a preset and use the library below, or the web tool, for a variant. `node ts/bin/catalogue.ts`
+writes the web tool's catalogue JSON.
+
+For a PNG, rasterise the SVG with the same call the Python CLI makes:
+
+```bash
+.venv/bin/python harness/svg2png.py out/satoko.svg out/satoko.png    # scale 2, as the CLI does
+```
+
+As a library, from TypeScript (Node 22.18 or newer; there is no index file, so import from the module that
+has the name, see `docs/api.md`):
+
+```ts
+import { writeFileSync } from "node:fs";
+import { replace } from "./ts/src/model.ts";
+import { PRESETS } from "./ts/src/presets.ts";
+import { renderCharacter } from "./ts/src/render.ts";
+import { buildSkeletonWith } from "./ts/src/skeleton.ts";
+
+const satoko = PRESETS["satoko"]!;
+writeFileSync("out/satoko-mid.svg", renderCharacter(satoko, buildSkeletonWith({ heads: 4.0 })));
+
+// a variant of a named character
+const grumpier = replace(satoko, { face: replace(satoko.face, { brow_tilt: 0.6 }) });
+```
+
+### The web tool
+
+`web/` is a plain page that draws in the visitor's browser with the TypeScript compiled to ES modules, no
+server and no Python. To run it locally:
+
+```bash
+cd ts && npm ci && cd ..    # once, for tsc
+./web-stage.sh --serve      # same as: node web-stage.mjs --serve; open http://127.0.0.1:8000/
+```
+
+`web-stage.mjs` compiles `ts/src` with `tsc` (`ts/tsconfig.web.json`) and copies the page and `ref-out/` beside
+it into `out/web-stage/`, the layout the GitHub Pages workflow deploys. Set `TSC` to use another tsc binary.
+
+### The full command line (frozen Python)
+
+The Python CLI has every flag below, and writes the PNG as well. It is frozen, so use it for the options the
+TypeScript CLI does not have; for the options both have, the SVG is the same.
 
 `render.sh` is the way in. It runs the CLI from the project's own venv
 with the one environment variable PNG export needs, since `cairosvg`
@@ -245,71 +314,60 @@ is. Pass `--background white` (or any SVG paint) if you want it filled.
 
 ## How it works
 
-The package lives in `src/anime_character_creator/`. Longer notes on the
-machinery are in [docs/architecture.md](docs/architecture.md), and the
-public surface is written up in [docs/api.md](docs/api.md).
+The drawing package is `ts/src/`. Longer notes on the machinery are in
+[docs/architecture.md](docs/architecture.md), the public surface is written up in [docs/api.md](docs/api.md),
+and how to work in the TypeScript (layout, commands, the oracle, adding a part) is in [ts/README.md](ts/README.md).
+The names below are the TypeScript files, with the frozen Python module in parentheses.
 
-- `skeleton.py`: `Skeleton` dataclass: head center/radius, the
+- `skeleton.ts` (`skeleton.py`): the `Skeleton` interface: head center/radius, the
   neck/shoulder/waist/hip/hem/limb widths, and the y-coordinates (neck,
   shoulder, waist, hip, hem, knee, ankle, foot) every shape positions
-  itself against. Every character's comes from `skeleton_for(p)`: its body profile
+  itself against. Every character's comes from `skeletonFor(p)` (`body.ts`): its body profile
   (`BODY_TYPES`, measured tall-chibi proportions) laid over the chibi
-  build, stretched by `height` when that is not 1.0. `Skeleton.build` is
-  the chibi's, the same for every figure.
+  build, stretched by `height` when that is not 1.0.
   `hair_margin` is the headroom above the skull, in head radii, so hair
   has somewhere to go at a build where the head fills a third of the
   frame.
-- `colorutil.py`: `shade()` derives a darker/more-saturated
+- `colorutil.ts` (`colorutil.py`): `shade()` derives a darker/more-saturated
   "shadow" tone from a base color, so palettes for cel-shading are
   computed, not hand-picked per shape.
-- `character.py`: builds each body part as an SVG shape (paths,
-  circles, capsule-strokes) positioned from the skeleton, then stacks
-  them in z-order into one `<svg>` document. `CharacterParams` holds the
+- `render.ts`, `character.ts`, `hair.ts`, `face.ts`, `garments.ts`, `props.ts` and the rest (`character.py`):
+  build each body part as an SVG shape (paths,
+  circles, capsule-strokes) positioned from the skeleton, then stack
+  them in z-order into one `<svg>` document. `CharacterParams` (`params.ts`) holds the
   colors, an `Outfit` of garments, and a `FaceStyle` of expression knobs
   (eye aperture shape, brow tilt/weight, mouth curve/width, blush, cheek
-  scar); `render_character()` is the entry point. The eye is an almond
+  scar); `renderCharacter()` is the entry point. The eye is an almond
   built from four quadratics, so one set of knobs spans a tall round
-  chibi eye and a narrow lidded adult one. `HAIRSTYLES` maps a name to
+  chibi eye and a narrow lidded adult one. `HAIRSTYLES` (`core-head.ts`) maps a name to
   the four outlines a haircut needs, plus an optional set of strands
   dividing the mass into locks, which is how a second cut gets added
   without touching the parts that draw hair.
-- `presets.py`: named characters as `CharacterParams` values,
-  `SATOKO` and `SATOSHI`. Reachable from the CLI via `--preset`. The two
+- `pynum.ts` and its neighbours: the kernel, every Python behaviour JavaScript lacks (number
+  formatting, `round`, `sum`, `hypot`, slices, `json.dumps`), which is what keeps the output byte-identical.
+- `presets.ts` (`presets.py`): named characters as `CharacterParams` values,
+  `SATOKO` and `SATOSHI` among twenty. Reachable from the CLI via `--preset`. The two
   share a palette through module constants, since they are meant to read
   as related.
-- `generate.py`: CLI: renders one character to SVG, rasterizes to
-  PNG via `cairosvg` if available. Installed as the
-  `anime-character-creator` command.
-
-As a library, the whole thing is two calls:
-
-```python
-from dataclasses import replace
-from pathlib import Path
-
-from anime_character_creator import PRESETS, build_skeleton, render_character
-
-svg = render_character(PRESETS["satoko"], build_skeleton(heads=4.0))
-Path("out/satoko-mid.svg").write_text(svg)
-
-# a variant of a named character
-grumpier = replace(PRESETS["satoshi"], face=replace(PRESETS["satoshi"].face, brow_tilt=0.6))
-```
+- `bin/render.ts` and `bin/catalogue.ts`: the command lines. (`generate.py` is the frozen Python CLI.)
 
 ## Development
 
 ```bash
-uv sync                  # everything, including the dev tools
-uv run pytest            # imports, renders every preset, checks ref-out/ is current
-uv run ruff check .      # lint
-uv run ruff format .     # format
-uv run pdoc anime_character_creator -o out/apidocs   # generated API docs
+cd ts && npm ci          # once
+npm run typecheck        # tsc, strict
+npm test                 # the TypeScript tests (node:test, several hundred)
+npm run build:web        # compile the package and stage the web tool into ../out/web-stage
+cd .. && ./refresh-ref-out.sh --check && ./refresh-catalogue.sh --check && ./refresh-bases.sh --check
+uv run pytest            # the frozen Python's suite, which must keep passing until it is removed
+uv run ruff check .      # lint the frozen Python (the TypeScript is checked by tsc)
 ```
 
-The test suite is a smoke check, not a judge of whether a shape looks
-right: that is decided by eye against `ref/`. What it catches is a broken
-import, a part that stopped drawing, and a `ref-out/` that no longer
-matches the code.
+The TypeScript tests compare the port with the frozen Python (a corpus of 7,662 characters recorded
+from it, the committed `ref-out/`, and a fresh run of the Python CLI where a `.venv` exists), and hold
+the rules the Python suite held (ids unique, the silhouette's ceiling, flat stays flat, validation).
+They are a guard against a change that moves a byte, not a judge of whether a shape looks right: that
+is decided by eye, against the design intent.
 
 `CLAUDE.md` holds the rules a change to this repo has to respect, and
 `STATUS.md` is the running state: what is done, what is weak, what is

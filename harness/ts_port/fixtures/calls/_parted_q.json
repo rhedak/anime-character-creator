@@ -1,0 +1,5 @@
+{"function":"_parted_q","module":"character","line":1968,"kind":"function","total_calls":21941,"calls_by_phase":{"import":0,"build":0,"drive":21941},"distinct":131,"unrecordable":21923,"skipped_large":0,"raised_distinct":8,"kept":3,"calls":[
+{"args":["f:bfee8f5c28f5c292"],"kwargs":{},"result":{"exc":"ValueError","msg":"math domain error"},"count":2,"why":["raises"]},
+{"args":["f:3f970a3d70a3d685"],"kwargs":{},"result":{"exc":"ValueError","msg":"math domain error"},"count":2,"why":["raises"]},
+{"args":["f:bfbdac37dac37d92"],"kwargs":{},"result":{"exc":"ValueError","msg":"math domain error"},"count":2,"why":["raises","sample"]}
+]}

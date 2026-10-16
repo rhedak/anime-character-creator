@@ -1,0 +1,7 @@
+# Where the parts-garments port's errors differ from Python's (rows for `docs/ts-port-errors.md`)
+
+| Raised by | Python (3.12 / 3.13) | TypeScript port | Why it differs |
+| --- | --- | --- | --- |
+| `_shoulder_bars`, `range(n)` with `n = min(4, shoulder_bars)` when `shoulder_bars` is a whole float (`1.0`, `2.0`, `3.0`) in the int field | `TypeError: 'float' object cannot be interpreted as an integer` | renders as if the field were the int | not an error-text difference but a behaviour one: `plainParams` (`plain.ts`, not mine) turns the `PyFloat` in an int field into a plain number, so `3.0` and `3` are no longer told apart when the part runs. A fractional value (`2.5`) does raise, with Python's text. 9 recorded `_shoulder_bars` calls and 14 recorded `render_character` calls (all `shoulder_bars=1.0, 2.0, 3.0`) differ for this reason. Fix belongs in `plain.ts` (keep a float marker on an int field's value) |
+| `COLLAR_CUTS[name]`, `BELT_CUTS[name]` for a name that is not a cut | `KeyError: 'name'` | the same text (`pyStrRepr` of the key) | reproduced; a string with characters `repr` would escape differs only if it holds non-ASCII controls |
+| a colour field holding a non-string (`5`, `True`, a list) interpolated bare into the SVG | `fill="5"`, `fill="True"`, `fill="['#fff']"` | the same, through `pyValueRepr` | reproduced (corpus cases `err-colour-tunic_color-*`, `err-colour-coat_color-*`) |

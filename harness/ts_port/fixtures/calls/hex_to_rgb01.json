@@ -1,0 +1,5 @@
+{"function":"hex_to_rgb01","module":"colorutil","line":10,"kind":"function","total_calls":454682,"calls_by_phase":{"import":0,"build":0,"drive":454682},"distinct":7057,"unrecordable":0,"skipped_large":0,"raised_distinct":16,"kept":3,"calls":[
+{"args":["s:#201e29"],"kwargs":{},"result":{"t":["f:3fc0101010101010","f:3fbe1e1e1e1e1e1e","f:3fc4949494949495"]},"count":483,"why":["first"]},
+{"args":["s:#6c1432"],"kwargs":{},"result":{"t":["f:3fdb1b1b1b1b1b1b","f:3fb4141414141414","f:3fc9191919191919"]},"count":2,"why":["sample"]},
+{"args":["s:"],"kwargs":{},"result":{"exc":"ValueError","msg":"invalid literal for int() with base 16: ''"},"count":6,"why":["raises"]}
+]}

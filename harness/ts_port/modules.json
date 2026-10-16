@@ -1,0 +1,6831 @@
+{
+ "core-common": {
+  "lines": 619,
+  "functions": 9,
+  "names": [
+   {
+    "name": "OUTLINE",
+    "kind": "const",
+    "line": 41,
+    "end": 41,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_stroke_w",
+    "kind": "def",
+    "line": 44,
+    "end": 54,
+    "lines": 11,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_OUTLINE_SCALE",
+    "kind": "const",
+    "line": 67,
+    "end": 67,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_INTERIOR_SCALE",
+    "kind": "const",
+    "line": 68,
+    "end": 68,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_outline_w",
+    "kind": "def",
+    "line": 131,
+    "end": 133,
+    "lines": 3,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_interior_w",
+    "kind": "def",
+    "line": 136,
+    "end": 138,
+    "lines": 3,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "FaceStyle",
+    "kind": "class",
+    "line": 142,
+    "end": 238,
+    "lines": 97,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "Outfit",
+    "kind": "class",
+    "line": 288,
+    "end": 598,
+    "lines": 311,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "CharacterParams",
+    "kind": "class",
+    "line": 609,
+    "end": 739,
+    "lines": 131,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "Point",
+    "kind": "const",
+    "line": 742,
+    "end": 742,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "Segment",
+    "kind": "const",
+    "line": 747,
+    "end": 747,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_head_units",
+    "kind": "def",
+    "line": 750,
+    "end": 753,
+    "lines": 4,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_curve",
+    "kind": "def",
+    "line": 756,
+    "end": 767,
+    "lines": 12,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_BARE_NECK_BELOW_CHIN",
+    "kind": "const",
+    "line": 3918,
+    "end": 3918,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "face"
+    ]
+   },
+   {
+    "name": "_bare_neck_lift",
+    "kind": "def",
+    "line": 3921,
+    "end": 3932,
+    "lines": 12,
+    "owners": [
+     "arms",
+     "body",
+     "face"
+    ]
+   },
+   {
+    "name": "_bare_shoulder_sk",
+    "kind": "def",
+    "line": 3935,
+    "end": 3948,
+    "lines": 14,
+    "owners": [
+     "arms",
+     "body",
+     "face"
+    ]
+   },
+   {
+    "name": "_BODY_INSET",
+    "kind": "const",
+    "line": 4750,
+    "end": 4750,
+    "lines": 1,
+    "owners": [
+     "body",
+     "face"
+    ]
+   },
+   {
+    "name": "_body_inset",
+    "kind": "def",
+    "line": 4753,
+    "end": 4761,
+    "lines": 9,
+    "owners": [
+     "body",
+     "face"
+    ]
+   },
+   {
+    "name": "Chain",
+    "kind": "const",
+    "line": 5163,
+    "end": 5163,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_quad_point",
+    "kind": "def",
+    "line": 5538,
+    "end": 5541,
+    "lines": 4,
+    "owners": [
+     "arms",
+     "body",
+     "face",
+     "garments",
+     "props"
+    ]
+   }
+  ]
+ },
+ "core-head": {
+  "lines": 2612,
+  "functions": 87,
+  "names": [
+   {
+    "name": "_soft",
+    "kind": "def",
+    "line": 102,
+    "end": 104,
+    "lines": 3,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "Lock",
+    "kind": "const",
+    "line": 746,
+    "end": 746,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAIR_CHEEK_Y",
+    "kind": "const",
+    "line": 782,
+    "end": 782,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAIR_TIP_LINE",
+    "kind": "const",
+    "line": 790,
+    "end": 790,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAIR_FADE",
+    "kind": "const",
+    "line": 806,
+    "end": 806,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAIR_CROWN_Y",
+    "kind": "const",
+    "line": 809,
+    "end": 809,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fade_y",
+    "kind": "def",
+    "line": 812,
+    "end": 816,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROWN_R",
+    "kind": "const",
+    "line": 823,
+    "end": 823,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROWN_TO_TEMPLE",
+    "kind": "const",
+    "line": 824,
+    "end": 824,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fall",
+    "kind": "def",
+    "line": 827,
+    "end": 828,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_mirror",
+    "kind": "def",
+    "line": 831,
+    "end": 835,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_mirrored",
+    "kind": "def",
+    "line": 838,
+    "end": 844,
+    "lines": 7,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_scale_point",
+    "kind": "def",
+    "line": 847,
+    "end": 850,
+    "lines": 4,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_reverse",
+    "kind": "def",
+    "line": 853,
+    "end": 859,
+    "lines": 7,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_arc",
+    "kind": "def",
+    "line": 862,
+    "end": 882,
+    "lines": 21,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FALL_TEMPLE_X",
+    "kind": "const",
+    "line": 899,
+    "end": 899,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FALL_CHEEK_X",
+    "kind": "const",
+    "line": 900,
+    "end": 900,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FALL_MID_X",
+    "kind": "const",
+    "line": 901,
+    "end": 901,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FALL_WIDE_X",
+    "kind": "const",
+    "line": 902,
+    "end": 902,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FALL_FLARE_X",
+    "kind": "const",
+    "line": 903,
+    "end": 903,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FALL_TIP_X",
+    "kind": "const",
+    "line": 904,
+    "end": 904,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fall_edge",
+    "kind": "def",
+    "line": 907,
+    "end": 919,
+    "lines": 13,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_hair_mass_shape",
+    "kind": "def",
+    "line": 922,
+    "end": 961,
+    "lines": 40,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_hair_tip_edge",
+    "kind": "def",
+    "line": 964,
+    "end": 1006,
+    "lines": 43,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_hairline_shape",
+    "kind": "def",
+    "line": 1009,
+    "end": 1074,
+    "lines": 66,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_strands",
+    "kind": "def",
+    "line": 1077,
+    "end": 1123,
+    "lines": 47,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_center_part_hairline_shape",
+    "kind": "def",
+    "line": 1126,
+    "end": 1166,
+    "lines": 41,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_center_part_strands",
+    "kind": "def",
+    "line": 1169,
+    "end": 1205,
+    "lines": 37,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_short_mass_shape",
+    "kind": "def",
+    "line": 1208,
+    "end": 1250,
+    "lines": 43,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_short_fall_edge",
+    "kind": "def",
+    "line": 1253,
+    "end": 1264,
+    "lines": 12,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_short_tip_edge",
+    "kind": "def",
+    "line": 1267,
+    "end": 1310,
+    "lines": 44,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_short_hairline_shape",
+    "kind": "def",
+    "line": 1313,
+    "end": 1362,
+    "lines": 50,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_short_strands",
+    "kind": "def",
+    "line": 1365,
+    "end": 1396,
+    "lines": 32,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_EDGE_START",
+    "kind": "const",
+    "line": 1415,
+    "end": 1415,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_EDGE",
+    "kind": "const",
+    "line": 1416,
+    "end": 1435,
+    "lines": 20,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_LINE_START",
+    "kind": "const",
+    "line": 1436,
+    "end": 1436,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_LINE",
+    "kind": "const",
+    "line": 1437,
+    "end": 1448,
+    "lines": 12,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_BASE_TIP",
+    "kind": "const",
+    "line": 1452,
+    "end": 1452,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_TONE_LIFT",
+    "kind": "const",
+    "line": 1453,
+    "end": 1453,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_LINE_TUCK",
+    "kind": "const",
+    "line": 1455,
+    "end": 1455,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_CROWN_AT",
+    "kind": "const",
+    "line": 1457,
+    "end": 1457,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_scaled",
+    "kind": "def",
+    "line": 1460,
+    "end": 1491,
+    "lines": 32,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_line",
+    "kind": "def",
+    "line": 1494,
+    "end": 1514,
+    "lines": 21,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_traced_mass",
+    "kind": "def",
+    "line": 1517,
+    "end": 1521,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_traced_fall_edge",
+    "kind": "def",
+    "line": 1524,
+    "end": 1532,
+    "lines": 9,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_traced_hairline",
+    "kind": "def",
+    "line": 1535,
+    "end": 1571,
+    "lines": 37,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_traced_tip_edge",
+    "kind": "def",
+    "line": 1574,
+    "end": 1591,
+    "lines": 18,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_lifted_tip_edge",
+    "kind": "def",
+    "line": 1594,
+    "end": 1622,
+    "lines": 29,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_LOCKS_FALL",
+    "kind": "const",
+    "line": 1630,
+    "end": 1630,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_LONG_LOCKS",
+    "kind": "const",
+    "line": 1631,
+    "end": 1640,
+    "lines": 10,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_restretch_locks",
+    "kind": "def",
+    "line": 1643,
+    "end": 1652,
+    "lines": 10,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_traced_locks",
+    "kind": "def",
+    "line": 1655,
+    "end": 1656,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_SHORT_LOCKS",
+    "kind": "const",
+    "line": 1663,
+    "end": 1672,
+    "lines": 10,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_short_locks",
+    "kind": "def",
+    "line": 1675,
+    "end": 1676,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_LOCKS",
+    "kind": "const",
+    "line": 1682,
+    "end": 1691,
+    "lines": 10,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_locks",
+    "kind": "def",
+    "line": 1694,
+    "end": 1695,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_LOCKS_FALL",
+    "kind": "const",
+    "line": 1702,
+    "end": 1702,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_LOCKS",
+    "kind": "const",
+    "line": 1703,
+    "end": 1710,
+    "lines": 8,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_locks",
+    "kind": "def",
+    "line": 1713,
+    "end": 1714,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_traced_strands",
+    "kind": "def",
+    "line": 1717,
+    "end": 1735,
+    "lines": 19,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_EDGE",
+    "kind": "const",
+    "line": 1765,
+    "end": 1815,
+    "lines": 51,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_SEAM_L",
+    "kind": "const",
+    "line": 1817,
+    "end": 1817,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_CROWN_AT",
+    "kind": "const",
+    "line": 1818,
+    "end": 1818,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_SEAM_R",
+    "kind": "const",
+    "line": 1819,
+    "end": 1819,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_BASE_TIP",
+    "kind": "const",
+    "line": 1821,
+    "end": 1821,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_LINE",
+    "kind": "const",
+    "line": 1823,
+    "end": 1857,
+    "lines": 35,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_LOCK_L",
+    "kind": "const",
+    "line": 1859,
+    "end": 1873,
+    "lines": 15,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_LOCK_R",
+    "kind": "const",
+    "line": 1875,
+    "end": 1885,
+    "lines": 11,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_APEX_L",
+    "kind": "const",
+    "line": 1887,
+    "end": 1887,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_APEX_R",
+    "kind": "const",
+    "line": 1888,
+    "end": 1888,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_UNDER_L",
+    "kind": "const",
+    "line": 1890,
+    "end": 1898,
+    "lines": 9,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_UNDER_R",
+    "kind": "const",
+    "line": 1900,
+    "end": 1907,
+    "lines": 8,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_TIPS_BEHIND",
+    "kind": "const",
+    "line": 1909,
+    "end": 1914,
+    "lines": 6,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_TIPS_FRONT",
+    "kind": "const",
+    "line": 1916,
+    "end": 1921,
+    "lines": 6,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_SEAM_LIFT",
+    "kind": "const",
+    "line": 1925,
+    "end": 1925,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_TONE_LIFT",
+    "kind": "const",
+    "line": 1928,
+    "end": 1928,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_PARTED_TONE_WIDEN",
+    "kind": "const",
+    "line": 1931,
+    "end": 1931,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fall_q",
+    "kind": "def",
+    "line": 1934,
+    "end": 1965,
+    "lines": 32,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_q",
+    "kind": "def",
+    "line": 1968,
+    "end": 1970,
+    "lines": 3,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted",
+    "kind": "def",
+    "line": 1973,
+    "end": 1977,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_anchor",
+    "kind": "def",
+    "line": 1980,
+    "end": 1982,
+    "lines": 3,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_sub_chain",
+    "kind": "def",
+    "line": 1985,
+    "end": 1987,
+    "lines": 3,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_mass",
+    "kind": "def",
+    "line": 1995,
+    "end": 1999,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_hairline",
+    "kind": "def",
+    "line": 2002,
+    "end": 2020,
+    "lines": 19,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_fall_edge",
+    "kind": "def",
+    "line": 2023,
+    "end": 2033,
+    "lines": 11,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_tip_edge",
+    "kind": "def",
+    "line": 2036,
+    "end": 2048,
+    "lines": 13,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_tip_lines",
+    "kind": "def",
+    "line": 2051,
+    "end": 2062,
+    "lines": 12,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_parted_underside",
+    "kind": "def",
+    "line": 2065,
+    "end": 2117,
+    "lines": 53,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_START",
+    "kind": "const",
+    "line": 2137,
+    "end": 2137,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_EDGE",
+    "kind": "const",
+    "line": 2138,
+    "end": 2165,
+    "lines": 28,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_CROWN_AT",
+    "kind": "const",
+    "line": 2168,
+    "end": 2168,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_TEMPLE_L",
+    "kind": "const",
+    "line": 2172,
+    "end": 2172,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_TEMPLE_R",
+    "kind": "const",
+    "line": 2173,
+    "end": 2173,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_BASE_TIP",
+    "kind": "const",
+    "line": 2176,
+    "end": 2176,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_START",
+    "kind": "const",
+    "line": 2212,
+    "end": 2212,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_EDGE",
+    "kind": "const",
+    "line": 2213,
+    "end": 2256,
+    "lines": 44,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_SIDEBURN_PUSH",
+    "kind": "const",
+    "line": 2293,
+    "end": 2293,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_SIDEBURN_L",
+    "kind": "const",
+    "line": 2295,
+    "end": 2295,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_SIDEBURN_R",
+    "kind": "const",
+    "line": 2296,
+    "end": 2296,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_EAR_X",
+    "kind": "const",
+    "line": 2297,
+    "end": 2297,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_EAR_MARGIN",
+    "kind": "const",
+    "line": 2298,
+    "end": 2298,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_EAR_BUFFER",
+    "kind": "const",
+    "line": 2310,
+    "end": 2310,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_real_point",
+    "kind": "def",
+    "line": 2313,
+    "end": 2323,
+    "lines": 11,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_TEMPLE_L",
+    "kind": "const",
+    "line": 2326,
+    "end": 2326,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_TEMPLE_R",
+    "kind": "const",
+    "line": 2327,
+    "end": 2327,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_CROWN_AT",
+    "kind": "const",
+    "line": 2328,
+    "end": 2328,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_FALL",
+    "kind": "const",
+    "line": 2334,
+    "end": 2334,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_TOL",
+    "kind": "const",
+    "line": 2335,
+    "end": 2335,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_REAL_SCALE",
+    "kind": "const",
+    "line": 2353,
+    "end": 2353,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_FRINGE_START",
+    "kind": "const",
+    "line": 2373,
+    "end": 2373,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_FRINGE",
+    "kind": "const",
+    "line": 2374,
+    "end": 2391,
+    "lines": 18,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_NOTCHES",
+    "kind": "const",
+    "line": 2392,
+    "end": 2399,
+    "lines": 8,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_FILL_INSET",
+    "kind": "const",
+    "line": 2404,
+    "end": 2404,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_TONE_LIFT",
+    "kind": "const",
+    "line": 2422,
+    "end": 2422,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_SWEEP",
+    "kind": "const",
+    "line": 2426,
+    "end": 2426,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_CROP_STRAND_RUN",
+    "kind": "const",
+    "line": 2427,
+    "end": 2427,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_outline",
+    "kind": "def",
+    "line": 2430,
+    "end": 2446,
+    "lines": 17,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_indices",
+    "kind": "def",
+    "line": 2449,
+    "end": 2455,
+    "lines": 7,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_mass_shape",
+    "kind": "def",
+    "line": 2458,
+    "end": 2468,
+    "lines": 11,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_fall_edge",
+    "kind": "def",
+    "line": 2471,
+    "end": 2485,
+    "lines": 15,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_hairline_shape",
+    "kind": "def",
+    "line": 2488,
+    "end": 2536,
+    "lines": 49,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_tip_edge",
+    "kind": "def",
+    "line": 2539,
+    "end": 2574,
+    "lines": 36,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_crop_strands",
+    "kind": "def",
+    "line": 2577,
+    "end": 2601,
+    "lines": 25,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_TOUSLE_NOTCHES",
+    "kind": "const",
+    "line": 2619,
+    "end": 2628,
+    "lines": 10,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_TOUSLE_TIPS",
+    "kind": "const",
+    "line": 2634,
+    "end": 2642,
+    "lines": 9,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_TOUSLE_TEMPLE",
+    "kind": "const",
+    "line": 2646,
+    "end": 2646,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_lerp",
+    "kind": "def",
+    "line": 2649,
+    "end": 2650,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_side",
+    "kind": "def",
+    "line": 2653,
+    "end": 2661,
+    "lines": 9,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_TOUSLE_CROWN",
+    "kind": "const",
+    "line": 2677,
+    "end": 2689,
+    "lines": 13,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_polar",
+    "kind": "def",
+    "line": 2692,
+    "end": 2694,
+    "lines": 3,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_straight",
+    "kind": "def",
+    "line": 2697,
+    "end": 2701,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_chain",
+    "kind": "def",
+    "line": 2704,
+    "end": 2710,
+    "lines": 7,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_mass_shape",
+    "kind": "def",
+    "line": 2713,
+    "end": 2732,
+    "lines": 20,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_mirror_pt",
+    "kind": "def",
+    "line": 2735,
+    "end": 2736,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_fall_edge",
+    "kind": "def",
+    "line": 2739,
+    "end": 2742,
+    "lines": 4,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_hairline_shape",
+    "kind": "def",
+    "line": 2745,
+    "end": 2777,
+    "lines": 33,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_fringe_line",
+    "kind": "def",
+    "line": 2780,
+    "end": 2789,
+    "lines": 10,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_tip_edge",
+    "kind": "def",
+    "line": 2792,
+    "end": 2843,
+    "lines": 52,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_strands",
+    "kind": "def",
+    "line": 2846,
+    "end": 2864,
+    "lines": 19,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_BASE_TIP",
+    "kind": "const",
+    "line": 2872,
+    "end": 2872,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_FRONT",
+    "kind": "const",
+    "line": 2875,
+    "end": 2995,
+    "lines": 121,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_MASS",
+    "kind": "const",
+    "line": 2998,
+    "end": 3047,
+    "lines": 50,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_UNDERSIDE",
+    "kind": "const",
+    "line": 3051,
+    "end": 3061,
+    "lines": 11,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_STRANDS",
+    "kind": "const",
+    "line": 3063,
+    "end": 3238,
+    "lines": 176,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_OPENINGS",
+    "kind": "const",
+    "line": 3240,
+    "end": 3269,
+    "lines": 30,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_SHADE",
+    "kind": "const",
+    "line": 3271,
+    "end": 3332,
+    "lines": 62,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed",
+    "kind": "def",
+    "line": 3336,
+    "end": 3340,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_mass",
+    "kind": "def",
+    "line": 3343,
+    "end": 3344,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_hairline",
+    "kind": "def",
+    "line": 3347,
+    "end": 3351,
+    "lines": 5,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_fall_edge",
+    "kind": "def",
+    "line": 3354,
+    "end": 3355,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_tip_edge",
+    "kind": "def",
+    "line": 3358,
+    "end": 3359,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_strands",
+    "kind": "def",
+    "line": 3362,
+    "end": 3363,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_FRINGED_LOCKS",
+    "kind": "const",
+    "line": 3371,
+    "end": 3380,
+    "lines": 10,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_locks",
+    "kind": "def",
+    "line": 3383,
+    "end": 3385,
+    "lines": 3,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_underside",
+    "kind": "def",
+    "line": 3388,
+    "end": 3389,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_openings",
+    "kind": "def",
+    "line": 3392,
+    "end": 3393,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_fringed_shade",
+    "kind": "def",
+    "line": 3396,
+    "end": 3397,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "Hairstyle",
+    "kind": "class",
+    "line": 3401,
+    "end": 3500,
+    "lines": 100,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_long_fall_edges",
+    "kind": "def",
+    "line": 3503,
+    "end": 3504,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_short_fall_edges",
+    "kind": "def",
+    "line": 3507,
+    "end": 3508,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_tousle_fall_edges",
+    "kind": "def",
+    "line": 3511,
+    "end": 3512,
+    "lines": 2,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "HAIRSTYLES",
+    "kind": "const",
+    "line": 3515,
+    "end": 3610,
+    "lines": 96,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_hair_fall",
+    "kind": "def",
+    "line": 3614,
+    "end": 3633,
+    "lines": 20,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_HEAD_SEGMENTS",
+    "kind": "const",
+    "line": 12001,
+    "end": 12001,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_SKULL_NARROW",
+    "kind": "const",
+    "line": 12009,
+    "end": 12009,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_JAW_START_Y",
+    "kind": "const",
+    "line": 12015,
+    "end": 12015,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_JAW_EASE",
+    "kind": "const",
+    "line": 12018,
+    "end": 12018,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_head_pt",
+    "kind": "def",
+    "line": 12021,
+    "end": 12040,
+    "lines": 20,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_head_edge_x",
+    "kind": "def",
+    "line": 12043,
+    "end": 12060,
+    "lines": 18,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_hair_edge_x",
+    "kind": "def",
+    "line": 12063,
+    "end": 12102,
+    "lines": 40,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_head_shape",
+    "kind": "def",
+    "line": 12172,
+    "end": 12201,
+    "lines": 30,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_EAR_TOP_Y",
+    "kind": "const",
+    "line": 12228,
+    "end": 12228,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_EAR_BOT_Y",
+    "kind": "const",
+    "line": 12229,
+    "end": 12229,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair",
+     "props"
+    ]
+   },
+   {
+    "name": "_head_paths",
+    "kind": "def",
+    "line": 12407,
+    "end": 12419,
+    "lines": 13,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_EYE_ASPECT",
+    "kind": "const",
+    "line": 12473,
+    "end": 12473,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "aged_face",
+    "kind": "def",
+    "line": 12816,
+    "end": 12832,
+    "lines": 17,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_EYE_GAP",
+    "kind": "const",
+    "line": 12838,
+    "end": 12838,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_EYE_CORNER_CLEAR",
+    "kind": "const",
+    "line": 12839,
+    "end": 12839,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_eye_placement",
+    "kind": "def",
+    "line": 12842,
+    "end": 12969,
+    "lines": 128,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_MATURE_EYE_DROP",
+    "kind": "const",
+    "line": 13001,
+    "end": 13001,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_MATURE_EYE_SHARE",
+    "kind": "const",
+    "line": 13009,
+    "end": 13009,
+    "lines": 1,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_eye_build",
+    "kind": "def",
+    "line": 13012,
+    "end": 13015,
+    "lines": 4,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   },
+   {
+    "name": "_brow",
+    "kind": "def",
+    "line": 13065,
+    "end": 13084,
+    "lines": 20,
+    "owners": [
+     "face",
+     "hair"
+    ]
+   }
+  ]
+ },
+ "core-limbs": {
+  "lines": 1901,
+  "functions": 72,
+  "names": [
+   {
+    "name": "_sleeve_hem_y",
+    "kind": "def",
+    "line": 3844,
+    "end": 3848,
+    "lines": 5,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_sleeve_half_w",
+    "kind": "def",
+    "line": 3851,
+    "end": 3860,
+    "lines": 10,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_sleeve_under_cap",
+    "kind": "def",
+    "line": 3863,
+    "end": 3877,
+    "lines": 15,
+    "owners": [
+     "arms",
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_cap_tip_x",
+    "kind": "def",
+    "line": 3880,
+    "end": 3888,
+    "lines": 9,
+    "owners": [
+     "arms",
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_cap_underside_y",
+    "kind": "def",
+    "line": 3891,
+    "end": 3902,
+    "lines": 12,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_cap_tip_y",
+    "kind": "def",
+    "line": 3905,
+    "end": 3906,
+    "lines": 2,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_shoulder_slope",
+    "kind": "def",
+    "line": 3909,
+    "end": 3912,
+    "lines": 4,
+    "owners": [
+     "arms",
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_torso_at_armpit",
+    "kind": "def",
+    "line": 3951,
+    "end": 3954,
+    "lines": 4,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_BUST_ARMPIT_FILL",
+    "kind": "const",
+    "line": 3963,
+    "end": 3963,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_armpit_x",
+    "kind": "def",
+    "line": 3966,
+    "end": 3972,
+    "lines": 7,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_rib_ctrl_y",
+    "kind": "def",
+    "line": 3975,
+    "end": 3980,
+    "lines": 6,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_BUST_DROP",
+    "kind": "const",
+    "line": 3986,
+    "end": 3986,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_under_bust_y",
+    "kind": "def",
+    "line": 3989,
+    "end": 3995,
+    "lines": 7,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_quad_crossing",
+    "kind": "def",
+    "line": 3998,
+    "end": 4005,
+    "lines": 8,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_quad_split",
+    "kind": "def",
+    "line": 4008,
+    "end": 4013,
+    "lines": 6,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_rib",
+    "kind": "def",
+    "line": 4016,
+    "end": 4061,
+    "lines": 46,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_Bust",
+    "kind": "class",
+    "line": 4065,
+    "end": 4085,
+    "lines": 21,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_bust_shape",
+    "kind": "def",
+    "line": 4088,
+    "end": 4161,
+    "lines": 74,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_bust_fold",
+    "kind": "def",
+    "line": 4298,
+    "end": 4338,
+    "lines": 41,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_BREAST_GAP",
+    "kind": "const",
+    "line": 4346,
+    "end": 4346,
+    "lines": 1,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_BREAST_DEPTH",
+    "kind": "const",
+    "line": 4347,
+    "end": 4347,
+    "lines": 1,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_BREAST_STOP",
+    "kind": "const",
+    "line": 4348,
+    "end": 4348,
+    "lines": 1,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_breast_ellipse",
+    "kind": "def",
+    "line": 4351,
+    "end": 4368,
+    "lines": 18,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_HAT_BRIM",
+    "kind": "const",
+    "line": 5220,
+    "end": 5264,
+    "lines": 45,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "BODY_TYPES",
+    "kind": "const",
+    "line": 5397,
+    "end": 5411,
+    "lines": 15,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "skeleton_for",
+    "kind": "def",
+    "line": 5478,
+    "end": 5489,
+    "lines": 12,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_skeleton_at",
+    "kind": "def",
+    "line": 5492,
+    "end": 5523,
+    "lines": 32,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_GARMENT_REF_BODY",
+    "kind": "const",
+    "line": 5530,
+    "end": 5530,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_BUST_KNOTS",
+    "kind": "const",
+    "line": 5535,
+    "end": 5535,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_COAT_BUST_LINE",
+    "kind": "const",
+    "line": 5552,
+    "end": 5552,
+    "lines": 1,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_bust_panel_line",
+    "kind": "def",
+    "line": 5555,
+    "end": 5571,
+    "lines": 17,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_quad_x_at",
+    "kind": "def",
+    "line": 5574,
+    "end": 5584,
+    "lines": 11,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_bust_bulge",
+    "kind": "def",
+    "line": 5587,
+    "end": 5602,
+    "lines": 16,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_body_knots",
+    "kind": "def",
+    "line": 5605,
+    "end": 5649,
+    "lines": 45,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_interp",
+    "kind": "def",
+    "line": 5652,
+    "end": 5662,
+    "lines": 11,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_interp_flat",
+    "kind": "def",
+    "line": 5665,
+    "end": 5670,
+    "lines": 6,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_garment_placement",
+    "kind": "def",
+    "line": 5673,
+    "end": 5694,
+    "lines": 22,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "GarmentCut",
+    "kind": "class",
+    "line": 5698,
+    "end": 5756,
+    "lines": 59,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_arm_swing",
+    "kind": "def",
+    "line": 5759,
+    "end": 5761,
+    "lines": 3,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_raised_coat_sleeve",
+    "kind": "def",
+    "line": 5764,
+    "end": 5769,
+    "lines": 6,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_raised_shoulder",
+    "kind": "def",
+    "line": 5772,
+    "end": 5783,
+    "lines": 12,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_SLEEVE_CUT_ID",
+    "kind": "const",
+    "line": 5786,
+    "end": 5786,
+    "lines": 1,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_RAISED_ARM_INTO_BODY",
+    "kind": "const",
+    "line": 5788,
+    "end": 5788,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_traced_coat",
+    "kind": "def",
+    "line": 5955,
+    "end": 5956,
+    "lines": 2,
+    "owners": [
+     "arms",
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_draw_cut",
+    "kind": "def",
+    "line": 6054,
+    "end": 6105,
+    "lines": 52,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_LAB_COAT_PANEL_LEFT",
+    "kind": "const",
+    "line": 6311,
+    "end": 6331,
+    "lines": 21,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_LAB_COAT_PANEL_RIGHT",
+    "kind": "const",
+    "line": 6335,
+    "end": 6355,
+    "lines": 21,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_LAB_COAT_LAPEL_LEFT",
+    "kind": "const",
+    "line": 6359,
+    "end": 6379,
+    "lines": 21,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_LAB_COAT_LAPEL_RIGHT",
+    "kind": "const",
+    "line": 6383,
+    "end": 6406,
+    "lines": 24,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "COAT_CUTS",
+    "kind": "const",
+    "line": 6411,
+    "end": 6486,
+    "lines": 76,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "hat_hair_margin",
+    "kind": "def",
+    "line": 6607,
+    "end": 6620,
+    "lines": 14,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_skirt_half_w",
+    "kind": "def",
+    "line": 7859,
+    "end": 7866,
+    "lines": 8,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_skirt_hem_y",
+    "kind": "def",
+    "line": 7869,
+    "end": 7908,
+    "lines": 40,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "SleeveCut",
+    "kind": "class",
+    "line": 8184,
+    "end": 8200,
+    "lines": 17,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "SLEEVE_CUTS",
+    "kind": "const",
+    "line": 8210,
+    "end": 8262,
+    "lines": 53,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_sleeve_placement",
+    "kind": "def",
+    "line": 8265,
+    "end": 8288,
+    "lines": 24,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_arm_line",
+    "kind": "def",
+    "line": 8291,
+    "end": 8313,
+    "lines": 23,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_hand_length",
+    "kind": "def",
+    "line": 8316,
+    "end": 8320,
+    "lines": 5,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_worn_sleeve",
+    "kind": "def",
+    "line": 8323,
+    "end": 8324,
+    "lines": 2,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_arm_pivot",
+    "kind": "def",
+    "line": 8327,
+    "end": 8340,
+    "lines": 14,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_arms",
+    "kind": "def",
+    "line": 9890,
+    "end": 10133,
+    "lines": 244,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_wristband",
+    "kind": "def",
+    "line": 10136,
+    "end": 10168,
+    "lines": 33,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_hands_after_coat",
+    "kind": "def",
+    "line": 10223,
+    "end": 10228,
+    "lines": 6,
+    "owners": [
+     "arms",
+     "garments"
+    ]
+   },
+   {
+    "name": "_raised_cuff",
+    "kind": "def",
+    "line": 10231,
+    "end": 10264,
+    "lines": 34,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_arm_joint_cap",
+    "kind": "def",
+    "line": 10267,
+    "end": 10285,
+    "lines": 19,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_cuff_line",
+    "kind": "def",
+    "line": 10288,
+    "end": 10307,
+    "lines": 20,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_wrist_cuff",
+    "kind": "def",
+    "line": 10310,
+    "end": 10332,
+    "lines": 23,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "HandPiece",
+    "kind": "const",
+    "line": 10344,
+    "end": 10344,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_RELAXED",
+    "kind": "const",
+    "line": 10346,
+    "end": 10434,
+    "lines": 89,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_RELAXED_INTO",
+    "kind": "const",
+    "line": 10436,
+    "end": 10436,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_bspline_closed",
+    "kind": "def",
+    "line": 10448,
+    "end": 10456,
+    "lines": 9,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_rounded_box",
+    "kind": "def",
+    "line": 10459,
+    "end": 10472,
+    "lines": 14,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_fist",
+    "kind": "def",
+    "line": 10475,
+    "end": 10483,
+    "lines": 9,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_HAND_FIST",
+    "kind": "const",
+    "line": 10486,
+    "end": 10486,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_HAND_FIST_INTO",
+    "kind": "const",
+    "line": 10489,
+    "end": 10489,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_FIST_UPRIGHT",
+    "kind": "const",
+    "line": 10496,
+    "end": 10496,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_OPEN_LENGTH",
+    "kind": "const",
+    "line": 10516,
+    "end": 10516,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_OPEN_STRETCH",
+    "kind": "const",
+    "line": 10517,
+    "end": 10517,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_FIST_LENGTH",
+    "kind": "const",
+    "line": 10518,
+    "end": 10518,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_CUFF_TUCK",
+    "kind": "const",
+    "line": 10521,
+    "end": 10521,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_WRIST_STRETCH",
+    "kind": "const",
+    "line": 10525,
+    "end": 10525,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_WRIST_FILL",
+    "kind": "const",
+    "line": 10526,
+    "end": 10526,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_chain_points",
+    "kind": "def",
+    "line": 10529,
+    "end": 10537,
+    "lines": 9,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_square_wrist",
+    "kind": "def",
+    "line": 10540,
+    "end": 10557,
+    "lines": 18,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_OPEN",
+    "kind": "const",
+    "line": 10563,
+    "end": 10563,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_traced_wrist_half",
+    "kind": "def",
+    "line": 10571,
+    "end": 10574,
+    "lines": 4,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_hand_pose",
+    "kind": "def",
+    "line": 10577,
+    "end": 10579,
+    "lines": 3,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_fist_grips",
+    "kind": "def",
+    "line": 10582,
+    "end": 10589,
+    "lines": 8,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_hand_traced",
+    "kind": "def",
+    "line": 10592,
+    "end": 10595,
+    "lines": 4,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_principal",
+    "kind": "def",
+    "line": 10598,
+    "end": 10607,
+    "lines": 10,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_cuff_opening",
+    "kind": "def",
+    "line": 10610,
+    "end": 10639,
+    "lines": 30,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_traced_placement",
+    "kind": "def",
+    "line": 10642,
+    "end": 10677,
+    "lines": 36,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_traced_hand",
+    "kind": "def",
+    "line": 10680,
+    "end": 10708,
+    "lines": 29,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_mitten_placement",
+    "kind": "def",
+    "line": 10711,
+    "end": 10730,
+    "lines": 20,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_hand",
+    "kind": "def",
+    "line": 10733,
+    "end": 10766,
+    "lines": 34,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_mitten_path",
+    "kind": "def",
+    "line": 10769,
+    "end": 10779,
+    "lines": 11,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_hand_shape",
+    "kind": "def",
+    "line": 10782,
+    "end": 10786,
+    "lines": 5,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_hand_stroke",
+    "kind": "def",
+    "line": 10789,
+    "end": 10793,
+    "lines": 5,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_hand_notched",
+    "kind": "def",
+    "line": 10796,
+    "end": 10815,
+    "lines": 20,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_hand_stroked",
+    "kind": "def",
+    "line": 10818,
+    "end": 10828,
+    "lines": 11,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_hand_curled",
+    "kind": "def",
+    "line": 10831,
+    "end": 10851,
+    "lines": 21,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_HAND_BUILDERS",
+    "kind": "const",
+    "line": 10854,
+    "end": 10858,
+    "lines": 5,
+    "owners": [
+     "arms",
+     "body"
+    ]
+   },
+   {
+    "name": "_leg_gap_and_top",
+    "kind": "def",
+    "line": 10861,
+    "end": 10887,
+    "lines": 27,
+    "owners": [
+     "body",
+     "garments"
+    ]
+   },
+   {
+    "name": "_TAPER_FROM",
+    "kind": "const",
+    "line": 10899,
+    "end": 10899,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_TAPER_TO",
+    "kind": "const",
+    "line": 10900,
+    "end": 10900,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_TAPER_MAX",
+    "kind": "const",
+    "line": 10901,
+    "end": 10901,
+    "lines": 1,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_limb_taper_at",
+    "kind": "def",
+    "line": 10904,
+    "end": 10906,
+    "lines": 3,
+    "owners": [
+     "arms",
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_limb_build",
+    "kind": "def",
+    "line": 10909,
+    "end": 10911,
+    "lines": 3,
+    "owners": [
+     "arms",
+     "body",
+     "props"
+    ]
+   },
+   {
+    "name": "_belt_line_half_w",
+    "kind": "def",
+    "line": 11585,
+    "end": 11596,
+    "lines": 12,
+    "owners": [
+     "body",
+     "garments",
+     "props"
+    ]
+   },
+   {
+    "name": "_belt_band",
+    "kind": "def",
+    "line": 11599,
+    "end": 11622,
+    "lines": 24,
+    "owners": [
+     "body",
+     "garments",
+     "props"
+    ]
+   }
+  ]
+ },
+ "parts-body": {
+  "lines": 1527,
+  "functions": 35,
+  "names": [
+   {
+    "name": "_SOCK_CLIP_ID",
+    "kind": "const",
+    "line": 3770,
+    "end": 3770,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_redefine_ids",
+    "kind": "def",
+    "line": 4164,
+    "end": 4172,
+    "lines": 9,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_bust_over_arms",
+    "kind": "def",
+    "line": 4175,
+    "end": 4267,
+    "lines": 93,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_bust_lines",
+    "kind": "def",
+    "line": 4270,
+    "end": 4295,
+    "lines": 26,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_bare_breast_spine",
+    "kind": "def",
+    "line": 4371,
+    "end": 4415,
+    "lines": 45,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_bare_breasts",
+    "kind": "def",
+    "line": 4418,
+    "end": 4457,
+    "lines": 40,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_underwear_top",
+    "kind": "def",
+    "line": 4460,
+    "end": 4511,
+    "lines": 52,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_chest_lines",
+    "kind": "def",
+    "line": 4514,
+    "end": 4560,
+    "lines": 47,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_navel",
+    "kind": "def",
+    "line": 4563,
+    "end": 4574,
+    "lines": 12,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_BARE_WAIST_OF_HIP",
+    "kind": "const",
+    "line": 4579,
+    "end": 4579,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_rib_skeleton",
+    "kind": "def",
+    "line": 4582,
+    "end": 4602,
+    "lines": 21,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_torso",
+    "kind": "def",
+    "line": 4605,
+    "end": 4744,
+    "lines": 140,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_without_raised_sleeves",
+    "kind": "def",
+    "line": 5937,
+    "end": 5942,
+    "lines": 6,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_LEG_CUT_OUT",
+    "kind": "const",
+    "line": 6113,
+    "end": 6113,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_leg_placement",
+    "kind": "def",
+    "line": 6116,
+    "end": 6134,
+    "lines": 19,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_leg_cut_top_y",
+    "kind": "def",
+    "line": 6137,
+    "end": 6144,
+    "lines": 8,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_draw_leg_cut",
+    "kind": "def",
+    "line": 6147,
+    "end": 6150,
+    "lines": 4,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_LAB_DRESS_COLUMN",
+    "kind": "const",
+    "line": 6229,
+    "end": 6245,
+    "lines": 17,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "SKIRT_CUTS",
+    "kind": "const",
+    "line": 6254,
+    "end": 6286,
+    "lines": 33,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_hanging_sleeves",
+    "kind": "def",
+    "line": 6894,
+    "end": 6931,
+    "lines": 38,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_skirt_corner_y",
+    "kind": "def",
+    "line": 7911,
+    "end": 7917,
+    "lines": 7,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_skirt_path",
+    "kind": "def",
+    "line": 7920,
+    "end": 7962,
+    "lines": 43,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_UNDERSKIRT_DROP",
+    "kind": "const",
+    "line": 7973,
+    "end": 7973,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_UNDERSKIRT_SCALLOP",
+    "kind": "const",
+    "line": 7984,
+    "end": 7984,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_UNDERSKIRT_SCALLOP_DIP",
+    "kind": "const",
+    "line": 7985,
+    "end": 7985,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_underskirt",
+    "kind": "def",
+    "line": 7993,
+    "end": 8048,
+    "lines": 56,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_hakama",
+    "kind": "def",
+    "line": 8100,
+    "end": 8150,
+    "lines": 51,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_skirt",
+    "kind": "def",
+    "line": 8153,
+    "end": 8180,
+    "lines": 28,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "KNEE_SOCK_CUT",
+    "kind": "const",
+    "line": 9275,
+    "end": 9302,
+    "lines": 28,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "BOOT_CUTS",
+    "kind": "const",
+    "line": 9303,
+    "end": 9395,
+    "lines": 93,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_legs_and_boots",
+    "kind": "def",
+    "line": 10914,
+    "end": 10970,
+    "lines": 57,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_CROTCH_AT",
+    "kind": "const",
+    "line": 10984,
+    "end": 10984,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_BARE_PELVIS",
+    "kind": "const",
+    "line": 10991,
+    "end": 10991,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_crotch_y",
+    "kind": "def",
+    "line": 10994,
+    "end": 11007,
+    "lines": 14,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_leg_tuck_top_y",
+    "kind": "def",
+    "line": 11010,
+    "end": 11017,
+    "lines": 8,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_seat_notch_d",
+    "kind": "def",
+    "line": 11020,
+    "end": 11106,
+    "lines": 87,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_trousers",
+    "kind": "def",
+    "line": 11109,
+    "end": 11146,
+    "lines": 38,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_skirt_bottom_y",
+    "kind": "def",
+    "line": 11154,
+    "end": 11164,
+    "lines": 11,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_underpants",
+    "kind": "def",
+    "line": 11167,
+    "end": 11207,
+    "lines": 41,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_KNEE_IN",
+    "kind": "const",
+    "line": 11220,
+    "end": 11220,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_CALF_CTRL",
+    "kind": "const",
+    "line": 11221,
+    "end": 11221,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_BARE_ANKLE",
+    "kind": "const",
+    "line": 11222,
+    "end": 11222,
+    "lines": 1,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_knee_strength",
+    "kind": "def",
+    "line": 11225,
+    "end": 11227,
+    "lines": 3,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_bare_ankle",
+    "kind": "def",
+    "line": 11230,
+    "end": 11233,
+    "lines": 4,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_quad_u_at",
+    "kind": "def",
+    "line": 11236,
+    "end": 11250,
+    "lines": 15,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_knee_notch_d",
+    "kind": "def",
+    "line": 11253,
+    "end": 11322,
+    "lines": 70,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_bare_seat",
+    "kind": "def",
+    "line": 11325,
+    "end": 11368,
+    "lines": 44,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_trouser_seams",
+    "kind": "def",
+    "line": 11371,
+    "end": 11403,
+    "lines": 33,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_bare_foot",
+    "kind": "def",
+    "line": 11406,
+    "end": 11454,
+    "lines": 49,
+    "owners": [
+     "body"
+    ]
+   },
+   {
+    "name": "_boot",
+    "kind": "def",
+    "line": 11457,
+    "end": 11582,
+    "lines": 126,
+    "owners": [
+     "body"
+    ]
+   }
+  ]
+ },
+ "parts-face": {
+  "lines": 1103,
+  "functions": 29,
+  "names": [
+   {
+    "name": "_SOFT_FACE_LINE_VALUE",
+    "kind": "const",
+    "line": 86,
+    "end": 86,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_CHIN_SHADOW_CLIP_ID",
+    "kind": "const",
+    "line": 3769,
+    "end": 3769,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_CHIN_SHADOW_DROP",
+    "kind": "const",
+    "line": 3771,
+    "end": 3771,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_CHIN_SHADOW_VALUE",
+    "kind": "const",
+    "line": 3772,
+    "end": 3772,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_chin_shadow",
+    "kind": "def",
+    "line": 3775,
+    "end": 3783,
+    "lines": 9,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_neck",
+    "kind": "def",
+    "line": 3786,
+    "end": 3827,
+    "lines": 42,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MOUTH_DEPTH_FREE",
+    "kind": "const",
+    "line": 7035,
+    "end": 7035,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MOUTH_DEPTH_SLOPE",
+    "kind": "const",
+    "line": 7036,
+    "end": 7036,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_mouth_depth_share",
+    "kind": "def",
+    "line": 7039,
+    "end": 7043,
+    "lines": 5,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MOUTH_INSIDE",
+    "kind": "const",
+    "line": 7047,
+    "end": 7047,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MOUTH_Y",
+    "kind": "const",
+    "line": 7054,
+    "end": 7054,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MOUTH_REALISTIC_WIDEN",
+    "kind": "const",
+    "line": 7064,
+    "end": 7064,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MOUTH_REALISTIC_DROP",
+    "kind": "const",
+    "line": 7081,
+    "end": 7081,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_TOP",
+    "kind": "const",
+    "line": 7104,
+    "end": 7104,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_SIDE_INSET",
+    "kind": "const",
+    "line": 7105,
+    "end": 7105,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_SIDEBURN_Y",
+    "kind": "const",
+    "line": 7109,
+    "end": 7109,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_SIDEBURN_OUT",
+    "kind": "const",
+    "line": 7113,
+    "end": 7113,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_SIDEBURN_W_TOP",
+    "kind": "const",
+    "line": 7133,
+    "end": 7133,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_SIDEBURN_W_BOT",
+    "kind": "const",
+    "line": 7134,
+    "end": 7134,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_SIDEBURN_W_EASE",
+    "kind": "const",
+    "line": 7144,
+    "end": 7144,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_NOSE_GAP",
+    "kind": "const",
+    "line": 7175,
+    "end": 7175,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_TASH_HALF",
+    "kind": "const",
+    "line": 7176,
+    "end": 7176,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_LIP_W",
+    "kind": "const",
+    "line": 7186,
+    "end": 7186,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BEARD_LIP_H",
+    "kind": "const",
+    "line": 7187,
+    "end": 7187,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_beard",
+    "kind": "def",
+    "line": 7190,
+    "end": 7344,
+    "lines": 155,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_GLASSES_CLEAR",
+    "kind": "const",
+    "line": 7352,
+    "end": 7352,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_glasses",
+    "kind": "def",
+    "line": 7355,
+    "end": 7407,
+    "lines": 53,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_GOGGLE_LIFT",
+    "kind": "const",
+    "line": 7414,
+    "end": 7414,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_GOGGLE_DX_SCALE",
+    "kind": "const",
+    "line": 7417,
+    "end": 7417,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_GOGGLE_R_SCALE",
+    "kind": "const",
+    "line": 7418,
+    "end": 7418,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_GOGGLE_ARM_INSET",
+    "kind": "const",
+    "line": 7428,
+    "end": 7428,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_goggle_geometry",
+    "kind": "def",
+    "line": 7431,
+    "end": 7443,
+    "lines": 13,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_goggles_strap",
+    "kind": "def",
+    "line": 7446,
+    "end": 7484,
+    "lines": 39,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_goggles",
+    "kind": "def",
+    "line": 7487,
+    "end": 7532,
+    "lines": 46,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MASK_HALF_W",
+    "kind": "const",
+    "line": 7539,
+    "end": 7539,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MASK_TOP",
+    "kind": "const",
+    "line": 7540,
+    "end": 7540,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MASK_H",
+    "kind": "const",
+    "line": 7541,
+    "end": 7541,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_MASK_PLEATS",
+    "kind": "const",
+    "line": 7542,
+    "end": 7542,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_mask",
+    "kind": "def",
+    "line": 7545,
+    "end": 7583,
+    "lines": 39,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLINDFOLD_LIFT",
+    "kind": "const",
+    "line": 7589,
+    "end": 7589,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLINDFOLD_HALF_H",
+    "kind": "const",
+    "line": 7593,
+    "end": 7593,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLINDFOLD_SAG",
+    "kind": "const",
+    "line": 7594,
+    "end": 7594,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLINDFOLD_CLEAR",
+    "kind": "const",
+    "line": 7598,
+    "end": 7598,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_blindfold",
+    "kind": "def",
+    "line": 7601,
+    "end": 7640,
+    "lines": 40,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_jaw_track",
+    "kind": "def",
+    "line": 12105,
+    "end": 12131,
+    "lines": 27,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_face_track",
+    "kind": "def",
+    "line": 12134,
+    "end": 12169,
+    "lines": 36,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EAR_OUT",
+    "kind": "const",
+    "line": 12239,
+    "end": 12239,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EAR_ARC_START",
+    "kind": "const",
+    "line": 12267,
+    "end": 12267,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EAR_ARC",
+    "kind": "const",
+    "line": 12268,
+    "end": 12273,
+    "lines": 6,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EAR_FOLD_START",
+    "kind": "const",
+    "line": 12290,
+    "end": 12290,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EAR_FOLD",
+    "kind": "const",
+    "line": 12291,
+    "end": 12297,
+    "lines": 7,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EAR_FOLD_IN",
+    "kind": "const",
+    "line": 12307,
+    "end": 12307,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EAR_FOLD_SPAN",
+    "kind": "const",
+    "line": 12308,
+    "end": 12308,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_ear_span",
+    "kind": "def",
+    "line": 12311,
+    "end": 12316,
+    "lines": 6,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_ear_place",
+    "kind": "def",
+    "line": 12319,
+    "end": 12337,
+    "lines": 19,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_ear_outer",
+    "kind": "def",
+    "line": 12340,
+    "end": 12351,
+    "lines": 12,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_ears",
+    "kind": "def",
+    "line": 12354,
+    "end": 12404,
+    "lines": 51,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_head",
+    "kind": "def",
+    "line": 12422,
+    "end": 12454,
+    "lines": 33,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_GAZE_TRAVEL",
+    "kind": "const",
+    "line": 12477,
+    "end": 12477,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EYE_OUTLINE_W",
+    "kind": "const",
+    "line": 12485,
+    "end": 12485,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_PUPIL_REALISTIC_GROW",
+    "kind": "const",
+    "line": 12494,
+    "end": 12494,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_eye_quads",
+    "kind": "def",
+    "line": 12497,
+    "end": 12526,
+    "lines": 30,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_eye_shape",
+    "kind": "def",
+    "line": 12529,
+    "end": 12539,
+    "lines": 11,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LASH_INNER",
+    "kind": "const",
+    "line": 12550,
+    "end": 12550,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LASH_OUTER",
+    "kind": "const",
+    "line": 12551,
+    "end": 12551,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LASH_EASE",
+    "kind": "const",
+    "line": 12552,
+    "end": 12552,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LASH_ONSET",
+    "kind": "const",
+    "line": 12555,
+    "end": 12555,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LASH_FLICK",
+    "kind": "const",
+    "line": 12556,
+    "end": 12556,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LASH_FLICK_ANGLE",
+    "kind": "const",
+    "line": 12557,
+    "end": 12557,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LOWER_LASH_REACH",
+    "kind": "const",
+    "line": 12560,
+    "end": 12560,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_LID_SAMPLES",
+    "kind": "const",
+    "line": 12561,
+    "end": 12561,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_IRIS_BAND_CUT",
+    "kind": "const",
+    "line": 12564,
+    "end": 12564,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_IRIS_BAND_SHADE",
+    "kind": "const",
+    "line": 12565,
+    "end": 12565,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_SCLERA_SHADOW",
+    "kind": "const",
+    "line": 12567,
+    "end": 12567,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_lid_points",
+    "kind": "def",
+    "line": 12570,
+    "end": 12576,
+    "lines": 7,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_eye_lash",
+    "kind": "def",
+    "line": 12579,
+    "end": 12623,
+    "lines": 45,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_eye",
+    "kind": "def",
+    "line": 12626,
+    "end": 12765,
+    "lines": 140,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EYE_CLOSED_DROP",
+    "kind": "const",
+    "line": 12775,
+    "end": 12775,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EYE_CLOSED_SAG",
+    "kind": "const",
+    "line": 12776,
+    "end": 12776,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_eye_closed",
+    "kind": "def",
+    "line": 12779,
+    "end": 12796,
+    "lines": 18,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_scar",
+    "kind": "def",
+    "line": 12799,
+    "end": 12813,
+    "lines": 15,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLUSH",
+    "kind": "const",
+    "line": 12978,
+    "end": 12978,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLUSH_OPACITY",
+    "kind": "const",
+    "line": 12979,
+    "end": 12979,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLUSH_DARK",
+    "kind": "const",
+    "line": 12980,
+    "end": 12980,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_BLUSH_DARK_OPACITY",
+    "kind": "const",
+    "line": 12981,
+    "end": 12981,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_blush",
+    "kind": "def",
+    "line": 12985,
+    "end": 12994,
+    "lines": 10,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_NOSE_Y",
+    "kind": "const",
+    "line": 13024,
+    "end": 13024,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_NOSE_OUT",
+    "kind": "const",
+    "line": 13025,
+    "end": 13025,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_NOSE_IN",
+    "kind": "const",
+    "line": 13026,
+    "end": 13026,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_NOSE_DROP",
+    "kind": "const",
+    "line": 13027,
+    "end": 13027,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_nose_y",
+    "kind": "def",
+    "line": 13030,
+    "end": 13033,
+    "lines": 4,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_nose_dot",
+    "kind": "def",
+    "line": 13036,
+    "end": 13041,
+    "lines": 6,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_nose",
+    "kind": "def",
+    "line": 13044,
+    "end": 13057,
+    "lines": 14,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_EYE_EDGE_CLEAR",
+    "kind": "const",
+    "line": 13062,
+    "end": 13062,
+    "lines": 1,
+    "owners": [
+     "face"
+    ]
+   },
+   {
+    "name": "_face",
+    "kind": "def",
+    "line": 13094,
+    "end": 13194,
+    "lines": 101,
+    "owners": [
+     "face"
+    ]
+   }
+  ]
+ },
+ "parts-garments": {
+  "lines": 1575,
+  "functions": 24,
+  "names": [
+   {
+    "name": "_tunic",
+    "kind": "def",
+    "line": 4764,
+    "end": 4979,
+    "lines": 216,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_COAT_BUST_BOW",
+    "kind": "const",
+    "line": 5548,
+    "end": 5548,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_ROBE_BUST_LINE",
+    "kind": "const",
+    "line": 5549,
+    "end": 5549,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_SHOULDER_OVERLAP",
+    "kind": "const",
+    "line": 5790,
+    "end": 5790,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_chain_until_y",
+    "kind": "def",
+    "line": 5793,
+    "end": 5819,
+    "lines": 27,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_reversed_chain",
+    "kind": "def",
+    "line": 5822,
+    "end": 5826,
+    "lines": 5,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_SLEEVE_CUT_OUT",
+    "kind": "const",
+    "line": 5831,
+    "end": 5831,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_sleeve_cutaway",
+    "kind": "def",
+    "line": 5834,
+    "end": 5934,
+    "lines": 101,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_cutaway_side_lines",
+    "kind": "def",
+    "line": 5945,
+    "end": 5952,
+    "lines": 8,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_traced_coat_and_belt",
+    "kind": "def",
+    "line": 5959,
+    "end": 5997,
+    "lines": 39,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_hip_pockets",
+    "kind": "def",
+    "line": 6000,
+    "end": 6005,
+    "lines": 6,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_coat_buttons",
+    "kind": "def",
+    "line": 6008,
+    "end": 6023,
+    "lines": 16,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_cut_half_w_at",
+    "kind": "def",
+    "line": 6026,
+    "end": 6051,
+    "lines": 26,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "COLLAR_CUTS",
+    "kind": "const",
+    "line": 6159,
+    "end": 6212,
+    "lines": 54,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "BeltCut",
+    "kind": "class",
+    "line": 6490,
+    "end": 6496,
+    "lines": 7,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "BELT_CUTS",
+    "kind": "const",
+    "line": 6505,
+    "end": 6604,
+    "lines": 100,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_robe_front",
+    "kind": "def",
+    "line": 6842,
+    "end": 6891,
+    "lines": 50,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_COAT_LAPEL_OUT",
+    "kind": "const",
+    "line": 6937,
+    "end": 6937,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_COAT_LAPEL_UP",
+    "kind": "const",
+    "line": 6938,
+    "end": 6938,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_coat",
+    "kind": "def",
+    "line": 6941,
+    "end": 7027,
+    "lines": 87,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_mock_collar",
+    "kind": "def",
+    "line": 7643,
+    "end": 7693,
+    "lines": 51,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_collar",
+    "kind": "def",
+    "line": 7696,
+    "end": 7736,
+    "lines": 41,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_RIBBON_LINE",
+    "kind": "const",
+    "line": 7741,
+    "end": 7741,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_ribbon",
+    "kind": "def",
+    "line": 7744,
+    "end": 7751,
+    "lines": 8,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_placket",
+    "kind": "def",
+    "line": 7754,
+    "end": 7786,
+    "lines": 33,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_chest_pockets",
+    "kind": "def",
+    "line": 7789,
+    "end": 7823,
+    "lines": 35,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_strap",
+    "kind": "def",
+    "line": 7826,
+    "end": 7856,
+    "lines": 31,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_APRON_DROP",
+    "kind": "const",
+    "line": 7990,
+    "end": 7990,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_apron",
+    "kind": "def",
+    "line": 8051,
+    "end": 8097,
+    "lines": 47,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "RIBBON_CUT",
+    "kind": "const",
+    "line": 9550,
+    "end": 9676,
+    "lines": 127,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "HIP_POCKET_CUT",
+    "kind": "const",
+    "line": 9840,
+    "end": 9878,
+    "lines": 39,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_COAT_BUTTONS",
+    "kind": "const",
+    "line": 9882,
+    "end": 9886,
+    "lines": 5,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_shoulder_bars",
+    "kind": "def",
+    "line": 10171,
+    "end": 10220,
+    "lines": 50,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_belt",
+    "kind": "def",
+    "line": 11625,
+    "end": 11630,
+    "lines": 6,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_belt_drawn",
+    "kind": "def",
+    "line": 11633,
+    "end": 11815,
+    "lines": 183,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_pouches",
+    "kind": "def",
+    "line": 11818,
+    "end": 11861,
+    "lines": 44,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_CRYSTAL_X_FRACS",
+    "kind": "const",
+    "line": 11870,
+    "end": 11870,
+    "lines": 1,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_crystal_layout",
+    "kind": "def",
+    "line": 11873,
+    "end": 11904,
+    "lines": 32,
+    "owners": [
+     "garments"
+    ]
+   },
+   {
+    "name": "_crystal_harness",
+    "kind": "def",
+    "line": 11907,
+    "end": 11998,
+    "lines": 92,
+    "owners": [
+     "garments"
+    ]
+   }
+  ]
+ },
+ "parts-hair": {
+  "lines": 583,
+  "functions": 29,
+  "names": [
+   {
+    "name": "_SOFT_HAIR_LINE_VALUE",
+    "kind": "const",
+    "line": 82,
+    "end": 82,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_soft_locks_on",
+    "kind": "def",
+    "line": 107,
+    "end": 110,
+    "lines": 4,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_soft_lines",
+    "kind": "def",
+    "line": 113,
+    "end": 115,
+    "lines": 3,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_TIP_CLIP_ID",
+    "kind": "const",
+    "line": 783,
+    "end": 783,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_FRONT_CLIP_ID",
+    "kind": "const",
+    "line": 784,
+    "end": 784,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_MASS_CLIP_ID",
+    "kind": "const",
+    "line": 785,
+    "end": 785,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_UNDERSIDE_CLIP_ID",
+    "kind": "const",
+    "line": 786,
+    "end": 786,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_UNDERSIDE_VALUE",
+    "kind": "const",
+    "line": 794,
+    "end": 794,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_tip_tone",
+    "kind": "def",
+    "line": 3636,
+    "end": 3640,
+    "lines": 5,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_lines",
+    "kind": "def",
+    "line": 3643,
+    "end": 3647,
+    "lines": 5,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_defs",
+    "kind": "def",
+    "line": 3650,
+    "end": 3678,
+    "lines": 29,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_two_tone_hair",
+    "kind": "def",
+    "line": 3681,
+    "end": 3689,
+    "lines": 9,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_mass",
+    "kind": "def",
+    "line": 3692,
+    "end": 3708,
+    "lines": 17,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_tip_lines",
+    "kind": "def",
+    "line": 3711,
+    "end": 3739,
+    "lines": 29,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_underside",
+    "kind": "def",
+    "line": 3742,
+    "end": 3762,
+    "lines": 21,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_tail",
+    "kind": "def",
+    "line": 4982,
+    "end": 5025,
+    "lines": 44,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_tail_tie",
+    "kind": "def",
+    "line": 5028,
+    "end": 5050,
+    "lines": 23,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_tie",
+    "kind": "def",
+    "line": 6679,
+    "end": 6699,
+    "lines": 21,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_CLIP_AT",
+    "kind": "const",
+    "line": 6705,
+    "end": 6705,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_CLIP_INSET",
+    "kind": "const",
+    "line": 6710,
+    "end": 6710,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_HAIR_CLIP_TILT",
+    "kind": "const",
+    "line": 6713,
+    "end": 6713,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_clip_bar",
+    "kind": "def",
+    "line": 6716,
+    "end": 6724,
+    "lines": 9,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_clip_crossed",
+    "kind": "def",
+    "line": 6727,
+    "end": 6735,
+    "lines": 9,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_clip_snap",
+    "kind": "def",
+    "line": 6738,
+    "end": 6746,
+    "lines": 9,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_clip_crescent",
+    "kind": "def",
+    "line": 6749,
+    "end": 6759,
+    "lines": 11,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_clip_star",
+    "kind": "def",
+    "line": 6762,
+    "end": 6772,
+    "lines": 11,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "HAIR_CLIPS",
+    "kind": "const",
+    "line": 6780,
+    "end": 6786,
+    "lines": 7,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_clip",
+    "kind": "def",
+    "line": 6789,
+    "end": 6803,
+    "lines": 15,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_knot",
+    "kind": "def",
+    "line": 6806,
+    "end": 6839,
+    "lines": 34,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_brows_over_hair",
+    "kind": "def",
+    "line": 13087,
+    "end": 13091,
+    "lines": 5,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_BROW_SHADOW_DROP",
+    "kind": "const",
+    "line": 13198,
+    "end": 13198,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_BROW_SHADOW_VALUE",
+    "kind": "const",
+    "line": 13199,
+    "end": 13199,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_BROW_SHADOW_OPACITY",
+    "kind": "const",
+    "line": 13200,
+    "end": 13200,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_soft_brow_shadow",
+    "kind": "def",
+    "line": 13203,
+    "end": 13211,
+    "lines": 9,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_LIGHT",
+    "kind": "const",
+    "line": 13220,
+    "end": 13220,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_STRENGTH_SCALE",
+    "kind": "const",
+    "line": 13222,
+    "end": 13222,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_PALE_TIP_SATURATION",
+    "kind": "const",
+    "line": 13227,
+    "end": 13227,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_PALE_TIP_VALUE",
+    "kind": "const",
+    "line": 13228,
+    "end": 13228,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_MID_RISE",
+    "kind": "const",
+    "line": 13229,
+    "end": 13229,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_HIGH_RISE",
+    "kind": "const",
+    "line": 13230,
+    "end": 13230,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_SEP_VALUE",
+    "kind": "const",
+    "line": 13231,
+    "end": 13231,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_SEP_OPACITY",
+    "kind": "const",
+    "line": 13232,
+    "end": 13232,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_SOFT_LOCK_POINTS",
+    "kind": "const",
+    "line": 13233,
+    "end": 13233,
+    "lines": 1,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_lock_line",
+    "kind": "def",
+    "line": 13236,
+    "end": 13264,
+    "lines": 29,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_lock_normals",
+    "kind": "def",
+    "line": 13267,
+    "end": 13275,
+    "lines": 9,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_lock_side",
+    "kind": "def",
+    "line": 13278,
+    "end": 13282,
+    "lines": 5,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_smooth_path",
+    "kind": "def",
+    "line": 13285,
+    "end": 13294,
+    "lines": 10,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_lock_shape",
+    "kind": "def",
+    "line": 13297,
+    "end": 13335,
+    "lines": 39,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_soft_locks",
+    "kind": "def",
+    "line": 13338,
+    "end": 13382,
+    "lines": 45,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_soft_lock_layers",
+    "kind": "def",
+    "line": 13385,
+    "end": 13414,
+    "lines": 30,
+    "owners": [
+     "hair"
+    ]
+   },
+   {
+    "name": "_hair_front",
+    "kind": "def",
+    "line": 13417,
+    "end": 13482,
+    "lines": 66,
+    "owners": [
+     "hair"
+    ]
+   }
+  ]
+ },
+ "parts-props": {
+  "lines": 1561,
+  "functions": 13,
+  "names": [
+   {
+    "name": "_SCARF_EDGE_Y",
+    "kind": "const",
+    "line": 5055,
+    "end": 5055,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_SCARF_CLEAR",
+    "kind": "const",
+    "line": 5060,
+    "end": 5060,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_headscarf",
+    "kind": "def",
+    "line": 5063,
+    "end": 5127,
+    "lines": 65,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_HAT_UNDERSIDE",
+    "kind": "const",
+    "line": 5170,
+    "end": 5216,
+    "lines": 47,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_HAT_CROWN",
+    "kind": "const",
+    "line": 5268,
+    "end": 5303,
+    "lines": 36,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_HAT_BAND",
+    "kind": "const",
+    "line": 5305,
+    "end": 5323,
+    "lines": 19,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_HAT_BUCKLE",
+    "kind": "const",
+    "line": 5327,
+    "end": 5369,
+    "lines": 43,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_HAT_CREASES",
+    "kind": "const",
+    "line": 5372,
+    "end": 5376,
+    "lines": 5,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_hat_underside",
+    "kind": "def",
+    "line": 6623,
+    "end": 6636,
+    "lines": 14,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_hat",
+    "kind": "def",
+    "line": 6639,
+    "end": 6676,
+    "lines": 38,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_hand_centre",
+    "kind": "def",
+    "line": 8343,
+    "end": 8361,
+    "lines": 19,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_GRIP",
+    "kind": "const",
+    "line": 8381,
+    "end": 8381,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_TIP",
+    "kind": "const",
+    "line": 8382,
+    "end": 8382,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_TOP_Y",
+    "kind": "const",
+    "line": 8383,
+    "end": 8383,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_WOOD",
+    "kind": "const",
+    "line": 8386,
+    "end": 8492,
+    "lines": 107,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_STRANDS",
+    "kind": "const",
+    "line": 8495,
+    "end": 8608,
+    "lines": 114,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_CRYSTAL",
+    "kind": "const",
+    "line": 8611,
+    "end": 8631,
+    "lines": 21,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_FACETS_DARK",
+    "kind": "const",
+    "line": 8634,
+    "end": 8695,
+    "lines": 62,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_STAFF_FACETS_LIGHT",
+    "kind": "const",
+    "line": 8698,
+    "end": 8724,
+    "lines": 27,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_staff_placement",
+    "kind": "def",
+    "line": 8727,
+    "end": 8775,
+    "lines": 49,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_staff",
+    "kind": "def",
+    "line": 8778,
+    "end": 8816,
+    "lines": 39,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_TILT",
+    "kind": "const",
+    "line": 8846,
+    "end": 8846,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_HIP_X",
+    "kind": "const",
+    "line": 8847,
+    "end": 8847,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_HIP_Y",
+    "kind": "const",
+    "line": 8848,
+    "end": 8848,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_REF_GROUND",
+    "kind": "const",
+    "line": 8849,
+    "end": 8849,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_SAYA",
+    "kind": "const",
+    "line": 8852,
+    "end": 8876,
+    "lines": 25,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_RING_DARK",
+    "kind": "const",
+    "line": 8879,
+    "end": 8893,
+    "lines": 15,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_RING_BROWN",
+    "kind": "const",
+    "line": 8896,
+    "end": 8911,
+    "lines": 16,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_KOJIRI",
+    "kind": "const",
+    "line": 8914,
+    "end": 8926,
+    "lines": 13,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_TSUBA",
+    "kind": "const",
+    "line": 8929,
+    "end": 8951,
+    "lines": 23,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_FUCHI",
+    "kind": "const",
+    "line": 8954,
+    "end": 8968,
+    "lines": 15,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_TSUKA",
+    "kind": "const",
+    "line": 8971,
+    "end": 8985,
+    "lines": 15,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_DIAMONDS",
+    "kind": "const",
+    "line": 8989,
+    "end": 9087,
+    "lines": 99,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_KASHIRA",
+    "kind": "const",
+    "line": 9090,
+    "end": 9103,
+    "lines": 14,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_BRASS",
+    "kind": "const",
+    "line": 9109,
+    "end": 9109,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_GUARD_HALF_V",
+    "kind": "const",
+    "line": 9112,
+    "end": 9112,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_STOUT",
+    "kind": "const",
+    "line": 9116,
+    "end": 9116,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_REF_BELT",
+    "kind": "const",
+    "line": 9118,
+    "end": 9118,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_DIAMOND",
+    "kind": "const",
+    "line": 9120,
+    "end": 9120,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_STRETCH_FROM",
+    "kind": "const",
+    "line": 9128,
+    "end": 9128,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_STRETCH_TO",
+    "kind": "const",
+    "line": 9129,
+    "end": 9129,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_TRACED_LENGTH",
+    "kind": "const",
+    "line": 9130,
+    "end": 9130,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_TIP_U",
+    "kind": "const",
+    "line": 9131,
+    "end": 9131,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KATANA_MAX_TILT",
+    "kind": "const",
+    "line": 9133,
+    "end": 9133,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_katana_stretch_factor",
+    "kind": "def",
+    "line": 9136,
+    "end": 9141,
+    "lines": 6,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_katana_stretched",
+    "kind": "def",
+    "line": 9144,
+    "end": 9158,
+    "lines": 15,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_katana_placement",
+    "kind": "def",
+    "line": 9161,
+    "end": 9213,
+    "lines": 53,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_katana",
+    "kind": "def",
+    "line": 9216,
+    "end": 9264,
+    "lines": 49,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_HAND_FIST_CHANNEL",
+    "kind": "const",
+    "line": 10492,
+    "end": 10492,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_grip_channel",
+    "kind": "def",
+    "line": 10566,
+    "end": 10568,
+    "lines": 3,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_CHIBI_BUILD",
+    "kind": "const",
+    "line": 13516,
+    "end": 13516,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_SPAN_CHIBI",
+    "kind": "const",
+    "line": 13517,
+    "end": 13517,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_SPAN_REAL",
+    "kind": "const",
+    "line": 13518,
+    "end": 13518,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_CENTRE_CHIBI",
+    "kind": "const",
+    "line": 13519,
+    "end": 13519,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_CENTRE_REAL",
+    "kind": "const",
+    "line": 13520,
+    "end": 13520,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_PUPIL",
+    "kind": "const",
+    "line": 13522,
+    "end": 13522,
+    "lines": 1,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_mirrored_y",
+    "kind": "def",
+    "line": 13525,
+    "end": 13533,
+    "lines": 9,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_BODY",
+    "kind": "const",
+    "line": 13537,
+    "end": 13596,
+    "lines": 60,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_WINGS",
+    "kind": "const",
+    "line": 13599,
+    "end": 13668,
+    "lines": 70,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_WING_CELLS",
+    "kind": "const",
+    "line": 13672,
+    "end": 13843,
+    "lines": 172,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_EYES",
+    "kind": "const",
+    "line": 13846,
+    "end": 13879,
+    "lines": 34,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_LINES",
+    "kind": "const",
+    "line": 13882,
+    "end": 13916,
+    "lines": 35,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_KOU_MOUTH",
+    "kind": "const",
+    "line": 13921,
+    "end": 13926,
+    "lines": 6,
+    "owners": [
+     "props"
+    ]
+   },
+   {
+    "name": "_familiar",
+    "kind": "def",
+    "line": 13929,
+    "end": 14011,
+    "lines": 83,
+    "owners": [
+     "props"
+    ]
+   }
+  ]
+ }
+}

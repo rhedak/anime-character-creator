@@ -3,19 +3,23 @@
 How the generator is put together, for someone changing it. The public
 surface is in [api.md](api.md), the current state of the art and what is
 weak in `../STATUS.md`, and the rules a change has to respect in
-`../CLAUDE.md`.
+`../CLAUDE.md`. The drawing code is TypeScript (`../ts/src/`, how to work in it is
+`../ts/README.md`); the Python in `../src/` is frozen as the reference it was ported from, byte for
+byte. Names below are the TypeScript ones, camelCase, with the Python name where it helps a reader
+who knows the old code (`_hair_mass` is `hairMass`); the parts registry keeps the Python names, since
+that is how `render.ts` calls them.
 
 ## The whole pipeline
 
 ```
 CharacterParams ─┐
-                 ├─► render_character ─► [ _part(sk, p) -> str, ... ] ─► one <svg> string
-Skeleton ────────┘        (z-order)
+                 ├─► renderCharacter ─► [ part(sk, p) -> string, ... ] ─► one <svg> string
+Skeleton ────────┘      (render.ts, z-order)
 ```
 
 There is no scene graph, no canvas object and no state. Each part is a
-private function that takes the skeleton and the params and returns a
-string of SVG elements, `render_character` concatenates them back to
+function that takes the skeleton and the params and returns a
+string of SVG elements, `renderCharacter` concatenates them back to
 front, and the result is text. That is the whole design, and it is what
 makes the output deterministic and comparable byte for byte.
 
@@ -23,7 +27,7 @@ Two consequences worth knowing before changing anything:
 
 - **A part draws nothing by returning `""`.** That is how absent garments
   work. No flags, no conditionals in the stack.
-- **Ordering in the `layers` list is the z-order.** Legs go under the
+- **Ordering in the `slots` list of `render.ts` (`layers` in the Python) is the z-order.** Legs go under the
   skirts so a hem covers the thigh; arms go over every garment so nothing
   can clip a hand. Moving a part in that list is a visual change.
 - **The ear's depth says something about how a cut is built.** It sits
@@ -45,20 +49,29 @@ Two consequences worth knowing before changing anything:
 
 ## Modules
 
-| File | What lives there |
-| --- | --- |
-| `skeleton.py` | `Skeleton` and `build_skeleton`: every proportion anchor, all derived from `heads`. Change proportions here, not in a part. |
-| `colorutil.py` | `shade()` and hex conversion. The one place a shadow tone is decided. |
-| `character.py` | Every shape. One `_part_name(sk, p) -> str` per body part, the hair machinery, and `render_character`. |
-| `presets.py` | Named characters as `CharacterParams` values. |
-| `generate.py` | The CLI. Flags generated from three tables that mirror the dataclasses. |
+The package is `ts/src/`, by role (the same table is in `../ts/README.md`):
 
-`character.py` is long on purpose: the parts share a large private
-vocabulary (`_curve`, `_capsule`, `_arc`, `_mirror`, `_reverse`,
-`_stroke_w`, the hair constants) and splitting it per body part would
-spread that vocabulary across imports without making any part easier to
-change. It is ordered roughly bottom-up: helpers, hair shapes, garments,
-limbs, head, face, then the stack.
+| Files | What lives there |
+| --- | --- |
+| `skeleton.ts`, `body.ts` | `Skeleton` and `buildSkeleton`: every proportion anchor, all derived from `heads`; `BODY_TYPES` and `skeletonFor`, a character's skeleton. Change proportions here, not in a part. |
+| `colorutil.ts` | `shade()` and hex conversion, with `colorsys`. The one place a shadow tone is decided. |
+| `params.ts`, `model.ts`, `plain.ts` | The field registry (`CharacterParams`, `Outfit`, `FaceStyle`, `Expression`, with defaults and type tags), the constructors and `replace`, and the reading of a wrong-typed value from a link. |
+| `character.ts`, `core-head*.ts`, `core-limbs*.ts` | The shared vocabulary: stroke widths, `curve`, the document wrapper and the post-steps; the hair system (`Hairstyle`, `HAIRSTYLES`, the cuts, the head's paths); sleeves, arms, hands and the traced garment cuts. |
+| `hair.ts`, `face.ts`, `face-wear.ts`, `body-parts*.ts`, `garments.ts`, `props.ts` | The parts, one function per body part. |
+| `parts.ts`, `parts-*.ts`, `render.ts` | The registry of parts by name, and `renderCharacter`, which stacks them. |
+| `*-tables.ts` | Traced coordinates, generated from the Python once and owned by hand. |
+| `presets.ts`, `supporting.ts` | Named characters as `CharacterParams` values, the neutral bases, the moods, the rosters. |
+| `urlstate.ts`, `attribution.ts`, `catalogue*.ts`, `web-bridge.ts` | Links, the `<metadata>` block, what the web tool offers, and the web tool's four calls. |
+| `pynum.ts`, `pyjson*.ts`, `pycodecs.ts`, `pyre.ts`, `pyvalue.ts`, `sha1.ts` | The kernel: every Python behaviour JavaScript lacks, which keeps the bytes equal. |
+| `../ts/bin/render.ts`, `../ts/bin/catalogue.ts` | The command lines. (`generate.py` is the frozen Python CLI.) |
+
+The parts share a large vocabulary (`curve`, `arc`, `mirror`, `strokeW`, the hair constants). The
+Python kept it in one 14,000-line `character.py` on purpose; the port split it by role into files of roughly
+500 to 1,500 lines, with the shared helpers in `character.ts` and `core-*.ts` that the part files import.
+
+Arithmetic is kept exactly as the Python wrote it: floating point is not associative, so a part is not
+simplified, reordered or folded, and every number reaches the text through the kernel's formatters
+(`fmt1`, `fmt2`, and so on), never `toFixed`. `../ts/README.md` has the rules.
 
 ## Two coordinate systems
 
@@ -87,16 +100,16 @@ differently:
 
 ## The skull profile, and the ear on it
 
-`_head_pt(deg, radius, build)` is the single definition of where the
-skull's edge is. `_head_shape` walks it to lay the outline down, and
-`_head_edge_x(y, build)` samples it to answer "how far off centre is the
+`headPt(deg, radius, build)` (`_head_pt`) is the single definition of where the
+skull's edge is. `headShape` walks it to lay the outline down, and
+`headEdgeX(y, build)` samples it to answer "how far off centre is the
 head at this height", which is what a part welded to the head needs. It
 samples rather than inverting because the jaw taper moves a point in
 both axes at once, so there is no closed form; the point of routing both
 through one function is that the ear cannot drift off the head when the
 taper is retuned, and there is a test that says so.
 
-The ear is placed by `_ear_span(build)` and drawn by `_ear_outer(build)`,
+The ear is placed by `earSpan(build)` and drawn by `earOuter(build)`,
 both in head-radius units on the right side, mirrored per side. Its
 span, `_EAR_TOP_Y` to `_EAR_BOT_Y`, is measured off the canon rather than
 taken from anatomy: the life-drawing rule of brow to nose put it 0.16
@@ -106,7 +119,7 @@ as named constants at all.
 
 ## The build parameter
 
-`build_skeleton(heads=N)` computes `build`: `0.0` at a 2-head chibi,
+`buildSkeletonWith({ heads: N })` computes `build`: `0.0` at a 2-head chibi,
 `1.0` at 6 heads and up. Every width and every landmark position
 interpolates along it, and any part that has to deform along the range
 reads `sk.build` rather than recomputing it from `heads`. Examples in
@@ -192,29 +205,32 @@ Two constants tie the tones and the headroom down:
 
 ## Adding things
 
-**A body part.** Write `_part_name(sk, p) -> str` using only `sk.*`
+**A body part.** Write `fooBar(sk, p): string` using only `sk.*`
 anchors and `p.*` params, return `""` when the character does not have
-it, and append it to `layers` in `render_character` at the right depth.
+it, export it from the domain's `parts-*.ts` table as `_foo_bar`, and add it to the `slots` list in
+`render.ts` at the right depth, with a slot number nobody has used (the number is its stage name in the
+oracle). `../ts/README.md`, "How a part is added", has the steps.
 
-**A garment.** Add a colour field to `Outfit` defaulting to `None`, draw
-it in a part that returns `""` when the field is `None`, and name the
-field in `generate.OUTFIT_ARGS` so it gets a flag.
+**A garment.** Add a colour field to `Outfit` in `params.ts` defaulting to `null`, draw
+it in a part that returns `""` when the field is `null`, and name the
+field in `catalogue-tables.ts` if the web tool should offer it.
 
 <a id="adding-a-hairstyle"></a>
 **A hairstyle.** Write the five callables above, keeping the contract,
-and add a `Hairstyle` to `HAIRSTYLES`. Nothing that draws hair changes.
+and add a `Hairstyle` to `HAIRSTYLES` in `core-head.ts`. Nothing that draws hair changes.
 Give it a `tip_range` if the cut ends on the head rather than on the
 body: a cut ending above the chin cannot be described in chin-to-hip
 units at all.
 
-**A character.** Add a `CharacterParams` to `presets.py` and re-render
+**A character.** Add a `characterParams({...})` to `presets.ts` and re-render
 `ref-out/`. Anything the character needs to differ on goes on
 `CharacterParams`, `Outfit` or `FaceStyle` with a neutral default. A
 value hardcoded into a part function for one character is the one thing
 that turns the generator into that character's renderer.
 
-**A CLI flag.** Name the field in `COLOR_ARGS`, `OUTFIT_ARGS` or
-`FACE_ARGS` in `generate.py`. The parser is built from those tables.
+**A command line option.** `ts/bin/render.ts` takes its options from the `parseArgs` call in `main()`; add the
+flag there and a case to `ts/test/cli.test.ts`. The Python CLI's flags came from three tables in `generate.py`;
+the TypeScript one is deliberately small.
 
 ## Working loop
 
@@ -223,39 +239,39 @@ arithmetic are routinely wrong on screen, and most of the fixes in this
 repo came from looking rather than from reasoning.
 
 ```bash
-./render.sh --out out/tmp --preset satoko          # then open out/tmp.png
-./refresh-ref-out.sh                               # same change as any shape edit
-uv run pytest                                      # imports, renders, ref-out freshness
-uv run ruff check . && uv run ruff format .
+node ts/bin/render.ts --out out/tmp --preset satoko   # then view out/tmp.svg, or make a PNG:
+.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png
+./refresh-ref-out.sh                                  # same change as any shape edit
+(cd ts && npm run typecheck && npm test)              # types, then the oracle and the rules
 ```
 
-Render candidates **side by side** rather than one at a time: monkeypatch
-the shape functions from a throwaway script, render three or four
-variants into one strip, and pick by eye. Include the reference and the
+Render candidates **side by side** rather than one at a time: build the variants as `replace`d characters, or as
+scratch copies of `ts/` with one function changed (an ES module's exports cannot be patched from outside, as
+the Python's could), render three or four variants into one strip, and pick by eye. Include the reference and the
 current state as columns. Suppressing a feature entirely is a legitimate
 column: a render with the hair strands turned off is what proved they
 were carrying the difference.
 
-The package is installed editable, so such a script needs no path
-juggling, just the import and `dataclasses.replace` to swap one callable:
+A script just imports the modules by path (the package has no build step), and `replace` swaps a field:
 
-```python
-from dataclasses import replace
+```ts
+import { replace } from "./ts/src/model.ts";
+import { PRESETS } from "./ts/src/presets.ts";
+import { renderCharacter } from "./ts/src/render.ts";
 
-from anime_character_creator import HAIRSTYLES, PRESETS, render_character
-from anime_character_creator import character as C   # private helpers: C._fall, C._mirror
-
-def variant(k):
-    HAIRSTYLES["long_blunt"] = replace(HAIRSTYLES["long_blunt"], tip_edge=my_edge(k))
-    return render_character(PRESETS["satoko"])
+const variant = (k: number) =>
+  renderCharacter(replace(PRESETS["satoko"]!, { hair_length: k }));
 ```
+
+The shape tables are typed read-only, so a script that wants to try another cut edge works on a scratch copy of
+`ts/` or edits the entry in `core-head*.ts`, rather than patching the shared `HAIRSTYLES` as the Python could.
 
 When a comparison shows no difference at all, check that the variant was
 actually applied before concluding the knob does not matter.
 
 For the other half of the loop, comparing what comes out against the
-reference art, there is tooling: the `gap-analysis` skill under
-`.claude/skills/gap-analysis/`. `probe.py` there builds the normalised
+reference art, there is tooling: the retired `gap-analysis` skill
+(`harness/gap_analysis_skill/`, kept as a record, Python). `probe.py` there builds the normalised
 strips and takes the measurements, its `PITFALLS.md` records how naive
 pixel measurement went wrong here, and `gap-analysis.md` beside this file
 is the current result.
@@ -264,15 +280,18 @@ is the current result.
 
 - **Determinism.** Same params, same bytes. Anything that iterates a set,
   reads a clock or hashes an object breaks `ref-out/` comparison and the
-  test that guards it.
+  test that guards it. In TypeScript, an object with integer-like keys iterates in a different order than
+  in the Python; use a `Map`.
+- **Number spelling.** A number printed with `toFixed`, a template string or `Math.round` instead of the
+  kernel's formatters rounds ties differently from Python's and moves a digit. Nothing outside `pynum.ts` does it.
 - **`ref-out/` going stale.** It is committed, and the README displays
   its `on-white/` copies, which are the same drawings with a white card
   behind them for a page whose background colour is not ours to set.
   Refresh it in the same change as any shape edit; `--check` and the test
-  suite both catch a miss, and `--check` counts a missing card as stale
+  suites both catch a miss, and `--check` counts a missing card as stale
   too, since that breaks the README while the art itself is current.
 - **The hair ceiling**, above.
 - **Coordinate tables that wrap.** The shape data is rows, one lock per
   row, often a mirrored pair. A row long enough for the formatter to wrap
   stops reading as the twin of the row beside it. Shorten it, or build
-  the pair with `_mirror` the way `_long_strands` does.
+  the pair with `mirror` the way `longStrands` does.

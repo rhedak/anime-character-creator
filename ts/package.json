@@ -1,0 +1,19 @@
+{
+  "name": "anime-character-creator-ts",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "Draws 2D anime characters as parametric SVG shapes. The TypeScript drawing code, byte-identical to the frozen Python reference (docs/ts-port-plan.md).",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --max-old-space-size=8192 --test \"test/*.test.ts\"",
+    "typecheck": "tsc --noEmit -p .",
+    "build:web": "node ../web-stage.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "5.9.3"
+  }
+}

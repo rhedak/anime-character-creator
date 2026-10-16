@@ -1,0 +1,5 @@
+{"function":"_mouth_depth_share","module":"character","line":7039,"kind":"function","total_calls":109,"calls_by_phase":{"import":0,"build":0,"drive":109},"distinct":41,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":3,"calls":[
+{"args":["f:3fe999999999999a"],"kwargs":{},"result":"f:3fe999999999999a","count":53,"why":["first"]},
+{"args":["f:3e112e0be826d695"],"kwargs":{},"result":"f:3e112e0be826d695","count":1,"why":["first","min:a0"]},
+{"args":["f:7ff0000000000000"],"kwargs":{},"result":"f:7ff0000000000000","count":1,"why":["first","max:a0","special:inf"]}
+]}

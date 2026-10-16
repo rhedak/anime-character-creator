@@ -1,0 +1,5 @@
+{"function":"_quad_point","module":"character","line":5538,"kind":"function","total_calls":4278748,"calls_by_phase":{"import":124,"build":0,"drive":4278624},"distinct":117858,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":3,"calls":[
+{"args":[{"t":["f:bfbd013a92a30553","f:3ff06bb98c7e2824"]},{"t":["f:bfc075f6fd21ff2e","f:3ff02d77318fc505"]},{"t":["f:bfc26b50b0f27bb3","f:3fefdd97f62b6ae8"]},"f:3fd0000000000000"],"kwargs":{},"result":{"t":["f:bfbef694467381d8","f:3ff04c91d14e3bcd"]},"count":1,"why":["first"]},
+{"args":[{"t":["f:3ff05e88d763b683","f:c02fbab2af5340b3"]},{"t":["f:402cc7b7751a98ad","f:c02fbab2af5340b3"]},{"t":["f:4034762b0d3ca424","f:bfe73317851f3c38"]},"f:3ff0000000000000"],"kwargs":{},"result":{"t":["f:4034762b0d3ca424","f:bfe73317851f3c38"]},"count":4,"why":["sample"]},
+{"args":[{"t":["f:7ff0000000000000","f:fff0000000000000"]},{"t":["f:7ff8000000000000","f:7ff0000000000000"]},{"t":["f:fff0000000000000","f:7ff0000000000000"]},"f:0000000000000000"],"kwargs":{},"result":{"t":["f:7ff8000000000000","f:7ff8000000000000"]},"count":10,"why":["max:a0[0]","max:a1[1]","max:a2[1]","min:a0[1]","min:a2[0]","special:inf"]}
+]}

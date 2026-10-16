@@ -1,0 +1,5 @@
+{"function":"_scale_point","module":"character","line":847,"kind":"function","total_calls":4590,"calls_by_phase":{"import":0,"build":0,"drive":4590},"distinct":85,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":3,"calls":[
+{"args":[{"t":["f:bfe118fc504816f0","f:3feef9db22d0e560"]},"f:3ff0147ae147ae14"],"kwargs":{},"result":{"t":["f:bfe12ededaec4a40","f:3fef21815a07b351"]},"count":54,"why":["first","max:a1","min:a1"]},
+{"args":[{"t":["f:bfe1d8adab9f559b","f:3feed0e560418937"]},"f:3ff0147ae147ae14"],"kwargs":{},"result":{"t":["f:bfe1ef8594291750","f:3feef85729b280f0"]},"count":54,"why":["first"]},
+{"args":[{"t":["f:3f95810624dd2f1b","f:bff2f1a9fbe76c8b"]},"f:3ff0147ae147ae14"],"kwargs":{},"result":{"t":["f:3f959c8c9320d994","f:bff309e98dcdb37c"]},"count":54,"why":["sample"]}
+]}

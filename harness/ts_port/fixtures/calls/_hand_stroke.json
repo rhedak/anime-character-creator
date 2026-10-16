@@ -1,0 +1,5 @@
+{"function":"_hand_stroke","module":"character","line":10789,"kind":"function","total_calls":4234,"calls_by_phase":{"import":0,"build":0,"drive":4234},"distinct":778,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":3,"calls":[
+{"args":["f:40032c59b5486076","s:M 134.8 343.3 Q 134.9 340.3 135.8 337.2"],"kwargs":{},"result":"s:<path d=\"M 134.8 343.3 Q 134.9 340.3 135.8 337.2\" fill=\"none\" stroke=\"#0d0d0d\" stroke-width=\"1.05\" stroke-linecap=\"round\" />","count":9,"why":["first"]},
+{"args":["f:40070124056a7ae4","s:M 134.8 363.6 Q 134.3 360.2 134.8 356.5"],"kwargs":{},"result":"s:<path d=\"M 134.8 363.6 Q 134.3 360.2 134.8 356.5\" fill=\"none\" stroke=\"#0d0d0d\" stroke-width=\"1.27\" stroke-linecap=\"round\" />","count":24,"why":["sample"]},
+{"args":["f:4019b8ace470dae7","s:M 126.6 568.9 Q 126.1 566.3 126.6 563.5"],"kwargs":{},"result":"s:<path d=\"M 126.6 568.9 Q 126.1 566.3 126.6 563.5\" fill=\"none\" stroke=\"#0d0d0d\" stroke-width=\"2.83\" stroke-linecap=\"round\" />","count":4,"why":["max:a0"]}
+]}

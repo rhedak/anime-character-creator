@@ -1,0 +1,1413 @@
+{
+"BodyProfile.applied": {
+"build": "float",
+"self": "",
+"sk": "Skeleton"
+},
+"BodyProfile.head_scaled": {
+"s": "float",
+"self": ""
+},
+"Expression.applied_to": {
+"p": "CharacterParams",
+"self": ""
+},
+"Expression.on": {
+"face": "FaceStyle",
+"self": ""
+},
+"_Bust.pieces": {
+"self": ""
+},
+"_anchor": {
+"chain": "Chain",
+"i": "int"
+},
+"_apron": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_arc": {
+"from_deg": "float",
+"r": "float",
+"segments": "int",
+"to_deg": "float"
+},
+"_arm_joint_cap": {
+"color": "str",
+"cx": "float",
+"cy": "float",
+"sk": "Skeleton",
+"w_top": "float"
+},
+"_arm_line": {
+"sk": "Skeleton"
+},
+"_arm_pivot": {
+"p": "CharacterParams",
+"s": "int",
+"sk": "Skeleton"
+},
+"_arm_swing": {
+"p": "CharacterParams",
+"s": "int"
+},
+"_armpit_x": {
+"inset": "float",
+"sk": "Skeleton"
+},
+"_arms": {
+"hands": "bool | None",
+"p": "CharacterParams",
+"silhouette": "bool",
+"sk": "Skeleton"
+},
+"_bare_ankle": {
+"sk": "Skeleton",
+"w_ankle": "float",
+"w_knee": "float"
+},
+"_bare_breast_spine": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_bare_breasts": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_bare_foot": {
+"cx": "float",
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton",
+"w_ankle": "float"
+},
+"_bare_neck_lift": {
+"sk": "Skeleton"
+},
+"_bare_seat": {
+"gap": "float",
+"p": "CharacterParams",
+"sk": "Skeleton",
+"w_ankle": "float",
+"w_calf": "float",
+"w_knee": "float",
+"w_top": "float"
+},
+"_bare_shoulder_sk": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_beard": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_before": {
+"base": "CharacterParams",
+"face_age": "float",
+"outfit": "Outfit"
+},
+"_belt": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_belt_band": {
+"scale": "float",
+"sk": "Skeleton"
+},
+"_belt_drawn": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_belt_line_half_w": {
+"sk": "Skeleton"
+},
+"_blindfold": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_blush": {
+"skin": "str"
+},
+"_body_inset": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_body_knots": {
+"sk": "Skeleton"
+},
+"_boot": {
+"cx": "float",
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton",
+"w_ankle": "float"
+},
+"_breast_ellipse": {
+"inset": "float",
+"min_ry": "float",
+"sk": "Skeleton"
+},
+"_brow": {
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton"
+},
+"_brows_over_hair": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_bspline_closed": {
+"pts": "list[Point]"
+},
+"_bust_bulge": {
+"sk": "Skeleton",
+"y": "float"
+},
+"_bust_fold": {
+"sides": "tuple[int, ...]",
+"sk": "Skeleton",
+"weight": "float"
+},
+"_bust_lines": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_bust_over_arms": {
+"chest": "str",
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_bust_panel_line": {
+"panels": "list[str]",
+"sk": "Skeleton"
+},
+"_bust_shape": {
+"drape": "bool",
+"inset": "float",
+"sk": "Skeleton"
+},
+"_cap_tip_x": {
+"sk": "Skeleton"
+},
+"_cap_tip_y": {
+"sk": "Skeleton"
+},
+"_cap_underside_y": {
+"sk": "Skeleton",
+"tip_y": "float",
+"x_off": "float"
+},
+"_center_part_hairline_shape": {
+"length": "float"
+},
+"_center_part_strands": {
+"length": "float"
+},
+"_chain": {
+"points": "list[Point]",
+"start": "Point"
+},
+"_chain_points": {
+"ch": "Chain",
+"per": "int"
+},
+"_chain_until_y": {
+"chain": "Chain",
+"y": "float"
+},
+"_chest_lines": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_chest_pockets": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_chin_shadow": {
+"neck": "str",
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_clip_bar": {
+"color": "str",
+"fold": "float",
+"line": "float",
+"r": "float"
+},
+"_clip_crescent": {
+"color": "str",
+"fold": "float",
+"line": "float",
+"r": "float"
+},
+"_clip_crossed": {
+"color": "str",
+"fold": "float",
+"line": "float",
+"r": "float"
+},
+"_clip_snap": {
+"color": "str",
+"fold": "float",
+"line": "float",
+"r": "float"
+},
+"_clip_star": {
+"color": "str",
+"fold": "float",
+"line": "float",
+"r": "float"
+},
+"_coat": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_coat_buttons": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_collar": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_crop_fall_edge": {
+"fall": "float"
+},
+"_crop_hairline_shape": {
+"fall": "float"
+},
+"_crop_indices": {
+"fall": "float"
+},
+"_crop_locks": {
+"fall": "float"
+},
+"_crop_mass_shape": {
+"fall": "float"
+},
+"_crop_outline": {
+"fall": "float"
+},
+"_crop_real_point": {
+"i": "int",
+"pt": "Point"
+},
+"_crop_strands": {
+"fall": "float"
+},
+"_crop_tip_edge": {
+"fall": "float"
+},
+"_crotch_y": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_crystal_harness": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_crystal_layout": {
+"belt_h": "float",
+"sk": "Skeleton"
+},
+"_cuff_line": {
+"cx": "float",
+"sk": "Skeleton",
+"w": "float",
+"wrist_y": "float"
+},
+"_cuff_opening": {
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton"
+},
+"_curve": {
+"close": "bool",
+"cx": "float",
+"cy": "float",
+"r": "float",
+"segments": "list[Segment]",
+"start": "Point"
+},
+"_cut_half_w_at": {
+"cut": "GarmentCut",
+"sk": "Skeleton",
+"y": "float"
+},
+"_cutaway_side_lines": {
+"p": "CharacterParams"
+},
+"_draw_cut": {
+"cut": "GarmentCut",
+"fill": "str",
+"fills_clip": "str | None",
+"sk": "Skeleton",
+"skip_lines": "set[int] | None",
+"weight": "float",
+"xf": "Callable[[Point], Point] | None"
+},
+"_draw_leg_cut": {
+"cut": "GarmentCut",
+"fill": "str",
+"gap": "float",
+"side": "int",
+"sk": "Skeleton"
+},
+"_ear_outer": {
+"build": "float"
+},
+"_ear_place": {
+"build": "float"
+},
+"_ear_span": {
+"build": "float"
+},
+"_ears": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_eye": {
+"er": "float",
+"ex": "float",
+"ey": "float",
+"eye_color": "str",
+"f": "FaceStyle",
+"pupil_ratio": "float",
+"reach": "float | None",
+"side": "int",
+"soft": "bool",
+"sw": "float"
+},
+"_eye_build": {
+"sk": "Skeleton"
+},
+"_eye_closed": {
+"er": "float",
+"ex": "float",
+"ey": "float",
+"f": "FaceStyle",
+"side": "int",
+"sw": "float"
+},
+"_eye_lash": {
+"edge_w": "float",
+"er": "float",
+"f": "FaceStyle",
+"reach": "float | None"
+},
+"_eye_placement": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_eye_quads": {
+"er": "float",
+"f": "FaceStyle"
+},
+"_eye_shape": {
+"er": "float",
+"ex": "float",
+"ey": "float",
+"f": "FaceStyle",
+"side": "int"
+},
+"_face": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_face_track": {
+"build": "float",
+"r0": "float",
+"r1": "float",
+"steps": "int",
+"w0": "float",
+"w1": "float",
+"w_ease": "float",
+"y0": "float",
+"y1": "float"
+},
+"_fade_y": {
+"bottom": "float",
+"top": "float"
+},
+"_fall": {
+"f": "float",
+"length": "float"
+},
+"_fall_edge": {
+"length": "float"
+},
+"_fall_q": {
+"base_tip": "float",
+"fall": "float"
+},
+"_familiar": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_fist": {},
+"_fist_grips": {
+"p": "CharacterParams",
+"side": "int"
+},
+"_fringed": {
+"chain": "Chain",
+"fall": "float"
+},
+"_fringed_fall_edge": {
+"fall": "float"
+},
+"_fringed_hairline": {
+"fall": "float"
+},
+"_fringed_locks": {
+"fall": "float"
+},
+"_fringed_mass": {
+"fall": "float"
+},
+"_fringed_openings": {
+"fall": "float"
+},
+"_fringed_shade": {
+"fall": "float"
+},
+"_fringed_strands": {
+"fall": "float"
+},
+"_fringed_tip_edge": {
+"fall": "float"
+},
+"_fringed_underside": {
+"fall": "float"
+},
+"_garment_placement": {
+"ref_body": "str",
+"sk": "Skeleton"
+},
+"_glasses": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_goggle_geometry": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_goggles": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_goggles_strap": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_grip_channel": {},
+"_hair_clip": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_defs": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_edge_x": {
+"p": "CharacterParams",
+"sk": "Skeleton",
+"y": "float"
+},
+"_hair_fall": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_front": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_knot": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_lines": {
+"p": "CharacterParams",
+"svg": "str"
+},
+"_hair_mass": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_mass_shape": {
+"length": "float"
+},
+"_hair_tail": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_tie": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hair_tip_edge": {
+"length": "float"
+},
+"_hair_tip_lines": {
+"sk": "Skeleton",
+"tips": "list[tuple[Point, Point]]"
+},
+"_hair_tip_tone": {
+"p": "CharacterParams"
+},
+"_hair_underside": {
+"d": "str",
+"lines": "list[Chain]",
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hairline_shape": {
+"length": "float"
+},
+"_hakama": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hand": {
+"cx": "float",
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton",
+"w_wrist": "float",
+"wrist_y": "float"
+},
+"_hand_centre": {
+"p": "CharacterParams",
+"s": "int",
+"sk": "Skeleton"
+},
+"_hand_curled": {
+"hw": "",
+"length": "",
+"p": "",
+"pt": "",
+"sw": "",
+"tip": ""
+},
+"_hand_length": {
+"sk": "Skeleton"
+},
+"_hand_notched": {
+"hw": "",
+"length": "",
+"p": "",
+"pt": "",
+"sw": "",
+"tip": ""
+},
+"_hand_pose": {
+"p": "CharacterParams"
+},
+"_hand_shape": {
+"d": "str",
+"p": "CharacterParams",
+"sw": "float"
+},
+"_hand_stroke": {
+"d": "str",
+"sw": "float"
+},
+"_hand_stroked": {
+"hw": "",
+"length": "",
+"p": "",
+"pt": "",
+"sw": "",
+"tip": ""
+},
+"_hand_traced": {
+"p": "CharacterParams",
+"side": "int"
+},
+"_hands_after_coat": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hanging_sleeves": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hat": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hat_underside": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_head": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_head_edge_x": {
+"build": "float",
+"y": "float"
+},
+"_head_paths": {
+"sk": "Skeleton"
+},
+"_head_pt": {
+"build": "float",
+"deg": "float",
+"radius": "float"
+},
+"_head_shape": {
+"build": "float"
+},
+"_head_units": {
+"cx": "float",
+"cy": "float",
+"pt": "Point",
+"r": "float"
+},
+"_headscarf": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_hip_pockets": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_interior_w": {
+"k": "float",
+"sw": "float"
+},
+"_interp": {
+"v": "float",
+"xs": "tuple[float, ...]",
+"ys": "tuple[float, ...]"
+},
+"_interp_flat": {
+"v": "float",
+"xs": "tuple[float, ...]",
+"ys": "tuple[float, ...]"
+},
+"_jaw_track": {
+"build": "float",
+"drop": "float",
+"inset": "float",
+"steps": "int",
+"y0": "float"
+},
+"_katana": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_katana_placement": {
+"length": "float",
+"sk": "Skeleton"
+},
+"_katana_stretch_factor": {
+"length": "float"
+},
+"_katana_stretched": {
+"length": "float"
+},
+"_knee_notch_d": {
+"calf_y": "float",
+"crotch_y": "float",
+"cx": "float",
+"gap": "float",
+"k": "float",
+"knee_ctrl_y": "float",
+"sk": "Skeleton",
+"top_y": "float",
+"w_ankle": "float",
+"w_calf": "float",
+"w_knee": "float",
+"w_top": "float"
+},
+"_knee_strength": {
+"sk": "Skeleton"
+},
+"_leg_cut_top_y": {
+"cut": "GarmentCut",
+"sk": "Skeleton"
+},
+"_leg_gap_and_top": {
+"sk": "Skeleton",
+"trousers": "bool"
+},
+"_leg_placement": {
+"gap": "float",
+"ref_body": "str",
+"side": "int",
+"sk": "Skeleton"
+},
+"_leg_tuck_top_y": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_legs_and_boots": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_lid_points": {
+"first": "int",
+"last": "int",
+"quads": "list[tuple[Point, Point, Point]]"
+},
+"_lifted_tip_edge": {
+"edge": "list[Segment]",
+"lift": "float",
+"start": "Point"
+},
+"_limb_build": {
+"sk": "Skeleton"
+},
+"_limb_taper_at": {
+"height": "float"
+},
+"_lock_line": {
+"per": "int",
+"points": "tuple[Point, ...]"
+},
+"_lock_normals": {
+"line": "list[Point]"
+},
+"_lock_shape": {
+"cx": "float",
+"cy": "float",
+"offset": "float",
+"points": "tuple[Point, ...]",
+"power": "float",
+"r": "float",
+"t0": "float",
+"t1": "float",
+"width": "float"
+},
+"_lock_side": {
+"line": "list[Point]",
+"normals": "list[Point]"
+},
+"_long_fall_edges": {
+"length": "float"
+},
+"_long_line": {
+"fall": "float"
+},
+"_long_scaled": {
+"fall": "float"
+},
+"_long_strands": {
+"length": "float"
+},
+"_long_traced_fall_edge": {
+"fall": "float"
+},
+"_long_traced_hairline": {
+"fall": "float"
+},
+"_long_traced_locks": {
+"fall": "float"
+},
+"_long_traced_mass": {
+"fall": "float"
+},
+"_long_traced_strands": {
+"fall": "float"
+},
+"_long_traced_tip_edge": {
+"fall": "float"
+},
+"_mask": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_mirror": {
+"segments": "list[Segment]",
+"start": "Point"
+},
+"_mirror_pt": {
+"q": "Point"
+},
+"_mirrored": {
+"edge": "tuple[Point, list[Segment]]"
+},
+"_mirrored_y": {
+"chain": "Chain"
+},
+"_mitten_path": {
+"hw": "float",
+"length": "float",
+"pt": "Callable[[float, float], str]",
+"tip": "float"
+},
+"_mitten_placement": {
+"cx": "float",
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton",
+"wrist_y": "float"
+},
+"_mock_collar": {
+"color": "str",
+"p": "CharacterParams",
+"sk": "Skeleton",
+"sw": "float"
+},
+"_mouth_depth_share": {
+"opening": "float"
+},
+"_namespace_ids": {
+"body": "str",
+"prefix": "str"
+},
+"_navel": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_neck": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_nose": {
+"sk": "Skeleton",
+"sw": "float"
+},
+"_nose_dot": {
+"sk": "Skeleton",
+"sw": "float"
+},
+"_nose_y": {
+"sk": "Skeleton"
+},
+"_outline_w": {
+"k": "float",
+"sw": "float"
+},
+"_parted": {
+"chain": "Chain",
+"fall": "float"
+},
+"_parted_fall_edge": {
+"fall": "float"
+},
+"_parted_hairline": {
+"fall": "float"
+},
+"_parted_locks": {
+"fall": "float"
+},
+"_parted_mass": {
+"fall": "float"
+},
+"_parted_q": {
+"fall": "float"
+},
+"_parted_tip_edge": {
+"fall": "float"
+},
+"_parted_tip_lines": {
+"fall": "float"
+},
+"_parted_underside": {
+"fall": "float"
+},
+"_placket": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_polar": {
+"deg": "float",
+"radius": "float"
+},
+"_pouches": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_principal": {
+"pts": "list[Point]"
+},
+"_quad_crossing": {
+"p0": "Point",
+"p1": "Point",
+"p2": "Point",
+"y": "float"
+},
+"_quad_point": {
+"p0": "Point",
+"p1": "Point",
+"p2": "Point",
+"u": "float"
+},
+"_quad_split": {
+"p0": "Point",
+"p1": "Point",
+"p2": "Point",
+"u": "float"
+},
+"_quad_u_at": {
+"p0": "Point",
+"p1": "Point",
+"p2": "Point",
+"y": "float"
+},
+"_quad_x_at": {
+"p0": "Point",
+"p1": "Point",
+"p2": "Point",
+"y": "float"
+},
+"_raised_coat_sleeve": {
+"p": "CharacterParams",
+"s": "int"
+},
+"_raised_cuff": {
+"elbow_x": "float",
+"p": "CharacterParams",
+"s": "int",
+"shirt": "str",
+"sk": "Skeleton",
+"tube": "str",
+"w_elbow": "float",
+"w_wrist": "float",
+"wrist_x": "float",
+"wrist_y": "float"
+},
+"_raised_shoulder": {
+"p": "CharacterParams",
+"s": "int",
+"sk": "Skeleton"
+},
+"_redefine_ids": {
+"body": "str",
+"prefix": "str"
+},
+"_restretch_locks": {
+"authored_fall": "float",
+"fall": "float",
+"locks": "list[Lock]"
+},
+"_reverse": {
+"segments": "list[Segment]",
+"start": "Point"
+},
+"_reversed_chain": {
+"chain": "Chain"
+},
+"_rib": {
+"cx": "float",
+"descending": "bool",
+"drape": "bool",
+"inset": "float",
+"s": "int",
+"sk": "Skeleton"
+},
+"_rib_ctrl_y": {
+"sk": "Skeleton"
+},
+"_rib_skeleton": {
+"sk": "Skeleton"
+},
+"_ribbon": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_robe_front": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_rounded_box": {
+"a": "float",
+"b": "float",
+"cx": "float",
+"cy": "float",
+"e": "float",
+"n": "int"
+},
+"_scale_point": {
+"k": "float",
+"pt": "Point"
+},
+"_scar": {
+"side": "int",
+"sk": "Skeleton"
+},
+"_seat_notch_d": {
+"crotch_y": "float",
+"cx": "float",
+"gap": "float",
+"knee": "float",
+"sk": "Skeleton",
+"top_y": "float",
+"w_ankle": "float",
+"w_calf": "float",
+"w_knee": "float",
+"w_top": "float"
+},
+"_short_fall_edge": {
+"tip": "float"
+},
+"_short_fall_edges": {
+"tip": "float"
+},
+"_short_hairline_shape": {
+"tip": "float"
+},
+"_short_locks": {
+"fall": "float"
+},
+"_short_mass_shape": {
+"tip": "float"
+},
+"_short_strands": {
+"tip": "float"
+},
+"_short_tip_edge": {
+"tip": "float"
+},
+"_shoulder_bars": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_shoulder_slope": {
+"sk": "Skeleton"
+},
+"_skeleton_at": {
+"p": "CharacterParams"
+},
+"_skirt": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_skirt_bottom_y": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_skirt_corner_y": {
+"hem_y": "float",
+"sk": "Skeleton"
+},
+"_skirt_half_w": {
+"sk": "Skeleton",
+"y": "float"
+},
+"_skirt_hem_y": {
+"length": "float | None",
+"length_chibi": "float | None",
+"sk": "Skeleton"
+},
+"_skirt_path": {
+"hem_w": "float | None",
+"hem_y": "float",
+"scallop": "int",
+"scallop_dip": "float",
+"sk": "Skeleton",
+"top_w": "float | None",
+"top_y": "float"
+},
+"_sleeve_cutaway": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_sleeve_half_w": {
+"sk": "Skeleton"
+},
+"_sleeve_hem_y": {
+"sk": "Skeleton"
+},
+"_sleeve_placement": {
+"cut": "SleeveCut",
+"s": "int",
+"sk": "Skeleton"
+},
+"_sleeve_under_cap": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_smooth_path": {
+"points": "list[tuple[float, float]]"
+},
+"_soft": {
+"p": "CharacterParams"
+},
+"_soft_brow_shadow": {
+"fill_d": "str",
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_soft_lines": {
+"svg": "str",
+"tone": "str"
+},
+"_soft_lock_layers": {
+"after_repaint": "list[str] | None",
+"clip_id": "str",
+"fall": "float",
+"fill_d": "str",
+"p": "CharacterParams",
+"sk": "Skeleton",
+"style": "Hairstyle"
+},
+"_soft_locks": {
+"clip_id": "str",
+"gain": "float",
+"hair": "str",
+"locks": "list[Lock]",
+"sk": "Skeleton",
+"tip_clip": "bool"
+},
+"_soft_locks_on": {
+"p": "CharacterParams",
+"style": "Hairstyle"
+},
+"_soft_stroke_widths": {
+"svg": "str"
+},
+"_square_wrist": {
+"chain": "Chain",
+"top": "float",
+"y_cut": "float"
+},
+"_staff": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_staff_placement": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_straight": {
+"a": "Point",
+"b": "Point"
+},
+"_strap": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_stroke_w": {
+"sk": "Skeleton"
+},
+"_sub_chain": {
+"a": "int",
+"b": "int",
+"chain": "Chain"
+},
+"_tail_tie": {
+"sk": "Skeleton"
+},
+"_torso": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_torso_at_armpit": {
+"sk": "Skeleton"
+},
+"_tousle_fall_edge": {
+"tip": "float"
+},
+"_tousle_fall_edges": {
+"tip": "float"
+},
+"_tousle_fringe_line": {},
+"_tousle_hairline_shape": {
+"tip": "float"
+},
+"_tousle_mass_shape": {
+"tip": "float"
+},
+"_tousle_side": {
+"tip": "float"
+},
+"_tousle_strands": {
+"tip": "float"
+},
+"_tousle_tip_edge": {
+"tip": "float"
+},
+"_traced_coat": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_traced_coat_and_belt": {
+"after_arms": "bool",
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_traced_hand": {
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton"
+},
+"_traced_placement": {
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton"
+},
+"_traced_wrist_half": {
+"pieces": "tuple[HandPiece, ...]"
+},
+"_trouser_seams": {
+"color": "str",
+"crotch_y": "float",
+"gap": "float",
+"p": "CharacterParams",
+"sk": "Skeleton",
+"top_y": "float",
+"w_top": "float"
+},
+"_trousers": {
+"color": "str",
+"gap": "float",
+"p": "CharacterParams",
+"sk": "Skeleton",
+"w_ankle": "float",
+"w_calf": "float",
+"w_knee": "float",
+"w_top": "float"
+},
+"_tunic": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_two_tone_hair": {
+"d": "str",
+"p": "CharacterParams"
+},
+"_under_bust_y": {
+"peak_y": "float",
+"sk": "Skeleton"
+},
+"_underpants": {
+"color": "str",
+"crotch_y": "float",
+"gap": "float",
+"hem_cap": "float | None",
+"sk": "Skeleton",
+"top_y": "float",
+"w_top": "float"
+},
+"_underskirt": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_underwear_top": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_without_raised_sleeves": {
+"layer": "str",
+"p": "CharacterParams"
+},
+"_worn_sleeve": {
+"p": "CharacterParams",
+"sk": "Skeleton"
+},
+"_wrist_cuff": {
+"color": "str",
+"cx": "float",
+"sk": "Skeleton",
+"w": "float",
+"wrist_y": "float"
+},
+"_wristband": {
+"cx": "float",
+"p": "CharacterParams",
+"side": "int",
+"sk": "Skeleton",
+"w": "float",
+"wrist_y": "float"
+},
+"aged": {
+"face": "FaceStyle",
+"years": "float"
+},
+"aged_face": {
+"face": "FaceStyle",
+"years": "float"
+},
+"build_skeleton": {
+"bottom_margin": "float",
+"bust": "float",
+"canvas_h": "float",
+"canvas_w": "float",
+"frame": "float",
+"hair_margin": "float | None",
+"heads": "float",
+"min_hair_margin": "float"
+},
+"character._lerp": {
+"a": "Point",
+"b": "Point",
+"f": "float"
+},
+"character_url": {
+"base_url": "str",
+"p": "CharacterParams"
+},
+"decode_params": {
+"encoded": "str"
+},
+"default_hair_margin": {
+"heads": "float"
+},
+"encode_params": {
+"p": "CharacterParams"
+},
+"hat_hair_margin": {
+"p": "CharacterParams"
+},
+"hex_to_rgb01": {
+"hex_color": "str"
+},
+"highlight_rise": {
+"hex_color": "str"
+},
+"lit_tone": {
+"hex_color": "str",
+"rise": "float"
+},
+"params_from_dict": {
+"data": "dict"
+},
+"params_to_dict": {
+"p": "CharacterParams"
+},
+"render_character": {
+"background": "str | None",
+"id_prefix": "str",
+"metadata": "bool",
+"p": "CharacterParams | None",
+"sk": "Skeleton | None"
+},
+"rgb01_to_hex": {
+"rgb": "tuple[float, float, float]"
+},
+"shade": {
+"hex_color": "str",
+"saturation_boost": "float",
+"value_factor": "float"
+},
+"skeleton._lerp": {
+"a": "float",
+"b": "float",
+"t": "float"
+},
+"skeleton_for": {
+"p": "CharacterParams"
+},
+"soft_shadow_tone": {
+"gain": "float",
+"hex_color": "str"
+},
+"stretched": {
+"h": "float",
+"legs_share": "float",
+"refit": "Callable[[float], Skeleton]",
+"sk": "Skeleton"
+},
+"tint": {
+"amount": "float",
+"hex_color": "str"
+},
+"validate_finish": {
+"p": "CharacterParams"
+}
+}

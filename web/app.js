@@ -1,65 +1,12 @@
 // The web tool's whole JavaScript surface. Per CLAUDE.md and
 // docs/web-gui-plan.md: this file learns no geometry and no character-model
-// knowledge from anywhere but two committed files it fetches at runtime,
-// ref-out/catalogue.json (which fields exist, their labels and ranges) and
-// the package's own .py sources (which it hands to Pyodide unmodified). If a
-// field name, a hairstyle, or a range shows up here as a literal, that is a
-// bug: it belongs in catalogue.py instead, or this and the Python model can
+// knowledge from anywhere but what it loads at runtime: ref-out/catalogue.json
+// (which fields exist, their labels and ranges) and the drawing package itself,
+// the TypeScript in ts/src compiled to js/ (js/web-bridge.js is its four-function
+// entry). If a field name, a hairstyle, or a range shows up here as a literal,
+// that is a bug: it belongs in the catalogue instead, or this and the model can
 // drift exactly the way a second implementation always does.
-//
-// The one thing that *is* a literal here is which .py files to fetch, since
-// Pyodide's virtual filesystem has to be told what a package contains before
-// it can import one.
 "use strict";
-
-const PACKAGE_FILES = [
-  "__init__.py",
-  "__main__.py",
-  "character.py",
-  "colorutil.py",
-  "cover.py",
-  "generate.py",
-  "presets.py",
-  "sheet.py",
-  "skeleton.py",
-  "catalogue.py",
-  "urlstate.py",
-  "attribution.py",
-];
-
-// The bridge: the only Python this file writes itself, and it does nothing
-// `anime_character_creator` does not already do in `render_character`,
-// `catalogue.build_catalogue` and `urlstate`. It exists so the JS side never
-// has to serialize a CharacterParams by hand or reimplement the base64
-// encoding urlstate.py already defines, which is the same no-second-copy
-// reasoning `docs/web-gui-plan.md` gives for running the real package in the
-// browser at all rather than porting it.
-const BRIDGE_PY = `
-import json as _json
-from anime_character_creator import PRESETS, NEUTRAL_BASES, render_character
-from anime_character_creator.urlstate import params_from_dict, params_to_dict, encode_params, decode_params
-
-def _bridge_state_for_start(start_id):
-    if start_id in PRESETS:
-        p = PRESETS[start_id]
-    elif start_id in NEUTRAL_BASES:
-        p = NEUTRAL_BASES[start_id]
-    else:
-        raise ValueError(f"no such starting point: {start_id}")
-    return _json.dumps(params_to_dict(p))
-
-def _bridge_render(state_json, background, metadata):
-    p = params_from_dict(_json.loads(state_json))
-    return render_character(p, background=background, metadata=bool(metadata))
-
-def _bridge_encode(state_json):
-    p = params_from_dict(_json.loads(state_json))
-    return encode_params(p)
-
-def _bridge_decode(encoded):
-    p = decode_params(encoded)
-    return _json.dumps(params_to_dict(p))
-`;
 
 const statusEl = document.getElementById("status");
 const gallerySection = document.getElementById("gallery-section");
@@ -88,7 +35,7 @@ function setStatus(text, isError) {
   statusEl.classList.toggle("error", Boolean(isError));
 }
 
-// --- Gallery: built from ref-out/catalogue.json alone, before Python exists.
+// --- Gallery: built from ref-out/catalogue.json alone, before the drawing code has loaded.
 // The cast gets its committed ref-out/<id>.svg, so this paints instantly, per
 // "a character is on screen immediately" in docs/web-gui-plan.md. The two
 // neutral bases get the same treatment from ref-out/bases/<id>.svg: a
@@ -119,7 +66,7 @@ function galleryCard(entry, imgSrc) {
   const label = document.createElement("div");
   label.textContent = entry.label;
   card.appendChild(label);
-  card.disabled = true; // enabled once Pyodide is ready
+  card.disabled = true; // enabled once the drawing code is loaded
   card.addEventListener("click", () => selectStartingPoint(entry.id));
   return card;
 }
@@ -646,7 +593,7 @@ function garmentField(garmentId) {
   return g.color.field;
 }
 
-// --- Rendering. Pyodide runs synchronously once loaded, well under a
+// --- Rendering. The drawing runs synchronously once loaded, well under a
 // millisecond per docs/web-gui-plan.md's own measurement, so a
 // requestAnimationFrame coalesce is enough to keep a dragged slider smooth
 // without a debounce timer.
@@ -861,38 +808,20 @@ async function main() {
   }
   catalogue = await catalogueResp.json();
   buildGallery();
-  setStatus("Loading the in-browser Python runtime (a few megabytes, once)…");
+  setStatus("Loading the drawing code…");
 
-  let pyodide;
   try {
-    pyodide = await loadPyodide();
+    bridge = await import("./js/web-bridge.js");
   } catch (e) {
     console.error(e);
     setStatus(
-      "Could not load the Python runtime, so nothing here can be customised. " +
+      "Could not load the drawing code, so nothing here can be customised. " +
         "This can happen on a restrictive network. The gallery above still works: " +
         "every character can still be viewed and downloaded as-is.",
       true,
     );
     return;
   }
-
-  pyodide.FS.mkdirTree("/pkg/anime_character_creator");
-  for (const name of PACKAGE_FILES) {
-    const resp = await fetch(`src/anime_character_creator/${name}`);
-    const text = await resp.text();
-    pyodide.FS.writeFile(`/pkg/anime_character_creator/${name}`, text);
-  }
-  pyodide.runPython('import sys\nsys.path.insert(0, "/pkg")');
-  pyodide.runPython("from anime_character_creator import PRESETS");
-  pyodide.runPython(BRIDGE_PY);
-
-  bridge = {
-    render: pyodide.globals.get("_bridge_render"),
-    encode: pyodide.globals.get("_bridge_encode"),
-    decode: pyodide.globals.get("_bridge_decode"),
-    stateForStart: pyodide.globals.get("_bridge_state_for_start"),
-  };
 
   enableGalleryCards();
   setStatus("");

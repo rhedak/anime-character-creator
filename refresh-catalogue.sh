@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Re-emit ref-out/catalogue.json from anime_character_creator.catalogue.
+# Re-emit ref-out/catalogue.json from the TypeScript package (`ts/bin/catalogue.ts`, which
+# writes `toJson()` of `ts/src/catalogue.ts`).
 #
 # The web tool's controls and its instant first paint both read this file, so
 # it is committed the same way the SVGs in ref-out/ are: current on disk
-# rather than regenerated only when the page happens to load Pyodide.
+# rather than regenerated only when the page happens to load.
 #
 #   ./refresh-catalogue.sh          re-emit, report whether it changed
 #   ./refresh-catalogue.sh --check  compare only, write nothing, exit 1 if stale
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-py="$root/.venv/bin/python"
-if [ ! -x "$py" ]; then
-    echo "no .venv here; create one with:  uv sync" >&2
+if ! command -v node >/dev/null 2>&1; then
+    echo "no node on PATH; the catalogue is written by TypeScript and needs Node 22.18 or newer" >&2
     exit 1
 fi
 
@@ -26,7 +26,7 @@ esac
 out="$root/ref-out/catalogue.json"
 tmp="$root/out/.catalogue-stage.json"
 mkdir -p "$root/out"
-"$py" -m anime_character_creator.catalogue > "$tmp"
+node "$root/ts/bin/catalogue.ts" "$tmp"
 
 if [ -f "$out" ] && cmp -s "$tmp" "$out"; then
     rm -f "$tmp"
