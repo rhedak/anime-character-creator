@@ -1,0 +1,149 @@
+{
+ "base": {
+  "size": [
+   1312,
+   1504
+  ],
+  "head_top": 85,
+  "eyeline": 328.9,
+  "chin": 440,
+  "H": 355,
+  "ipd": 113.6,
+  "cx": 661.2,
+  "head_w": 302,
+  "neck_w": 81.4,
+  "neck_base_y": 490,
+  "shoulder_y": 641,
+  "shoulder_span": 531,
+  "bust_total_w": 539,
+  "waist_w_y": [
+   464,
+   824
+  ],
+  "hip_w_y": null,
+  "crotch_y": 1485,
+  "arm_bottom_y": null,
+  "fg_bottom": 1501,
+  "fg_w": 620
+ },
+ "ref1": {
+  "size": [
+   1312,
+   1504
+  ],
+  "head_top": 82,
+  "eyeline": 326.9,
+  "chin": 434,
+  "H": 352,
+  "ipd": 113.5,
+  "cx": 660.6,
+  "head_w": 302,
+  "neck_w": 81.4,
+  "neck_base_y": 494,
+  "shoulder_y": 553,
+  "shoulder_span": 444,
+  "bust_total_w": 448,
+  "waist_w_y": [
+   242,
+   882
+  ],
+  "hip_w_y": [
+   432,
+   1227
+  ],
+  "crotch_y": 1240,
+  "arm_bottom_y": 1358,
+  "fg_bottom": 1501,
+  "fg_w": 608
+ },
+ "ref2": {
+  "size": [
+   1312,
+   1504
+  ],
+  "head_top": 83,
+  "eyeline": 327.8,
+  "chin": 434,
+  "H": 351,
+  "ipd": 113.1,
+  "cx": 661.3,
+  "head_w": 302,
+  "neck_w": 82.0,
+  "neck_base_y": 491,
+  "shoulder_y": 643,
+  "shoulder_span": 529,
+  "bust_total_w": 541,
+  "waist_w_y": [
+   250,
+   865
+  ],
+  "hip_w_y": [
+   465,
+   1237
+  ],
+  "crotch_y": 1241,
+  "arm_bottom_y": 1338,
+  "fg_bottom": 1501,
+  "fg_w": 618
+ },
+ "ref3": {
+  "size": [
+   1312,
+   1504
+  ],
+  "head_top": 85,
+  "eyeline": 329.5,
+  "chin": 435,
+  "H": 350,
+  "ipd": 114.2,
+  "cx": 661.0,
+  "head_w": 302,
+  "neck_w": 82.2,
+  "neck_base_y": 492,
+  "shoulder_y": 643,
+  "shoulder_span": 529,
+  "bust_total_w": 541,
+  "waist_w_y": [
+   242,
+   874
+  ],
+  "hip_w_y": [
+   437,
+   1218
+  ],
+  "crotch_y": 1222,
+  "arm_bottom_y": 1337,
+  "fg_bottom": 1501,
+  "fg_w": 618
+ },
+ "ref4": {
+  "size": [
+   1008,
+   1792
+  ],
+  "head_top": 66,
+  "eyeline": 245.4,
+  "chin": 322,
+  "H": 256,
+  "ipd": 84.4,
+  "cx": 507.9,
+  "head_w": 220,
+  "neck_w": 60.2,
+  "neck_base_y": 367,
+  "shoulder_y": 411,
+  "shoulder_span": 317,
+  "bust_total_w": 319,
+  "waist_w_y": [
+   171,
+   637
+  ],
+  "hip_w_y": [
+   298,
+   886
+  ],
+  "crotch_y": 890,
+  "arm_bottom_y": 982,
+  "fg_bottom": 1710,
+  "fg_w": 420
+ }
+}

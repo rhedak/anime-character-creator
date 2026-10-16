@@ -1,0 +1,542 @@
+{
+ "ref1/black-hair.png": {
+  "offset": [
+   503,
+   81
+  ],
+  "rms": 0.0,
+  "prev": [
+   503,
+   81
+  ],
+  "agrees_with_prev": true
+ },
+ "ref1/brown-eyes/brown-eyes-1.png": {
+  "offset": [
+   561,
+   294
+  ],
+  "rms": 0.0,
+  "prev": [
+   561,
+   294
+  ],
+  "agrees_with_prev": true
+ },
+ "ref1/brown-eyes/brown-eyes-2.png": {
+  "offset": [
+   558,
+   286
+  ],
+  "rms": NaN,
+  "prev": [
+   558,
+   286
+  ],
+  "agrees_with_prev": true
+ },
+ "ref1/brown-eyes/brown-eyes-3.png": {
+  "offset": [
+   690,
+   287
+  ],
+  "rms": 0.0,
+  "prev": [
+   690,
+   287
+  ],
+  "agrees_with_prev": true
+ },
+ "ref1/white-one-piece-swimsuit.png": {
+  "offset": [
+   486,
+   503
+  ],
+  "rms": NaN,
+  "prev": [
+   486,
+   503
+  ],
+  "agrees_with_prev": true
+ },
+ "ref1/woman.png": {
+  "offset": [
+   361,
+   80
+  ],
+  "rms": 0.0,
+  "prev": [
+   361,
+   80
+  ],
+  "agrees_with_prev": true
+ },
+ "ref2/beige-shorts.png": {
+  "offset": [
+   429,
+   1051
+  ],
+  "rms": 0.0,
+  "prev": [
+   429,
+   1051
+  ],
+  "agrees_with_prev": true
+ },
+ "ref2/black-hair.png": {
+  "offset": [
+   504,
+   81
+  ],
+  "rms": 0.0,
+  "prev": [
+   504,
+   81
+  ],
+  "agrees_with_prev": true
+ },
+ "ref2/white-blouse.png": {
+  "offset": [
+   400,
+   480
+  ],
+  "rms": 0.0,
+  "prev": [
+   400,
+   480
+  ],
+  "agrees_with_prev": true
+ },
+ "ref2/yellow-eyes/yellow-eyes-1.png": {
+  "offset": [
+   564,
+   296
+  ],
+  "rms": 0.0,
+  "prev": [
+   564,
+   296
+  ],
+  "agrees_with_prev": true
+ },
+ "ref2/yellow-eyes/yellow-eyes-2.png": {
+  "offset": [
+   693,
+   290
+  ],
+  "rms": 0.07,
+  "prev": [
+   693,
+   290
+  ],
+  "agrees_with_prev": true
+ },
+ "ref2/yellow-eyes/yellow-eyes-3.png": {
+  "offset": [
+   559,
+   286
+  ],
+  "rms": 0.0,
+  "prev": [
+   559,
+   286
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/black-hair.png": {
+  "offset": [
+   504,
+   83
+  ],
+  "rms": 0.01,
+  "prev": [
+   504,
+   83
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/brown-eyes/brown-eyes-1.png": {
+  "offset": [
+   563,
+   297
+  ],
+  "rms": NaN,
+  "prev": [
+   563,
+   297
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/brown-eyes/brown-eyes-2.png": {
+  "offset": [
+   692,
+   291
+  ],
+  "rms": 0.0,
+  "prev": [
+   692,
+   291
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/brown-eyes/brown-eyes-3.png": {
+  "offset": [
+   559,
+   288
+  ],
+  "rms": NaN,
+  "prev": [
+   559,
+   288
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-1.png": {
+  "offset": [
+   599,
+   753
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-10.png": {
+  "offset": [
+   614,
+   980
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-11.png": {
+  "offset": [
+   687,
+   792
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-12.png": {
+  "offset": [
+   613,
+   1017
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-13.png": {
+  "offset": [
+   614,
+   942
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-14.png": {
+  "offset": [
+   681,
+   869
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-15.png": {
+  "offset": [
+   614,
+   905
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-16.png": {
+  "offset": [
+   614,
+   869
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-2.png": {
+  "offset": [
+   692,
+   754
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-3.png": {
+  "offset": [
+   606,
+   792
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-4.png": {
+  "offset": [
+   680,
+   943
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-5.png": {
+  "offset": [
+   681,
+   980
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-6.png": {
+  "offset": [
+   610,
+   830
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-7.png": {
+  "offset": [
+   681,
+   905
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-8.png": {
+  "offset": [
+   681,
+   1017
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/gold-buttons/gold-buttons-9.png": {
+  "offset": [
+   683,
+   831
+  ],
+  "rms": 0.0,
+  "prev": null,
+  "agrees_with_prev": true
+ },
+ "ref3/green-corset.png": {
+  "offset": [
+   482,
+   494
+  ],
+  "rms": 0.0,
+  "prev": [
+   482,
+   494
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/lace-up-front/lace-up-front-1.png": {
+  "offset": [
+   602,
+   751
+  ],
+  "rms": 0.0,
+  "prev": [
+   602,
+   751
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/lace-up-front/lace-up-front-2.png": {
+  "offset": [
+   482,
+   491
+  ],
+  "rms": 0.0,
+  "prev": [
+   482,
+   491
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/puffed-sleeves/puffed-sleeves-1.png": {
+  "offset": [
+   399,
+   512
+  ],
+  "rms": 0.0,
+  "prev": [
+   399,
+   512
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/puffed-sleeves/puffed-sleeves-2.png": {
+  "offset": [
+   808,
+   512
+  ],
+  "rms": 0.0,
+  "prev": [
+   808,
+   512
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/white-blouse.png": {
+  "offset": [
+   400,
+   481
+  ],
+  "rms": 0.0,
+  "prev": [
+   400,
+   481
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/white-shorts.png": {
+  "offset": [
+   443,
+   1028
+  ],
+  "rms": 0.0,
+  "prev": [
+   443,
+   1028
+  ],
+  "agrees_with_prev": true
+ },
+ "ref3/woman.png": {
+  "offset": [
+   353,
+   83
+  ],
+  "rms": 0.07,
+  "prev": [
+   353,
+   83
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/bare-feet/bare-feet-1.png": {
+  "offset": [
+   419,
+   1561
+  ],
+  "rms": 0.0,
+  "prev": [
+   419,
+   1561
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/bare-feet/bare-feet-2.png": {
+  "offset": [
+   526,
+   1556
+  ],
+  "rms": 0.0,
+  "prev": [
+   526,
+   1556
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/black-hair.png": {
+  "offset": [
+   395,
+   65
+  ],
+  "rms": 0.0,
+  "prev": [
+   395,
+   65
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/brown-eyes/brown-eyes-1.png": {
+  "offset": [
+   433,
+   213
+  ],
+  "rms": 0.0,
+  "prev": [
+   433,
+   213
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/brown-eyes/brown-eyes-2.png": {
+  "offset": [
+   436,
+   221
+  ],
+  "rms": 0.0,
+  "prev": [
+   436,
+   221
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/brown-eyes/brown-eyes-3.png": {
+  "offset": [
+   532,
+   215
+  ],
+  "rms": 0.0,
+  "prev": [
+   532,
+   215
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/white-bikini-bottom.png": {
+  "offset": [
+   376,
+   758
+  ],
+  "rms": 0.0,
+  "prev": [
+   376,
+   758
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/white-bikini-top.png": {
+  "offset": [
+   393,
+   364
+  ],
+  "rms": 0.0,
+  "prev": [
+   393,
+   364
+  ],
+  "agrees_with_prev": true
+ },
+ "ref4/woman.png": {
+  "offset": [
+   301,
+   63
+  ],
+  "rms": 0.0,
+  "prev": [
+   301,
+   63
+  ],
+  "agrees_with_prev": true
+ }
+}
