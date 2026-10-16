@@ -10,10 +10,13 @@ import { PyInt, dumps, type Json } from "../src/pyjson.ts";
 import { fmtFixed, pyHypot, pyMod, pyRepr, pyRound, pySum, roundTo } from "../src/pynum.ts";
 import { sha1Hex } from "../src/sha1.ts";
 import type { Skeleton } from "../src/skeleton.ts";
-import { sha256Hex } from "./sha256.ts";
+import { parseFullCorpus, utf8SurrogatePass } from "./corpus-diff.ts";
+import { renderCharacterWith } from "../src/render.ts";
+import { sha256Bytes, sha256Hex } from "./sha256.ts";
 
 export type Result = { name: string; total: number; bad: number; first: string[] };
 export type FetchJson = (path: string) => Promise<any>;
+export type FetchText = (path: string) => Promise<string>;
 
 const dv = new DataView(new ArrayBuffer(8));
 function dec(v: string): number {
@@ -47,7 +50,7 @@ const skeletonJson = (sk: Skeleton): Json => ({
   canvas_h: new PyInt(sk.canvas_h),
 });
 
-export async function runChecks(get: FetchJson): Promise<Result[]> {
+export async function runChecks(get: FetchJson, getText?: FetchText, stride = 4): Promise<Result[]> {
   const out: Result[] = [];
   const syn = await get("fixtures/synthetic.json");
   out.push(tally("float format .Nf", syn.fmt, ([x, d, want]) => (fmtFixed(dec(x), d) === want ? null : `${dec(x)} .${d}f want ${want} got ${fmtFixed(dec(x), d)}`)));
@@ -104,5 +107,23 @@ export async function runChecks(get: FetchJson): Promise<Result[]> {
     );
   }
   void documentWrap;
+
+  // Whole documents: every `stride`-th case of the 7,662-case corpus drawn by the TypeScript and compared, by sha256, with Python's.
+  if (getText) {
+    const cases = parseFullCorpus(await getText("../harness/ts_port/corpus/full.json"));
+    const full = await get("../harness/ts_port/manifest/full.json");
+    const picked = cases.filter((_, i) => i % stride === 0);
+    out.push(
+      tally(`whole documents (every ${stride}th of ${cases.length}, all parts)`, picked, (c) => {
+        let doc: string;
+        try {
+          doc = renderCharacterWith(c.params, { background: c.kw.background ?? null, metadata: c.kw.metadata, id_prefix: c.kw.id_prefix ?? "" });
+        } catch (e) {
+          return `${c.id} threw ${String(e).slice(0, 60)}`;
+        }
+        return sha256Bytes(utf8SurrogatePass(doc)).startsWith(full.cases[c.id][0]) ? null : c.id;
+      }),
+    );
+  }
   return out;
 }

@@ -22,6 +22,8 @@ mkdirSync(join(out, "harness", "ts_port", "corpus"), { recursive: true });
 mkdirSync(join(out, "harness", "ts_port", "manifest"), { recursive: true });
 copyFileSync(join(repo, "harness/ts_port/corpus/mini.json"), join(out, "harness/ts_port/corpus/mini.json"));
 copyFileSync(join(repo, "harness/ts_port/manifest/mini.json"), join(out, "harness/ts_port/manifest/mini.json"));
+copyFileSync(join(repo, "harness/ts_port/manifest/full.json"), join(out, "harness/ts_port/manifest/full.json"));
+copyFileSync(join(repo, "harness/ts_port/corpus/full.json"), join(out, "harness/ts_port/corpus/full.json"));
 copyFileSync(join(ts, "web-check", "index.html"), join(out, "index.html"));
 console.log("staged at", out);
 if (process.argv.includes("--serve")) {

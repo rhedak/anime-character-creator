@@ -20,7 +20,7 @@
 </head>
 <body>
 <h1>Does this browser draw what Python draws?</h1>
-<p>Runs the TypeScript port against what CPython recorded: number formatting, rounding, sums, <code>sin</code>/<code>cos</code>/<code>**</code> in the head shape, colour maths and three drawn layers. Every row should be all green.</p>
+<p>Runs the TypeScript port against what CPython recorded: number formatting, rounding, sums, <code>sin</code>/<code>cos</code>/<code>**</code> in the head shape, colour maths, three drawn layers, and whole characters (a quarter of the 7,662 test characters, every part). Every row should be all green; it takes a few seconds.</p>
 <div id="env"></div>
 <div id="summary">Running...</div>
 <table><thead><tr><th>Check</th><th class="n">Cases</th><th class="n">Differ</th><th>First difference</th></tr></thead><tbody id="rows"></tbody></table>
@@ -32,7 +32,8 @@
   const get = (p) => fetch(new URL(p.replace(/^\.\.\//, ""), location.href)).then((r) => { if (!r.ok) throw new Error(p + " " + r.status); return r.json(); });
   try {
     const t0 = performance.now();
-    const results = await runChecks(get);
+    const getText = (p) => fetch(new URL(p.replace(/^\.\.\//, ""), location.href)).then((r) => { if (!r.ok) throw new Error(p + " " + r.status); return r.text(); });
+    const results = await runChecks(get, getText);
     const rows = document.getElementById("rows");
     let failed = 0;
     for (const r of results) {

@@ -11,8 +11,9 @@ const K = new Uint32Array([
 
 const rotr = (x: number, n: number): number => (x >>> n) | (x << (32 - n));
 
-export function sha256Hex(text: string): string {
-  const data = new TextEncoder().encode(text);
+export const sha256Hex = (text: string): string => sha256Bytes(new TextEncoder().encode(text));
+
+export function sha256Bytes(data: Uint8Array): string {
   const bitLen = data.length * 8;
   const padded = new Uint8Array((((data.length + 8) >> 6) + 1) << 6);
   padded.set(data);
