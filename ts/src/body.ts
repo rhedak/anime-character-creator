@@ -1,6 +1,7 @@
 // The body profiles and the skeleton a character is drawn on: the part of character.py (BODY_TYPES, skeleton_for,
 // hat_hair_margin, _limb_taper_at) that builds a Skeleton for a CharacterParams.
 
+import { ADULT_BODY_TYPES } from "./body-adult.ts";
 import type { CharacterParams } from "./params.ts";
 import { plainParams } from "./plain.ts";
 import { PyError, pyMax, pyMin, truthy } from "./pynum.ts";
@@ -85,7 +86,7 @@ export function hatHairMargin(p: CharacterParams): number {
 function skeletonAt(p: CharacterParams): Skeleton {
   const heads = BUILDS.chibi as number;
   let margin = hatHairMargin(p);
-  const bodyProfile = BODY_TYPES[p.body];
+  const bodyProfile = BODY_TYPES[p.body] ?? ADULT_BODY_TYPES[p.body];
   if (bodyProfile === undefined) throw new PyError("KeyError", pyValueRepr(p.body));
   // The hair always draws at the chibi build under a profile, so it needs the chibi build's own headroom.
   margin = pyMax(margin, defaultHairMargin(heads));
