@@ -109,3 +109,27 @@ Reading against the Gate 0 rule (does L, S or LS read as clearly more like hair 
 | Crown band (SH): hard diagonal lower edge, a seam. | Three stacked bands of rising opacity so the edge steps off. |
 | The two copies of r3 were found identical. | Confirms the hidden duplicate is a valid noise row. |
 | Not judged: stroke widths, sub-pixel seams, gradient banding, exact colour matches. | Pixel guard added (`harness/soft_hair/guard2.py`): lightened pixels keep 0.93 to 1.02 of the saturation of the r3 pixel under them, against 0.41 to 0.85 for today's soft. |
+
+## Gate 0b, session 1: the owner's pair answers (`out/soft/v3/pairs-23`, one answer per row, given across the hair colours)
+
+Key (same on the four r3 sheets): row 1 r3 left, LS2 right. Row 2 r3 left, r3b right (identical copies).
+Row 3 r3 left, SH right. Row 4 SS left, r3 right. Row 5 S2 left, r3 right.
+
+| Row | Answer | Reading | Owner's reason |
+| --- | --- | --- | --- |
+| 1 | left | r3 over LS2 | Highlights on the right a bit much, and the lack of hairlines. |
+| 2 | no difference | control passes: identical copies seen as identical | |
+| 3 | right | SH over r3 | Highlights subtle enough to work. |
+| 4 | close call | SS about level with r3 | The highlights on the left work, but without hairlines it reads as one large segment, not individual hairs. |
+| 5 | right | r3 over S2 | S2 highlights too much, and again no hairlines. On red they come closest. |
+
+Nothing broken on any sheet. The `vs-today` sheet was not answered separately.
+
+Against the pre-registered win rule (at least 5 of 6 judgments, never broken): none of LS2, S2, SS wins.
+SH beat r3 once, on one session. By the rule the structure variants stop here.
+
+What the owner's reasons add, which the rule does not capture: the one thing missing from every
+structure variant is the hairlines. That is my doing. The structure variants switch the cut's strands
+off (`strands_off`), which I chose in round 1 to avoid doubled lines, and r3 keeps them. The owner values
+the hairlines. The second complaint is highlight strength: the subtle one (SH) works, the stronger ones
+do not. Both are tunable, so the finding is not that structure fails but that two settings were wrong.
