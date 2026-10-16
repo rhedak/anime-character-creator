@@ -158,3 +158,21 @@ check out f432f7b for it.
 | Sheen cap (SH): reads as a flat cap, edge slightly hard. | Left as the owner's round 2 winner. |
 | Base defects on both sides: dark wedge behind the cheeks, pale tan band under the fringe, sparse uneven ticks, ear slivers, ragged side-lock tips. | Shared with r3, outside this treatment. Listed as soft-finish candidates. |
 | Not judged: hairlines under 1 px, seams at 1 px, spacing regularity, dark hair detail. | |
+
+## Gate 0b, session 1 of round 3: the owner's answers (`out/soft/v4/pairs-32`, one answer per row, across colours)
+
+Key (identical on the four r3 sheets): row 1 r3b left, r3 right (the identical copies). Row 2 r3 left,
+S2h right. Row 3 r3 left, H right. Row 4 r3 left, SSh right. Row 5 LS2h left, r3 right.
+
+| Row | Answer | Reading | Owner's reason |
+| --- | --- | --- | --- |
+| 1 | no difference | control passes | |
+| 2 | right | S2h over r3 | |
+| 3 | left | r3 over H | The added hairlines clash with the existing ones, which makes the right look broken. |
+| 4 | right | SSh over r3 | Same problem as row 3 but less noticeable. |
+| 5 | left | LS2h over r3 | On red the highlights are still a little strong, but they add more than they lose. |
+
+S2h, SSh and LS2h beat r3 in session 1; the hairlines-only variant (H) lost and looked broken. The red-vs-SH
+and dark-vs-SH sheets were not answered. Reading: the structure helps and the added hairlines are the
+defect. Session 2 (seed 33) returns SSn, S2n, LS2n (the winners without the added hairlines) and S2h
+(the bridge), against r3 and against SH.

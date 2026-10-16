@@ -19,6 +19,7 @@ All variants sit on the package's soft finish (r3), which now has no gloss arc, 
     SSh     value steps only (shadow clumps, soft separations) plus hairlines
     S2h     shadow and lit clumps with one faint highlight each, plus hairlines
     LS2h    S2h plus the crown band
+    SSn, S2n, LS2n   the same three without the added hairlines (the cut's strand dashes only)
 """
 
 from __future__ import annotations
@@ -41,7 +42,10 @@ import mockup as M  # noqa: E402
 import mockup2 as K  # noqa: E402
 from anime_character_creator.colorutil import shade  # noqa: E402
 
-CANDIDATES = ["H", "SSh", "S2h", "LS2h"]
+# Session 2: the added hairlines clashed with the cut's own strand dashes in session 1 (H lost, the
+# others won in spite of them), so the three winners come back without the added hairlines, with S2h
+# kept as the bridge to show whether those hairlines help or hurt.
+CANDIDATES = ["SSn", "S2n", "LS2n", "S2h"]
 HAIRLINE_VALUE = 0.50  # a dark tone of the hair, not the black outline
 
 
@@ -102,6 +106,9 @@ BUILDERS = {
     "SSh": lambda f, h: clumps_subtle(f, h, lit=False) + hairlines(f, h),
     "S2h": lambda f, h: clumps_subtle(f, h, lit=True) + hairlines(f, h),
     "LS2h": lambda f, h: clumps_subtle(f, h, lit=True) + K.ring(f, h) + hairlines(f, h),
+    "SSn": lambda f, h: clumps_subtle(f, h, lit=False),
+    "S2n": lambda f, h: clumps_subtle(f, h, lit=True),
+    "LS2n": lambda f, h: clumps_subtle(f, h, lit=True) + K.ring(f, h),
 }
 
 # One pattern for every sheet, as in round 2: row N is the same comparison on every colour, with the
