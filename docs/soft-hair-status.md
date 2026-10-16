@@ -5,6 +5,11 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Default strength chosen by the owner from the five-strength sheet (`out/soft/strength-61`): column E, which
+  is the old strength 0.5 (key: A 0.75, B 1.0, C 0.25, D 0.0, E 0.5). Rebased so `highlight_strength` 1
+  is that look (all 20 soft presets render byte-identically to the old code at 0.5) and 2 is the strength
+  the clumps were first judged at. Gate 1 was judged at the old strength; the repeat day uses the new one.
+
 - Highlight strength added (owner's request after Gate 1): `CharacterParams.highlight_strength`, 0 to 2,
   default 1 (the authored look, byte-identical), 0 draws no clumps; it scales the lit steps, the highlights,
   the shadow depth and the separation. Flat ignores it. Sheet for picking a default by eye on pale and

@@ -89,8 +89,8 @@ its weight. A cut that describes its clumps (`Hairstyle.locks`, today
 `long_fringed` and `long_traced`) also gets shadow and lit tone clumps over the
 front hair, each lit one with a faint highlight, inside the hair's own
 silhouette. `highlight_strength` (0 to 2, default 1, soft only) scales those
-clumps: lower it for a pale cut beside painted art, 0 draws none, `--highlight-strength`
-on the command line. Gradients only, no blur, so the
+clumps: 0 draws none, 2 is the strength they were first judged at (a bit strong on pale
+hair), 1 the default the owner picked; `--highlight-strength` on the command line. Gradients only, no blur, so the
 cairosvg PNGs match what a browser draws. An unknown value raises
 `ValueError`. `FINISHES` lists the two.
 

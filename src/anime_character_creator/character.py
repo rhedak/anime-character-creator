@@ -717,10 +717,11 @@ class CharacterParams:
     # beside painted art (a companion app's picture packs): see `_soft` and the
     # `_SOFT_*` constants. It adds gradients and tinted lines and changes no shape.
     finish: str = "flat"
-    # How strong the soft finish's hair clumps are, 1 as authored: the lit steps and the highlights
-    # rise by this much of their amount and the shadow steps sink by it, and 0 draws none. A caller
-    # putting a pale cut beside painted art can lower it (the owner found the shadows a bit strong
-    # on blonde, pink, orange and light brown). The flat finish ignores it.
+    # How strong the soft finish's hair clumps are: the lit steps and the highlights rise by this
+    # much and the shadow steps sink by it, and 0 draws none. 1 is the default look, the owner's pick
+    # from five strengths on five hair colours (2026-10-16): half the strength the clumps were
+    # first judged at, which was a bit strong on pale colours. 2 is that first strength. The flat
+    # finish ignores it.
     highlight_strength: float = 1.0
 
 
@@ -13117,6 +13118,8 @@ def _soft_brow_shadow(sk: Skeleton, p: CharacterParams, fill_d: str) -> str:
 # the hair's saturation (a tint toward white read as frosting on dark red), the highlights stay
 # faint, and the clumps sit on the cut's own strand dashes, which are drawn over them.
 _SOFT_LOCK_LIGHT = (-0.55, -0.83)  # toward the light: up and to the left
+# `highlight_strength` 1 is this share of the strength the clumps were first drawn and judged at.
+_SOFT_LOCK_STRENGTH_SCALE = 0.5
 _SOFT_LOCK_MID_RISE = 0.12  # a lit clump's body, as a share of `highlight_rise`
 _SOFT_LOCK_HIGH_RISE = 0.38  # its highlight
 _SOFT_LOCK_SEP_VALUE = 0.74
@@ -13295,14 +13298,15 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
         # pass, which the repaint would hide entirely. The repaint covers the `front_shade` strips
         # in that region, so they are drawn again over it, as the flat finish has them.
         locks = style.locks(fall)
+        strength = p.highlight_strength * _SOFT_LOCK_STRENGTH_SCALE
         tips = _hair_tip_tone(p)
         if tips is None or style.tip_edge(fall) != [style.mass(fall)]:
-            parts.append(_soft_locks(sk, p.hair_color, locks, p.highlight_strength))
+            parts.append(_soft_locks(sk, p.hair_color, locks, strength))
         if tips is not None:
             parts.append(
                 f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />'
             )
-            parts.append(_soft_locks(sk, tips, locks, p.highlight_strength, tip_clip=True))
+            parts.append(_soft_locks(sk, tips, locks, strength, tip_clip=True))
             parts.extend(strips)
     parts.append(
         f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
