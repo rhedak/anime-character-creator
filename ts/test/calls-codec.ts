@@ -70,6 +70,8 @@ export function same(py: Enc, got: unknown, refs: Refs, tol: number, tally: Tall
   if (py === null) return got === null || got === undefined;
   if (typeof py === "string") {
     const tag = py.slice(0, 2);
+    // Python's `False == 0` and `True == 1`: a flag the real flow holds as a boolean may have been recorded as a number.
+    if ((tag === "f:" || tag === "i:") && typeof got === "boolean") got = got ? 1 : 0;
     if (tag === "f:") {
       if (typeof got !== "number") return false;
       const want = decodeFloat(py);
