@@ -764,6 +764,7 @@ def _curve(
 _HAIR_CHEEK_Y = 0.72
 _HAIR_TIP_CLIP_ID = "hair-tips"
 _HAIR_FRONT_CLIP_ID = "hair-front"
+_HAIR_MASS_CLIP_ID = "hair-mass"
 _HAIR_UNDERSIDE_CLIP_ID = "hair-underside"
 # How far a lock's line runs on past its tip (`Hairstyle.tip_lines`), in head
 # radii: the parted cut's reference carries it 0.09 to 0.16 past where its
@@ -1629,6 +1630,26 @@ def _long_traced_locks(fall: float) -> list[Lock]:
         return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
 
     return [(role, tuple(q(pt) for pt in pts), w, ln) for role, pts, w, ln in _LONG_LOCKS]
+
+
+# The clumps the soft finish lays over the short layered cut's front hair (`Hairstyle.locks`),
+# placed by hand on `harness/soft_hair/grid.py`. The cut is pinned to the skull above the cheek
+# line, where nothing stretches with the fall, so they are used as authored. The flow is the
+# crop's own: from the crown out and down over the temples, the fringe falling in pieces off it.
+_SHORT_LOCKS: list[Lock] = [
+    ("lit", ((-0.10, -1.20), (-0.55, -1.12), (-0.92, -0.82), (-1.10, -0.40), (-1.18, 0.05)), 0.19, 0.97),
+    ("shadow", ((-0.25, -1.10), (-0.62, -0.90), (-0.88, -0.55), (-0.98, -0.20)), 0.14, 0.92),
+    ("lit", ((-0.20, -1.05), (-0.35, -0.80), (-0.45, -0.50), (-0.42, -0.22)), 0.13, 0.90),
+    ("shadow", ((-1.14, 0.02), (-1.17, 0.26), (-1.12, 0.50)), 0.10, 0.90),
+    ("shadow", ((0.10, -1.10), (0.18, -0.80), (0.25, -0.50), (0.20, -0.30)), 0.12, 0.90),
+    ("lit", ((0.30, -1.10), (0.65, -0.92), (0.90, -0.58), (1.00, -0.28)), 0.15, 0.94),
+    ("lit", ((0.12, -1.20), (0.58, -1.12), (0.95, -0.82), (1.12, -0.40), (1.19, 0.05)), 0.18, 0.96),
+    ("shadow", ((1.14, 0.02), (1.17, 0.26), (1.12, 0.50)), 0.10, 0.90),
+]  # fmt: skip
+
+
+def _short_locks(fall: float) -> list[Lock]:
+    return list(_SHORT_LOCKS)
 
 
 def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
@@ -3417,6 +3438,10 @@ class Hairstyle:
     # leaves the cut without them, so a cut that has not been authored says nothing and the soft
     # finish draws it as before. The flat finish never reads this.
     locks: Callable[[float], list[Lock]] | None = None
+    # Whether the clumps are laid on the mass behind the head as well as on the front piece. A short
+    # cut's crown is the mass, since the front piece is only the fringe and the temples, so a clump
+    # there has to be drawn on both, in the same shape, and meets itself at the seam.
+    mass_locks: bool = False
 
 
 def _long_fall_edges(length: float) -> list[tuple[Point, list[Segment]]]:
@@ -3446,6 +3471,8 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _short_fall_edges,
         _short_tip_edge,
         strands=_short_strands,
+        locks=_short_locks,
+        mass_locks=True,
         # Where the side tips end: a tight crop pinned to the skull at 0, a
         # shaggy ear-length cut at 1. The old (0.42, 1.00) range described the
         # bob this used to be, with locks reaching for the jaw.
@@ -3589,6 +3616,10 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
         region, _ = style.underside(fall)
         d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *region)
         clips.append(f'<clipPath id="{_HAIR_UNDERSIDE_CLIP_ID}"><path d="{d}" /></clipPath>')
+    if style.locks is not None and style.mass_locks and _soft(p) and p.highlight_strength > 0:
+        start, segments = style.mass(fall)
+        d = _curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments)
+        clips.append(f'<clipPath id="{_HAIR_MASS_CLIP_ID}"><path d="{d}" /></clipPath>')
     return f"<defs>{''.join(clips)}</defs>" if clips else ""
 
 
@@ -3611,6 +3642,8 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
     parts = _two_tone_hair(d, p)
     if style.underside is not None:
         parts.append(_hair_underside(sk, p, d, style.underside(fall)[1]))
+    if style.locks is not None and style.mass_locks and _soft(p) and p.highlight_strength > 0:
+        parts.extend(_soft_lock_layers(sk, p, style, fall, d, _HAIR_MASS_CLIP_ID))
     parts.append(
         f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
@@ -13228,7 +13261,12 @@ def _lock_shape(
 
 
 def _soft_locks(
-    sk: Skeleton, hair: str, locks: list[Lock], strength: float, tip_clip: bool = False
+    sk: Skeleton,
+    hair: str,
+    locks: list[Lock],
+    strength: float,
+    clip_id: str = _HAIR_FRONT_CLIP_ID,
+    tip_clip: bool = False,
 ) -> str:
     """The soft finish's clumps for the front hair in the tones of `hair`, as one group clipped to
     the front piece, and with `tip_clip` to the tip-toned region too."""
@@ -13265,7 +13303,27 @@ def _soft_locks(
     body = "".join(parts)
     if tip_clip:
         body = f'<g clip-path="url(#{_HAIR_TIP_CLIP_ID})">{body}</g>'
-    return f'<g clip-path="url(#{_HAIR_FRONT_CLIP_ID})">{body}</g>'
+    return f'<g clip-path="url(#{clip_id})">{body}</g>'
+
+
+def _soft_lock_layers(
+    sk: Skeleton, p: CharacterParams, style: Hairstyle, fall: float, fill_d: str, clip_id: str
+) -> list[str]:
+    """The soft finish's clumps on one hair layer (`fill_d` its shape, `clip_id` its clip). A
+    two-tone cut gets them twice: in the hair's tones, then, over a repaint of the tip region, in
+    the tip colour's. A cut whose tip region is the whole mass skips the first pass, which the
+    repaint would hide entirely."""
+    assert style.locks is not None
+    locks = style.locks(fall)
+    strength = p.highlight_strength * _SOFT_LOCK_STRENGTH_SCALE
+    tips = _hair_tip_tone(p)
+    parts = []
+    if tips is None or style.tip_edge(fall) != [style.mass(fall)]:
+        parts.append(_soft_locks(sk, p.hair_color, locks, strength, clip_id))
+    if tips is not None:
+        parts.append(f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />')
+        parts.append(_soft_locks(sk, tips, locks, strength, clip_id, tip_clip=True))
+    return parts
 
 
 def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
@@ -13293,20 +13351,10 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
             )
     parts.extend(strips)
     if style.locks is not None and _soft(p) and p.highlight_strength > 0:
-        # A two-tone cut gets its clumps twice: in the hair's tones, then, over a repaint of the tip
-        # region, in the tip colour's. A cut whose tip region is the whole mass skips the first
-        # pass, which the repaint would hide entirely. The repaint covers the `front_shade` strips
-        # in that region, so they are drawn again over it, as the flat finish has them.
-        locks = style.locks(fall)
-        strength = p.highlight_strength * _SOFT_LOCK_STRENGTH_SCALE
-        tips = _hair_tip_tone(p)
-        if tips is None or style.tip_edge(fall) != [style.mass(fall)]:
-            parts.append(_soft_locks(sk, p.hair_color, locks, strength))
-        if tips is not None:
-            parts.append(
-                f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />'
-            )
-            parts.append(_soft_locks(sk, tips, locks, strength, tip_clip=True))
+        parts.extend(_soft_lock_layers(sk, p, style, fall, fill_d, _HAIR_FRONT_CLIP_ID))
+        if _hair_tip_tone(p) is not None:
+            # The tip repaint covers the `front_shade` strips in its region, so they are drawn
+            # again over it, as the flat finish has them.
             parts.extend(strips)
     parts.append(
         f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
