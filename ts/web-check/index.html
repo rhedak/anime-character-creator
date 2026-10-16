@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Port check</title>
+<style>
+  :root { --bg: #fff; --fg: #1b1b1f; --ok: #0a7a3b; --bad: #b3261e; --mute: #6b6b76; --line: #ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16161a; --fg: #ececf1; --ok: #4cc27f; --bad: #ff8a80; --mute: #9a9aa6; --line: #333; } }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; margin: 0 auto; max-width: 52rem; padding: 1.5rem 16px; }
+  h1 { font-size: 1.25rem; margin: 0 0 .25rem; }
+  p { color: var(--mute); margin: .25rem 0 1rem; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  td, th { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid var(--line); }
+  td.n { text-align: right; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); font-weight: 600; }
+  #summary { font-size: 1.1rem; margin: 1rem 0; }
+  code { font-size: .85em; }
+</style>
+</head>
+<body>
+<h1>Does this browser draw what Python draws?</h1>
+<p>Runs the TypeScript port against what CPython recorded: number formatting, rounding, sums, <code>sin</code>/<code>cos</code>/<code>**</code> in the head shape, colour maths and three drawn layers. Every row should be all green.</p>
+<div id="env"></div>
+<div id="summary">Running...</div>
+<table><thead><tr><th>Check</th><th class="n">Cases</th><th class="n">Differ</th><th>First difference</th></tr></thead><tbody id="rows"></tbody></table>
+<script type="module">
+  import { runChecks } from "./js/web-check/check.js";
+  const env = document.getElementById("env");
+  env.textContent = navigator.userAgent;
+  env.style.cssText = "color:var(--mute);font-size:.8rem;margin-bottom:.5rem;word-break:break-all";
+  const get = (p) => fetch(new URL(p.replace(/^\.\.\//, ""), location.href)).then((r) => { if (!r.ok) throw new Error(p + " " + r.status); return r.json(); });
+  try {
+    const t0 = performance.now();
+    const results = await runChecks(get);
+    const rows = document.getElementById("rows");
+    let failed = 0;
+    for (const r of results) {
+      if (r.bad) failed++;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.name}</td><td class="n">${r.total}</td><td class="n ${r.bad ? "bad" : "ok"}">${r.bad}</td><td>${r.first.join(" | ").replace(/</g, "&lt;")}</td>`;
+      rows.appendChild(tr);
+    }
+    const s = document.getElementById("summary");
+    s.className = failed ? "bad" : "ok";
+    s.textContent = failed ? `${failed} of ${results.length} checks differ from Python.` : `All ${results.length} checks match Python (${Math.round(performance.now() - t0)} ms).`;
+    window.__result = { failed, results };
+  } catch (e) {
+    document.getElementById("summary").className = "bad";
+    document.getElementById("summary").textContent = "The check could not run: " + e;
+    window.__result = { error: String(e) };
+  }
+</script>
+</body>
+</html>
