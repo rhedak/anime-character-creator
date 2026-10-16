@@ -27,7 +27,11 @@ from anime_character_creator.colorutil import (
 from anime_character_creator.generate import main
 
 AUTHORED = sorted(name for name, style in HAIRSTYLES.items() if style.locks is not None)
-BYTE_BUDGET = 90_000  # per soft document, `docs/soft-hair-plan.md`
+# Per soft document. The plan said 90 KB and the owner raised it to 150 KB on 2026-10-16. It is a
+# guard against runaway output, not a design limit: it can be raised again if more detail needs the
+# room (more clumps, finer shapes, a new cut). Raise it on purpose, with the Chrome frame-time check
+# (`harness/soft_hair/frametime.py`) re-run on the largest document, not to silence a failure.
+BYTE_BUDGET = 150_000
 
 
 def _soft(name: str, **kw: object) -> str:
@@ -199,3 +203,17 @@ def test_the_cli_takes_a_strength(monkeypatch: pytest.MonkeyPatch, tmp_path: Pat
     )
     main()
     assert '<g clip-path="url(#hair-front)">' not in out.with_suffix(".svg").read_text()
+
+
+def test_the_flat_finish_does_not_validate_the_strength() -> None:
+    """Found by the break-it review: the check ran before the finish was looked at, so a bad value
+    raised on the flat finish, which the docs say ignores the field."""
+    assert render_character(replace(PRESETS["risa"], highlight_strength=9.0)) == render_character(
+        PRESETS["risa"]
+    )
+
+
+@pytest.mark.parametrize("cut", ["short_layered", "short_crop", "long_parted"])
+def test_a_tip_colour_on_a_big_preset_stays_within_the_budget(cut: str) -> None:
+    p = replace(PRESETS["katherina"], finish="soft", hairstyle=cut, hair_tip_color="#f8b890")
+    assert len(render_character(p).encode()) <= BYTE_BUDGET

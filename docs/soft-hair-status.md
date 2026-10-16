@@ -5,6 +5,15 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Budget raised by the owner to 150 KB per soft document (was 90 KB); the test constant and the plan
+  say so. The lighter clump paths stay (smaller, same look).
+
+- Gate 2 in progress (2026-10-16): clumps authored for `short_layered` (7 presets), `short_crop` (3) and
+  `long_parted` (2). Short cuts need the clumps on the mass layer too (`Hairstyle.mass_locks`), since their
+  crown is the mass. Satoshi (two tones, mass and front, four passes) went over 90 KB (95,319 B), so the
+  clump paths are lighter (9 points a side, one decimal; 72,919 B, same look: mean pixel difference to the
+  judged mock-up unchanged at 0.3 to 1.1). Pairs for the owner: `out/soft/gate2-71`.
+
 - Default strength chosen by the owner from the five-strength sheet (`out/soft/strength-61`): column E, which
   is the old strength 0.5 (key: A 0.75, B 1.0, C 0.25, D 0.0, E 0.5). Rebased so `highlight_strength` 1
   is that look (all 20 soft presets render byte-identically to the old code at 0.5) and 2 is the strength
@@ -267,3 +276,19 @@ render at most 8.4 ms per preset.
 | Pure black gets near-invisible clumps (shadow equals base); pure white shows only the shadow. | minor | Left. White is shadow-led by the plan; pure black is not a cast colour. |
 | kyoko and keiko have a duplicate `coat-bust-` id, in flat as well as soft, in the old tree too. | minor, not ours | Not touched: fixing it moves flat output, which this experiment forbids. Reported to the owner. |
 | Not tested: Chrome's rendering of nested clip-path groups (only cairosvg in this review). | | Chrome ran the frame-time page on Risa and Satoko (Satoko is the nested case) with no visible fault in the numbers; not compared pixel by pixel. |
+
+## Review 8: break-it review of highlight strength, mass-layer clumps and the three new cuts
+
+No blocker. Verified clean: flat bytes identical to a3eda69 on 1,220 cases; 480 rasterised renders at the
+strongest strength with the clumps on and off, alpha identical in all and every changed pixel hair-coloured
+(hats, knots and tails included, so the mass-layer clumps do not show through anything); the front and mass
+clump groups are byte-identical so the seam is invisible; ids, tip clip and `id_prefix` clean across 400 fuzz
+characters; deterministic; 1.7 to 6.4 ms per preset; 400 random characters on the new cuts without an exception.
+
+| Finding | Severity | What we did |
+| --- | --- | --- |
+| Over 90 KB with an arbitrary tip colour on the short cuts (Katherina 108 to 111 KB; shipped presets fine). | important | The owner raised the budget to 150 KB; budget tests now include a tip colour on a big preset on each of the three new cuts. |
+| A bad `highlight_strength` raised on the flat finish, which the docs say ignores it. | minor | Validated only for the soft finish; test added. |
+| A grey, stain-like oval on Satoshi's pale tip hair, near the tip boundary. | minor | Not changed: it is the tip-coloured shadow clump crossing the boundary; the owner judges Satoshi in the Gate 2 pairs. |
+| `highlight_strength` 0.01 draws the whole clump set at near-invisible tones; a hat can hide every clump yet the markup is emitted. | minor | Left (size only). |
+| Intermittent `refresh-ref-out.sh --check` failure while the reviewers ran. | minor | Passes three times in a row with nothing else running: it was concurrent renders. |

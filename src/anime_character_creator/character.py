@@ -89,7 +89,7 @@ def _soft(p: CharacterParams) -> bool:
     """Whether `p` asks for the soft finish."""
     if p.finish not in FINISHES:
         raise ValueError(f"finish must be one of {', '.join(FINISHES)}, not {p.finish!r}")
-    if not 0.0 <= p.highlight_strength <= 2.0:
+    if p.finish == "soft" and not 0.0 <= p.highlight_strength <= 2.0:
         raise ValueError(
             f"highlight_strength must be between 0 and 2, not {p.highlight_strength!r}"
         )
@@ -13204,7 +13204,7 @@ _SOFT_LOCK_MID_RISE = 0.12  # a lit clump's body, as a share of `highlight_rise`
 _SOFT_LOCK_HIGH_RISE = 0.38  # its highlight
 _SOFT_LOCK_SEP_VALUE = 0.74
 _SOFT_LOCK_SEP_OPACITY = 0.6
-_SOFT_LOCK_POINTS = 12  # points kept per side of a clump's outline before it is drawn as curves
+_SOFT_LOCK_POINTS = 9  # points kept per side of a clump's outline before it is drawn as curves
 
 
 def _lock_line(points: tuple[Point, ...], per: int = 14) -> list[Point]:
@@ -13264,7 +13264,7 @@ def _smooth_path(points: list[tuple[float, float]]) -> str:
         p0, p1, p2, p3 = points[max(i - 1, 0)], points[i], points[i + 1], points[min(i + 2, n - 1)]
         c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
         c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
-        out.append(f"C {c1[0]:.2f} {c1[1]:.2f} {c2[0]:.2f} {c2[1]:.2f} {p2[0]:.2f} {p2[1]:.2f}")
+        out.append(f"C {c1[0]:.1f} {c1[1]:.1f} {c2[0]:.1f} {c2[1]:.1f} {p2[0]:.1f} {p2[1]:.1f}")
     return " ".join(out)
 
 
@@ -13304,7 +13304,7 @@ def _lock_shape(
     )
     left = [left[k] for k in keep]
     right = [right[k] for k in keep][::-1]
-    return f"M {left[0][0]:.2f} {left[0][1]:.2f} {_smooth_path(left)} {_smooth_path([left[-1], *right])} Z"
+    return f"M {left[0][0]:.1f} {left[0][1]:.1f} {_smooth_path(left)} {_smooth_path([left[-1], *right])} Z"
 
 
 def _soft_locks(

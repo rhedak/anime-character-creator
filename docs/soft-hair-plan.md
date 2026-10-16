@@ -314,3 +314,14 @@ into the package.
   emit curves to stay inside 90 KB; this is checked at Phase 1, not here.
 - **Landing r3:** held until the pairs include r3 against today's soft, since r3 won on one judge in a
   ten-way ranking. The jaw shading removal stays easy to reverse.
+
+### Budget raised (2026-10-16)
+
+The owner raised the soft SVG budget from 90 KB to 150 KB per document ("90 KB is very little"), after
+the two-tone short crop (Satoshi) reached 95 KB with clumps on both the mass and the front piece. The
+clump paths were also made lighter first (9 points a side, one decimal), which kept the look. The Chrome
+frame-time check stays: bytes are cheap, paint of clipped paths is what to watch, and it is re-measured on
+the largest document.
+
+The budget can be raised again if more detail needs it (more clumps, finer shapes, a new cut); the owner
+said so. Raise it on purpose and re-run the frame-time check, not to silence a failing test.
