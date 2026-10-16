@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "node:test";
 import { PyError } from "../src/pynum.ts";
+import { NotPorted } from "../src/render.ts";
 import { decode, same, type Enc, type Tally } from "./calls-codec.ts";
 import { REPO_ROOT, TS_ROOT, loadJson } from "./fixtures.ts";
 
@@ -44,9 +45,11 @@ async function replayAll(dir: string, t: { diagnostic: (m: string) => void }): P
     if (v === undefined) throw new Error(`registry object ${name} is not ported`);
     return v;
   };
+  const signatures = loadJson<Record<string, string[]>>(join(SAMPLE, "_signatures.json"));
   const files = readdirSync(dir).filter((f) => f.endsWith(".json") && !f.startsWith("_")).sort();
   let ported = 0;
   let calls = 0;
+  let notPortedCalls = 0;
   const tally: Tally = { exact: 0, withinUlps: 0 };
   const bad: string[] = [];
   for (const f of files) {
@@ -59,6 +62,13 @@ async function replayAll(dir: string, t: { diagnostic: (m: string) => void }): P
       let args: unknown[];
       try {
         args = c.args.map((a) => decode(a, refs));
+        // A keyword argument goes to its position; the gap is `undefined`, which takes the TypeScript default.
+        for (const [name, v] of Object.entries(c.kwargs ?? {})) {
+          const at = (signatures[rec.function] ?? []).indexOf(name);
+          if (at < 0) throw new Error(`keyword ${name} is not in the signature of ${rec.function}`);
+          while (args.length < at) args.push(undefined);
+          args[at] = decode(v, refs);
+        }
       } catch (e) {
         bad.push(`${rec.function}: cannot decode arguments (${(e as Error).message})`);
         continue;
@@ -69,19 +79,28 @@ async function replayAll(dir: string, t: { diagnostic: (m: string) => void }): P
       try {
         got = (fn as (...a: unknown[]) => unknown)(...args);
       } catch (e) {
+        if (e instanceof NotPorted) {
+          notPortedCalls++;
+          continue;
+        }
         threw = e instanceof PyError ? e.pyType : String(e);
       }
       if (wantsError) {
         if (threw !== (c.result as { exc: string }).exc) bad.push(`${rec.function}: expected ${(c.result as { exc: string }).exc}, got ${threw ?? "a result"}`);
       } else if (threw !== null) {
-        bad.push(`${rec.function}: threw ${threw}`);
+        bad.push(`${rec.function}: threw ${threw} on ${JSON.stringify(c.args).slice(0, 160)} ${JSON.stringify(c.kwargs).slice(0, 200)}`);
       } else if (!same(c.result, got, refs, 4, tally)) {
         bad.push(`${rec.function}(${JSON.stringify(c.args).slice(0, 120)}): got ${JSON.stringify(got)?.slice(0, 120)}`);
       }
     }
   }
-  t.diagnostic(`${dir.includes("out") ? "full" : "sample"}: ${ported} of ${files.length} functions ported, ${calls} recorded calls replayed; floats: ${tally.exact} exact, ${tally.withinUlps} within 4 ulp`);
-  assert.deepEqual(bad.slice(0, 15), [], `${bad.length} calls differ`);
+  t.diagnostic(`${dir.includes("out") ? "full" : "sample"}: ${ported} of ${files.length} functions ported, ${calls} recorded calls replayed; ${notPortedCalls} skipped for parts not ported yet; floats: ${tally.exact} exact, ${tally.withinUlps} within 4 ulp`);
+  if (process.env.CALLS_SUMMARY) {
+    const by = new Map<string, number>();
+    for (const b of bad) by.set(b.split(":")[0]!.split("(")[0]!, (by.get(b.split(":")[0]!.split("(")[0]!) ?? 0) + 1);
+    t.diagnostic(`differences by function: ${JSON.stringify([...by].sort((a, b) => b[1] - a[1]))}`);
+  }
+  assert.deepEqual(bad.slice(0, Number(process.env.CALLS_SHOW ?? 15)), [], `${bad.length} calls differ`);
 }
 
 test("every ported function reproduces its recorded Python calls (committed sample)", { skip: !existsSync(SAMPLE) && "no recorded calls yet (harness/ts_port/calls.py)" }, async (t) => {

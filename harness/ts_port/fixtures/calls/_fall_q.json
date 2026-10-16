@@ -1,0 +1,5 @@
+{"function":"_fall_q","module":"character","line":1934,"kind":"function","total_calls":46585,"calls_by_phase":{"import":0,"build":0,"drive":46585},"distinct":231,"unrecordable":46551,"skipped_large":0,"raised_distinct":16,"kept":3,"calls":[
+{"args":["f:bfee8f5c28f5c292","f:40066e978d4fdf3b"],"kwargs":{},"result":{"exc":"ValueError","msg":"math domain error"},"count":2,"why":["raises"]},
+{"args":["f:3f970a3d70a3d685","f:40066e978d4fdf3b"],"kwargs":{},"result":{"exc":"ValueError","msg":"math domain error"},"count":2,"why":["raises"]},
+{"args":["f:3fc2d2d2d2d2d2c7","f:400b872b020c49ba"],"kwargs":{},"result":{"exc":"ValueError","msg":"math domain error"},"count":2,"why":["raises"]}
+]}

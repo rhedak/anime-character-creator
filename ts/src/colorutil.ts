@@ -4,7 +4,7 @@
 // Port of colorutil.py and of the two `colorsys` functions it uses (CPython 3.13, same in 3.12). The
 // evaluation order of every expression is kept as it is in Python, since a different order rounds differently.
 
-import { fmtHex2, pyHex, pyMax, pyMin, pyMod, pyRound, pyInt, pyModInt } from "./pynum.ts";
+import { PyError, fmtHex2, pyHex, pyMax, pyMin, pyMod, pyRound, pyInt, pyModInt } from "./pynum.ts";
 
 export type Rgb = readonly [number, number, number];
 export type Hsv = readonly [number, number, number];
@@ -55,6 +55,9 @@ export function hsvToRgb(h: number, s: number, v: number): Rgb {
 
 /** `hex_color.lstrip("#")` and three two-digit slices; a short or malformed string raises as in Python. */
 export function hexToRgb01(hexColor: string): Rgb {
+  if (typeof hexColor !== "string") {
+    throw new PyError("AttributeError", `'${hexColor === null || hexColor === undefined ? "NoneType" : Array.isArray(hexColor) ? "list" : typeof hexColor === "number" ? "float" : typeof hexColor}' object has no attribute 'lstrip'`);
+  }
   const h = hexColor.replace(/^#+/, "");
   return [pyHex(h.slice(0, 2)) / 255, pyHex(h.slice(2, 4)) / 255, pyHex(h.slice(4, 6)) / 255];
 }

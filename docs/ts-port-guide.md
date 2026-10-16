@@ -78,6 +78,20 @@ default on an empty iterator is `StopIteration`; `zip(..., strict=True)` of uneq
 `str(x)`, `x == 1` on a bool), the registry in `params.ts` tells you which a parameter is; for local values decide from the
 Python and say so in a comment. A `bool` is a JS `boolean`, never a number.
 
+**Signatures mirror Python's, positionally.** The function-level replay places a recorded keyword argument at its Python parameter
+position (`harness/ts_port/fixtures/calls/_signatures.json`) and leaves a gap as `undefined`, so a TypeScript function declares the
+same parameters in the same order and gives an `undefined` its default. A function that callers like to call with a few named
+arguments can have a named wrapper (`buildSkeletonWith`) next to the positional function (`buildSkeleton`).
+
+**Wrong-typed inputs.** A link or a model's request can put a string, a list or `None` in a number field. Python keeps it and raises
+`TypeError` at the first arithmetic or comparison on it, and not before; a field that is never used never complains. The drawing
+reads `plainParams(p)` (`src/plain.ts`), which turns such a value into a `BadValue` (`pynum.ts`): it is stored and passed around
+freely, `truthy()` sees what it replaced, and any arithmetic or comparison on it raises `TypeError`. So: do not test a number
+field with `=== null` unless the registry says it is nullable (`float | None`); test a flag with `truthy(x)`, never `if (x)`; read
+a nullable number field with `=== null`, and compute with it only after that. A colour (`hex_to_rgb01`) that is not a string raises
+`AttributeError`, as `.lstrip` does. Never "validate" a field up front: Python does not, and a case where Python renders
+anyway (the field is unused) must render.
+
 ## 5. The hazard ledger (`harness/ts_port/hazards.json`)
 
 Every site in `character.py` that can behave differently in JavaScript is listed: entries have `file`, `line`, `end_line`, `class`,

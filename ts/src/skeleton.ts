@@ -7,7 +7,7 @@
 //
 // Port of skeleton.py. Field names stay snake_case so a skeleton dumped from Python loads as it is.
 
-import { pyDiv, pyMax, pyMin } from "./pynum.ts";
+import { BadValue, pyDiv, pyMax, pyMin } from "./pynum.ts";
 
 export const BUILDS: Readonly<Record<string, number>> = { chibi: 2.4 };
 export const DEFAULT_BUILD = "chibi";
@@ -237,7 +237,33 @@ export interface BuildOptions {
   min_hair_margin?: number;
 }
 
-export function buildSkeleton(opts: BuildOptions = {}): Skeleton {
+/** `build_skeleton(...)` with named arguments, for callers that pass only a few. */
+export const buildSkeletonWith = (o: BuildOptions): Skeleton =>
+  buildSkeleton(o.canvas_w, o.canvas_h, o.heads, o.frame, o.bust, o.hair_margin, o.bottom_margin, o.min_hair_margin);
+
+/** `build_skeleton`, with Python's parameters in Python's order (an `undefined` takes the default). */
+export function buildSkeleton(
+  canvasW0?: number,
+  canvasH0?: number,
+  heads0?: number,
+  frame0?: number,
+  bust0?: number,
+  hairMargin0?: number | null,
+  bottomMargin0?: number,
+  minHairMargin0?: number,
+): Skeleton {
+  // A value that is not a number is kept as it is and raises `TypeError` where Python's arithmetic would (`BadValue`).
+  const num = <T>(v: T, allowNull = false): T => (v === undefined || (v === null && allowNull) || typeof v === "number" || typeof v === "boolean" || v instanceof BadValue ? v : (new BadValue(v) as T));
+  const opts: BuildOptions = {
+    canvas_w: num(canvasW0),
+    canvas_h: num(canvasH0),
+    heads: num(heads0),
+    frame: num(frame0),
+    bust: num(bust0),
+    hair_margin: num(hairMargin0, true),
+    bottom_margin: num(bottomMargin0),
+    min_hair_margin: num(minHairMargin0),
+  };
   const canvasW = opts.canvas_w ?? 400;
   const canvasH = opts.canvas_h ?? 500;
   const heads = opts.heads ?? DEFAULT_HEADS;

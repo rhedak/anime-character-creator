@@ -65,6 +65,14 @@ export function curve(cx: number, cy: number, r: number, start: Point, segments:
   return d.join(" ");
 }
 
+/** The point at parameter `u` on the quadratic `p0`, `p1`, `p2`. (`(1 - u) ** 2` is written as a product: exact, as C's `pow(x, 2.0)` is.) */
+export function quadPoint(p0: Point, p1: Point, p2: Point, u: number): Point {
+  const a = (1 - u) * (1 - u);
+  const b = 2 * (1 - u) * u;
+  const c = u * u;
+  return [a * p0[0] + b * p1[0] + c * p2[0], a * p0[1] + b * p1[1] + c * p2[1]];
+}
+
 // ---------------------------------------------------------------------------------------------------------
 // The head's outline
 

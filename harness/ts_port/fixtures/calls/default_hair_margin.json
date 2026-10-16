@@ -1,0 +1,5 @@
+{"function":"default_hair_margin","module":"skeleton","line":310,"kind":"function","total_calls":121054,"calls_by_phase":{"import":0,"build":0,"drive":121054},"distinct":244,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":3,"calls":[
+{"args":["f:4003333333333333"],"kwargs":{},"result":"f:3fe6c083126e978d","count":79728,"why":["first"]},
+{"args":["f:400cb8d4fdf3b649"],"kwargs":{},"result":"f:3fe309d5e4a38326","count":12,"why":["sample"]},
+{"args":["f:7ff0000000000000"],"kwargs":{},"result":"f:3fd70a3d70a3d70a","count":2,"why":["max:a0","special:inf"]}
+]}

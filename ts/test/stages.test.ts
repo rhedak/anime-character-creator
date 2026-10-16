@@ -61,7 +61,15 @@ test("every stage the port can produce equals Python's, on the full corpus", (t)
   let docs = 0;
   const stillMissing = new Set<string>();
   for (const c of corpus) {
-    const { stages: got, missing } = renderStages(c.params, { id_prefix: c.kw.id_prefix ?? "", background: c.kw.background ?? null, metadata: c.kw.metadata ?? false });
+    let result: ReturnType<typeof renderStages>;
+    try {
+      result = renderStages(c.params, { id_prefix: c.kw.id_prefix ?? "", background: c.kw.background ?? null, metadata: c.kw.metadata ?? false });
+    } catch (e) {
+      // Python rendered this case; the port raised.
+      bad.push(`${c.id}: threw ${String(e).slice(0, 100)}`);
+      continue;
+    }
+    const { stages: got, missing } = result;
     for (const m of missing) stillMissing.add(m);
     const want = stages?.[c.id];
     if (want) {

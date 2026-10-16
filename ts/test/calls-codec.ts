@@ -5,6 +5,10 @@
 // exception. JavaScript has one number type and one array type, so int against float and tuple against list are not told
 // apart: a float is compared by bits (within a few ulp where the maths library is involved), an int by value.
 
+import { PyInt } from "../src/pyjson.ts";
+import { BadValue } from "../src/pynum.ts";
+import { FIELDS, type ClassName } from "../src/model.ts";
+import { PyFloat } from "../src/pyvalue.ts";
 import { decodeFloat, encodeFloat } from "./fixtures.ts";
 
 export type Enc = null | string | { [k: string]: any };
@@ -28,7 +32,19 @@ export function decode(v: Enc, refs: Refs): unknown {
     const pairs = (v.d as [Enc, Enc][]).map(([k, x]) => [decode(k, refs), decode(x, refs)] as const);
     return pairs.every(([k]) => typeof k === "string") ? Object.fromEntries(pairs) : new Map(pairs);
   }
-  if ("dc" in v) return Object.fromEntries(Object.entries(v.f as Record<string, Enc>).map(([k, x]) => [k, decode(x, refs)]));
+  if ("dc" in v) {
+    const specs = new Map((FIELDS[v.dc as ClassName] ?? []).map((f) => [f.name, f.type]));
+    return Object.fromEntries(
+      Object.entries(v.f as Record<string, Enc>).map(([k, x]) => {
+        const val = decode(x, refs);
+        // A link keeps Python's int in a float field and float in an int field: markers say so where the registry would not.
+        const tag = specs.get(k);
+        if (typeof x === "string" && x.startsWith("i:") && tag !== "int" && typeof val === "number") return [k, new PyInt(val)];
+        if (typeof x === "string" && x.startsWith("f:") && tag === "int" && typeof val === "number") return [k, new PyFloat(val)];
+        return [k, val];
+      }),
+    );
+  }
   if ("ref" in v) return refs(v.ref as string);
   throw new Error(`unknown encoding ${JSON.stringify(v).slice(0, 80)}`);
 }
@@ -46,6 +62,10 @@ export interface Tally {
 
 /** Whether `got` is what Python returned (`py`). `tol` is the largest difference in ulps accepted for a float; `tally` counts them. */
 export function same(py: Enc, got: unknown, refs: Refs, tol: number, tally: Tally): boolean {
+  // A link keeps Python's int and float apart with markers; the comparison is of the numbers.
+  if (got instanceof BadValue) got = got.original;
+  if (got instanceof PyInt) got = Number(got.value);
+  else if (got instanceof PyFloat) got = got.value;
   if (py === null) return got === null || got === undefined;
   if (typeof py === "string") {
     const tag = py.slice(0, 2);

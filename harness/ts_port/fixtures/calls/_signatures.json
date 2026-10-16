@@ -1,0 +1,1408 @@
+{
+"BodyProfile.applied": [
+"self",
+"sk",
+"build"
+],
+"BodyProfile.head_scaled": [
+"self",
+"s"
+],
+"Expression.applied_to": [
+"self",
+"p"
+],
+"Expression.on": [
+"self",
+"face"
+],
+"_Bust.pieces": [
+"self"
+],
+"_anchor": [
+"chain",
+"i"
+],
+"_apron": [
+"sk",
+"p"
+],
+"_arc": [
+"r",
+"from_deg",
+"to_deg",
+"segments"
+],
+"_arm_joint_cap": [
+"sk",
+"color",
+"cx",
+"cy",
+"w_top"
+],
+"_arm_line": [
+"sk"
+],
+"_arm_pivot": [
+"sk",
+"p",
+"s"
+],
+"_arm_swing": [
+"p",
+"s"
+],
+"_armpit_x": [
+"sk",
+"inset"
+],
+"_arms": [
+"sk",
+"p",
+"hands",
+"silhouette"
+],
+"_bare_ankle": [
+"sk",
+"w_knee",
+"w_ankle"
+],
+"_bare_breast_spine": [
+"sk",
+"p"
+],
+"_bare_breasts": [
+"sk",
+"p"
+],
+"_bare_foot": [
+"sk",
+"p",
+"cx",
+"w_ankle",
+"side"
+],
+"_bare_neck_lift": [
+"sk"
+],
+"_bare_seat": [
+"sk",
+"p",
+"gap",
+"w_top",
+"w_knee",
+"w_calf",
+"w_ankle"
+],
+"_bare_shoulder_sk": [
+"sk",
+"p"
+],
+"_beard": [
+"sk",
+"p"
+],
+"_before": [
+"base",
+"outfit",
+"face_age"
+],
+"_belt": [
+"sk",
+"p"
+],
+"_belt_band": [
+"sk",
+"scale"
+],
+"_belt_drawn": [
+"sk",
+"p"
+],
+"_belt_line_half_w": [
+"sk"
+],
+"_blindfold": [
+"sk",
+"p"
+],
+"_blush": [
+"skin"
+],
+"_body_inset": [
+"sk",
+"p"
+],
+"_body_knots": [
+"sk"
+],
+"_boot": [
+"sk",
+"p",
+"cx",
+"w_ankle",
+"side"
+],
+"_breast_ellipse": [
+"sk",
+"inset",
+"min_ry"
+],
+"_brow": [
+"sk",
+"p",
+"side"
+],
+"_brows_over_hair": [
+"sk",
+"p"
+],
+"_bspline_closed": [
+"pts"
+],
+"_bust_bulge": [
+"sk",
+"y"
+],
+"_bust_fold": [
+"sk",
+"weight",
+"sides"
+],
+"_bust_lines": [
+"sk",
+"p"
+],
+"_bust_over_arms": [
+"sk",
+"p",
+"chest"
+],
+"_bust_panel_line": [
+"sk",
+"panels"
+],
+"_bust_shape": [
+"sk",
+"inset",
+"drape"
+],
+"_cap_tip_x": [
+"sk"
+],
+"_cap_tip_y": [
+"sk"
+],
+"_cap_underside_y": [
+"sk",
+"x_off",
+"tip_y"
+],
+"_center_part_hairline_shape": [
+"length"
+],
+"_center_part_strands": [
+"length"
+],
+"_chain": [
+"start",
+"points"
+],
+"_chain_points": [
+"ch",
+"per"
+],
+"_chain_until_y": [
+"chain",
+"y"
+],
+"_chest_lines": [
+"sk",
+"p"
+],
+"_chest_pockets": [
+"sk",
+"p"
+],
+"_chin_shadow": [
+"sk",
+"p",
+"neck"
+],
+"_clip_bar": [
+"r",
+"line",
+"fold",
+"color"
+],
+"_clip_crescent": [
+"r",
+"line",
+"fold",
+"color"
+],
+"_clip_crossed": [
+"r",
+"line",
+"fold",
+"color"
+],
+"_clip_snap": [
+"r",
+"line",
+"fold",
+"color"
+],
+"_clip_star": [
+"r",
+"line",
+"fold",
+"color"
+],
+"_coat": [
+"sk",
+"p"
+],
+"_coat_buttons": [
+"sk",
+"p"
+],
+"_collar": [
+"sk",
+"p"
+],
+"_crop_fall_edge": [
+"fall"
+],
+"_crop_hairline_shape": [
+"fall"
+],
+"_crop_indices": [
+"fall"
+],
+"_crop_locks": [
+"fall"
+],
+"_crop_mass_shape": [
+"fall"
+],
+"_crop_outline": [
+"fall"
+],
+"_crop_real_point": [
+"i",
+"pt"
+],
+"_crop_strands": [
+"fall"
+],
+"_crop_tip_edge": [
+"fall"
+],
+"_crotch_y": [
+"sk",
+"p"
+],
+"_crystal_harness": [
+"sk",
+"p"
+],
+"_crystal_layout": [
+"sk",
+"belt_h"
+],
+"_cuff_line": [
+"sk",
+"cx",
+"wrist_y",
+"w"
+],
+"_cuff_opening": [
+"sk",
+"p",
+"side"
+],
+"_curve": [
+"cx",
+"cy",
+"r",
+"start",
+"segments",
+"close"
+],
+"_cut_half_w_at": [
+"sk",
+"cut",
+"y"
+],
+"_cutaway_side_lines": [
+"p"
+],
+"_draw_cut": [
+"sk",
+"cut",
+"fill",
+"weight",
+"xf",
+"fills_clip",
+"skip_lines"
+],
+"_draw_leg_cut": [
+"sk",
+"cut",
+"fill",
+"gap",
+"side"
+],
+"_ear_outer": [
+"build"
+],
+"_ear_place": [
+"build"
+],
+"_ear_span": [
+"build"
+],
+"_ears": [
+"sk",
+"p"
+],
+"_eye": [
+"ex",
+"ey",
+"er",
+"side",
+"f",
+"eye_color",
+"sw",
+"pupil_ratio",
+"reach",
+"soft"
+],
+"_eye_build": [
+"sk"
+],
+"_eye_closed": [
+"ex",
+"ey",
+"er",
+"side",
+"f",
+"sw"
+],
+"_eye_lash": [
+"er",
+"f",
+"edge_w",
+"reach"
+],
+"_eye_placement": [
+"sk",
+"p"
+],
+"_eye_quads": [
+"er",
+"f"
+],
+"_eye_shape": [
+"ex",
+"ey",
+"er",
+"side",
+"f"
+],
+"_face": [
+"sk",
+"p"
+],
+"_face_track": [
+"y0",
+"y1",
+"build",
+"r0",
+"r1",
+"w0",
+"w1",
+"w_ease",
+"steps"
+],
+"_fade_y": [
+"top",
+"bottom"
+],
+"_fall": [
+"f",
+"length"
+],
+"_fall_edge": [
+"length"
+],
+"_fall_q": [
+"fall",
+"base_tip"
+],
+"_familiar": [
+"sk",
+"p"
+],
+"_fist": [],
+"_fist_grips": [
+"p",
+"side"
+],
+"_fringed": [
+"chain",
+"fall"
+],
+"_fringed_fall_edge": [
+"fall"
+],
+"_fringed_hairline": [
+"fall"
+],
+"_fringed_locks": [
+"fall"
+],
+"_fringed_mass": [
+"fall"
+],
+"_fringed_openings": [
+"fall"
+],
+"_fringed_shade": [
+"fall"
+],
+"_fringed_strands": [
+"fall"
+],
+"_fringed_tip_edge": [
+"fall"
+],
+"_fringed_underside": [
+"fall"
+],
+"_garment_placement": [
+"sk",
+"ref_body"
+],
+"_glasses": [
+"sk",
+"p"
+],
+"_goggle_geometry": [
+"sk",
+"p"
+],
+"_goggles": [
+"sk",
+"p"
+],
+"_goggles_strap": [
+"sk",
+"p"
+],
+"_grip_channel": [],
+"_hair_clip": [
+"sk",
+"p"
+],
+"_hair_defs": [
+"sk",
+"p"
+],
+"_hair_edge_x": [
+"y",
+"sk",
+"p"
+],
+"_hair_fall": [
+"sk",
+"p"
+],
+"_hair_front": [
+"sk",
+"p"
+],
+"_hair_knot": [
+"sk",
+"p"
+],
+"_hair_lines": [
+"svg",
+"p"
+],
+"_hair_mass": [
+"sk",
+"p"
+],
+"_hair_mass_shape": [
+"length"
+],
+"_hair_tail": [
+"sk",
+"p"
+],
+"_hair_tie": [
+"sk",
+"p"
+],
+"_hair_tip_edge": [
+"length"
+],
+"_hair_tip_lines": [
+"sk",
+"tips"
+],
+"_hair_tip_tone": [
+"p"
+],
+"_hair_underside": [
+"sk",
+"p",
+"d",
+"lines"
+],
+"_hairline_shape": [
+"length"
+],
+"_hakama": [
+"sk",
+"p"
+],
+"_hand": [
+"sk",
+"p",
+"cx",
+"wrist_y",
+"w_wrist",
+"side"
+],
+"_hand_centre": [
+"sk",
+"p",
+"s"
+],
+"_hand_curled": [
+"p",
+"sw",
+"hw",
+"length",
+"tip",
+"pt"
+],
+"_hand_length": [
+"sk"
+],
+"_hand_notched": [
+"p",
+"sw",
+"hw",
+"length",
+"tip",
+"pt"
+],
+"_hand_pose": [
+"p"
+],
+"_hand_shape": [
+"p",
+"sw",
+"d"
+],
+"_hand_stroke": [
+"sw",
+"d"
+],
+"_hand_stroked": [
+"p",
+"sw",
+"hw",
+"length",
+"tip",
+"pt"
+],
+"_hand_traced": [
+"p",
+"side"
+],
+"_hands_after_coat": [
+"sk",
+"p"
+],
+"_hanging_sleeves": [
+"sk",
+"p"
+],
+"_hat": [
+"sk",
+"p"
+],
+"_hat_underside": [
+"sk",
+"p"
+],
+"_head": [
+"sk",
+"p"
+],
+"_head_edge_x": [
+"y",
+"build"
+],
+"_head_paths": [
+"sk"
+],
+"_head_pt": [
+"deg",
+"radius",
+"build"
+],
+"_head_shape": [
+"build"
+],
+"_head_units": [
+"cx",
+"cy",
+"r",
+"pt"
+],
+"_headscarf": [
+"sk",
+"p"
+],
+"_hip_pockets": [
+"sk",
+"p"
+],
+"_interior_w": [
+"sw",
+"k"
+],
+"_interp": [
+"v",
+"xs",
+"ys"
+],
+"_interp_flat": [
+"v",
+"xs",
+"ys"
+],
+"_jaw_track": [
+"y0",
+"build",
+"drop",
+"inset",
+"steps"
+],
+"_katana": [
+"sk",
+"p"
+],
+"_katana_placement": [
+"sk",
+"length"
+],
+"_katana_stretch_factor": [
+"length"
+],
+"_katana_stretched": [
+"length"
+],
+"_knee_notch_d": [
+"sk",
+"cx",
+"gap",
+"top_y",
+"crotch_y",
+"w_top",
+"w_knee",
+"w_calf",
+"w_ankle",
+"k",
+"calf_y",
+"knee_ctrl_y"
+],
+"_knee_strength": [
+"sk"
+],
+"_leg_cut_top_y": [
+"sk",
+"cut"
+],
+"_leg_gap_and_top": [
+"sk",
+"trousers"
+],
+"_leg_placement": [
+"sk",
+"ref_body",
+"side",
+"gap"
+],
+"_leg_tuck_top_y": [
+"sk",
+"p"
+],
+"_legs_and_boots": [
+"sk",
+"p"
+],
+"_lerp": [
+"a",
+"b",
+"t"
+],
+"_lid_points": [
+"quads",
+"first",
+"last"
+],
+"_lifted_tip_edge": [
+"start",
+"edge",
+"lift"
+],
+"_limb_build": [
+"sk"
+],
+"_limb_taper_at": [
+"height"
+],
+"_lock_line": [
+"points",
+"per"
+],
+"_lock_normals": [
+"line"
+],
+"_lock_shape": [
+"cx",
+"cy",
+"r",
+"points",
+"width",
+"t0",
+"t1",
+"power",
+"offset"
+],
+"_lock_side": [
+"line",
+"normals"
+],
+"_long_fall_edges": [
+"length"
+],
+"_long_line": [
+"fall"
+],
+"_long_scaled": [
+"fall"
+],
+"_long_strands": [
+"length"
+],
+"_long_traced_fall_edge": [
+"fall"
+],
+"_long_traced_hairline": [
+"fall"
+],
+"_long_traced_locks": [
+"fall"
+],
+"_long_traced_mass": [
+"fall"
+],
+"_long_traced_strands": [
+"fall"
+],
+"_long_traced_tip_edge": [
+"fall"
+],
+"_mask": [
+"sk",
+"p"
+],
+"_mirror": [
+"start",
+"segments"
+],
+"_mirror_pt": [
+"q"
+],
+"_mirrored": [
+"edge"
+],
+"_mirrored_y": [
+"chain"
+],
+"_mitten_path": [
+"hw",
+"length",
+"tip",
+"pt"
+],
+"_mitten_placement": [
+"sk",
+"p",
+"side",
+"cx",
+"wrist_y"
+],
+"_mock_collar": [
+"sk",
+"p",
+"color",
+"sw"
+],
+"_mouth_depth_share": [
+"opening"
+],
+"_namespace_ids": [
+"body",
+"prefix"
+],
+"_navel": [
+"sk",
+"p"
+],
+"_neck": [
+"sk",
+"p"
+],
+"_nose": [
+"sk",
+"sw"
+],
+"_nose_dot": [
+"sk",
+"sw"
+],
+"_nose_y": [
+"sk"
+],
+"_outline_w": [
+"sw",
+"k"
+],
+"_parted": [
+"chain",
+"fall"
+],
+"_parted_fall_edge": [
+"fall"
+],
+"_parted_hairline": [
+"fall"
+],
+"_parted_locks": [
+"fall"
+],
+"_parted_mass": [
+"fall"
+],
+"_parted_q": [
+"fall"
+],
+"_parted_tip_edge": [
+"fall"
+],
+"_parted_tip_lines": [
+"fall"
+],
+"_parted_underside": [
+"fall"
+],
+"_placket": [
+"sk",
+"p"
+],
+"_polar": [
+"deg",
+"radius"
+],
+"_pouches": [
+"sk",
+"p"
+],
+"_principal": [
+"pts"
+],
+"_quad_crossing": [
+"p0",
+"p1",
+"p2",
+"y"
+],
+"_quad_point": [
+"p0",
+"p1",
+"p2",
+"u"
+],
+"_quad_split": [
+"p0",
+"p1",
+"p2",
+"u"
+],
+"_quad_u_at": [
+"p0",
+"p1",
+"p2",
+"y"
+],
+"_quad_x_at": [
+"p0",
+"p1",
+"p2",
+"y"
+],
+"_raised_coat_sleeve": [
+"p",
+"s"
+],
+"_raised_cuff": [
+"sk",
+"p",
+"s",
+"tube",
+"shirt",
+"elbow_x",
+"wrist_x",
+"w_elbow",
+"w_wrist",
+"wrist_y"
+],
+"_raised_shoulder": [
+"sk",
+"p",
+"s"
+],
+"_redefine_ids": [
+"body",
+"prefix"
+],
+"_restretch_locks": [
+"locks",
+"authored_fall",
+"fall"
+],
+"_reverse": [
+"start",
+"segments"
+],
+"_reversed_chain": [
+"chain"
+],
+"_rib": [
+"sk",
+"cx",
+"s",
+"descending",
+"inset",
+"drape"
+],
+"_rib_ctrl_y": [
+"sk"
+],
+"_rib_skeleton": [
+"sk"
+],
+"_ribbon": [
+"sk",
+"p"
+],
+"_robe_front": [
+"sk",
+"p"
+],
+"_rounded_box": [
+"cx",
+"cy",
+"a",
+"b",
+"e",
+"n"
+],
+"_scale_point": [
+"pt",
+"k"
+],
+"_scar": [
+"sk",
+"side"
+],
+"_seat_notch_d": [
+"sk",
+"cx",
+"gap",
+"top_y",
+"crotch_y",
+"w_top",
+"w_knee",
+"w_calf",
+"w_ankle",
+"knee"
+],
+"_short_fall_edge": [
+"tip"
+],
+"_short_fall_edges": [
+"tip"
+],
+"_short_hairline_shape": [
+"tip"
+],
+"_short_locks": [
+"fall"
+],
+"_short_mass_shape": [
+"tip"
+],
+"_short_strands": [
+"tip"
+],
+"_short_tip_edge": [
+"tip"
+],
+"_shoulder_bars": [
+"sk",
+"p"
+],
+"_shoulder_slope": [
+"sk"
+],
+"_skeleton_at": [
+"p"
+],
+"_skirt": [
+"sk",
+"p"
+],
+"_skirt_bottom_y": [
+"sk",
+"p"
+],
+"_skirt_corner_y": [
+"sk",
+"hem_y"
+],
+"_skirt_half_w": [
+"sk",
+"y"
+],
+"_skirt_hem_y": [
+"sk",
+"length",
+"length_chibi"
+],
+"_skirt_path": [
+"sk",
+"top_y",
+"hem_y",
+"top_w",
+"hem_w",
+"scallop",
+"scallop_dip"
+],
+"_sleeve_cutaway": [
+"sk",
+"p"
+],
+"_sleeve_half_w": [
+"sk"
+],
+"_sleeve_hem_y": [
+"sk"
+],
+"_sleeve_placement": [
+"sk",
+"cut",
+"s"
+],
+"_sleeve_under_cap": [
+"sk",
+"p"
+],
+"_smooth_path": [
+"points"
+],
+"_soft": [
+"p"
+],
+"_soft_brow_shadow": [
+"sk",
+"p",
+"fill_d"
+],
+"_soft_lines": [
+"svg",
+"tone"
+],
+"_soft_lock_layers": [
+"sk",
+"p",
+"style",
+"fall",
+"fill_d",
+"clip_id",
+"after_repaint"
+],
+"_soft_locks": [
+"sk",
+"hair",
+"locks",
+"gain",
+"clip_id",
+"tip_clip"
+],
+"_soft_locks_on": [
+"p",
+"style"
+],
+"_soft_stroke_widths": [
+"svg"
+],
+"_square_wrist": [
+"chain",
+"top",
+"y_cut"
+],
+"_staff": [
+"sk",
+"p"
+],
+"_staff_placement": [
+"sk",
+"p"
+],
+"_straight": [
+"a",
+"b"
+],
+"_strap": [
+"sk",
+"p"
+],
+"_stroke_w": [
+"sk"
+],
+"_sub_chain": [
+"chain",
+"a",
+"b"
+],
+"_tail_tie": [
+"sk"
+],
+"_torso": [
+"sk",
+"p"
+],
+"_torso_at_armpit": [
+"sk"
+],
+"_tousle_fall_edge": [
+"tip"
+],
+"_tousle_fall_edges": [
+"tip"
+],
+"_tousle_fringe_line": [],
+"_tousle_hairline_shape": [
+"tip"
+],
+"_tousle_mass_shape": [
+"tip"
+],
+"_tousle_side": [
+"tip"
+],
+"_tousle_strands": [
+"tip"
+],
+"_tousle_tip_edge": [
+"tip"
+],
+"_traced_coat": [
+"sk",
+"p"
+],
+"_traced_coat_and_belt": [
+"sk",
+"p",
+"after_arms"
+],
+"_traced_hand": [
+"sk",
+"p",
+"side"
+],
+"_traced_placement": [
+"sk",
+"p",
+"side"
+],
+"_traced_wrist_half": [
+"pieces"
+],
+"_trouser_seams": [
+"sk",
+"p",
+"color",
+"gap",
+"w_top",
+"top_y",
+"crotch_y"
+],
+"_trousers": [
+"sk",
+"p",
+"color",
+"gap",
+"w_top",
+"w_knee",
+"w_calf",
+"w_ankle"
+],
+"_tunic": [
+"sk",
+"p"
+],
+"_two_tone_hair": [
+"d",
+"p"
+],
+"_under_bust_y": [
+"sk",
+"peak_y"
+],
+"_underpants": [
+"sk",
+"color",
+"gap",
+"top_y",
+"crotch_y",
+"w_top",
+"hem_cap"
+],
+"_underskirt": [
+"sk",
+"p"
+],
+"_underwear_top": [
+"sk",
+"p"
+],
+"_without_raised_sleeves": [
+"layer",
+"p"
+],
+"_worn_sleeve": [
+"sk",
+"p"
+],
+"_wrist_cuff": [
+"sk",
+"color",
+"cx",
+"wrist_y",
+"w"
+],
+"_wristband": [
+"sk",
+"p",
+"side",
+"cx",
+"wrist_y",
+"w"
+],
+"aged": [
+"face",
+"years"
+],
+"aged_face": [
+"face",
+"years"
+],
+"build_skeleton": [
+"canvas_w",
+"canvas_h",
+"heads",
+"frame",
+"bust",
+"hair_margin",
+"bottom_margin",
+"min_hair_margin"
+],
+"character_url": [
+"p",
+"base_url"
+],
+"decode_params": [
+"encoded"
+],
+"default_hair_margin": [
+"heads"
+],
+"encode_params": [
+"p"
+],
+"hat_hair_margin": [
+"p"
+],
+"hex_to_rgb01": [
+"hex_color"
+],
+"highlight_rise": [
+"hex_color"
+],
+"lit_tone": [
+"hex_color",
+"rise"
+],
+"params_from_dict": [
+"data"
+],
+"params_to_dict": [
+"p"
+],
+"render_character": [
+"p",
+"sk",
+"background",
+"metadata",
+"id_prefix"
+],
+"rgb01_to_hex": [
+"rgb"
+],
+"shade": [
+"hex_color",
+"value_factor",
+"saturation_boost"
+],
+"skeleton_for": [
+"p"
+],
+"soft_shadow_tone": [
+"hex_color",
+"gain"
+],
+"stretched": [
+"sk",
+"h",
+"refit",
+"legs_share"
+],
+"tint": [
+"hex_color",
+"amount"
+],
+"validate_finish": [
+"p"
+]
+}

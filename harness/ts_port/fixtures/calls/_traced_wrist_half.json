@@ -1,0 +1,3 @@
+{"function":"_traced_wrist_half","module":"character","line":10571,"kind":"function","total_calls":950,"calls_by_phase":{"import":0,"build":0,"drive":950},"distinct":1,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":1,"calls":[
+{"args":[{"ref":"_HAND_OPEN"}],"kwargs":{},"result":"f:3fcaef9db22d0e57","count":950,"why":["first"]}
+]}

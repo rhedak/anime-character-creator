@@ -1,0 +1,5 @@
+{"function":"shade","module":"colorutil","line":21,"kind":"function","total_calls":395019,"calls_by_phase":{"import":0,"build":0,"drive":395019},"distinct":10978,"unrecordable":0,"skipped_large":0,"raised_distinct":61,"kept":3,"calls":[
+{"args":["s:#201e29"],"kwargs":{"value_factor":"f:3fe3d70a3d70a3d7"},"result":"s:#131219","count":483,"why":["first"]},
+{"args":["s:#281c1b","f:3fe8f5c28f5c28f6"],"kwargs":{},"result":"s:#1f1514","count":4,"why":["sample"]},
+{"args":["s:","f:3fdccccccccccccd"],"kwargs":{},"result":{"exc":"ValueError","msg":"invalid literal for int() with base 16: ''"},"count":2,"why":["raises"]}
+]}

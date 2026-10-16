@@ -8,7 +8,7 @@
 import { metadataBlock } from "./attribution.ts";
 import { skeletonFor } from "./body.ts";
 import { documentWrap, namespaceIds, soft, softStrokeWidths } from "./character.ts";
-import { FIELDS, characterParams, validateFinish, type ClassName } from "./model.ts";
+import { characterParams, validateFinish } from "./model.ts";
 import type { CharacterParams } from "./params.ts";
 import { PARTS as arms } from "./parts-arms.ts";
 import { PARTS as body } from "./parts-body.ts";
@@ -17,8 +17,7 @@ import { PARTS as garments } from "./parts-garments.ts";
 import { PARTS as hair } from "./parts-hair.ts";
 import { PARTS as props } from "./parts-props.ts";
 import type { PartTable } from "./parts.ts";
-import { PyInt } from "./pyjson.ts";
-import { PyFloat, numberOf } from "./pyvalue.ts";
+import { plainParams } from "./plain.ts";
 import { truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
 
@@ -44,31 +43,6 @@ export class NotPorted extends Error {
     this.name = "NotPorted";
     this.missing = missing;
   }
-}
-
-/** One dataclass with its numeric fields as plain numbers (the markers that keep Python's int against float are for links). */
-function plainClass<T extends object>(cls: ClassName, obj: T): T {
-  const out = { ...obj } as Record<string, unknown>;
-  for (const f of FIELDS[cls]) {
-    const v = out[f.name];
-    if (f.type === "float" || f.type === "int") {
-      const n = numberOf(v);
-      if (n !== undefined) out[f.name] = n;
-    } else if (f.type === "bool") {
-      // A number in a bool field is only ever tested for truth.
-      if (v instanceof PyInt || v instanceof PyFloat || typeof v === "number") out[f.name] = (numberOf(v) as number) !== 0;
-    }
-  }
-  return Object.freeze(out) as T;
-}
-
-/**
- * `p` as the drawing reads it: every numeric field a plain number. A link or a model can put the int `1` in a float field and
- * Python keeps it and writes it back as `1`; the parts only compute with it, and the metadata block gets the original.
- */
-export function plainParams(p: CharacterParams): CharacterParams {
-  const top = plainClass("CharacterParams", p);
-  return Object.freeze({ ...top, outfit: plainClass("Outfit", p.outfit), face: plainClass("FaceStyle", p.face) });
 }
 
 export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, parts: PartTable = ALL_PARTS): Stages {

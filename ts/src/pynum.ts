@@ -416,8 +416,32 @@ export function pySlice<T>(
   return out;
 }
 
+/**
+ * A value that is not a number sitting where the drawing does arithmetic on one (a string or a list in a `float` field of a
+ * link or a model's request, or `None` where a number is required). Python keeps it and raises `TypeError` at the first
+ * arithmetic or comparison, and not before: a field that is never used never complains. This reproduces that: it is stored
+ * and passed around freely, and any use as a number raises. It keeps the truth value of what it replaced.
+ */
+export class BadValue {
+  readonly original: unknown;
+  constructor(original: unknown) {
+    this.original = original;
+  }
+  private fail(): never {
+    const t = this.original === null || this.original === undefined ? "NoneType" : Array.isArray(this.original) ? "list" : typeof this.original === "string" ? "str" : typeof this.original;
+    throw new PyError("TypeError", `unsupported operand type(s): '${t}' is not a number`);
+  }
+  valueOf(): number {
+    return this.fail();
+  }
+  [Symbol.toPrimitive](): never {
+    return this.fail();
+  }
+}
+
 /** Python's truth test: empty containers and strings are false, nan and every other number but zero are true. */
 export function truthy(v: unknown): boolean {
+  if (v instanceof BadValue) return truthy(v.original);
   if (v == null) return false;
   if (typeof v === "number") return v !== 0;
   if (typeof v === "string") return v.length > 0;

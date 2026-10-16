@@ -1,0 +1,5 @@
+{"function":"_limb_taper_at","module":"character","line":10904,"kind":"function","total_calls":39844,"calls_by_phase":{"import":0,"build":0,"drive":39844},"distinct":179,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":3,"calls":[
+{"args":["f:3ff0000000000000"],"kwargs":{},"result":"f:3fc9999999999998","count":38381,"why":["first"]},
+{"args":["f:3feb3494b5ac1dca"],"kwargs":{},"result":"f:3fa9afb1c1284300","count":2,"why":["sample"]},
+{"args":["f:7ff0000000000000"],"kwargs":{},"result":"f:3fe0000000000000","count":2,"why":["max:a0","sample","special:inf"]}
+]}

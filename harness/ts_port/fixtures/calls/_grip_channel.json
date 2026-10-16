@@ -1,0 +1,3 @@
+{"function":"_grip_channel","module":"character","line":10566,"kind":"function","total_calls":272,"calls_by_phase":{"import":0,"build":0,"drive":272},"distinct":1,"unrecordable":0,"skipped_large":0,"raised_distinct":0,"kept":1,"calls":[
+{"args":[],"kwargs":{},"result":{"ref":"_HAND_FIST_CHANNEL"},"count":272,"why":["first"]}
+]}

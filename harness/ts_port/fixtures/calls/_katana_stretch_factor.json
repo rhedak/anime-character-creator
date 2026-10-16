@@ -1,0 +1,5 @@
+{"function":"_katana_stretch_factor","module":"character","line":9136,"kind":"function","total_calls":3365,"calls_by_phase":{"import":0,"build":0,"drive":3365},"distinct":78,"unrecordable":0,"skipped_large":0,"raised_distinct":1,"kept":3,"calls":[
+{"args":["f:3fee666666666666"],"kwargs":{},"result":"f:3fecc08e78356d13","count":744,"why":["first"]},
+{"args":["f:7ff8000000000000"],"kwargs":{},"result":"f:7ff8000000000000","count":2,"why":["sample","special:nan"]},
+{"args":["s:1"],"kwargs":{},"result":{"exc":"TypeError","msg":"unsupported operand type(s) for -: 'str' and 'float'"},"count":1,"why":["raises","sample"]}
+]}

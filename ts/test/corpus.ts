@@ -24,6 +24,14 @@ const HARNESS = join(REPO_ROOT, "harness/ts_port");
 
 /** A decoded JSON value with objects turned into plain objects; ints stay `PyInt` and floats stay numbers. */
 function plainObjects(v: Json | unknown): unknown {
+  // JSON has no spelling for nan and inf; the corpus writes `{"$float": "nan" | "inf" | "-inf"}`.
+  if (v instanceof Map && v.size === 1 && v.has("$float")) {
+    const kind = v.get("$float");
+    if (kind === "nan") return NaN;
+    if (kind === "inf") return Infinity;
+    if (kind === "-inf") return -Infinity;
+    throw new Error(`unknown $float marker ${String(kind)}`);
+  }
   if (v instanceof Map) return Object.fromEntries([...v].map(([k, x]) => [k, plainObjects(x)]));
   if (Array.isArray(v)) return v.map(plainObjects);
   return v;

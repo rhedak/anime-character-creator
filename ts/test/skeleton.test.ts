@@ -52,6 +52,6 @@ test("skeletonFor over a sweep of bodies, heights, frames, busts, shifts, ages a
 });
 
 test("a division by zero raises, as in Python, where JavaScript would give Infinity or NaN", () => {
-  assert.throws(() => buildSkeleton({ heads: 0 }), (e: unknown) => e instanceof PyError && e.pyType === "ZeroDivisionError");
+  assert.throws(() => buildSkeleton(undefined, undefined, 0), (e: unknown) => e instanceof PyError && e.pyType === "ZeroDivisionError");
   assert.throws(() => skeletonFor({ ...corpus[0]!.params, body: "nope" }), (e: unknown) => e instanceof PyError && e.pyType === "KeyError");
 });
