@@ -27,14 +27,21 @@ from anime_character_creator import HAIRSTYLES, PRESETS  # noqa: E402
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--seed", type=int, default=51)
+    ap.add_argument("--cuts", nargs="*", help="only presets on these cuts (Gate 2: the cuts added after Gate 1)")
+    ap.add_argument("--tag", default="gate1", help="output folder prefix")
     ap.add_argument("--out", default="out/soft")
     args = ap.parse_args()
-    authored = [n for n in sorted(PRESETS) if HAIRSTYLES[PRESETS[n].hairstyle].locks is not None]
-    rng = random.Random(f"gate1-{args.seed}")
+    authored = [
+        n
+        for n in sorted(PRESETS)
+        if HAIRSTYLES[PRESETS[n].hairstyle].locks is not None
+        and (not args.cuts or PRESETS[n].hairstyle in args.cuts)
+    ]
+    rng = random.Random(f"{args.tag}-{args.seed}")
     rows = [(n, "pair") for n in authored] + [(authored[0], "control")]
     rng.shuffle(rows)
     sides = [rng.random() < 0.5 for _ in rows]  # True: the clumps on the left
-    out = Path(args.out) / f"gate1-{args.seed}"
+    out = Path(args.out) / f"{args.tag}-{args.seed}"
     out.mkdir(parents=True, exist_ok=True)
     key = {}
     for view, suffix in (("app", "app"), ("face", "zoom")):

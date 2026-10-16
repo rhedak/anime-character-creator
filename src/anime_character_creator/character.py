@@ -1652,6 +1652,50 @@ def _short_locks(fall: float) -> list[Lock]:
     return list(_SHORT_LOCKS)
 
 
+# The clumps for the traced crop (`Hairstyle.locks`): a spiky crown swept to the viewer's right with a
+# fringe of four pieces, placed by hand on `harness/soft_hair/grid.py`. Pinned to the skull above the
+# cheek line, so used as authored. Drawn on the mass too, since its spikes stand outside the front piece.
+_CROP_LOCKS: list[Lock] = [
+    ("lit", ((-0.10, -1.45), (0.40, -1.30), (0.90, -0.95), (1.25, -0.55)), 0.20, 0.96),
+    ("shadow", ((-0.30, -1.25), (-0.70, -1.05), (-1.00, -0.70), (-1.15, -0.40)), 0.17, 0.92),
+    ("lit", ((-0.05, -1.30), (-0.45, -1.18), (-0.85, -0.95), (-1.20, -0.75)), 0.14, 0.88),
+    ("shadow", ((-0.55, -1.00), (-0.60, -0.75), (-0.62, -0.50)), 0.12, 0.92),
+    ("lit", ((-0.20, -1.00), (-0.25, -0.75), (-0.30, -0.50)), 0.12, 0.90),
+    ("shadow", ((0.20, -1.00), (0.28, -0.70), (0.30, -0.45)), 0.12, 0.90),
+    ("lit", ((0.55, -1.00), (0.62, -0.70), (0.68, -0.45)), 0.13, 0.92),
+    ("shadow", ((0.30, -1.20), (0.70, -1.05), (1.00, -0.75), (1.20, -0.50)), 0.15, 0.90),
+]  # fmt: skip
+
+
+def _crop_locks(fall: float) -> list[Lock]:
+    return list(_CROP_LOCKS)
+
+
+# The clumps for the parted cut (`Hairstyle.locks`): the bangs off the parting and, down each side, the
+# one long lock in front of the shoulder, placed by hand on `harness/soft_hair/grid.py` at a fall of
+# 2.62 (Katherina's) and re-stretched to the fall drawn the way `_long_traced_locks` is. Most of the
+# crown sits under the hat in the presets that wear one, so the clumps are on the parts that show.
+_PARTED_LOCKS_FALL = 2.62
+_PARTED_LOCKS: list[Lock] = [
+    ("lit", ((-0.15, -0.90), (-0.40, -0.60), (-0.60, -0.30), (-0.82, -0.05)), 0.12, 0.92),
+    ("lit", ((-1.14, 0.15), (-1.15, 0.80), (-1.10, 1.50), (-0.98, 2.10)), 0.13, 0.95),
+    ("shadow", ((-0.98, 0.20), (-0.98, 0.80), (-0.90, 1.50), (-0.78, 2.10)), 0.10, 0.92),
+    ("shadow", ((0.15, -0.85), (0.40, -0.60), (0.60, -0.35), (0.80, -0.10)), 0.12, 0.90),
+    ("lit", ((1.08, 0.15), (1.12, 0.80), (1.05, 1.50), (0.92, 2.00)), 0.13, 0.96),
+    ("shadow", ((0.95, 0.20), (0.93, 0.80), (0.85, 1.50), (0.74, 2.00)), 0.10, 0.90),
+]  # fmt: skip
+
+
+def _parted_locks(fall: float) -> list[Lock]:
+    k = (fall - _HAIR_CHEEK_Y) / (_PARTED_LOCKS_FALL - _HAIR_CHEEK_Y)
+
+    def q(pt: Point) -> Point:
+        y = pt[1]
+        return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
+
+    return [(role, tuple(q(pt) for pt in pts), w, ln) for role, pts, w, ln in _PARTED_LOCKS]
+
+
 def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
     """The two sweep lines the canon draws off the parting, and one down each
     fall. They scale with the mass, since they live on it.
@@ -3512,6 +3556,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         covers_ears=True,
         underside=_parted_underside,
         tip_lines=_parted_tip_lines,
+        locks=_parted_locks,
     ),
     # Blunt fringe across the brow, long straight locks in front of the shoulders and
     # the ears peeping out between them, traced off Risa's reference
@@ -3535,6 +3580,8 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _crop_fall_edge,
         _crop_tip_edge,
         strands=_crop_strands,
+        locks=_crop_locks,
+        mass_locks=True,
         # Where the side tips reach. `hair_length` 0.65, which is what Satoshi
         # carries, puts the cut at exactly the size it was traced at.
         tip_range=(0.800, 0.911),
