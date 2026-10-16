@@ -162,6 +162,31 @@ def pair_sheets(out: Path, seed: int, font: ImageFont.ImageFont) -> None:
     print("wrote pair sheets to", out, "and pairs-key.json (do not open it before choosing)")
 
 
+def head_to_head(out: Path, seed: int, a: str, b: str, font: ImageFont.ImageFont) -> None:
+    """One sheet: `a` against `b` on each hair colour, a row per colour (row 1 red, 2 dark, 3 blond,
+    4 grey, 5 orange), sides drawn once per row. `h2h-key.json` says which side is which."""
+    out.mkdir(parents=True, exist_ok=True)
+    rng = random.Random(f"h2h-{seed}")
+    key = {}
+    for view, suffix in (("close", "app"), ("face", "zoom")):
+        w, h = VIEWS[view][1]
+        if view == "face":
+            w, h = w // 2, h // 2
+        img = Image.new("RGB", (2 * w + 6, len(K.PALETTE) * (h + 6) - 6), "white")
+        rng = random.Random(f"h2h-{seed}")
+        for i, (tag, hair) in enumerate(K.PALETTE.items()):
+            left, right = (a, b) if rng.random() < 0.5 else (b, a)
+            key[str(i + 1)] = {"colour": tag, "left": left, "right": right}
+            y = i * (h + 6)
+            for x, v in ((0, left), (w + 6, right)):
+                im = draw(v, view, hair)
+                img.paste(im.resize((w, h), Image.LANCZOS) if im.size != (w, h) else im, (x, y))
+            ImageDraw.Draw(img).text((10, y + 8), str(i + 1), fill="white", font=font)
+        img.save(out / f"{a}-vs-{b}-{suffix}.png")
+    (out / "h2h-key.json").write_text(json.dumps(key, indent=1))
+    print("wrote", out, "and h2h-key.json (do not open it before choosing)")
+
+
 def faces(out: Path) -> None:
     """Each variant's head on its own, by name, for looking at while building (not for the owner)."""
     out.mkdir(parents=True, exist_ok=True)
@@ -174,10 +199,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--seed", type=int, default=31)
     ap.add_argument("--pairs", action="store_true", help="write the forced-choice pair sheets to <out>/pairs-<seed>/")
+    ap.add_argument("--h2h", nargs=2, metavar=("A", "B"), help="one sheet of A against B on every hair colour")
     ap.add_argument("--out", default="out/soft/v4")
     args = ap.parse_args()
     out = Path(args.out)
-    if args.pairs:
+    if args.h2h:
+        head_to_head(out / f"h2h-{args.seed}", args.seed, *args.h2h, ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 30))
+    elif args.pairs:
         pair_sheets(out / f"pairs-{args.seed}", args.seed, ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 30))
     else:
         faces(out)

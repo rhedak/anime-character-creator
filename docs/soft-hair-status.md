@@ -5,6 +5,10 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- 2026-10-16, Gate 0b passed on session 2 (below): clump structure (S2n, LS2n) beats r3 twice and beats
+  the crown sheen (SH); the added hairlines did not help and are dropped. Waiting on the owner for the
+  S2n against LS2n choice, approval of the new `CLAUDE.md` wording, and the go-ahead for Phase 1.
+
 - 2026-10-16, later: the r3 repairs landed in the package (12a44f3; the owner called the vs-today pair a
   close call and judged that they land). The structure variants lost round 2 for lack of hairlines and
   too strong highlights. Round 3 (`harness/soft_hair/mockup3.py`) keeps the strand dashes, adds fine
@@ -176,3 +180,31 @@ S2h, SSh and LS2h beat r3 in session 1; the hairlines-only variant (H) lost and 
 and dark-vs-SH sheets were not answered. Reading: the structure helps and the added hairlines are the
 defect. Session 2 (seed 33) returns SSn, S2n, LS2n (the winners without the added hairlines) and S2h
 (the bridge), against r3 and against SH.
+
+## Gate 0b, session 2 of round 3: the owner's answers (`out/soft/v4/pairs-33`)
+
+Key (identical on each set of sheets): r3 sheets: row 1 r3 left, r3b right (identical); row 2 LS2n left, r3
+right; row 3 r3 left, S2n right; row 4 SSn left, r3 right; row 5 S2h left, r3 right. SH sheets: row 1 r3
+left, SH right; row 2 LS2n left, SH right; row 3 SH left, S2n right; row 4 SSn left, SH right; row 5 S2h
+left, SH right.
+
+| Comparison | Answer | Reading |
+| --- | --- | --- |
+| r3, row 1 (control) | no difference | control passes a second time |
+| LS2n against r3 | left | LS2n wins |
+| S2n against r3 | right | S2n wins |
+| SSn against r3 | left | SSn wins |
+| S2h against r3 | left | S2h wins |
+| SH against r3 | right | SH wins (confirms round 2) |
+| LS2n against SH | left | LS2n wins |
+| S2n against SH | right | S2n wins |
+| SSn against SH | close call | level |
+| S2h against SH | close call | level |
+
+Tally against r3 across both sessions: LS2 2 of 2 (h then n), S2 3 of 3 (S2h twice, S2n once), SS 2 of 2. Never called
+broken. The answers were one per row across the hair colours, so the rule ("at least 5 of 6 over three
+colours and two sessions") was applied per session, not per colour.
+
+What it says: structure beats r3 and the crown sheen. Without the added hairlines it wins more clearly
+(S2n beats SH, S2h only ties it), so the added hairlines are dropped. Left open: S2n against LS2n (the
+crown band), and the colour by colour picture. Both go to the owner in `out/soft/v4/h2h-41`.
