@@ -1,0 +1,3 @@
+out/
+# the repo-root pattern MANIFEST also matches this directory on a case-insensitive filesystem
+!manifest/

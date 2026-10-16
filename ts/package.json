@@ -1,0 +1,14 @@
+{
+  "name": "anime-character-creator-ts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "TypeScript port of the drawing core, spike. See docs/ts-port-plan.md.",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "typecheck": "tsc --noEmit -p ."
+  }
+}
