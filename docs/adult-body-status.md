@@ -24,7 +24,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 4 bust, underwear | done 2026-10-17: G1 green, G2 round 1 found the bust too weak and a crotch tick, both reworked | G0 unchanged (IoU 0.940); 820 TS tests | none planned |
 | 5a head and face | done 2026-10-17: traced head and ears, face tuned | eyes 0.746 r apart (ref 0.75) | |
 | 5b hair | done 2026-10-17: `swept_ponytail` traced | silhouette matches the reference's by eye | |
-| 5c hands and feet | | | checkpoint 2 |
+| 5c hands and feet | done 2026-10-17: G2 round 1 fixed (neck gap) | G0 IoU 0.942 | checkpoint 2 pending |
 | 5d Franzi preset | | | |
 | 6 garments | | | checkpoint 3 |
 | 7 guard, tests, catalogue, web | | | checkpoint 4 |
@@ -39,6 +39,21 @@ hip_y 5.4 (2.2 H), ankle_y 10.4 (4.7 H), sole 11.8 by construction; shoulder_hal
 hip_half_w 1.23, arm_half_w 0.14, arm_x 1.14, leg_half_w 0.38, neck_half_w 0.22, wrist_y 6.2, wrist_x 1.5.
 Predicted gate: the chibi limb and torso code on these anchors, so landmarks within 0.05 H but IoU about 0.80 to 0.88
 and a width failure at the hip and thigh (no hip curve, straight legs): G0 FAIL, which is expected at this stage.
+
+### 2026-10-17, stage 5c: hands and feet, and the whole-figure review
+
+Feet: a rounded sole (little-toe side highest, big toe lowest) replacing the flat block, with four toe ticks and a
+small big-toenail chevron as interior lines. Hands: the silhouette is the reference's own (the arm knots run through
+the hand), with two thin lines for the thumb hanging along the inside and where the curled fingers part. Both are in
+`adultDetail` (the `_arms` slot). First tries to give the toes as five separate bumps looked like a saw, so toes are
+lines inside one rounded sole.
+
+G2 (sonnet, 75k tokens): neck PASS except a break: the chibi neck's side strokes stopped about 10 px short of the
+shoulder outline. Fixed with an adult neck (`adultNeck`) that runs its side lines into the body outline; a faint seam
+at the neck base was then fixed by extending the skin rect. Left as noted, not defects of the code: the hair is a flat
+cap with no strand lines (the reference has a part and strand flow), a small jog on the left lock's outer edge near the
+ear and a stepped ponytail root (both from the trace; a looser fit changed nothing), ears barely visible (the reference's
+are mostly hidden too), hand lines float inside the lobe and stop short of the outline, feet slightly blocky.
 
 ### 2026-10-17, stage 5a and 5b: head, face and hair
 

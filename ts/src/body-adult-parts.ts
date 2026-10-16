@@ -115,6 +115,21 @@ export function adultBodyPath(sk: Skeleton): string {
   const lastInner = (sign: number): Pt => [cx + sign * (w(5.3, 0.065) + hs), y(5.4) - hs];
   const L = -1;
   const R = 1;
+  // The sole as one rounded curve, the little toe's side highest and the big toe lowest; the toes themselves are lines
+  // inside it (`adultDetail`). Walked from the outer edge to the big toe on the left foot and back on the right.
+  const sole = (sign: number): Pt[] => {
+    const xo = cx + sign * (w(5.3, 0.349) - hs);
+    const xi = cx + sign * (w(5.3, 0.065) + hs);
+    const yBase = y(5.4) - hs;
+    const hH = 2 * sk.head_r;
+    const at = (t: number, rise: number): Pt => [xo + (xi - xo) * t, yBase - rise * hH];
+    return [at(0, 0.05), at(0.1, 0.03), at(0.35, 0.016), at(0.7, 0.004), at(0.93, 0.0), at(1, 0.03)];
+  };
+  const toes = (sign: number): string => {
+    const pts = sole(sign);
+    const run = sign < 0 ? pts : [...pts].reverse();
+    return line(run[0] as Pt) + smooth(run);
+  };
   const a = out(L);
   const start = a[0] as Pt;
   const hand = (sign: number): string => {
@@ -130,15 +145,13 @@ export function adultBodyPath(sk: Skeleton): string {
   const leg = legLine(L);
   d += quad(apex(L), leg[0] as Pt);
   d += smooth(leg);
-  d += line(lastOuter(L));
-  d += line(lastInner(L));
+  d += toes(L);
   // The inside of the left leg up to the crotch, across, and the same down the right leg.
   d += smooth(rev(side(L, LEG_INNER)));
   d += line([cx, y(2.25)]);
   d += line(side(R, LEG_INNER)[0] as Pt);
   d += smooth(side(R, LEG_INNER));
-  d += line(lastInner(R));
-  d += line(lastOuter(R));
+  d += toes(R);
   d += smooth(rev(legLine(R)));
   d += quad(apex(R), side(R, ARM_INNER)[0] as Pt);
   d += smooth(side(R, ARM_INNER));
@@ -243,18 +256,65 @@ export function adultEars(sk: Skeleton, p: CharacterParams): string {
     .join("");
 }
 
+/**
+ * Thin interior lines on the hands and feet, over the body: a thumb and a finger line on each hand, the toe divisions and
+ * the big toenail on each foot. Interior strokes, not outlines, so lighter than the outline.
+ */
+export function adultDetail(sk: Skeleton, p: CharacterParams): string {
+  void p;
+  const { cx, y, w } = place(sk);
+  const sw = outlineW(strokeW(sk), 0.55);
+  const stroke = (pts: Pt[]): string => `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(sw)}" stroke-linecap="round" stroke-linejoin="round" />`;
+  const out: string[] = [];
+  for (const sign of [-1, 1]) {
+    const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
+    // Hand: the thumb hanging along the inside of the hand, and where the curled fingers part from it.
+    out.push(stroke([P(0.715, 2.2), P(0.705, 2.32), P(0.715, 2.44), P(0.7, 2.52)]));
+    out.push(stroke([P(0.785, 2.34), P(0.775, 2.45), P(0.745, 2.55)]));
+    // Foot: four short lines marking the toes, and the big toenail.
+    const xo = w(5.3, 0.349);
+    const xi = w(5.3, 0.065);
+    const hH = 2 * sk.head_r;
+    for (const t of [0.14, 0.3, 0.46, 0.66]) {
+      const x = cx + sign * (xo + (xi - xo) * t);
+      const yb = y(5.4) - hH * (0.05 - 0.046 * t);
+      out.push(stroke([[x, yb - 0.04 * hH], [x + sign * 0.002 * hH, yb - 0.004 * hH]]));
+    }
+    const nx = cx + sign * (xo + (xi - xo) * 0.85);
+    const ny = y(5.4) - 0.045 * hH;
+    out.push(stroke([[nx - 0.03 * hH, ny - 0.01 * hH], [nx, ny + 0.012 * hH], [nx + 0.03 * hH, ny - 0.01 * hH]]));
+  }
+  return out.join("");
+}
+
+/**
+ * The neck: skin from inside the head down to where the body outline begins, with a line down each side that runs into
+ * that outline, so there is no break between the jaw and the shoulder slope (the chibi's neck stops short of it).
+ */
+export function adultNeck(sk: Skeleton, p: CharacterParams): string {
+  const { cx, y } = place(sk);
+  const hs = outlineW(strokeW(sk)) / 2;
+  const top = sk.head_cy + sk.head_r * 0.8;
+  const bottom = y(0.12);
+  const nw = sk.neck_half_w;
+  const sw = fmt2(outlineW(strokeW(sk)));
+  const side = (x: number): string => `<path d="M ${fmt1(x)} ${fmt1(top)} L ${fmt1(x)} ${fmt1(bottom)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`;
+  return `<rect x="${fmt1(cx - nw)}" y="${fmt1(top)}" width="${fmt1(2 * nw)}" height="${fmt1(bottom - top + 3 * hs)}" fill="${colorStr(p.skin_tone)}" />` + side(cx - nw) + side(cx + nw);
+}
+
 const none = (): string => "";
 
 /** The parts an adult body replaces. Everything else (head, hair, face, garments) is the shared code. */
 export const ADULT_PARTS = {
   _torso: adultTorso,
   _legs_and_boots: adultBriefs,
-  _arms: none,
+  _arms: adultDetail,
   _underwear_top: adultBand,
   _navel: none,
   _chest_lines: none,
   _bust_lines: none,
   _bust_over_arms: none,
+  _neck: adultNeck,
   _head: adultHead,
   _ears: adultEars,
 };

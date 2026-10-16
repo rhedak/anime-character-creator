@@ -28,7 +28,7 @@ import trace_lib as tl  # noqa: E402
 OUT = Path("out/franzi_hair")
 OX, OY, S = 660.0, 270.5, 175.7
 ERODE = 3
-TOL = 0.016
+TOL = 0.026
 
 hair = ndimage.binary_erosion(ndimage.binary_fill_holes(np.array(Image.open("ref/franzi/segments/04-bikini-fullbody/black-hair.png"))[..., 3] > 128), iterations=ERODE)
 head = np.load(OUT / "head_mask.npy")
