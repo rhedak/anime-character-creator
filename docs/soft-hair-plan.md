@@ -1,8 +1,9 @@
 # Soft hair: making drawn hair read as hair
 
-Status: **draft 2, before any build work**. Draft 1 went to two independent reviewers on 2026-10-16;
-their findings and what we did about each are in `docs/soft-hair-status.md`. This draft is for the
-owner's sign-off.
+Status: **draft 2, approved by the owner on 2026-10-16** (answers in section 10). Draft 1 went to two
+independent reviewers; their findings and what we did about each are in `docs/soft-hair-status.md`.
+Phase 0 is under way. The one item still open is the owner's approval of the `CLAUDE.md` wording
+(section 8), which is needed before Phase 1 lands any structure in the package.
 
 ## 1. The question
 
@@ -25,12 +26,13 @@ If we cannot reach that, the right outcome is to stop and keep what we learned.
 
 - `"flat"` stays byte for byte what it is: `./refresh-ref-out.sh --check` passes after every
   commit. All new drawing is behind `finish="soft"`.
-- The silhouette is canon. The mass, the fringe edge, the hairline, the side curtains and the
-  lock tips keep their traced contour, so new marks are clipped to the existing hair shapes and
-  add no silhouette (the hair contract in `docs/architecture.md`, and
-  `test_hair_stays_under_the_canvas_ceiling`). A reviewer and the owner both asked for pointed
-  fringe locks; that changes the traced contour and is a separate decision for the owner, not
-  part of this plan.
+- The traced contour is a starting point, not canon, for this work (the owner's call, 2026-10-16:
+  what looks best after visual confirmation goes to the next round). A contour change, such as
+  pointed fringe locks, is tried as a variant in Phase 0 and only goes on if the owner picks it. It
+  stays behind `finish="soft"`, so the flat contour is untouched, and any soft contour still has
+  to obey the hair contract in `docs/architecture.md` and the canvas ceiling
+  (`test_hair_stays_under_the_canvas_ceiling`). Marks that are not a contour change are clipped to
+  the existing hair shapes and add no silhouette.
 - Deterministic output: same arguments, same bytes. Variation comes from a fixed hash of lock
   index and cut name, never `random` and never set ordering.
 - Gradients, strokes and fills only, no blur: cairosvg writes the PNGs and has none.
@@ -123,7 +125,8 @@ hand.
 
 - Hand-author, for Risa only, a throwaway overlay for the visible hair as static numbers in a
   script (not production code, no `locks` field yet): variants **L**, **S**, **L+S**, and **D**,
-  next to today's soft, a soft with the gloss arc removed, and flat.
+  next to today's soft, a soft with the gloss arc removed, and flat. Then a **pointed-fringe**
+  variant of the best of those, with the fringe's lower contour redrawn as a few deliberate locks.
 - In the same pass, repair the soft finish's own regressions as variants: gloss arc on and off,
   depth wash on and off, jaw shading on and off. These are cheap and the evidence says some of them
   hurt.
@@ -242,7 +245,11 @@ spread, so they are not used to judge.
    (satoko, linnea and lindita cover light, vivid and orange), katherina, gero, satoshi.
 3. Is up to about 40 percent more bytes per document acceptable (65 KB to 90 KB), or is the
    budget tighter?
-4. Pointed fringe locks need the traced contour to change. Is that off the table for now, as I
-   have assumed?
+4. Pointed fringe locks need the traced contour to change. Is that off the table for now?
 5. Are you happy to be the judge at the touchpoints, with randomised pairs, while the reviewers
    only look for defects?
+
+Answers, 2026-10-16: (1) yes. (2) Risa first, since she is the face of the companion; the other
+characters follow. (3) yes, up to about 90 KB per document. (4) not off the table: the contour is
+not set, and what looks best on visual confirmation goes to the next round, so pointed fringe locks
+are a Phase 0 variant. (5) yes.
