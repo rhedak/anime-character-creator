@@ -11,7 +11,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 - Owner agreed (2026-10-17) to the CLAUDE.md amendment at stage 7 (adult build as its own decision: SFW rules, bare
   view in the harness only, age guard in the render code), and that the proper head, hands and feet for Franzi come
   after the body is done (stage 5, traced from the new references).
-- Next action: owner's checkpoint 1 on `out/franzi/checkpoint1.png`, then stage 4 (bust, swimsuit, underwear).
+- Checkpoint 1 passed (owner: overall yes, armpits fixed). Stage 4 done. Next action: stage 5a, the head and face from the new references.
 
 ## Scoreboard
 
@@ -21,7 +21,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 1 gate harness | done 2026-10-17 | self 1.000 pass; tall_chibi IoU 0.489 fail | n/a |
 | 2 profile | done 2026-10-17, G1 green, G2 passed | G0 IoU 0.741 (predicted 0.80 to 0.88: wrong, the hip is not honored); landmark error waist 0.006, hip 0.082, crotch 0.247 H | n/a |
 | 3 torso and limbs | G0 pass, G1 green, G2 passed after one fix round (2026-10-17); waiting for checkpoint 1 | IoU 0.940, widths within 3.2%, landmarks within 0.026 H | checkpoint 1 pending |
-| 4 bust, swimsuit, underwear | | | |
+| 4 bust, underwear | done 2026-10-17: G1 green, G2 round 1 found the bust too weak and a crotch tick, both reworked | G0 unchanged (IoU 0.940); 820 TS tests | none planned |
 | 5a head and face (after the body is signed off) | | | |
 | 5b hair | | | |
 | 5c hands and feet | | | checkpoint 2 |
@@ -39,6 +39,29 @@ hip_y 5.4 (2.2 H), ankle_y 10.4 (4.7 H), sole 11.8 by construction; shoulder_hal
 hip_half_w 1.23, arm_half_w 0.14, arm_x 1.14, leg_half_w 0.38, neck_half_w 0.22, wrist_y 6.2, wrist_x 1.5.
 Predicted gate: the chibi limb and torso code on these anchors, so landmarks within 0.05 H but IoU about 0.80 to 0.88
 and a width failure at the hip and thigh (no hip curve, straight legs): G0 FAIL, which is expected at this stage.
+
+### 2026-10-17, stage 4: underwear and bust
+
+The always-worn underwear is now a scoop-necked sports top with straps (from the base of the neck to under the bust,
+following the torso in at the hem) with two thin curved lines under the cups, and high-cut briefs with a waistband
+that dips a little at the centre. The bust is read from the garment alone: no skin detail, no nipple, nothing that is
+not a flat garment edge, seam or outline. `ts/test/adult-body.test.ts` pins that the top and briefs are drawn for any
+outfit setting, that the chibi's navel and bust lines are absent, that the anchors are in order at 6.4 heads, and that
+the adult type stays out of `BODY_TYPES` and the presets.
+
+DECISION AHEAD (stage 4 swimsuit/bikini and stage 6 garments): a selectable swimsuit, bikini, dirndl or blouse needs a
+parameter on `Outfit` or `CharacterParams`. Both are field registries mirrored by the Python-oracle tests, so a new
+field breaks them unless those tests are taught about TypeScript-only fields. Options: (a) a TypeScript-only extension
+mechanism in the registries, with the mirrored tests exempting it, which needs the owner's say because it edits test
+expectations; (b) keep adult garments as named outfits in a TypeScript-only table applied by the preset, with no new
+field (the preset holds the whole look, the web tool offers it later); (c) reuse existing fields only. I lean to (b)
+for Franzi's dirndl and to decide the web tool's controls at stage 7. Asked of the owner when stage 6 starts.
+
+G2 round 1 (sonnet): coverage and anatomy PASS (nothing beyond a flat garment edge, seam or outline), symmetry PASS,
+armpit tips PASS, edges against the outline PASS. Defects: the bust read weakly (two small U lines in a boxy top) and a
+small crotch tick on the briefs. Reworked: each cup is now a longer curve from the neckline round the inside, under and
+out to the armhole, and the briefs' bottom is one smooth curve through the crotch. Judged by eye afterwards (not
+re-reviewed by an agent); the owner sees it at checkpoint 2.
 
 ### 2026-10-17, stage 4 start: the armpits
 
