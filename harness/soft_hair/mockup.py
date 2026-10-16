@@ -72,6 +72,7 @@ RIGHT: dict[str, tuple[list[Pt], float]] = {
 }
 GUIDES = {**LEFT, **RIGHT}
 BANGS = ("b1", "b2", "b3", "b4", "b5", "b6")
+RIM = ("o1", "o3")
 
 
 def catmull(points: list[Pt], per: int = 14) -> list[Pt]:
@@ -177,6 +178,8 @@ def overlay_S(f: Frame, hair: str, extend: bool = False) -> str:
     parts = []
     for i, (name, (pts, w)) in enumerate(GUIDES.items()):
         tone, op = (mid_lit, 0.30) if i % 2 == 0 else (mid_dark, 0.34)
+        if name in RIM:  # the outermost clumps stay dark: a pale clump on the silhouette reads as a second outline
+            tone, op = mid_dark, 0.34
         parts.append(f'<path d="{lens(f, pts, w, power=0.55)}" fill="{tone}" opacity="{op}" />')
     for name, (pts, w) in GUIDES.items():
         # a dark separation along each guide's edge, shorter than the clump and ending before its tip
@@ -277,6 +280,15 @@ def render(variant: str) -> str:
         start, ln, back = style.hairline(C._hair_fall(sk, pp))
         fill_d = C._curve(sk.head_cx, sk.head_cy, sk.head_r, start, ln + back)
         group = f'<defs><clipPath id="mock-clip"><path d="{fill_d}" /></clipPath></defs><g clip-path="url(#mock-clip)">{treat}</g>'
+        # The skin patches (the ears show through them) go back over the overlay, as they would
+        # if the overlay were drawn before them.
+        if style.openings is not None:
+            sw = C._stroke_w(sk)
+            for chain in style.openings(C._hair_fall(sk, pp)):
+                group += (
+                    f'<path d="{C._curve(sk.head_cx, sk.head_cy, sk.head_r, *chain)}" fill="{pp.skin_tone}" '
+                    f'stroke="{C.OUTLINE}" stroke-width="{C._interior_w(sw):.2f}" stroke-linejoin="round" />'
+                )
         if extend:
             group += pointed_fringe(f, hair, line)
         return out + group

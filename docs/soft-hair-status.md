@@ -6,7 +6,8 @@ independent reviewers said, and what we did about each point.
 ## Where we are
 
 - 2026-10-16: soft finish committed (02e3095). Plan draft 1 written, reviewed twice, revised to
-  draft 2. No hair build work started. Waiting for the owner's sign-off on draft 2.
+  draft 2 and approved by the owner. Phase 0 mock-up built (`harness/soft_hair/mockup.py`) and
+  defect-reviewed; waiting for the owner's blind picks (Gate 0). No hair code is in the package.
 
 ## Review 1: blind visual diagnosis (images only, not told hair was the suspect)
 
@@ -51,3 +52,18 @@ Verdict: proceed with specific changes. Checked facts by running code.
 
 - 2026-10-16: take both reviews' changes into draft 2 (above). Not taken: nothing set aside so far.
   The pointed-fringe request is deferred to the owner, not refused.
+
+## Review 3: defect-only review of the Phase 0 mock-up (sheets A to J, images only)
+
+By eye at about 2000 px, nothing confirmed by pixel measurement.
+
+| Finding | What we did |
+| --- | --- |
+| The left ear showed as a pale, semi-transparent patch on several variants, and sides differed. | Real: the overlay was drawn after the skin patches (`openings`). The mock-up now redraws the patches over it; the production version will draw the overlay before them. Fixed in `out/soft/v2`. |
+| A pale band hugging the outer hair edge on both sides of the structure variants, unclear whether a rim light or a second outline. | Real enough to fix: the outermost clumps are now dark, so no pale clump sits on the silhouette. Fixed in `out/soft/v2`. |
+| Hard-ended highlight shapes (the light-only band, the old gloss arc), streaks that cross lock boundaries (the fibre control). | Expected: the first two are what is being tested, the third is the control. |
+| Greyish face and a lighter cap over the crown on the soft repairs. | Expected: the jaw shading and the depth wash are what the repair variants remove. |
+| Doubled inner outline and a thicker top outline on the flat variant. | The flat house style, unchanged by design. |
+| Fringe wedges differ left and right. | Deliberate: the part is off centre. |
+
+Not judged: a 1 to 2 px spill past the silhouette, fine gradient banding, the lock tips in the zoom.
