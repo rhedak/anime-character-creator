@@ -28,6 +28,11 @@ grows, so a test or a consumer that asserts text can be found and changed on pur
 | `dataclasses.replace(obj, x=None)` and a TS `undefined` | `None` sets the field | `null` sets the field; a key whose value is `undefined` is treated as not given | TS optional properties |
 | `repr` of a str in the `finish` message | CPython 3.13's printable table (Unicode 15.1) | the `\p{C*}\p{Z*}` classes of the running V8 | identical on ASCII and the tested range; a character assigned after Unicode 15.1 could differ |
 | an int field given a whole float by a link (`"scar_side": 1.0`), or a float field given an int (`"height": 2`) | kept as given and written back as given | kept (`PyFloat`, `PyInt` markers) and written back as given | reproduced; the renderer must read such values through `plainNumber` (`pyvalue.ts`), which Phase 4 has to do where it draws |
+| `COAT_CUTS[name]` of an unknown cut (`core-limbs.ts`) | `KeyError: 'name'` (the repr of the key) | `KeyError` with the repr of a string key, `None` for a key that is not a string | the one case where a non-string reaches it is a `coat_cut` of the wrong type from a link |
+| `len(text)` of a non-string `wristband_text` (`core-limbs-arms.ts`) | `TypeError: object of type 'int' has no len()`; a list or dict has a length and `escape` then raises `AttributeError: 'list' object has no attribute 'replace'` | the same classes and text (`pyTypeName` names the type) | reproduced; an empty list or dict is falsy and draws the band without text |
+| `SLEEVE_CUTS.get(sleeve_cut or "")` with a list (`wornSleeve`) | `TypeError: unhashable type: 'list'` | the same text | reproduced; any other non-string is simply not a cut name |
+| `zip(..., strict=True)` in `bustPieces`, `next()` without default in `squareWrist` | `ValueError: zip() argument 2 is longer than argument 1`, `StopIteration` | the same classes and text | unreachable from the drawing: the lengths are fixed by `_bust_shape` and the traced hand |
+| `assert cut.shoulder_y is not None` (`raisedShoulder`, `raisedCuff`) | `AssertionError` | `AssertionError` with an empty message | the cut tables always set it |
 | everything not yet ported | | | |
 
 Anything that raises in Python but silently computes in JavaScript (`NaN`, `undefined`, `Infinity`) is turned into an
