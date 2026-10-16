@@ -5,6 +5,11 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- 2026-10-16, later: the r3 repairs landed in the package (12a44f3; the owner called the vs-today pair a
+  close call and judged that they land). The structure variants lost round 2 for lack of hairlines and
+  too strong highlights. Round 3 (`harness/soft_hair/mockup3.py`) keeps the strand dashes, adds fine
+  hairlines along the clump edges, and cuts the highlights to about the crown band's strength.
+
 - 2026-10-16: soft finish committed (02e3095). Plan draft 1 written, reviewed twice, revised to
   draft 2 and approved by the owner. Phase 0 mock-up built (`harness/soft_hair/mockup.py`) and
   defect-reviewed. Gate 0 picks received (below). No hair code is in the package.
@@ -133,3 +138,12 @@ structure variant is the hairlines. That is my doing. The structure variants swi
 off (`strands_off`), which I chose in round 1 to avoid doubled lines, and r3 keeps them. The owner values
 the hairlines. The second complaint is highlight strength: the subtle one (SH) works, the stronger ones
 do not. Both are tunable, so the finding is not that structure fails but that two settings were wrong.
+
+## r3 repairs landed (12a44f3)
+
+The soft finish no longer has the hair gloss arc, the crown-to-tips depth wash or the face edge shading.
+The owner's blind pairs ranked the repaired base (r3) level with or above today's soft (the vs-today
+pair a close call, so a judgment call to land them); the gloss arc and depth wash were the old reviews'
+complaints and the face shading read as dirt. `ref-out/` is byte-identical, 907 tests pass, `CLAUDE.md`
+and `docs/api.md` describe the narrower soft finish. `mockup.py` (round 1) can no longer draw `today`;
+check out f432f7b for it.

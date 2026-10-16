@@ -18,6 +18,7 @@ import numpy as np
 sys.path.insert(0, "harness/soft_hair")
 sys.path.insert(0, "src")
 import mockup2 as K  # noqa: E402
+import mockup3 as K3  # noqa: E402
 
 
 def hsv_arr(im: np.ndarray) -> np.ndarray:
@@ -26,10 +27,10 @@ def hsv_arr(im: np.ndarray) -> np.ndarray:
 
 def main() -> None:
     for tag, hair in K.PALETTE.items():
-        base = np.asarray(K.draw("r3", "face", hair)).astype(float) / 255
+        base = np.asarray(K3.draw("r3", "face", hair)).astype(float) / 255
         bh = hsv_arr(base)
-        for v in ["today", "S2", "LS2", "SH"]:
-            im = np.asarray(K.draw(v, "face", hair)).astype(float) / 255
+        for v in ["SH", "SSh", "S2h", "LS2h"]:
+            im = np.asarray(K3.draw(v, "face", hair)).astype(float) / 255
             h = hsv_arr(im)
             lit = h[:, 2] > bh[:, 2] + 0.03
             n = int(lit.sum())

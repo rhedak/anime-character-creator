@@ -14,7 +14,6 @@ Not production code. Same Risa guides as `mockup.py`, rebuilt after the method r
 Variants, all on r3 (soft without the gloss arc, the depth wash or the jaw shading):
 
     r3      control, and `r3b`, an identical second copy that is never labelled (the judge's own noise)
-    today   control: `finish="soft"` as committed
     SS      value steps only: shadow clumps with a soft separation, no lit tone at all
     SH      one sheen on the crown, nothing else
     S2      three solid tones: shadow clumps, lit clumps, one highlight in each lit clump
@@ -179,33 +178,30 @@ def sheen(f: M.Frame, hair: str) -> str:
 
 
 def render(variant: str, hair_override: str | None = None) -> str:
+    """The package's soft finish (r3: the gloss, depth wash and jaw shading are gone from it since
+    12a44f3) with a treatment laid over the front hair. `today` can no longer be drawn: check out
+    f432f7b for that."""
+    builders = {
+        "r3": (None, False, False),
+        "r3b": (None, False, False),
+        "SS": (lambda f, h: clumps(f, h, lit_clumps=False, streaks=False), True, False),
+        "SH": (sheen, False, False),
+        "S2": (lambda f, h: clumps(f, h, True, True), True, False),
+        "LS2": (lambda f, h: clumps(f, h, True, True) + ring(f, h), True, False),
+        "P2": (lambda f, h: clumps(f, h, True, True) + ring(f, h), True, True),
+    }
+    build, strands_off, extend = builders[variant]
+    return render_treated(build, strands_off, extend, hair_override)
+
+
+def render_treated(build, strands_off: bool = False, extend: bool = False, hair_override: str | None = None) -> str:  # type: ignore[no-untyped-def]
     p = PRESETS[M.NAME]
     if hair_override:
         p = replace(p, hair_color=hair_override)
     f = M.Frame()
     hair = p.hair_color
     line = shade(hair, C._SOFT_HAIR_LINE_VALUE)
-    knobs: dict[str, object] = {}
-    treat = ""
-    strands_off = False
-    extend = False
-    if variant != "today":
-        knobs = {
-            "_SOFT_GLOSS_LAYERS": (),
-            "_SOFT_HAIR_DEPTH_TOP": (C._SOFT_HAIR_DEPTH_TOP[0], 0.0),
-            "_SOFT_HAIR_DEPTH_BOTTOM": (C._SOFT_HAIR_DEPTH_BOTTOM[0], 0.0),
-            "_SOFT_FACE_EDGE_OPACITY": 0.0,
-        }
-    if variant == "SS":
-        treat, strands_off = clumps(f, hair, lit_clumps=False, streaks=False), True
-    elif variant == "SH":
-        treat = sheen(f, hair)
-    elif variant == "S2":
-        treat, strands_off = clumps(f, hair, True, True), True
-    elif variant == "LS2":
-        treat, strands_off = clumps(f, hair, True, True) + ring(f, hair), True
-    elif variant == "P2":
-        treat, strands_off, extend = clumps(f, hair, True, True) + ring(f, hair), True, True
+    treat = build(f, hair) if build else ""
 
     original_front = C._hair_front
     original_style = HAIRSTYLES[p.hairstyle]
@@ -230,17 +226,16 @@ def render(variant: str, hair_override: str | None = None) -> str:
         return out + group
 
     try:
-        with M.patched(**knobs):
-            C._hair_front = front
-            if strands_off:
-                HAIRSTYLES[p.hairstyle] = replace(original_style, strands=None)
-            return render_character(replace(p, finish="soft"))
+        C._hair_front = front
+        if strands_off:
+            HAIRSTYLES[p.hairstyle] = replace(original_style, strands=None)
+        return render_character(replace(p, finish="soft"))
     finally:
         C._hair_front = original_front
         HAIRSTYLES[p.hairstyle] = original_style
 
 
-VARIANTS = ["r3", "r3b", "today", "SS", "SH", "S2", "LS2"]  # P2 stays in `render`: its pointed fringe read as a comb in the defect review
+VARIANTS = ["r3", "r3b", "SS", "SH", "S2", "LS2"]  # P2 stays in `render`: its pointed fringe read as a comb in the defect review
 # Not the crops of round 1, so the sheet cannot be matched to the old one by position.
 VIEWS = {"close": ("75 0 250 290", (400, 464)), "face": ("130 20 140 150", (560, 600))}
 
@@ -281,7 +276,6 @@ PAIR_SHEETS = {
     "dark-vs-r3": ("dark", "r3", ("r3b", "r3")),
     "blond-vs-r3": ("blond", "r3", ("r3b", "r3")),
     "grey-vs-r3": ("grey", "r3", ("r3b", "r3")),
-    "red-vs-today": ("red", "today", ("r3", "today")),
 }
 
 
