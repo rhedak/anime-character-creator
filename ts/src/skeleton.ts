@@ -189,7 +189,7 @@ const KEEP_WS = [
 ] as const;
 
 /** How much the body's widths follow the height: `1 + WIDTH_FOLLOW * (h - 1)`. The neck stays with the head. */
-const WIDTH_FOLLOW = 0.6;
+export const WIDTH_FOLLOW = 0.6;
 
 /** `sk` standing `h` times as tall from the shoulder line to the sole, with the head kept and the widths following a little. */
 export function stretched(sk: Skeleton, h: number, refit: (heads: number) => Skeleton, legsShare = 2 / 3): Skeleton {

@@ -19,8 +19,8 @@ import {
 } from "./skeleton.ts";
 import { HAT_BRIM } from "./tables.ts";
 
-const LONG_TORSO_HEAD_SCALE = 1.1;
-const SLENDER_HEAD_SCALE = 0.85;
+export const LONG_TORSO_HEAD_SCALE = 1.1;
+export const SLENDER_HEAD_SCALE = 0.85;
 
 const tallChibi: BodyProfile = profile(3.47, {
   shoulder_y: 1.13,
@@ -65,9 +65,9 @@ export const BODY_TYPES: Readonly<Record<string, BodyProfile>> = {
   ),
 };
 
-const TAPER_FROM = 0.8;
-const TAPER_TO = 1.3;
-const TAPER_MAX = 0.5;
+export const TAPER_FROM = 0.8;
+export const TAPER_TO = 1.3;
+export const TAPER_MAX = 0.5;
 
 /** How much limb taper a figure of this height is drawn with. */
 export function limbTaperAt(height: number): number {
