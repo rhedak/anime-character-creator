@@ -71,14 +71,10 @@ FINISHES = ("flat", "soft")
 _SOFT_LINE_SCALE = 0.66
 # Lines in the hair take a dark tone of the hair itself, not the black outline.
 _SOFT_HAIR_LINE_VALUE = 0.30
-# The face's outline in a dark tone of the skin, and the roundness shading that
-# darkens the face toward its edge (a gradient from transparent at `_SOFT_FACE_CLEAR`
-# of the head radius out to the tone at the edge; symmetric, so it is not the
-# one-sided cheek shadow `_head` records as a smudge).
+# The face's outline in a dark tone of the skin. A shading gradient toward the face's
+# edge was tried and removed (owner's blind pairs, 2026-10-16: it read as dirt at the
+# zoomed size), so the face stays one flat surface as `_head` says.
 _SOFT_FACE_LINE_VALUE = 0.40
-_SOFT_FACE_CLEAR = 0.60
-_SOFT_FACE_EDGE_VALUE = 0.80
-_SOFT_FACE_EDGE_OPACITY = 0.40
 
 
 def _soft(p: CharacterParams) -> bool:
@@ -94,12 +90,9 @@ def _soft_lines(svg: str, tone: str) -> str:
 
 
 def _soft_stroke_widths(svg: str) -> str:
-    """Every line's `stroke-width` in `svg` scaled by `_SOFT_LINE_SCALE`: every
-    stroke but the hair gloss, which is paint and not a line."""
+    """Every line's `stroke-width` in `svg` scaled by `_SOFT_LINE_SCALE`."""
 
     def scaled(tag: re.Match[str]) -> str:
-        if f'class="{_SOFT_GLOSS_CLASS}"' in tag.group(0):
-            return tag.group(0)
         return re.sub(
             r'stroke-width="([0-9.]+)"',
             lambda m: f'stroke-width="{float(m.group(1)) * _SOFT_LINE_SCALE:.2f}"',
@@ -3512,8 +3505,6 @@ def _hair_defs(sk: Skeleton, p: CharacterParams) -> str:
         region, _ = style.underside(fall)
         d = _curve(sk.head_cx, sk.head_cy, sk.head_r, *region)
         clips.append(f'<clipPath id="{_HAIR_UNDERSIDE_CLIP_ID}"><path d="{d}" /></clipPath>')
-    if _soft(p):
-        clips.append(_soft_hair_depth_defs(sk, p))
     return f"<defs>{''.join(clips)}</defs>" if clips else ""
 
 
@@ -3536,8 +3527,6 @@ def _hair_mass(sk: Skeleton, p: CharacterParams) -> str:
     parts = _two_tone_hair(d, p)
     if style.underside is not None:
         parts.append(_hair_underside(sk, p, d, style.underside(fall)[1]))
-    if _soft(p):
-        parts.append(f'<path d="{d}" fill="url(#hair-depth)" />')
     parts.append(
         f'<path d="{d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(_stroke_w(sk)):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
@@ -12258,16 +12247,6 @@ def _head(sk: Skeleton, p: CharacterParams) -> str:
     parts = [f'<path d="{fill}" fill="{p.skin_tone}" />']
     soft = _soft(p)
     line = shade(p.skin_tone, _SOFT_FACE_LINE_VALUE) if soft else OUTLINE
-    if soft:
-        edge = shade(p.skin_tone, _SOFT_FACE_EDGE_VALUE)
-        parts.append(
-            f'<defs><radialGradient id="face-round" gradientUnits="userSpaceOnUse" '
-            f'cx="{sk.head_cx:.1f}" cy="{sk.head_cy:.1f}" r="{sk.head_r:.1f}">'
-            f'<stop offset="0" stop-color="{edge}" stop-opacity="0" />'
-            f'<stop offset="{_SOFT_FACE_CLEAR}" stop-color="{edge}" stop-opacity="0" />'
-            f'<stop offset="1" stop-color="{edge}" stop-opacity="{_SOFT_FACE_EDGE_OPACITY}" /></radialGradient></defs>'
-            f'<path d="{fill}" fill="url(#face-round)" />'
-        )
 
     # The outline is drawn in two weights rather than as one closed stroke. Around
     # the skull and cheeks it is silhouette, so it carries full weight. Under the
@@ -13030,69 +13009,22 @@ def _face(sk: Skeleton, p: CharacterParams) -> str:
     return "".join(parts)
 
 
-# The soft finish's hair gloss: an arc concentric with the skull, over the crown,
-# with a gap at the parting, built of a few strokes of falling opacity so its
-# edges fade (no blur, see `FINISHES`). Angles are degrees clockwise from the
-# right, so -90 is straight up.
-_SOFT_GLOSS_RADIUS = 1.02
-_SOFT_GLOSS_ARCS = ((-158.0, -101.0), (-79.0, -22.0))
-_SOFT_GLOSS_LAYERS = ((0.224, 0.05), (0.178, 0.06), (0.132, 0.07), (0.092, 0.09), (0.053, 0.12))
-# What marks a stroke that is not a line, so `_soft_stroke_widths` leaves it alone.
-_SOFT_GLOSS_CLASS = "soft-gloss"
-_SOFT_GLOSS_TINT = 0.55
-# Depth in the hair: lighter over the crown, darker toward the tips, one gradient
-# in the figure's own coordinates so the mass and the fringe share it.
-_SOFT_HAIR_DEPTH_TOP = (0.22, 0.38)
-_SOFT_HAIR_DEPTH_BOTTOM = (0.55, 0.55)
-
-
-def _soft_hair_depth_defs(sk: Skeleton, p: CharacterParams) -> str:
-    top, bottom = sk.head_cy - 1.5 * sk.head_r, sk.hem_y
-    light, dark = (
-        tint(p.hair_color, _SOFT_HAIR_DEPTH_TOP[0]),
-        shade(p.hair_color, _SOFT_HAIR_DEPTH_BOTTOM[0]),
-    )
-    return (
-        f'<linearGradient id="hair-depth" gradientUnits="userSpaceOnUse" x1="0" y1="{top:.1f}" x2="0" y2="{bottom:.1f}">'
-        f'<stop offset="0" stop-color="{light}" stop-opacity="{_SOFT_HAIR_DEPTH_TOP[1]}" />'
-        f'<stop offset="0.3" stop-color="{light}" stop-opacity="0" />'
-        f'<stop offset="0.55" stop-color="{dark}" stop-opacity="0" />'
-        f'<stop offset="1" stop-color="{dark}" stop-opacity="{_SOFT_HAIR_DEPTH_BOTTOM[1]}" /></linearGradient>'
-    )
-
-
 # How far the fringe's shadow falls on the forehead, in head radii, and how dark.
 _SOFT_BROW_SHADOW_DROP = 0.09
 _SOFT_BROW_SHADOW_VALUE = 0.80
 _SOFT_BROW_SHADOW_OPACITY = 0.55
 
 
-def _soft_hair_front(sk: Skeleton, p: CharacterParams, fill_d: str) -> tuple[str, str]:
-    """The soft finish's two additions to the front hair: the fringe's shadow on
-    the face (drawn under the hair) and the gloss on the hair (drawn over it)."""
-    cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
+def _soft_brow_shadow(sk: Skeleton, p: CharacterParams, fill_d: str) -> str:
+    """The soft finish's one addition to the front hair: the fringe's shadow on the
+    face, drawn under the hair."""
     face_fill = _head_paths(sk)[0]
-    shadow = (
-        f'<defs><clipPath id="soft-face-clip"><path d="{face_fill}" /></clipPath>'
-        f'<clipPath id="soft-hair-clip"><path d="{fill_d}" /></clipPath></defs>'
+    return (
+        f'<defs><clipPath id="soft-face-clip"><path d="{face_fill}" /></clipPath></defs>'
         f'<g clip-path="url(#soft-face-clip)"><path d="{fill_d}" '
         f'fill="{shade(p.skin_tone, _SOFT_BROW_SHADOW_VALUE)}" opacity="{_SOFT_BROW_SHADOW_OPACITY}" '
-        f'transform="translate(0 {_SOFT_BROW_SHADOW_DROP * r:.2f})" /></g>'
+        f'transform="translate(0 {_SOFT_BROW_SHADOW_DROP * sk.head_r:.2f})" /></g>'
     )
-    rho = _SOFT_GLOSS_RADIUS * r
-    tone = tint(p.hair_color, _SOFT_GLOSS_TINT)
-    arcs = []
-    for a0, a1 in _SOFT_GLOSS_ARCS:
-        x0, y0 = cx + rho * math.cos(math.radians(a0)), cy + rho * math.sin(math.radians(a0))
-        x1, y1 = cx + rho * math.cos(math.radians(a1)), cy + rho * math.sin(math.radians(a1))
-        arcs.append(f"M {x0:.2f} {y0:.2f} A {rho:.2f} {rho:.2f} 0 0 1 {x1:.2f} {y1:.2f}")
-    gloss = "".join(
-        f'<path d="{d}" fill="none" stroke="{tone}" stroke-width="{width * r:.2f}" '
-        f'stroke-linecap="round" opacity="{opacity}" class="{_SOFT_GLOSS_CLASS}" clip-path="url(#soft-hair-clip)" />'
-        for width, opacity in _SOFT_GLOSS_LAYERS
-        for d in arcs
-    )
-    return shadow, gloss
 
 
 def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
@@ -13109,8 +13041,7 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
     line_d = _curve(cx, cy, r, start, line, close=False)
     parts = _two_tone_hair(fill_d, p)
     if _soft(p):
-        shadow, gloss = _soft_hair_front(sk, p, fill_d)
-        parts = [shadow, *parts, f'<path d="{fill_d}" fill="url(#hair-depth)" />', gloss]
+        parts = [_soft_brow_shadow(sk, p, fill_d), *parts]
     if style.front_shade is not None:
         tone = shade(p.hair_color, value_factor=_HAIR_UNDERSIDE_VALUE)
         for region in style.front_shade(fall):

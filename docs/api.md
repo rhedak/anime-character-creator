@@ -82,11 +82,10 @@ svg = render_character(replace(PRESETS["risa"], finish="soft"))
 ```
 
 `./render.sh --preset risa --finish soft` is the same from the command line.
-Soft adds gradients and tinted lines and moves no shape: a crown-to-tips depth
-gradient and a gloss arc on the hair, the fringe's shadow on the forehead, a
-graded iris with light bouncing up into it, a soft blush, a face shaded a
-little toward its edge, outlines in a dark tone of the hair or skin they
-bound, and every line 0.66 of its weight. Gradients only, no blur, so the
+Soft adds gradients and tinted lines and moves no shape: the fringe's shadow
+on the forehead, a graded iris with light bouncing up into it, a soft blush,
+outlines in a dark tone of the hair or skin they bound, and every line 0.66 of
+its weight. Gradients only, no blur, so the
 cairosvg PNGs match what a browser draws. An unknown value raises
 `ValueError`. `FINISHES` lists the two.
 

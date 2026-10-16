@@ -35,10 +35,19 @@ def test_flat_has_none_of_what_soft_adds() -> None:
         "linearGradient",
         "radialGradient",
         "feGaussianBlur",
-        "hair-depth",
-        "face-round",
+        "iris-grad",
+        "blush-grad",
+        "soft-face-clip",
     ):
         assert marker not in flat
+
+
+def test_soft_has_no_hair_gloss_depth_wash_or_face_edge_shading() -> None:
+    """Removed after the owner's blind pairs (2026-10-16): the gloss arc ignored the strands, the
+    depth wash chalked the hair and the face shading read as dirt."""
+    svg = _soft("risa")
+    for marker in ("hair-depth", "face-round", "soft-gloss", "soft-hair-clip"):
+        assert marker not in svg
 
 
 def test_an_unknown_finish_is_refused() -> None:
@@ -59,7 +68,7 @@ def test_every_preset_draws_soft_as_well_formed_svg_without_blur(name: str) -> N
 def test_what_the_soft_finish_adds_is_defined_once_and_every_reference_resolves(name: str) -> None:
     svg = _soft(name, id_prefix="f1")
     ids = re.findall(r'\bid="([^"]+)"', svg)
-    ours = [i for i in ids if re.search(r"(iris-|blush-grad|hair-depth|face-round|soft-)", i)]
+    ours = [i for i in ids if re.search(r"(iris-|blush-grad|soft-)", i)]
     assert ours, "the soft finish defines no ids"
     assert len(ours) == len(set(ours)), "an id the soft finish defines is defined twice"
     assert all(i.startswith("f1-") for i in ids)
@@ -68,11 +77,11 @@ def test_what_the_soft_finish_adds_is_defined_once_and_every_reference_resolves(
 
 
 def _line_widths(svg: str) -> list[float]:
-    """Every stroke width in `svg` except the hair gloss's, which is paint, not a line."""
+    """Every stroke width in `svg`."""
     return [
         float(e.get("stroke-width"))  # type: ignore[arg-type]
         for e in ET.fromstring(svg).iter()
-        if e.get("stroke-width") and e.get("class") != "soft-gloss"
+        if e.get("stroke-width")
     ]
 
 
@@ -82,9 +91,6 @@ def test_the_soft_lines_are_thinner_and_the_hair_has_its_own_tone() -> None:
     assert max(_line_widths(soft)) == pytest.approx(max(_line_widths(flat)) * 0.66, abs=0.02)
     # The hair's lines are no longer the black outline colour.
     assert soft.count('stroke="#0d0d0d"') < flat.count('stroke="#0d0d0d"')
-    # And the gloss kept its width: it is not a line.
-    gloss = [e for e in ET.fromstring(soft).iter() if e.get("class") == "soft-gloss"]
-    assert gloss and all(float(e.get("stroke-width")) > 2 for e in gloss)  # type: ignore[arg-type]
 
 
 def test_the_cli_takes_a_finish(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -93,4 +99,4 @@ def test_the_cli_takes_a_finish(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
         "sys.argv", ["generate", "--out", str(out), "--preset", "satoko", "--finish", "soft"]
     )
     main()
-    assert "hair-depth" in out.with_suffix(".svg").read_text()
+    assert "iris-grad" in out.with_suffix(".svg").read_text()
