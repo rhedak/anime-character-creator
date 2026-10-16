@@ -5,6 +5,14 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Phase 1 built (8e1df9d, d40cde8): `Hairstyle.locks`, authored for `long_fringed` (Risa) and `long_traced`
+  (seven presets), two-tone cuts get tip-colour clumps. Flat output byte-identical, 963 tests green. The
+  Risa render matches the judged mock-up (mean pixel difference under 1.1 of 255). Budget measured: soft
+  70 974 B for Risa (limit 90 000), 4.5 ms Python render; Chrome swap, median sync cost 2.5 to 2.6 ms
+  for Risa with and without the clumps and 2.0 to 2.7 ms for Satoko, frame p95 within 0.4 ms (one
+  41.8 ms outlier on Satoko in the first of two runs did not reproduce). Waiting on Gate 1: the owner's
+  pairs on the eight authored presets (`out/soft/gate1-51`).
+
 - 2026-10-16: the owner picked S2n (no crown band) over LS2n, five rows of five, a close call each time;
   approved the new `CLAUDE.md` wording ("ok") and the go-ahead for Phase 1. The winner to build is S2n:
   shadow clumps with a soft separation, lit clumps with one faint highlight each, the cut's own strand
