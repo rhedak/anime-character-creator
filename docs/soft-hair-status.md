@@ -5,6 +5,9 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- Chrome swap on the two biggest documents after the lighter paths (median sync cost with and without the
+  clumps): Satoshi 1.9 to 2.9 ms, Katherina 2.8 to 3.1 ms, frame p95 within 0.5 ms (vsync-limited 17 ms median).
+
 - Budget raised by the owner to 150 KB per soft document (was 90 KB); the test constant and the plan
   say so. The lighter clump paths stay (smaller, same look).
 
