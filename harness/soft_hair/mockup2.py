@@ -50,7 +50,7 @@ LIGHT = M.LIGHT
 
 # The clump tones, by guide: shadow clumps, lit clumps, and the rest left as the base colour.
 ROLE = {
-    "b1": "shadow", "b2": "lit", "b3": "shadow", "o2": "lit", "o1": "shadow", "c1": "shadow",
+    "b1": "base", "b2": "lit", "b3": "shadow", "o2": "lit", "o1": "shadow", "c1": "shadow",
     "b4": "base", "b5": "lit", "b6": "shadow", "o4": "lit", "o3": "shadow", "c2": "shadow",
 }  # fmt: skip
 
@@ -83,8 +83,12 @@ def dv_high(hair: str) -> float:
 
 
 def shadow_tone(hair: str) -> str:
-    v = _hsv(hair)[2]
-    return shade(hair, 0.80 - 0.15 * v, saturation_boost=1.3)
+    """A step darker, gentler than `shade` default so a shadow clump is a tone and not a stripe,
+    and with yellow hair pulled a little toward orange so its shadow is warm and not olive."""
+    h, s, v = _hsv(shade(hair, 0.87 - 0.05 * _hsv(hair)[2], saturation_boost=1.3))
+    if 30.0 / 360.0 < h < 70.0 / 360.0:
+        h -= 7.0 / 360.0
+    return rgb01_to_hex(colorsys.hsv_to_rgb(h, s, v))
 
 
 # --- shapes ------------------------------------------------------------------------------------
@@ -131,7 +135,7 @@ def clumps(f: M.Frame, hair: str, lit_clumps: bool, streaks: bool) -> str:
     dv = dv_high(hair)
     mid = lit_tone(hair, dv * 0.42)
     hi = lit_tone(hair, dv)
-    sep = shade(hair, 0.62)
+    sep = shade(hair, 0.74)
     parts = []
     for name, (pts, w) in M.GUIDES.items():
         role = ROLE[name]
@@ -142,7 +146,7 @@ def clumps(f: M.Frame, hair: str, lit_clumps: bool, streaks: bool) -> str:
         t1 = lf
         if role == "shadow":
             parts.append(f'<path d="{lens2(f, pts, w * wf, side, t1=t1, power=0.55)}" fill="{shadow}" />')
-            parts.append(f'<path d="{lens2(f, pts, 0.035, side, t0=0.10, t1=min(t1, 0.9), power=0.5, offset=-1.7)}" fill="{sep}" opacity="0.75" />')
+            parts.append(f'<path d="{lens2(f, pts, 0.035, side, t0=0.10, t1=min(t1, 0.9), power=0.5, offset=-1.7)}" fill="{sep}" opacity="0.6" />')
         elif lit_clumps:
             parts.append(f'<path d="{lens2(f, pts, w * wf, side, t1=t1, power=0.55)}" fill="{mid}" />')
             if streaks:
@@ -157,9 +161,12 @@ def ring(f: M.Frame, hair: str) -> str:
     tone = lit_tone(hair, dv_high(hair) * 0.55)
     radius = 1.30
     parts = []
-    for a0, a1, w in ((-150, -102, 0.22), (-86, -44, 0.17)):
-        pts = [(radius * math.cos(math.radians(a)), radius * math.sin(math.radians(a))) for a in (a0 + (a1 - a0) * k / 5 for k in range(6))]
-        parts.append(f'<path d="{lens2(f, pts, w, 1.0, power=0.7)}" fill="{tone}" opacity="0.75" />')
+    # Three stacked bands, widest faintest, so the long edge steps off instead of ending hard
+    # (no blur in cairosvg, same device as the soft finish's old gloss).
+    for scale, opacity in ((1.0, 0.28), (0.72, 0.30), (0.46, 0.34)):
+        for a0, a1, w in ((-150, -102, 0.26), (-86, -44, 0.20)):
+            pts = [(radius * math.cos(math.radians(a)), radius * math.sin(math.radians(a))) for a in (a0 + (a1 - a0) * k / 5 for k in range(6))]
+            parts.append(f'<path d="{lens2(f, pts, w * scale, 1.0, power=0.7)}" fill="{tone}" opacity="{opacity}" />')
     return "".join(parts)
 
 
@@ -233,7 +240,7 @@ def render(variant: str, hair_override: str | None = None) -> str:
         HAIRSTYLES[p.hairstyle] = original_style
 
 
-VARIANTS = ["r3", "r3b", "today", "SS", "SH", "S2", "LS2", "P2"]
+VARIANTS = ["r3", "r3b", "today", "SS", "SH", "S2", "LS2"]  # P2 stays in `render`: its pointed fringe read as a comb in the defect review
 # Not the crops of round 1, so the sheet cannot be matched to the old one by position.
 VIEWS = {"close": ("75 0 250 290", (400, 464)), "face": ("130 20 140 150", (560, 600))}
 
@@ -257,16 +264,56 @@ def sheet(out: Path, tag: str, hair: str | None, seed: int, font: ImageFont.Imag
             im = draw(v, view, hair)
             x, y = (i % cols) * (w + 6), (i // cols) * (h + 6)
             img.paste(im, (x, y))
-            ImageDraw.Draw(img).text((x + 10, y + 8), "ABCDEFGH"[i], fill="white", font=font)
+            ImageDraw.Draw(img).text((x + 10, y + 8), "ABCDEFG"[i], fill="white", font=font)
             if view == "face":
                 im.save(out / f"face-{tag}-{v}.png")
         img.save(out / f"{tag}-{view}-sheet.png")
-    return {"ABCDEFGH"[i]: v for i, v in enumerate(order)}
+    return {"ABCDEFG"[i]: v for i, v in enumerate(order)}
+
+
+CANDIDATES = ["SS", "SH", "S2", "LS2"]
+# (hair colour, what each candidate is paired with). r3b against r3 is the judge's own noise.
+PAIR_SHEETS = {
+    "red-vs-r3": ("red", "r3", [*CANDIDATES, "r3b"]),
+    "red-vs-today": ("red", "today", CANDIDATES),
+    "dark-vs-r3": ("dark", "r3", CANDIDATES),
+    "blond-vs-r3": ("blond", "r3", CANDIDATES),
+    "grey-vs-r3": ("grey", "r3", CANDIDATES),
+}
+
+
+def pair_sheets(out: Path, seed: int, font: ImageFont.ImageFont) -> None:
+    """Forced-choice rows: two heads side by side, left and right and the row order shuffled, only
+    a row number shown. `pairs-key.json` says which side is which."""
+    out.mkdir(parents=True, exist_ok=True)
+    key: dict[str, dict[str, dict[str, str]]] = {}
+    for name, (tag, other, cands) in PAIR_SHEETS.items():
+        rng = random.Random(f"{seed}-{name}")
+        rows = [(c, other) for c in cands]
+        rng.shuffle(rows)
+        sides = [(a, b) if rng.random() < 0.5 else (b, a) for a, b in rows]
+        key[name] = {str(i + 1): {"left": left, "right": right} for i, (left, right) in enumerate(sides)}
+        # the same rows, sides and numbers at two scales: the app's close-up, and the head zoomed
+        for view, suffix in (("close", "app"), ("face", "zoom")):
+            w, h = VIEWS[view][1]
+            if view == "face":
+                w, h = w // 2, h // 2
+            img = Image.new("RGB", (2 * w + 6, len(sides) * (h + 6) - 6), "white")
+            for i, (left, right) in enumerate(sides):
+                y = i * (h + 6)
+                for x, v in ((0, left), (w + 6, right)):
+                    im = draw(v, view, PALETTE[tag])
+                    img.paste(im.resize((w, h), Image.LANCZOS) if im.size != (w, h) else im, (x, y))
+                ImageDraw.Draw(img).text((10, y + 8), str(i + 1), fill="white", font=font)
+            img.save(out / f"{name}-{suffix}.png")
+    (out / "pairs-key.json").write_text(json.dumps(key, indent=1))
+    print("wrote pair sheets to", out, "and pairs-key.json (do not open it before choosing)")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--seed", type=int, default=5)
+    ap.add_argument("--pairs", action="store_true", help="write forced-choice pair sheets to <out>/pairs-<seed>/ instead")
     ap.add_argument("--out", default="out/soft/v3")
     args = ap.parse_args()
     out = Path(args.out)
@@ -275,6 +322,13 @@ def main() -> None:
         font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 26)
     except OSError:
         font = ImageFont.load_default()
+    if args.pairs:
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 30)
+        except OSError:
+            font = ImageFont.load_default()
+        pair_sheets(out / f"pairs-{args.seed}", args.seed, font)
+        return
     keys = {tag: sheet(out, tag, hair, args.seed, font) for tag, hair in PALETTE.items()}
     (out / "key.json").write_text(json.dumps(keys, indent=1))
     print("wrote sheets to", out, "and the keys in key.json (do not open it before choosing)")

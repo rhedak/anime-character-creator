@@ -97,3 +97,15 @@ Reading against the Gate 0 rule (does L, S or LS read as clearly more like hair 
 | Palette check was Risa only, no judge, and "raise value" fails at the extremes. | Owner sees red, dark, light and grey. Shadow-led for light and grey. |
 | Size: the mock-up S is 127 KB (budget 90). | Production emits curves; checked in Phase 1. |
 | Landing r3 first rests on one ranking. | Held until r3 is paired with today's soft. |
+
+## Review 5: defect-only review of the round 2 sheets (a fresh agent, images only, no key)
+
+| Finding | What we did |
+| --- | --- |
+| Base defects on every letter: boxy back hair block, pale wedge by the ear, a tan strip under the fringe edge, pale crescents on the jacket, floating short ticks in the fringe (the strand dashes). | Shared by r3 and everything else, outside the hair treatment. The tan strip is the soft finish's fringe shadow. Recorded as soft-finish repair candidates, not touched this round. |
+| Old gloss arc (today): pale grey pink, cuts across the strands; face grey ring at the jaw. | Known, it is what r3 removes. |
+| S2 and LS2: near-black stripes against bright red; dark band at the part above the forehead; muddy grey wedges on grey; olive shadows on blond. | Shadows gentler (value factor 0.87 not 0.80 to 0.65), separations lighter (0.74, opacity 0.6), no shadow clump at the part, and blond shadows pulled toward orange. |
+| P2 (pointed fringe): six or seven evenly spaced petals, running down onto the temples. | Dropped from the sheets. Still in `render` for a later try. |
+| Crown band (SH): hard diagonal lower edge, a seam. | Three stacked bands of rising opacity so the edge steps off. |
+| The two copies of r3 were found identical. | Confirms the hidden duplicate is a valid noise row. |
+| Not judged: stroke widths, sub-pixel seams, gradient banding, exact colour matches. | Pixel guard added (`harness/soft_hair/guard2.py`): lightened pixels keep 0.93 to 1.02 of the saturation of the r3 pixel under them, against 0.41 to 0.85 for today's soft. |
