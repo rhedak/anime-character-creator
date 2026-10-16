@@ -85,7 +85,10 @@ svg = render_character(replace(PRESETS["risa"], finish="soft"))
 Soft adds gradients and tinted lines and moves no shape: the fringe's shadow
 on the forehead, a graded iris with light bouncing up into it, a soft blush,
 outlines in a dark tone of the hair or skin they bound, and every line 0.66 of
-its weight. Gradients only, no blur, so the
+its weight. A cut that describes its clumps (`Hairstyle.locks`, today
+`long_fringed` and `long_traced`) also gets shadow and lit tone clumps over the
+front hair, each lit one with a faint highlight, inside the hair's own
+silhouette. Gradients only, no blur, so the
 cairosvg PNGs match what a browser draws. An unknown value raises
 `ValueError`. `FINISHES` lists the two.
 

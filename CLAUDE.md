@@ -99,7 +99,9 @@ plain preset-name list. Details of the consumers are kept in `local/`.
   (task 56, see `docs/gap-analysis.md`).
   **One opt-in exception, 2026-10-16:** `CharacterParams.finish = "soft"` adds
   gradients and tinted lines (a graded iris, a soft blush, the fringe's
-  shadow, lines in a dark tone of what they bound, thinner strokes) for a caller that sets the figure beside painted art.
+  shadow, lines in a dark tone of what they bound, thinner strokes) and, on the
+  cuts that describe them (`Hairstyle.locks`), tone clumps laid inside the
+  hair's own silhouette: shadow and lit steps with one faint highlight each for a caller that sets the figure beside painted art.
   It is an experiment on `dev`, off by default, never used by the presets,
   `ref-out/` or the web tool, and it moves no shape. `"flat"` stays the house
   style and every rule above still holds for it. Gradients only, no blur:
