@@ -3,7 +3,8 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { characterParams, faceStyle, outfit } from "../src/model.ts";
+import { FIELDS, characterParams, faceStyle, outfit, type ClassName } from "../src/model.ts";
+import { PyFloat } from "../src/pyvalue.ts";
 import type { CharacterParams } from "../src/params.ts";
 import type { Json } from "../src/pyjson.ts";
 import { loadsText } from "../src/pyjsonload.ts";
@@ -37,18 +38,39 @@ function plainObjects(v: Json | unknown): unknown {
   return v;
 }
 
+/** A character from the corpus's diff form: the fields that differ from the defaults, with nested `outfit` and `face` dicts. */
+export function paramsFromDiff(p: Record<string, unknown>): CharacterParams {
+  const { outfit: o, face: f, ...top } = p;
+  return characterParams({
+    ...(top as Partial<CharacterParams>),
+    ...(top && Object.keys(top).length ? typedFloats("CharacterParams", top) : {}),
+    outfit: outfit(typedFloats("Outfit", (o ?? {}) as Record<string, unknown>) as object),
+    face: faceStyle(typedFloats("FaceStyle", (f ?? {}) as Record<string, unknown>) as object),
+  });
+}
+
+/**
+ * JSON gives an int as `PyInt` and a float as a plain number; the registry reads a plain number in an `int` field as an int. So a
+ * float written there (`"shoulder_bars": 1.0`) has to be marked, as `urlstate` does for a link.
+ */
+function typedFloats(cls: ClassName, fields: Record<string, unknown>): Record<string, unknown> {
+  const out = { ...fields };
+  for (const f of FIELDS[cls]) {
+    const v = out[f.name];
+    if (f.type === "int" && typeof v === "number") out[f.name] = new PyFloat(v);
+  }
+  return out;
+}
+
+/** The same decoded JSON with objects as plain objects (exported for the error corpus). */
+export const decodedPlain = (v: unknown): unknown => plainObjects(v);
+
 /** Python's `json.loads` of the corpus keeps `1` and `1.0` apart, which `JSON.parse` cannot. */
 export function loadFullCorpus(): FullCase[] {
   const entries = loadsText(readFileSync(join(HARNESS, "corpus/full.json"), "utf8")) as Json[];
   return entries.map((e) => {
     const m = plainObjects(e) as { id: string; kw: RenderKw; p: Record<string, unknown> };
-    const { outfit: o, face: f, ...top } = m.p;
-    const params = characterParams({
-      ...(top as Partial<CharacterParams>),
-      outfit: outfit((o ?? {}) as object),
-      face: faceStyle((f ?? {}) as object),
-    });
-    return { id: m.id, params, kw: m.kw };
+    return { id: m.id, params: paramsFromDiff(m.p), kw: m.kw };
   });
 }
 

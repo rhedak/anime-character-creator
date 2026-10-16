@@ -9,6 +9,14 @@ import { PyInt } from "./pyjson.ts";
 import { BadValue, FloatValue } from "./pynum.ts";
 import { PyFloat, numberOf } from "./pyvalue.ts";
 
+/**
+ * The int fields Python hands to `range()` (`character.py:_shoulder_bars`, line 10211): a float there, even a whole one, raises
+ * `TypeError`. Everywhere else `1.0 == 1`, so a float in an int field is just the number (the corpus has `wristband_side: 1.0`,
+ * which draws), and boxing it would break the `=== 1` comparisons the parts make. Add a field here only when Python's own code
+ * would reject a float in it.
+ */
+const MUST_BE_INT: ReadonlySet<string> = new Set(["shoulder_bars"]);
+
 /** One dataclass with its numeric fields as plain numbers (the markers that keep Python's int against float are for links). */
 function plainClass<T extends object>(cls: ClassName, obj: T): T {
   const out = { ...obj } as Record<string, unknown>;
@@ -17,7 +25,7 @@ function plainClass<T extends object>(cls: ClassName, obj: T): T {
     if (f.type === "float" || f.type === "int") {
       const n = numberOf(v);
       // A float held where the registry says int keeps being a float (it fails `range()`); a plain number there is an int.
-      if (n !== undefined) out[f.name] = f.type === "int" && v instanceof PyFloat ? new FloatValue(n) : n;
+      if (n !== undefined) out[f.name] = f.type === "int" && v instanceof PyFloat && MUST_BE_INT.has(f.name) ? new FloatValue(n) : n;
       else if (!(v === null && f.nullable) && !(v instanceof BadValue)) out[f.name] = new BadValue(v);
     } else if (f.type === "bool") {
       // A number in a bool field is only ever tested for truth.
