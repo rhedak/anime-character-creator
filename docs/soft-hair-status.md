@@ -7,7 +7,7 @@ independent reviewers said, and what we did about each point.
 
 - 2026-10-16: soft finish committed (02e3095). Plan draft 1 written, reviewed twice, revised to
   draft 2 and approved by the owner. Phase 0 mock-up built (`harness/soft_hair/mockup.py`) and
-  defect-reviewed; waiting for the owner's blind picks (Gate 0). No hair code is in the package.
+  defect-reviewed. Gate 0 picks received (below). No hair code is in the package.
 
 ## Review 1: blind visual diagnosis (images only, not told hair was the suspect)
 
@@ -67,3 +67,19 @@ By eye at about 2000 px, nothing confirmed by pixel measurement.
 | Fringe wedges differ left and right. | Deliberate: the part is off centre. |
 
 Not judged: a 1 to 2 px spill past the silhouette, fine gradient banding, the lock tips in the zoom.
+
+## Gate 0: the owner's blind picks on `out/soft/v2` (sheets A to J, key withheld until given)
+
+Key: A=S, B=D, C=P, D=LS, E=L, F=r2, G=flat, H=r3, I=today, J=r1 (seed 1).
+
+| Question | Answer | Variant |
+| --- | --- | --- |
+| Most like real hair | H, I, D | r3, today, LS |
+| Most like a quick drawing | G, F | flat, r2 |
+| Looks broken | A, B, C: polished at a glance, but the highlights do not match the red hair and read worse up close. E: highlights in odd places. | S, D (fibres), P, L |
+
+Reading against the Gate 0 rule (does L, S or LS read as clearly more like hair than today's soft):
+
+- Only LS reached the top three, beside today's soft and r3. It did not beat them, so the rule says stop on structure and light.
+- S, P, D and L were named as broken. In the face crops the S highlights are a pale, desaturated pink grey wash over saturated red, which is a colour and placement defect, not proof that structure fails. This is an inference from one judge and one hair colour.
+- r3 (gloss arc, depth wash and jaw shading all removed) is in the top three, and r2 (jaw shading still on) is in the bottom two. One judge, not a pair test, but it points at the jaw shading.
