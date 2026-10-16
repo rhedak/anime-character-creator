@@ -272,28 +272,36 @@ def sheet(out: Path, tag: str, hair: str | None, seed: int, font: ImageFont.Imag
 
 
 CANDIDATES = ["SS", "SH", "S2", "LS2"]
-# (hair colour, what each candidate is paired with). r3b against r3 is the judge's own noise.
+# One pattern for every sheet: row N is the same comparison, with the same side first, whatever the
+# hair colour, so answers can be compared across colours. Slots 1 to 4 are the candidates against
+# the sheet's reference. The fifth is a control: r3b against r3 on the r3 sheets (the judge's own
+# noise, the two are identical), r3 against today on the today sheet.
 PAIR_SHEETS = {
-    "red-vs-r3": ("red", "r3", [*CANDIDATES, "r3b"]),
-    "red-vs-today": ("red", "today", CANDIDATES),
-    "dark-vs-r3": ("dark", "r3", CANDIDATES),
-    "blond-vs-r3": ("blond", "r3", CANDIDATES),
-    "grey-vs-r3": ("grey", "r3", CANDIDATES),
+    "red-vs-r3": ("red", "r3", ("r3b", "r3")),
+    "dark-vs-r3": ("dark", "r3", ("r3b", "r3")),
+    "blond-vs-r3": ("blond", "r3", ("r3b", "r3")),
+    "grey-vs-r3": ("grey", "r3", ("r3b", "r3")),
+    "red-vs-today": ("red", "today", ("r3", "today")),
 }
 
 
 def pair_sheets(out: Path, seed: int, font: ImageFont.ImageFont) -> None:
-    """Forced-choice rows: two heads side by side, left and right and the row order shuffled, only
-    a row number shown. `pairs-key.json` says which side is which."""
+    """Forced-choice rows: two heads side by side, only a row number shown. The row order and the
+    side the first named variant stands on are drawn once and shared by every sheet.
+    `pairs-key.json` says which side is which."""
     out.mkdir(parents=True, exist_ok=True)
+    rng = random.Random(f"pairs-{seed}")
+    slots = [*CANDIDATES, "control"]
+    rng.shuffle(slots)
+    first_left = {slot: rng.random() < 0.5 for slot in slots}
     key: dict[str, dict[str, dict[str, str]]] = {}
-    for name, (tag, other, cands) in PAIR_SHEETS.items():
-        rng = random.Random(f"{seed}-{name}")
-        rows = [(c, other) for c in cands]
-        rng.shuffle(rows)
-        sides = [(a, b) if rng.random() < 0.5 else (b, a) for a, b in rows]
+    for name, (tag, other, control) in PAIR_SHEETS.items():
+        sides = []
+        for slot in slots:
+            a, b = control if slot == "control" else (slot, other)
+            sides.append((a, b) if first_left[slot] else (b, a))
         key[name] = {str(i + 1): {"left": left, "right": right} for i, (left, right) in enumerate(sides)}
-        # the same rows, sides and numbers at two scales: the app's close-up, and the head zoomed
+        # the same rows at two scales: the app's close-up, and the head zoomed
         for view, suffix in (("close", "app"), ("face", "zoom")):
             w, h = VIEWS[view][1]
             if view == "face":
