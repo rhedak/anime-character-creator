@@ -1,6 +1,7 @@
 # Porting the drawing core to TypeScript: plan
 
-Status: DRAFT 2 for the owner, 2026-10-16, after two independent reviews (section 10). Nothing here is decided or
+Status: DRAFT 2 for the owner, 2026-10-16, after two independent reviews (section 10). Phases 0 and 1 are done on branch
+`ts-port`; their results and the Gate 1 questions are in `docs/ts-port-spike.md`. Nothing here is decided or
 started. The owner chose "option 2" in conversation: the port replaces Python as the source of truth after
 cutover, it covers only the code that draws characters, and the harness is not ported.
 
