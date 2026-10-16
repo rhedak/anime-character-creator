@@ -32,3 +32,38 @@ def tint(hex_color: str, amount: float = 0.5) -> str:
     highlights and glows, which `shade()` has no counterpart for."""
     r, g, b = hex_to_rgb01(hex_color)
     return rgb01_to_hex((r + (1 - r) * amount, g + (1 - g) * amount, b + (1 - b) * amount))
+
+
+def lit_tone(hex_color: str, rise: float) -> str:
+    """Lighter by `rise` of value, keeping the saturation, hue nudged a little warm when the colour
+    has one. Where value would pass white the saturation gives way instead, by part of the
+    overshoot. `tint` washes a colour toward white and halves its saturation, which on dark red
+    reads as frosting; this stays the same colour, only brighter."""
+    h, s, v = colorsys.rgb_to_hsv(*hex_to_rgb01(hex_color))
+    v2 = v + rise
+    if v2 > 1.0:
+        s = max(0.0, s - (v2 - 1.0) * 0.6)
+        v2 = 1.0
+    if (
+        s >= 0.35
+    ):  # a warm nudge means nothing on near-grey or near-black hair and turns it lavender
+        h = (h + 4.0 / 360.0) % 1.0
+    return rgb01_to_hex(colorsys.hsv_to_rgb(h, s, v2))
+
+
+def highlight_rise(hex_color: str) -> float:
+    """How far a strong highlight rises in value: more on dark colours, little on light ones."""
+    v = colorsys.rgb_to_hsv(*hex_to_rgb01(hex_color))[2]
+    return min(0.28, max(0.06, 0.30 * (1.0 - v) + 0.08))
+
+
+def soft_shadow_tone(hex_color: str) -> str:
+    """A step darker than the colour, gentler than `shade` so a shadow clump is a tone and not a
+    stripe, quieter still on pale or grey colours, and with yellow pulled a little toward orange
+    so its shadow is warm and not olive."""
+    _, s0, v0 = colorsys.rgb_to_hsv(*hex_to_rgb01(hex_color))
+    factor = 0.92 if s0 < 0.35 else 0.87 - 0.05 * v0
+    h, s, v = colorsys.rgb_to_hsv(*hex_to_rgb01(shade(hex_color, factor, saturation_boost=1.3)))
+    if 30.0 / 360.0 < h < 70.0 / 360.0:
+        h -= 7.0 / 360.0
+    return rgb01_to_hex(colorsys.hsv_to_rgb(h, s, v))

@@ -5,6 +5,11 @@ independent reviewers said, and what we did about each point.
 
 ## Where we are
 
+- 2026-10-16: the owner picked S2n (no crown band) over LS2n, five rows of five, a close call each time;
+  approved the new `CLAUDE.md` wording ("ok") and the go-ahead for Phase 1. The winner to build is S2n:
+  shadow clumps with a soft separation, lit clumps with one faint highlight each, the cut's own strand
+  dashes kept, no added hairlines, no crown band, no rim clumps.
+
 - 2026-10-16, Gate 0b passed on session 2 (below): clump structure (S2n, LS2n) beats r3 twice and beats
   the crown sheen (SH); the added hairlines did not help and are dropped. Waiting on the owner for the
   S2n against LS2n choice, approval of the new `CLAUDE.md` wording, and the go-ahead for Phase 1.
