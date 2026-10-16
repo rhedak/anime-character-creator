@@ -6,7 +6,7 @@
 import { FIELDS, type ClassName } from "./model.ts";
 import type { CharacterParams } from "./params.ts";
 import { PyInt } from "./pyjson.ts";
-import { BadValue } from "./pynum.ts";
+import { BadValue, FloatValue } from "./pynum.ts";
 import { PyFloat, numberOf } from "./pyvalue.ts";
 
 /** One dataclass with its numeric fields as plain numbers (the markers that keep Python's int against float are for links). */
@@ -16,7 +16,8 @@ function plainClass<T extends object>(cls: ClassName, obj: T): T {
     const v = out[f.name];
     if (f.type === "float" || f.type === "int") {
       const n = numberOf(v);
-      if (n !== undefined) out[f.name] = n;
+      // A float held where the registry says int keeps being a float (it fails `range()`); a plain number there is an int.
+      if (n !== undefined) out[f.name] = f.type === "int" && v instanceof PyFloat ? new FloatValue(n) : n;
       else if (!(v === null && f.nullable) && !(v instanceof BadValue)) out[f.name] = new BadValue(v);
     } else if (f.type === "bool") {
       // A number in a bool field is only ever tested for truth.

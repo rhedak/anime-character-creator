@@ -7,6 +7,7 @@ import { shade } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt0, fmt1, fmt2, pyCos, pyFloat, pyMin, pyPow, pySin, radians, truthy } from "./pynum.ts";
 import { pySub } from "./pyre.ts";
+import { pyStr } from "./pyvalue.ts";
 import { replace, type Skeleton } from "./skeleton.ts";
 import type { Chain, Point, Segment } from "./tables.ts";
 import { HAT_UNDERSIDE } from "./tables.ts";
@@ -40,7 +41,9 @@ export function softStrokeWidths(svg: string): string {
 }
 
 /** Every id defined in `body`, and every reference to one, under `prefix`. */
-export function namespaceIds(body: string, prefix: string): string {
+export function namespaceIds(body: string, prefixValue: unknown): string {
+  // The prefix is written into a template by an f-string, so a wrong-typed one is its `str()`.
+  const prefix = pyStr(prefixValue);
   // Python's \b is Unicode-aware; this is its start-of-word test for the `i` of `id=`.
   body = pySub(/(?<![\p{L}\p{N}_])id="([^"]+)"/gu, `id="${prefix}-\\1"`, body);
   body = pySub(/url\(#([^)]+)\)/g, `url(#${prefix}-\\1)`, body);
@@ -252,9 +255,10 @@ export function hatUnderside(sk: Skeleton, p: CharacterParams): string {
 // The document
 
 /** The SVG document around `body`, as `render_character` writes it. */
-export function documentWrap(sk: Skeleton, body: string, background: string | null = null, metadata = ""): string {
-  // Emitted only when asked for, rather than always drawn and sometimes painted over.
-  const bg = background ? `  <rect width="100%" height="100%" fill="${background}" />\n` : "";
+export function documentWrap(sk: Skeleton, body: string, background: unknown = null, metadata = ""): string {
+  // Emitted only when asked for, rather than always drawn and sometimes painted over. `background` is any SVG paint, and
+  // a wrong-typed one is written as its `str()`.
+  const bg = truthy(background) ? `  <rect width="100%" height="100%" fill="${pyStr(background)}" />\n` : "";
   const md = metadata ? `  ${metadata}\n` : "";
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt0(sk.canvas_w)}" height="${fmt0(sk.canvas_h)}" ` +

@@ -12,7 +12,7 @@ import { REPO_ROOT, loadJson } from "./fixtures.ts";
 export interface RenderKw {
   id_prefix?: string;
   background?: string | null;
-  metadata?: boolean;
+  metadata?: unknown;
 }
 export interface FullCase {
   id: string;

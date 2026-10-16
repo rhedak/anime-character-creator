@@ -6,7 +6,7 @@
 // apart: a float is compared by bits (within a few ulp where the maths library is involved), an int by value.
 
 import { PyInt } from "../src/pyjson.ts";
-import { BadValue } from "../src/pynum.ts";
+import { BadValue, FloatValue } from "../src/pynum.ts";
 import { FIELDS, classOf, type ClassName } from "../src/model.ts";
 import { plainParams } from "../src/plain.ts";
 import { PyFloat } from "../src/pyvalue.ts";
@@ -65,6 +65,7 @@ export interface Tally {
 export function same(py: Enc, got: unknown, refs: Refs, tol: number, tally: Tally): boolean {
   // A link keeps Python's int and float apart with markers; the comparison is of the numbers.
   if (got instanceof BadValue) got = got.original;
+  if (got instanceof FloatValue) got = got.value;
   if (got instanceof PyInt) got = Number(got.value);
   else if (got instanceof PyFloat) got = got.value;
   if (py === null) return got === null || got === undefined;

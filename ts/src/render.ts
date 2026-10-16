@@ -25,9 +25,9 @@ export const ALL_PARTS: PartTable = { ...hair, ...face, ...body, ...arms, ...gar
 
 export interface RenderOptions {
   readonly sk?: Skeleton;
-  readonly background?: string | null;
-  readonly metadata?: boolean;
-  readonly id_prefix?: string;
+  readonly background?: unknown;
+  readonly metadata?: unknown;
+  readonly id_prefix?: unknown;
 }
 
 /** The stages of one render by the oracle's names; `null` where a part the stage needs is not ported yet. */
@@ -150,15 +150,29 @@ export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, p
   if (text !== null && soft(p)) text = softStrokeWidths(text);
   record("body_soft", text);
   const prefix = opts.id_prefix ?? "";
-  if (text !== null && prefix) text = namespaceIds(text, prefix);
+  if (text !== null && truthy(prefix)) text = namespaceIds(text, prefix);
   record("body_ns", text);
-  record("doc", text === null ? null : documentWrap(sk, text, opts.background ?? null, opts.metadata ? metadataBlock(typed) : ""));
+  record("doc", text === null ? null : documentWrap(sk, text, opts.background ?? null, truthy(opts.metadata) ? metadataBlock(typed) : ""));
   return { stages, missing: [...missing].sort() };
 }
 
-/** Draw one character and return the whole SVG document as a string (`render_character`). */
-export function renderCharacter(p: CharacterParams = characterParams(), opts: RenderOptions = {}): string {
-  const { stages, missing } = renderStages(p, opts);
+/**
+ * Draw one character and return the whole SVG document as a string (`render_character`), with Python's parameters in
+ * Python's order: the character (`None` draws the default one), a skeleton (`None` builds the character's own), a
+ * background paint, whether to embed the metadata block, and a prefix for every id the drawing defines.
+ */
+export function renderCharacter(
+  p?: CharacterParams | null,
+  sk?: Skeleton | null,
+  background: unknown = null,
+  metadata: unknown = false,
+  id_prefix: unknown = "",
+): string {
+  const { stages, missing } = renderStages(truthy(p) ? (p as CharacterParams) : characterParams(), { sk: sk ?? undefined, background, metadata, id_prefix });
   if (missing.length > 0) throw new NotPorted(missing);
   return stages.get("doc") as string;
 }
+
+/** `renderCharacter` with named options, for callers that pass only a few. */
+export const renderCharacterWith = (p?: CharacterParams | null, o: RenderOptions = {}): string =>
+  renderCharacter(p, o.sk, o.background, o.metadata, o.id_prefix);

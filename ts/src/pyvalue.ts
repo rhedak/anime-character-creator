@@ -15,13 +15,16 @@
 // The renderer works on plain numbers, so `plainNumber` strips the markers where a value is drawn.
 
 import { PyInt } from "./pyjson.ts";
-import { pyRepr } from "./pynum.ts";
+import { PY_TRUTH, pyRepr } from "./pynum.ts";
 
 /** A float that must be spelt as one where the registry's tag would spell it as an int (`1.0` in an int field). */
 export class PyFloat {
   readonly value: number;
   constructor(value: number) {
     this.value = value;
+  }
+  [PY_TRUTH](): boolean {
+    return this.value !== 0;
   }
 }
 
@@ -99,3 +102,6 @@ export function pyValueRepr(v: unknown): string {
   const entries = v instanceof Map ? [...v.entries()] : Object.entries(v as object);
   return `{${entries.map(([k, x]) => `${pyStrReprFull(k)}: ${pyValueRepr(x)}`).join(", ")}}`;
 }
+
+/** `str(v)`: a string as it is, anything else as its `repr` (`5`, `True`, `['#fff']`), which is what an f-string prints for a wrong-typed value. */
+export const pyStr = (v: unknown): string => (typeof v === "string" ? v : pyValueRepr(v));

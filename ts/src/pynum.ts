@@ -439,9 +439,33 @@ export class BadValue {
   }
 }
 
+/**
+ * A float sitting in a field that is meant to hold an int (`shoulder_bars: 3.0`). Python keeps it a float: arithmetic on it is
+ * fine and `3.0 == 3`, but `range(3.0)` raises `TypeError`. As a number it would be indistinguishable from the int `3`, so the
+ * drawing is handed this box: `valueOf` gives the number for arithmetic and comparison, and `Number.isInteger(box)` is false,
+ * which is what the integer-only places check.
+ */
+export class FloatValue {
+  readonly value: number;
+  constructor(value: number) {
+    this.value = value;
+  }
+  valueOf(): number {
+    return this.value;
+  }
+  [Symbol.toPrimitive](): number {
+    return this.value;
+  }
+}
+
+/** A class that is a Python number or a wrapper of one says what its truth value is by having a method under this key. */
+export const PY_TRUTH = Symbol("pyTruth");
+
 /** Python's truth test: empty containers and strings are false, nan and every other number but zero are true. */
 export function truthy(v: unknown): boolean {
   if (v instanceof BadValue) return truthy(v.original);
+  if (v instanceof FloatValue) return v.value !== 0 || v.value !== v.value;
+  if (typeof v === "object" && v !== null && PY_TRUTH in v) return (v as { [PY_TRUTH](): boolean })[PY_TRUTH]();
   if (v == null) return false;
   if (typeof v === "number") return v !== 0;
   if (typeof v === "string") return v.length > 0;

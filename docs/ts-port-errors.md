@@ -42,3 +42,11 @@ grows, so a test or a consumer that asserts text can be found and changed on pur
 Anything that raises in Python but silently computes in JavaScript (`NaN`, `undefined`, `Infinity`) is turned into an
 explicit error in the port, with the Python class name: a float where an `int` is needed, `zip(strict=True)` length
 mismatches, `next()` on an empty iterator, a malformed hex colour. Each is listed above when it is ported.
+
+## Per-domain notes from Phase 4
+
+Each porting agent kept its own table of where the TypeScript differs from CPython's error text; the classes always equal
+Python's. See `docs/ts-port-errors-hair.md`, `docs/ts-port-errors-face.md`, `docs/ts-port-errors-body.md`,
+`docs/ts-port-errors-garments.md` and `docs/ts-port-errors-props.md`. The common cases: a number field that holds a string or
+a list raises `TypeError` at the first arithmetic on it with the kernel's `BadValue` text; a division by zero from an integer
+count says `float division by zero` where Python says `division by zero`.

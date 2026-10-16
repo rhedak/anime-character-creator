@@ -2,13 +2,16 @@
 // the manifest hashes). JS cannot tell the int 1 from the float 1.0, so an int that must print as one is wrapped
 // in `PyInt`; every other number is a float and prints with Python's float repr (`1.0`, `1e-05`).
 
-import { compareCodePoints, pyRepr } from "./pynum.ts";
+import { PY_TRUTH, compareCodePoints, pyRepr } from "./pynum.ts";
 
 /** An integer that `dumps` prints without a decimal point. */
 export class PyInt {
   readonly value: number;
   constructor(value: number) {
     this.value = value;
+  }
+  [PY_TRUTH](): boolean {
+    return (this.value as unknown as number | bigint) !== 0 && (this.value as unknown as number | bigint) !== 0n;
   }
 }
 
