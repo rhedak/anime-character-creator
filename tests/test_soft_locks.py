@@ -31,6 +31,12 @@ def test_some_cut_is_authored_and_the_flat_finish_ignores_it() -> None:
     assert '<g clip-path="url(#hair-front)"><path' not in flat
 
 
+def test_a_two_tone_cut_gets_its_clumps_again_in_the_tip_colour() -> None:
+    svg = _soft("satoko")
+    assert svg.count('<g clip-path="url(#hair-front)">') == 2
+    assert 'clip-path="url(#hair-tips)"' in svg
+
+
 def test_the_clumps_are_one_group_clipped_to_the_front_hair() -> None:
     svg = _soft("risa")
     assert svg.count('<g clip-path="url(#hair-front)">') == 1

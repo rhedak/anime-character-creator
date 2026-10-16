@@ -4,7 +4,7 @@
 
 Writes `out/soft/grid-<preset>.png`: the flat figure's head and hair, a grid every half head
 radius (x to the right, y down, origin at the head centre, the units every hair chain is in),
-the front piece's outline in cyan, strands yellow, `front_shade` magenta, the underside region
+the front piece's outline in cyan, strands yellow, `locks` blue (shadow) or white (lit) with their widths, `front_shade` magenta, the underside region
 green, openings orange. Numbers read off it go straight into chains.
 """
 
@@ -68,6 +68,15 @@ def main() -> None:
     if style.front_shade:
         for ch in style.front_shade(fall):
             marks.append(f'<path d="{d(ch)}" fill="magenta" fill-opacity="0.25" stroke="magenta" stroke-width="0.4" />')
+    if style.locks:
+        from anime_character_creator.character import _lock_line
+
+        for role, pts, w, _ln in style.locks(fall):
+            line_pts = _lock_line(pts)
+            path = "M " + " L ".join(f"{cx + x * r:.2f} {cy + y * r:.2f}" for x, y in line_pts)
+            colour = "deepskyblue" if role == "shadow" else "white"
+            marks.append(f'<path d="{path}" fill="none" stroke="{colour}" stroke-width="{w * r:.2f}" stroke-opacity="0.35" stroke-linecap="round" />')
+            marks.append(f'<path d="{path}" fill="none" stroke="{colour}" stroke-width="0.4" stroke-dasharray="1.2 0.8" />')
     if style.underside:
         marks.append(f'<path d="{d(style.underside(fall)[0])}" fill="none" stroke="lime" stroke-width="0.4" />')
     if style.openings:

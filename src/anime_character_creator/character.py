@@ -1593,6 +1593,34 @@ def _lifted_tip_edge(
     return [((-wide, fade), chain)]
 
 
+# The clumps the soft finish lays over the long traced cut (`Hairstyle.locks`), placed by hand on
+# `harness/soft_hair/grid.py` at a fall of 2.0 and re-stretched to the fall the cut is drawn at the
+# way `_long_scaled` stretches the contour: only y below the cheek line, x as authored. Per side:
+# the crown along the contour, the sweep off the parting, the outer curtain and the inner curtain.
+# The flow is the cut's own: from the parting out over the skull and down. See `_FRINGED_LOCKS`.
+_LONG_LOCKS_FALL = 2.0
+_LONG_LOCKS: list[Lock] = [
+    ("lit", ((-0.10, -1.02), (-0.55, -0.95), (-0.92, -0.62), (-1.08, -0.25), (-1.14, 0.05)), 0.19, 0.97),
+    ("shadow", ((-0.30, -0.90), (-0.60, -0.68), (-0.82, -0.34), (-0.98, -0.02)), 0.12, 0.90),
+    ("lit", ((-1.17, 0.15), (-1.19, 0.80), (-1.22, 1.30), (-1.25, 1.75)), 0.17, 0.96),
+    ("shadow", ((-1.00, 0.40), (-1.02, 0.90), (-1.00, 1.40), (-0.92, 1.90)), 0.13, 0.88),
+    ("lit", ((0.08, -1.04), (0.52, -0.96), (0.90, -0.64), (1.06, -0.26), (1.12, 0.05)), 0.17, 0.95),
+    ("shadow", ((0.36, -0.90), (0.62, -0.70), (0.84, -0.36), (0.99, -0.02)), 0.13, 0.94),
+    ("lit", ((1.16, 0.15), (1.19, 0.80), (1.23, 1.30), (1.27, 1.75)), 0.20, 0.98),
+    ("shadow", ((0.99, 0.40), (1.01, 0.90), (0.99, 1.40), (0.92, 1.90)), 0.15, 0.90),
+]  # fmt: skip
+
+
+def _long_traced_locks(fall: float) -> list[Lock]:
+    k = (fall - _HAIR_CHEEK_Y) / (_LONG_LOCKS_FALL - _HAIR_CHEEK_Y)
+
+    def q(pt: Point) -> Point:
+        y = pt[1]
+        return (pt[0], _HAIR_CHEEK_Y + (y - _HAIR_CHEEK_Y) * k) if y > _HAIR_CHEEK_Y else pt
+
+    return [(role, tuple(q(pt) for pt in pts), w, ln) for role, pts, w, ln in _LONG_LOCKS]
+
+
 def _long_traced_strands(fall: float) -> list[tuple[Point, list[Segment]]]:
     """The two sweep lines the canon draws off the parting, and one down each
     fall. They scale with the mass, since they live on it.
@@ -3429,6 +3457,7 @@ HAIRSTYLES: dict[str, Hairstyle] = {
         _long_traced_fall_edge,
         _long_traced_tip_edge,
         strands=_long_traced_strands,
+        locks=_long_traced_locks,
         # No `tip_range`, so `hair_length` measures the body, chin to hip. That
         # is what keeps a long haircut the same haircut when the build changes;
         # a head-relative range would freeze her hair at one length and it would
@@ -13184,10 +13213,10 @@ def _lock_shape(
     return f"M {left[0][0]:.2f} {left[0][1]:.2f} {_smooth_path(left)} {_smooth_path([left[-1], *right])} Z"
 
 
-def _soft_locks(sk: Skeleton, p: CharacterParams, locks: list[Lock]) -> str:
-    """The soft finish's clumps for the front hair, as one group clipped to the front piece."""
+def _soft_locks(sk: Skeleton, hair: str, locks: list[Lock], tip_clip: bool = False) -> str:
+    """The soft finish's clumps for the front hair in the tones of `hair`, as one group clipped to
+    the front piece, and with `tip_clip` to the tip-toned region too."""
     cx, cy, r = sk.head_cx, sk.head_cy, sk.head_r
-    hair = p.hair_color
     rise = highlight_rise(hair)
     shadow = soft_shadow_tone(hair)
     mid, high = (
@@ -13215,7 +13244,10 @@ def _soft_locks(sk: Skeleton, p: CharacterParams, locks: list[Lock]) -> str:
             parts.append(f'<path d="{high_d}" fill="{high}" />')
         else:
             raise ValueError(f"a lock's role is shadow or lit, not {role!r}")
-    return f'<g clip-path="url(#{_HAIR_FRONT_CLIP_ID})">{"".join(parts)}</g>'
+    body = "".join(parts)
+    if tip_clip:
+        body = f'<g clip-path="url(#{_HAIR_TIP_CLIP_ID})">{body}</g>'
+    return f'<g clip-path="url(#{_HAIR_FRONT_CLIP_ID})">{body}</g>'
 
 
 def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
@@ -13241,7 +13273,17 @@ def _hair_front(sk: Skeleton, p: CharacterParams) -> str:
                 f'clip-path="url(#{_HAIR_FRONT_CLIP_ID})" />'
             )
     if style.locks is not None and _soft(p):
-        parts.append(_soft_locks(sk, p, style.locks(fall)))
+        # A two-tone cut gets its clumps twice: in the hair's tones, then, over a repaint of the tip
+        # region, in the tip colour's. (The repaint would also cover a `front_shade` strip in that
+        # region; no cut with both is authored yet.)
+        locks = style.locks(fall)
+        parts.append(_soft_locks(sk, p.hair_color, locks))
+        tips = _hair_tip_tone(p)
+        if tips is not None:
+            parts.append(
+                f'<path d="{fill_d}" fill="{tips}" clip-path="url(#{_HAIR_TIP_CLIP_ID})" />'
+            )
+            parts.append(_soft_locks(sk, tips, locks, tip_clip=True))
     parts.append(
         f'<path d="{line_d}" fill="none" stroke="{OUTLINE}" stroke-width="{_outline_w(sw):.2f}" '
         f'stroke-linecap="round" stroke-linejoin="round" />'
