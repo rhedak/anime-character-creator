@@ -5,7 +5,7 @@ Nothing below has been done. Every step that publishes (a merge to `main`, a tag
 
 ## Before either release (owner)
 
-1. Open the cross-engine page in **Safari** and **Firefox**: `cd ts && TSC=<a tsc binary> node web-check/stage.mjs --serve`, then
+1. DONE 2026-10-17 (owner: all rows green, and the web tool is a lot faster). Open the cross-engine page in **Safari** and **Firefox**: `cd ts && TSC=<a tsc binary> node web-check/stage.mjs --serve`, then
    `http://127.0.0.1:8765/`. All 15 rows green (Chrome 155 already is). Send the red rows if any.
 2. Read and approve (or change) `docs/ts-port-claude-md-proposal.md`; the orchestrator then applies it to `CLAUDE.md`.
 3. Try the web tool from the staged build: `node web-stage.mjs --serve`, `http://127.0.0.1:8000/`: pick a character, drag a few sliders,

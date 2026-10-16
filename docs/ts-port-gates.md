@@ -24,7 +24,7 @@ the Python package frozen at the tree of tag `v0.3.0`.
 
 | Item | Result |
 | --- | --- |
-| Real browser | headless Chrome 155 (V8) loads the web tool from a share link, builds the controls (129 inputs, 16 selects) and draws; the cross-engine page draws 1,916 whole characters (every 4th of the corpus) byte-equal, 15 of 15 checks. **Not run: Safari, Firefox** (their maths libraries differ from V8's; the page is `ts/web-check`) |
+| Real browser | headless Chrome 155 (V8) loads the web tool from a share link, builds the controls (129 inputs, 16 selects) and draws; the cross-engine page draws 1,916 whole characters (every 4th of the corpus) byte-equal, 15 of 15 checks. run by the owner on 2026-10-17 in the browsers on the owner's machine (beyond Chrome, whose maths library differs from V8's in Safari and Firefox): all rows green, and the web tool reported noticeably faster than with Pyodide (the owner's words, not measured; the page is `ts/web-check`) |
 | Refresh scripts | `refresh-ref-out.sh`, `refresh-catalogue.sh` and `refresh-bases.sh` now draw through TypeScript and still report "matches the code"; `refresh-ref-out.sh --pixels`: 0 of 43 PNGs differ |
 | Size | the whole drawing code compiles to about 570 KB of JavaScript (comments stripped), against about 5.5 MB of Pyodide plus about 800 KB of Python source before |
 | Speed | the 7,662 corpus documents render in 5.9 s in Node: mean 0.77 ms, median 0.63, p95 1.4 ms (CPython: median 0.94 ms flat and 2.29 ms soft on the presets) |
