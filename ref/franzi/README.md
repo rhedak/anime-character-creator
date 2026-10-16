@@ -6,6 +6,8 @@ underlayer study**: the point is to see the body shape under the dirndl, not to 
 Proposed repo location: `ref/franzi/` (next to `ref/katherina/`, which also holds Grok images
 plus a `segments/` folder).
 
+Hand and foot references: [hands/README.md](hands/README.md).
+
 ## Files
 
 All five images share ONE canvas, **1312 x 2440 px, RGBA, transparent background**, so they overlay exactly
