@@ -185,6 +185,13 @@ class Ledger(ast.NodeVisitor):
                 self.add(node, "mod", ("MAYBE-NEGATIVE " + ",".join(flag)) if flag else "operands constant/other")
         elif isinstance(node.op, ast.Pow):
             self.pow_site(node, node.right)
+        elif isinstance(node.op, (ast.Div, ast.FloorDiv)):
+            # Python raises ZeroDivisionError; JS gives Infinity or NaN. A constant non-zero divisor cannot raise.
+            r = node.right
+            if isinstance(r, ast.Constant) and isinstance(r.value, (int, float)) and r.value != 0:
+                pass
+            else:
+                self.add(node, "div", "variable divisor: needs pyDiv or a proof it cannot be zero")
         self.generic_visit(node)
 
     def pow_site(self, node, exp):

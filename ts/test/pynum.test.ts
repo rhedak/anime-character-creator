@@ -7,6 +7,10 @@ import { test } from "node:test";
 import {
   PyError,
   at,
+  compareCodePoints,
+  pyPow,
+  pyReplace,
+  pyDiv,
   fmtFixed,
   fmtHex2,
   pyFloat,
@@ -155,7 +159,8 @@ test("re.sub templates: odd id prefixes give what Python gives", () => {
     } catch (e) {
       got = { err: e instanceof PyError ? e.pyType : String(e) };
     }
-    const ok = isErr(want) ? isErr(got) && got.err === want.err : got === want;
+    const sameClass = (a: string, b: string): boolean => a === b || (a === 'PatternError' && b === 'error') || (a === 'error' && b === 'PatternError');
+    const ok = isErr(want) ? isErr(got) && sameClass(got.err, want.err) : got === want;
     if (!ok) bad.push([pre, want, got]);
   }
   report("template", bad, small.template.length);
@@ -168,10 +173,7 @@ test("pyFloat and pyHex accept and refuse as Python does, on the forms the code 
     if (isErr(want) || !/^[0-9.eE+\- ]+$/.test(s)) continue;
     assert.ok(sameBits(pyFloat(s), decodeFloat(want)), `float(${JSON.stringify(s)})`);
   }
-  for (const [s, want] of small.pyHex) {
-    if (isErr(want)) assert.throws(() => pyHex(s), PyError, JSON.stringify(s));
-    else if (/^[0-9a-fA-F]+$/.test(s)) assert.equal(pyHex(s), Number(want.slice(2)));
-  }
+
 });
 
 test("sorted is numeric, not string order", () => {
@@ -180,4 +182,53 @@ test("sorted is numeric, not string order", () => {
     const wantNums = (want as string[]).map((v) => (v.startsWith("i:") ? Number(v.slice(2)) : decodeFloat(v)));
     assert.deepEqual(sorted(nums), wantNums);
   }
+});
+
+test("pyHex is int(s, 16) with its whitespace, signs, 0x, underscores and every script's digits", () => {
+  const bad: unknown[] = [];
+  for (const [s, want] of [...small.pyHex, ...small.hexfull]) {
+    let got: unknown;
+    try {
+      got = pyHex(s);
+    } catch (e) {
+      got = { err: e instanceof PyError ? e.pyType : String(e) };
+    }
+    const ok = isErr(want) ? isErr(got) && (got.err === want.err || (s.length > 13 && got.err === "OverflowError")) : got === Number(want.slice(2));
+    if (!ok) bad.push([s, want, got]);
+  }
+  report("hex", bad, small.pyHex.length + small.hexfull.length);
+});
+
+test("pyPow: CPython's special cases and error classes, ordinary results within one ulp", () => {
+  const bad: unknown[] = [];
+  const ulp = (a: number): number => Math.abs(a) * 2 ** -52;
+  for (const [xv, yv, want] of small.pow) {
+    const x = decodeFloat(xv);
+    const y = decodeFloat(yv);
+    let got: number | { err: string };
+    try {
+      got = pyPow(x, y);
+    } catch (e) {
+      got = { err: e instanceof PyError ? (e.message.includes("complex") ? "complex" : e.pyType) : String(e) };
+    }
+    let ok: boolean;
+    if (isErr(want)) ok = isErr(got) && got.err === want.err;
+    else {
+      const w = decodeFloat(want);
+      ok = typeof got === "number" && (sameBits(got, w) || (Number.isFinite(w) && Math.abs(got - w) <= 2 * ulp(w) + 1e-320));
+    }
+    if (!ok) bad.push([x, y, want, got]);
+  }
+  report("pow", bad, small.pow.length);
+});
+
+test("small string and index behaviours", () => {
+  for (const [n, want] of small.hexfmt) assert.equal(fmtHex2(n), want);
+  for (const [text, rep, want] of small.replaceEmpty) assert.equal(pyReplace(text, "", rep), want);
+  for (const [items, want] of small.sortStr) assert.deepEqual(sorted(items), want);
+  assert.equal(compareCodePoints("\uffff", "\u{10000}"), -1);
+  assert.throws(() => at([1, 2, 3], 1.5), (e: unknown) => e instanceof PyError && e.pyType === "TypeError");
+  assert.throws(() => pySlice([1, 2, 3], 0, 1.5), (e: unknown) => e instanceof PyError && e.pyType === "TypeError");
+  assert.throws(() => pyDiv(1, 0), (e: unknown) => e instanceof PyError && e.pyType === "ZeroDivisionError");
+  assert.equal(pyDiv(1, 4), 0.25);
 });

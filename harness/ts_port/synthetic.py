@@ -175,6 +175,35 @@ def build(large: bool) -> dict:
         except Exception as e:
             fx["pyHex"].append([s, err(e)])
 
+    # x ** y: CPython's special cases and error classes; ordinary results compared within one ulp (the engine's pow)
+    fx["pow"] = []
+    xs = [0.0, -0.0, 1.0, -1.0, 2.0, -2.0, 0.5, -0.5, 3.0, 10.0, 1e-300, 1e300, 0.3, math.inf, -math.inf, math.nan, 7.0, -8.0]
+    ys = [0.0, -0.0, 1.0, 2.0, 3.0, -1.0, -2.0, 0.5, -0.5, 1.4, -1.4, 2.5, 1e5, -1e5, 1e300, math.inf, -math.inf, math.nan, 5.0, -3.0]
+    for x in xs:
+        for yv in ys:
+            try:
+                r = x**yv
+                fx["pow"].append([f(x), f(yv), {"err": "complex"} if isinstance(r, complex) else f(r)])
+            except Exception as e:
+                fx["pow"].append([f(x), f(yv), err(e)])
+    for _ in range(3000 if large else 600):
+        x, yv = rng.uniform(0, 3), rng.choice([1.4, 2.0, 0.5, 3.0, -1.0, rng.uniform(-4, 4)])
+        fx["pow"].append([f(x), f(yv), f(x**yv)])
+
+    fx["hexfull"] = []
+    for t in ["00", "ff", "FF", "7", "", "g1", "+f", "-1", "-0", " f", "f ", "\tf\n", "\u00a0f", "\u2003f", "\u00851", "f_f", "1__2", "_1", "1_", "0x1f", "0X_f", "0x", "0x_", "+", "-", "0b1", "٣f", "١٢", "１２", "𝟏𝟐", "1٣", "f" * 13, "0" * 20 + "f", "a b", "1.5", "ｆ"]:
+        try:
+            fx["hexfull"].append([t, i(int(t, 16))])
+        except Exception as e:
+            fx["hexfull"].append([t, err(e)])
+
+    fx["hexfmt"] = [[n, format(n, "02x")] for n in (-255, -16, -15, -1, 0, 5, 15, 16, 255)]
+    fx["replaceEmpty"] = [[t, r, t.replace("", r)] for t, r in (("abc", "-"), ("", "-"), ("a😀b", "+"), ("x", "$&"))]
+    fx["sortStr"] = [
+        [["\uffff", "\U0001f600", "a", "\ue000", "\U00010000", "Z", "é", ""], sorted(["\uffff", "\U0001f600", "a", "\ue000", "\U00010000", "Z", "é", ""])],
+        [["b", "a", "B", "aa", "a1", "10", "9"], sorted(["b", "a", "B", "aa", "a1", "10", "9"])],
+    ]
+
     fx["sorted"] = [
         [[f(10.2), f(9.5), f(100.0), f(-3.0)], [f(x) for x in sorted([10.2, 9.5, 100.0, -3.0])]],
         [[i(10), i(9), i(100), i(2)], [i(x) for x in sorted([10, 9, 100, 2])]],

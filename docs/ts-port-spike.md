@@ -151,3 +151,27 @@ D10 the freeze, D12 the error text).
 My recommendation, for you to overrule: **continue to Phase 2** once you have opened the check page in Safari and
 Firefox (the one cheap test that could still change the answer) and answered D5, D6 and D10. If a browser shows red
 rows in code that uses `sin`, `cos` or `**`, stop and read them before anything else.
+
+## 10. Independent review of the kernel (a fresh agent tried to break it)
+
+The reviewer generated about 700,000 cases in Python and ran them through the TypeScript, comparing as bit patterns or
+exact strings. It confirmed the exact classes (formatting at ten precisions over 39,341 adversarial values, `round`,
+`repr`, `%`, `sum` on 9,005 cases, `hypot` on 161,000 cases, `re.sub` templates on 110,000 cases, `dumps` on 4,000
+structures, colours, `skeleton_for` on 3,089 extreme combinations with all 32 fields bit-equal) and found these
+differences. All were silent; none is on today's render path. Fixed in the commit after this report unless marked.
+
+| Finding | Fixed? |
+| --- | --- |
+| `sin`, `cos`, `acos`, `**` differ from CPython by one ulp (head shape at the default build has 3 of 32 coordinates not bit-equal), so "bit for bit" is platform-defined. 0 flipped digits in 6,000,000 random placements. | The claim is restated: exact for the classes in section 2, text-equal for the engine's maths functions. A signed list of flips is the remedy if one ever appears. |
+| `pyPow` special values and overflow (`1.0 ** nan`, `(-1.0) ** inf`, `2.0 ** 1e5`, `0.0 ** -inf`, `(-inf) ** 0.5`) | Fixed, following CPython's `float_pow`; tested against Python. |
+| `dumps` with integer-like keys and `sort_keys=False` reorders them (a JS object) | Fixed: a `Map` keeps insertion order and a plain object with such a key throws. |
+| Strings and keys ordered by UTF-16 unit, not code point | Fixed (`compareCodePoints`). |
+| `pyHex` stricter than `int(s, 16)` (signs, spaces, `0x`, underscores, other scripts' digits); 133 of about 7,500 colour checks differed, all on malformed colours Python silently accepts | Fixed to match, up to 13 significant digits. |
+| `at` and `pySlice` accepted a non-integer index | Fixed: `TypeError`. |
+| Division by zero never raises in JS | `pyDiv` added and used in `skeleton.ts` (11 sites); the ledger has a new `div` class, 164 sites with a variable divisor (153 in `character.py`), to be checked one by one in Phase 4. |
+| `fmtHex2(-1)` printed `-01`; `pyReplace` with an empty pattern threw; `sha1Hex` of a lone surrogate hashed U+FFFD; unknown body name raised a plain `Error` | Fixed. |
+| `roundTo` with a negative number of digits | Raises `NotImplementedError`; nothing uses it. |
+| `pyFloat` stricter than `float()` (underscores, `inf`, `nan`, other scripts' digits); its only caller feeds `[0-9.]+` | Left, documented. |
+| `\g<name>` for a named group in `pyre`; sorting with NaN; `PyInt` above 2**53; `truthy(PyInt(0))`; `pySub` requires the `g` flag and splits surrogate pairs on empty matches | Left, documented: no caller in the project reaches them. |
+
+After the fixes: 47 tests pass, `tsc` strict is clean, the 14 web-check rows still match.

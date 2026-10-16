@@ -7,7 +7,7 @@
 //
 // Port of skeleton.py. Field names stay snake_case so a skeleton dumped from Python loads as it is.
 
-import { pyMax, pyMin } from "./pynum.ts";
+import { pyDiv, pyMax, pyMin } from "./pynum.ts";
 
 export const BUILDS: Readonly<Record<string, number>> = { chibi: 2.4 };
 export const DEFAULT_BUILD = "chibi";
@@ -122,10 +122,10 @@ export function profile(heads: number, measured: Partial<Omit<BodyProfile, "head
 
 /** The same body under a head `s` times as big (every landmark is in head radii; the chin stays where it is). */
 export function headScaled(bp: BodyProfile, s: number): BodyProfile {
-  const y = (v: Numeric): Numeric => (v == null ? null : (v - 1.0 + s) / s);
-  const w = (v: Numeric): Numeric => (v == null ? null : v / s);
+  const y = (v: Numeric): Numeric => (v == null ? null : pyDiv(v - 1.0 + s, s));
+  const w = (v: Numeric): Numeric => (v == null ? null : pyDiv(v, s));
   return {
-    heads: (bp.heads - 1.0 + s) / s,
+    heads: pyDiv(bp.heads - 1.0 + s, s),
     shoulder_y: y(bp.shoulder_y),
     waist_y: y(bp.waist_y),
     hip_y: y(bp.hip_y),
@@ -193,13 +193,13 @@ const WIDTH_FOLLOW = 0.6;
 
 /** `sk` standing `h` times as tall from the shoulder line to the sole, with the head kept and the widths following a little. */
 export function stretched(sk: Skeleton, h: number, refit: (heads: number) => Skeleton, legsShare = 2 / 3): Skeleton {
-  const hr = (v: number): number => (v - sk.head_cy) / sk.head_r;
+  const hr = (v: number): number => pyDiv(v - sk.head_cy, sk.head_r);
   const sh = hr(sk.shoulder_y);
   const hip = hr(sk.hip_y);
   const foot = hr(sk.foot_y);
   const extra = (foot - sh) * (h - 1.0);
-  const torso = 1 + (extra * (1 - legsShare)) / (hip - sh);
-  const legs = 1 + (extra * legsShare) / (foot - hip);
+  const torso = 1 + pyDiv(extra * (1 - legsShare), hip - sh);
+  const legs = 1 + pyDiv(extra * legsShare, foot - hip);
 
   const y = (v: number): number => {
     if (v <= hip) return sh + (v - sh) * torso;
@@ -214,9 +214,9 @@ export function stretched(sk: Skeleton, h: number, refit: (heads: number) => Ske
   const grow = 1.0 + WIDTH_FOLLOW * (h - 1.0);
   for (const name of KEEP_WS) {
     const follow = name === "neck_half_w" ? 1.0 : grow;
-    changes[name] = (sk[name] / sk.head_r) * fit.head_r * follow;
+    changes[name] = pyDiv(sk[name], sk.head_r) * fit.head_r * follow;
   }
-  if (sk.wrist_x !== null) changes.wrist_x = (sk.wrist_x / sk.head_r) * fit.head_r * grow;
+  if (sk.wrist_x !== null) changes.wrist_x = pyDiv(sk.wrist_x, sk.head_r) * fit.head_r * grow;
   return replace(fit, changes);
 }
 
@@ -250,8 +250,8 @@ export function buildSkeleton(opts: BuildOptions = {}): Skeleton {
   if (hairMargin === null) hairMargin = defaultHairMargin(heads);
   // A floor rather than an override, for something worn above the hair (a witch's hat).
   hairMargin = pyMax(hairMargin, minHairMargin);
-  const figH = (canvasH * (1.0 - bottomMargin)) / (1.0 + hairMargin / (2.0 * heads));
-  const headH = figH / heads;
+  const figH = pyDiv(canvasH * (1.0 - bottomMargin), 1.0 + pyDiv(hairMargin, 2.0 * heads));
+  const headH = pyDiv(figH, heads);
   const headR = headH / 2;
   const headCy = headR * (1.0 + hairMargin);
   const chinY = headCy + headR;

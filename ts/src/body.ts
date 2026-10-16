@@ -2,7 +2,7 @@
 // hat_hair_margin, _limb_taper_at) that builds a Skeleton for a CharacterParams.
 
 import type { CharacterParams } from "./params.ts";
-import { pyMax, pyMin } from "./pynum.ts";
+import { PyError, pyMax, pyMin, pyStrRepr } from "./pynum.ts";
 import {
   BUILDS,
   applied,
@@ -84,7 +84,7 @@ function skeletonAt(p: CharacterParams): Skeleton {
   const heads = BUILDS.chibi as number;
   let margin = hatHairMargin(p);
   const bodyProfile = BODY_TYPES[p.body];
-  if (bodyProfile === undefined) throw new Error(`KeyError: ${JSON.stringify(p.body)}`);
+  if (bodyProfile === undefined) throw new PyError("KeyError", pyStrRepr(p.body));
   // The hair always draws at the chibi build under a profile, so it needs the chibi build's own headroom.
   margin = pyMax(margin, defaultHairMargin(heads));
   let sk = buildSkeleton({ heads: bodyProfile.heads, frame: p.frame, bust: p.bust, min_hair_margin: margin });

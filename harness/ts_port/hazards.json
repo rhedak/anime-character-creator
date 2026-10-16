@@ -187,6 +187,14 @@
   "file": "character.py",
   "line": 824,
   "end_line": 824,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "0.30 / _CROWN_R"
+ },
+ {
+  "file": "character.py",
+  "line": 824,
+  "end_line": 824,
   "class": "math.acos",
   "detail": "",
   "snippet": "math.acos(0.30 / _CROWN_R)"
@@ -233,6 +241,22 @@
  },
  {
   "file": "character.py",
+  "line": 877,
+  "end_line": 877,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(to_deg - from_deg) / segments"
+ },
+ {
+  "file": "character.py",
+  "line": 878,
+  "end_line": 878,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "r / math.cos(math.radians(step / 2))"
+ },
+ {
+  "file": "character.py",
   "line": 878,
   "end_line": 878,
   "class": "math.cos",
@@ -267,9 +291,25 @@
   "file": "character.py",
   "line": 1485,
   "end_line": 1485,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(fall - _HAIR_CHEEK_Y) / span"
+ },
+ {
+  "file": "character.py",
+  "line": 1485,
+  "end_line": 1485,
   "class": "truthiness",
   "detail": "ternary: name/attr (Name)",
   "snippet": "span"
+ },
+ {
+  "file": "character.py",
+  "line": 1499,
+  "end_line": 1499,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(fall - _HAIR_CHEEK_Y) / span"
  },
  {
   "file": "character.py",
@@ -318,6 +358,14 @@
   "class": "neg_subscript",
   "detail": "constant negative index",
   "snippet": "hg[-1]"
+ },
+ {
+  "file": "character.py",
+  "line": 1591,
+  "end_line": 1591,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "fall / _LONG_BASE_TIP"
  },
  {
   "file": "character.py",
@@ -409,11 +457,35 @@
  },
  {
   "file": "character.py",
+  "line": 1646,
+  "end_line": 1646,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(fall - _HAIR_CHEEK_Y) / (authored_fall - _HAIR_CHEEK_Y)"
+ },
+ {
+  "file": "character.py",
   "line": 1652,
   "end_line": 1652,
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(q(pt) for pt in pts)"
+ },
+ {
+  "file": "character.py",
+  "line": 1721,
+  "end_line": 1721,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "fall / _LONG_BASE_TIP"
+ },
+ {
+  "file": "character.py",
+  "line": 1952,
+  "end_line": 1952,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(fall - _HAIR_CHEEK_Y) / span"
  },
  {
   "file": "character.py",
@@ -430,6 +502,14 @@
   "class": "minmax",
   "detail": "min no key nargs=3",
   "snippet": "min(1.0, math.sqrt(k), 1.8 * k)"
+ },
+ {
+  "file": "character.py",
+  "line": 1962,
+  "end_line": 1962,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(kz - km) * u * u / (2 * span)"
  },
  {
   "file": "character.py",
@@ -470,6 +550,14 @@
   "class": "neg_subscript",
   "detail": "constant negative index",
   "snippet": "over[-1]"
+ },
+ {
+  "file": "character.py",
+  "line": 2048,
+  "end_line": 2048,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "fall / _PARTED_BASE_TIP"
  },
  {
   "file": "character.py",
@@ -577,6 +665,14 @@
  },
  {
   "file": "character.py",
+  "line": 2444,
+  "end_line": 2444,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "fall / _CROP_BASE_TIP"
+ },
+ {
+  "file": "character.py",
   "line": 2466,
   "end_line": 2466,
   "class": "neg_subscript",
@@ -617,6 +713,14 @@
  },
  {
   "file": "character.py",
+  "line": 2557,
+  "end_line": 2557,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "fall / _CROP_BASE_TIP"
+ },
+ {
+  "file": "character.py",
   "line": 2562,
   "end_line": 2562,
   "class": "neg_subscript",
@@ -630,6 +734,14 @@
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(((c[0], c[1] - lift), (e[0], e[1] - lift)) for c, e in _CROP_FRINGE)"
+ },
+ {
+  "file": "character.py",
+  "line": 2584,
+  "end_line": 2584,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "fall / _CROP_BASE_TIP"
  },
  {
   "file": "character.py",
@@ -710,6 +822,14 @@
   "class": "augassign",
   "detail": "Mult target=Name value=BinOp",
   "snippet": "fall *= adult + (chibi - adult) * (1.0 - sk.build)"
+ },
+ {
+  "file": "character.py",
+  "line": 3633,
+  "end_line": 3633,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(tip_y - sk.head_cy) / sk.head_r"
  },
  {
   "file": "character.py",
@@ -934,6 +1054,22 @@
   "class": "math.hypot",
   "detail": "",
   "snippet": "math.hypot(e[0] - a[0], e[1] - a[1])"
+ },
+ {
+  "file": "character.py",
+  "line": 3724,
+  "end_line": 3724,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(e[0] - a[0]) / length"
+ },
+ {
+  "file": "character.py",
+  "line": 3724,
+  "end_line": 3724,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(e[1] - a[1]) / length"
  },
  {
   "file": "character.py",
@@ -1305,6 +1441,14 @@
  },
  {
   "file": "character.py",
+  "line": 3901,
+  "end_line": 3901,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(tip_x - x_off) / (tip_x - torso_at_cuff)"
+ },
+ {
+  "file": "character.py",
   "line": 3902,
   "end_line": 3902,
   "class": "minmax",
@@ -1326,6 +1470,22 @@
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(peak_y + sk.bust_reach * _BUST_DROP, sk.waist_y - (sk.waist_y - peak_y) * 0.25)"
+ },
+ {
+  "file": "character.py",
+  "line": 4004,
+  "end_line": 4004,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-qc / qb"
+ },
+ {
+  "file": "character.py",
+  "line": 4004,
+  "end_line": 4004,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(-qb + math.sqrt(qb * qb - 4 * qa * qc)) / (2 * qa)"
  },
  {
   "file": "character.py",
@@ -1510,6 +1670,22 @@
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(1.0, sk.bust / 0.2)"
+ },
+ {
+  "file": "character.py",
+  "line": 4137,
+  "end_line": 4137,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(peak[0] - above[0]) / (peak[1] - above[1])"
+ },
+ {
+  "file": "character.py",
+  "line": 4151,
+  "end_line": 4151,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(below[0] - under[0]) / (below[1] - under[1])"
  },
  {
   "file": "character.py",
@@ -1963,6 +2139,14 @@
   "file": "character.py",
   "line": 4318,
   "end_line": 4318,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "stop * k / steps"
+ },
+ {
+  "file": "character.py",
+  "line": 4318,
+  "end_line": 4318,
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(stop * k / steps for k in range(steps + 1))"
@@ -2003,6 +2187,22 @@
   "file": "character.py",
   "line": 4329,
   "end_line": 4329,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / n"
+ },
+ {
+  "file": "character.py",
+  "line": 4329,
+  "end_line": 4329,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / n"
+ },
+ {
+  "file": "character.py",
+  "line": 4329,
+  "end_line": 4329,
   "class": "minmax",
   "detail": "min no key nargs=3",
   "snippet": "min(1.0, (k / n) / 0.18, (1.0 - k / n) / 0.3)"
@@ -2014,6 +2214,22 @@
   "class": "pow",
   "detail": "fractional exponent 0.8",
   "snippet": "min(1.0, (k / n) / 0.18, (1.0 - k / n) / 0.3) ** 0.8"
+ },
+ {
+  "file": "character.py",
+  "line": 4330,
+  "end_line": 4330,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-dy / norm"
+ },
+ {
+  "file": "character.py",
+  "line": 4330,
+  "end_line": 4330,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "dx / norm"
  },
  {
   "file": "character.py",
@@ -2113,6 +2329,14 @@
  },
  {
   "file": "character.py",
+  "line": 4413,
+  "end_line": 4413,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "stop * k / steps"
+ },
+ {
+  "file": "character.py",
   "line": 4414,
   "end_line": 4414,
   "class": "math.cos",
@@ -2179,6 +2403,14 @@
   "file": "character.py",
   "line": 4442,
   "end_line": 4442,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / n"
+ },
+ {
+  "file": "character.py",
+  "line": 4442,
+  "end_line": 4442,
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(1.0, (1.0 - k / n) / 0.3)"
@@ -2190,6 +2422,22 @@
   "class": "pow",
   "detail": "fractional exponent 0.8",
   "snippet": "min(1.0, (1.0 - k / n) / 0.3) ** 0.8"
+ },
+ {
+  "file": "character.py",
+  "line": 4443,
+  "end_line": 4443,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-dy / norm"
+ },
+ {
+  "file": "character.py",
+  "line": 4443,
+  "end_line": 4443,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "dx / norm"
  },
  {
   "file": "character.py",
@@ -2707,6 +2955,14 @@
   "file": "character.py",
   "line": 4541,
   "end_line": 4541,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(a1 - a0) * k / steps"
+ },
+ {
+  "file": "character.py",
+  "line": 4541,
+  "end_line": 4541,
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(a0 + (a1 - a0) * k / steps for k in range(steps + 1))"
@@ -2747,6 +3003,14 @@
   "file": "character.py",
   "line": 4550,
   "end_line": 4550,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "math.pi * k / n"
+ },
+ {
+  "file": "character.py",
+  "line": 4550,
+  "end_line": 4550,
   "class": "math.pi",
   "detail": "constant",
   "snippet": "math.pi"
@@ -2766,6 +3030,22 @@
   "class": "pow",
   "detail": "fractional exponent 0.7",
   "snippet": "math.sin(math.pi * k / n) ** 0.7"
+ },
+ {
+  "file": "character.py",
+  "line": 4551,
+  "end_line": 4551,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-dy / norm"
+ },
+ {
+  "file": "character.py",
+  "line": 4551,
+  "end_line": 4551,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "dx / norm"
  },
  {
   "file": "character.py",
@@ -3614,6 +3894,22 @@
   "class": "math.hypot",
   "detail": "",
   "snippet": "math.hypot(*under)"
+ },
+ {
+  "file": "character.py",
+  "line": 4850,
+  "end_line": 4850,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "under[0] / norm"
+ },
+ {
+  "file": "character.py",
+  "line": 4850,
+  "end_line": 4850,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "under[1] / norm"
  },
  {
   "file": "character.py",
@@ -4795,6 +5091,22 @@
   "file": "character.py",
   "line": 5582,
   "end_line": 5582,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-qc / qb"
+ },
+ {
+  "file": "character.py",
+  "line": 5582,
+  "end_line": 5582,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(-qb + math.sqrt(qb * qb - 4 * qa * qc)) / (2 * qa)"
+ },
+ {
+  "file": "character.py",
+  "line": 5582,
+  "end_line": 5582,
   "class": "math.sqrt",
   "detail": "",
   "snippet": "math.sqrt(qb * qb - 4 * qa * qc)"
@@ -4841,6 +5153,134 @@
  },
  {
   "file": "character.py",
+  "line": 5614,
+  "end_line": 5614,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.shoulder_y - sk.head_cy) / r"
+ },
+ {
+  "file": "character.py",
+  "line": 5614,
+  "end_line": 5614,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.waist_y - sk.head_cy) / r"
+ },
+ {
+  "file": "character.py",
+  "line": 5615,
+  "end_line": 5615,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.shoulder_half_w / r"
+ },
+ {
+  "file": "character.py",
+  "line": 5615,
+  "end_line": 5615,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.waist_half_w / r"
+ },
+ {
+  "file": "character.py",
+  "line": 5626,
+  "end_line": 5626,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(y - sk.head_cy) / r"
+ },
+ {
+  "file": "character.py",
+  "line": 5628,
+  "end_line": 5628,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(ww - sw) * (ky - sy) / (wy - sy)"
+ },
+ {
+  "file": "character.py",
+  "line": 5628,
+  "end_line": 5628,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "_bust_bulge(sk, y) / r"
+ },
+ {
+  "file": "character.py",
+  "line": 5634,
+  "end_line": 5634,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.hip_y - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5635,
+  "end_line": 5635,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.hem_y - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5636,
+  "end_line": 5636,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.ankle_y - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5637,
+  "end_line": 5637,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.foot_y - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5640,
+  "end_line": 5640,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.neck_half_w / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5644,
+  "end_line": 5644,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.hip_half_w / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5645,
+  "end_line": 5645,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.hem_half_w / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5646,
+  "end_line": 5646,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.hem_half_w / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 5647,
+  "end_line": 5647,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.hem_half_w / sk.head_r"
+ },
+ {
+  "file": "character.py",
   "line": 5656,
   "end_line": 5656,
   "class": "neg_subscript",
@@ -4862,6 +5302,14 @@
   "class": "neg_subscript",
   "detail": "constant negative index",
   "snippet": "xs[-1]"
+ },
+ {
+  "file": "character.py",
+  "line": 5660,
+  "end_line": 5660,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(v - xs[i]) / (xs[i + 1] - xs[i])"
  },
  {
   "file": "character.py",
@@ -4889,11 +5337,35 @@
  },
  {
   "file": "character.py",
+  "line": 5690,
+  "end_line": 5690,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "x * ws[0] / ref_ws[0]"
+ },
+ {
+  "file": "character.py",
+  "line": 5691,
+  "end_line": 5691,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "_interp_flat(y, ref_ys, ws) / _interp_flat(y, ref_ys, ref_ws)"
+ },
+ {
+  "file": "character.py",
   "line": 5777,
   "end_line": 5777,
   "class": "truthiness",
   "detail": "not: call (Call)",
   "snippet": "_raised_coat_sleeve(p, s)"
+ },
+ {
+  "file": "character.py",
+  "line": 5783,
+  "end_line": 5783,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(centre_wrist - centre_top) / (wrist_y - top_y)"
  },
  {
   "file": "character.py",
@@ -5006,6 +5478,14 @@
   "class": "fstr:.1f",
   "detail": "",
   "snippet": "{pt[1]:.1f}"
+ },
+ {
+  "file": "character.py",
+  "line": 5871,
+  "end_line": 5871,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(x - origin[0]) / along[0]"
  },
  {
   "file": "character.py",
@@ -5481,6 +5961,14 @@
  },
  {
   "file": "character.py",
+  "line": 6046,
+  "end_line": 6046,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(y - prev[1]) / (pt[1] - prev[1])"
+ },
+ {
+  "file": "character.py",
   "line": 6048,
   "end_line": 6048,
   "class": "minmax",
@@ -5606,6 +6094,38 @@
   "class": "truthiness",
   "detail": "or: container-name-hint (Name)",
   "snippet": "skip_lines"
+ },
+ {
+  "file": "character.py",
+  "line": 6128,
+  "end_line": 6128,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.leg_half_w / sk.head_r) / (ref.leg_half_w / ref.head_r)"
+ },
+ {
+  "file": "character.py",
+  "line": 6128,
+  "end_line": 6128,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.leg_half_w / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 6128,
+  "end_line": 6128,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "ref.leg_half_w / ref.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 6129,
+  "end_line": 6129,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "gap / sk.head_r"
  },
  {
   "file": "character.py",
@@ -6142,6 +6662,14 @@
   "class": "fstr:.2f",
   "detail": "",
   "snippet": "{fold:.2f}"
+ },
+ {
+  "file": "character.py",
+  "line": 6753,
+  "end_line": 6753,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(big * big - small * small + off * off) / (2 * off)"
  },
  {
   "file": "character.py",
@@ -6913,6 +7441,14 @@
  },
  {
   "file": "character.py",
+  "line": 7004,
+  "end_line": 7004,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / steps"
+ },
+ {
+  "file": "character.py",
   "line": 7011,
   "end_line": 7011,
   "class": "fstr:.1f",
@@ -7577,6 +8113,14 @@
  },
  {
   "file": "character.py",
+  "line": 7401,
+  "end_line": 7401,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(arm_y - cy) / r"
+ },
+ {
+  "file": "character.py",
   "line": 7404,
   "end_line": 7404,
   "class": "fstr:.1f",
@@ -7614,6 +8158,14 @@
   "class": "fstr_bare",
   "detail": "Name",
   "snippet": "{stroke}"
+ },
+ {
+  "file": "character.py",
+  "line": 7471,
+  "end_line": 7471,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(lens_y - cy) / r"
  },
  {
   "file": "character.py",
@@ -8091,6 +8643,22 @@
   "file": "character.py",
   "line": 7578,
   "end_line": 7578,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "i / _MASK_PLEATS"
+ },
+ {
+  "file": "character.py",
+  "line": 7578,
+  "end_line": 7578,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(bot - top) * i / (_MASK_PLEATS + 1)"
+ },
+ {
+  "file": "character.py",
+  "line": 7578,
+  "end_line": 7578,
   "class": "fstr:.1f",
   "detail": "",
   "snippet": "{cx - hw_top * (1 - 0.1 * (i / _MASK_PLEATS)) + r * 0.05:.1f}"
@@ -8102,6 +8670,22 @@
   "class": "fstr:.1f",
   "detail": "",
   "snippet": "{top + (bot - top) * i / (_MASK_PLEATS + 1):.1f}"
+ },
+ {
+  "file": "character.py",
+  "line": 7579,
+  "end_line": 7579,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "i / _MASK_PLEATS"
+ },
+ {
+  "file": "character.py",
+  "line": 7579,
+  "end_line": 7579,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(bot - top) * i / (_MASK_PLEATS + 1)"
  },
  {
   "file": "character.py",
@@ -8134,6 +8718,14 @@
   "class": "fstr_bare",
   "detail": "Name",
   "snippet": "{crease}"
+ },
+ {
+  "file": "character.py",
+  "line": 7621,
+  "end_line": 7621,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(mid_y - cy) / r"
  },
  {
   "file": "character.py",
@@ -8785,6 +9377,14 @@
  },
  {
   "file": "character.py",
+  "line": 7784,
+  "end_line": 7784,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(bottom - top) * (i + 0.5) / n"
+ },
+ {
+  "file": "character.py",
   "line": 7785,
   "end_line": 7785,
   "class": "fstr:.1f",
@@ -8889,6 +9489,22 @@
  },
  {
   "file": "character.py",
+  "line": 7851,
+  "end_line": 7851,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-dy / length"
+ },
+ {
+  "file": "character.py",
+  "line": 7851,
+  "end_line": 7851,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "dx / length"
+ },
+ {
+  "file": "character.py",
   "line": 7853,
   "end_line": 7853,
   "class": "fstr:.1f",
@@ -8982,6 +9598,22 @@
   "class": "fstr_bare",
   "detail": "Name",
   "snippet": "{OUTLINE}"
+ },
+ {
+  "file": "character.py",
+  "line": 7866,
+  "end_line": 7866,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.hem_half_w - sk.hip_half_w) * (y - sk.hip_y) / span"
+ },
+ {
+  "file": "character.py",
+  "line": 7946,
+  "end_line": 7946,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "span * 2 * i / (scallop - 1)"
  },
  {
   "file": "character.py",
@@ -9673,6 +10305,22 @@
  },
  {
   "file": "character.py",
+  "line": 8273,
+  "end_line": 8273,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "centre_wrist / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 8273,
+  "end_line": 8273,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(wrist_y - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "character.py",
   "line": 8275,
   "end_line": 8275,
   "class": "math.hypot",
@@ -9689,11 +10337,59 @@
  },
  {
   "file": "character.py",
+  "line": 8278,
+  "end_line": 8278,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.arm_half_w / sk.head_r) / cut.half_w"
+ },
+ {
+  "file": "character.py",
+  "line": 8278,
+  "end_line": 8278,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.arm_half_w / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 8282,
+  "end_line": 8282,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(dx * rax + dy * ray) / ref_len**2"
+ },
+ {
+  "file": "character.py",
   "line": 8282,
   "end_line": 8282,
   "class": "pow",
   "detail": "integer exponent 2",
   "snippet": "ref_len**2"
+ },
+ {
+  "file": "character.py",
+  "line": 8283,
+  "end_line": 8283,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(-dx * ray + dy * rax) / ref_len"
+ },
+ {
+  "file": "character.py",
+  "line": 8284,
+  "end_line": 8284,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "across * tay / tgt_len"
+ },
+ {
+  "file": "character.py",
+  "line": 8285,
+  "end_line": 8285,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "across * tax / tgt_len"
  },
  {
   "file": "character.py",
@@ -9753,11 +10449,67 @@
  },
  {
   "file": "character.py",
+  "line": 8361,
+  "end_line": 8361,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(rx - sk.head_cx) / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 8361,
+  "end_line": 8361,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(ry - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "character.py",
   "line": 8747,
   "end_line": 8747,
   "class": "math.hypot",
   "detail": "",
   "snippet": "math.hypot(tx - gx, ty - gy)"
+ },
+ {
+  "file": "character.py",
+  "line": 8748,
+  "end_line": 8748,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(tx - gx) / length"
+ },
+ {
+  "file": "character.py",
+  "line": 8748,
+  "end_line": 8748,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(ty - gy) / length"
+ },
+ {
+  "file": "character.py",
+  "line": 8749,
+  "end_line": 8749,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(hy - _STAFF_TOP_Y) / (gy - _STAFF_TOP_Y)"
+ },
+ {
+  "file": "character.py",
+  "line": 8750,
+  "end_line": 8750,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.foot_y - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "character.py",
+  "line": 8751,
+  "end_line": 8751,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(ground - hy) / (ty - gy)"
  },
  {
   "file": "character.py",
@@ -9798,6 +10550,14 @@
   "class": "minmax",
   "detail": "min no key nargs=1",
   "snippet": "min(placed(q)[0] for q in (start, *(q for seg in segs for q in seg)))"
+ },
+ {
+  "file": "character.py",
+  "line": 8768,
+  "end_line": 8768,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(-sk.canvas_w / 2 + _stroke_w(sk)) / sk.head_r"
  },
  {
   "file": "character.py",
@@ -9969,6 +10729,70 @@
  },
  {
   "file": "character.py",
+  "line": 9139,
+  "end_line": 9141,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(length - 1.0) * _KATANA_TRACED_LENGTH / ( _KATANA_STRETCH_TO - _KATANA_STRETCH_FROM )"
+ },
+ {
+  "file": "character.py",
+  "line": 9175,
+  "end_line": 9175,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.foot_y - sk.head_cy) / r"
+ },
+ {
+  "file": "character.py",
+  "line": 9176,
+  "end_line": 9176,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(belt_y + belt_h / 2 - sk.head_cy) / r"
+ },
+ {
+  "file": "character.py",
+  "line": 9181,
+  "end_line": 9181,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(ground + 1.0) / (_KATANA_REF_GROUND + 1.0)"
+ },
+ {
+  "file": "character.py",
+  "line": 9182,
+  "end_line": 9182,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(ground - belt_c) / (_KATANA_REF_GROUND - _KATANA_REF_BELT)"
+ },
+ {
+  "file": "character.py",
+  "line": 9184,
+  "end_line": 9184,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.waist_half_w * 1.03 / r"
+ },
+ {
+  "file": "character.py",
+  "line": 9193,
+  "end_line": 9193,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(centre_elbow - sk.arm_half_w * (1.0 - 0.15 * sk.build)) / r"
+ },
+ {
+  "file": "character.py",
+  "line": 9195,
+  "end_line": 9195,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "_stroke_w(sk) / r"
+ },
+ {
+  "file": "character.py",
   "line": 9195,
   "end_line": 9195,
   "class": "minmax",
@@ -9982,6 +10806,14 @@
   "class": "math.radians",
   "detail": "",
   "snippet": "math.radians(_KATANA_TILT)"
+ },
+ {
+  "file": "character.py",
+  "line": 9203,
+  "end_line": 9203,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(ground - 0.05 - oy) / (k * tip_u)"
  },
  {
   "file": "character.py",
@@ -10198,6 +11030,14 @@
   "class": "truthiness",
   "detail": "or: name/attr (Attribute)",
   "snippet": "p.skin_tone"
+ },
+ {
+  "file": "character.py",
+  "line": 9982,
+  "end_line": 9982,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(centre_wrist - centre_top) / (wrist_y - top_y)"
  },
  {
   "file": "character.py",
@@ -10891,6 +11731,14 @@
   "file": "character.py",
   "line": 10164,
   "end_line": 10164,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(2 * w * 0.92) / (0.62 * len(text))"
+ },
+ {
+  "file": "character.py",
+  "line": 10164,
+  "end_line": 10164,
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(h * 0.66, (2 * w * 0.92) / (0.62 * len(text)))"
@@ -10977,6 +11825,22 @@
  },
  {
   "file": "character.py",
+  "line": 10202,
+  "end_line": 10202,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-dy / length"
+ },
+ {
+  "file": "character.py",
+  "line": 10202,
+  "end_line": 10202,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "dx / length"
+ },
+ {
+  "file": "character.py",
   "line": 10205,
   "end_line": 10205,
   "class": "minmax",
@@ -10990,6 +11854,14 @@
   "class": "generator",
   "detail": "generator expression",
   "snippet": "( f'<rect x=\"{(-span / 2 + (span * i / (n - 1) if n > 1 else span / 2)) - bar_w / 2:.1f}\" ' f'y=\"{-half_w:.1f}\" width=\"{bar_w:.1f}\" height=\"{half_w * 2:.1f}\"..."
+ },
+ {
+  "file": "character.py",
+  "line": 10209,
+  "end_line": 10209,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "span * i / (n - 1)"
  },
  {
   "file": "character.py",
@@ -11150,6 +12022,14 @@
   "class": "truthiness",
   "detail": "and: container-name-hint (Attribute)",
   "snippet": "COAT_CUTS[p.outfit.coat_cut].over_arms"
+ },
+ {
+  "file": "character.py",
+  "line": 10253,
+  "end_line": 10253,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(hem_y - elbow_y) / (wrist_y - elbow_y)"
  },
  {
   "file": "character.py",
@@ -11547,6 +12427,14 @@
   "file": "character.py",
   "line": 10464,
   "end_line": 10464,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "2 * math.pi * i / n"
+ },
+ {
+  "file": "character.py",
+  "line": 10464,
+  "end_line": 10464,
   "class": "math.pi",
   "detail": "constant",
   "snippet": "math.pi"
@@ -11571,6 +12459,14 @@
   "file": "character.py",
   "line": 10468,
   "end_line": 10468,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "2 / e"
+ },
+ {
+  "file": "character.py",
+  "line": 10468,
+  "end_line": 10468,
   "class": "math.copysign",
   "detail": "",
   "snippet": "math.copysign(abs(ct) ** (2 / e), ct)"
@@ -11582,6 +12478,14 @@
   "class": "pow",
   "detail": "non-constant exponent",
   "snippet": "abs(ct) ** (2 / e)"
+ },
+ {
+  "file": "character.py",
+  "line": 10469,
+  "end_line": 10469,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "2 / e"
  },
  {
   "file": "character.py",
@@ -11614,6 +12518,14 @@
   "class": "augassign",
   "detail": "Add target=Name value=ListComp LIST-MUTATION",
   "snippet": "pts += [_quad_point(p0, c1, p2, k / per) for k in range(1, per + 1)]"
+ },
+ {
+  "file": "character.py",
+  "line": 10535,
+  "end_line": 10535,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / per"
  },
  {
   "file": "character.py",
@@ -11699,6 +12611,14 @@
   "file": "character.py",
   "line": 10601,
   "end_line": 10601,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sum(x for x, _ in pts) / n"
+ },
+ {
+  "file": "character.py",
+  "line": 10601,
+  "end_line": 10601,
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(x for x, _ in pts)"
@@ -11710,6 +12630,14 @@
   "class": "sum",
   "detail": "arg0=GeneratorExp start=no",
   "snippet": "sum(x for x, _ in pts)"
+ },
+ {
+  "file": "character.py",
+  "line": 10602,
+  "end_line": 10602,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sum(y for _, y in pts) / n"
  },
  {
   "file": "character.py",
@@ -11971,6 +12899,14 @@
   "file": "character.py",
   "line": 10664,
   "end_line": 10664,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "_HAND_WRIST_FILL * half / (_traced_wrist_half(_HAND_OPEN) * stretch * k)"
+ },
+ {
+  "file": "character.py",
+  "line": 10664,
+  "end_line": 10664,
   "class": "truthiness",
   "detail": "ternary: name/attr (Name)",
   "snippet": "grip"
@@ -11982,6 +12918,14 @@
   "class": "truthiness",
   "detail": "not: name/attr (Name)",
   "snippet": "grip"
+ },
+ {
+  "file": "character.py",
+  "line": 10671,
+  "end_line": 10671,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "max(0.0, y) / _HAND_WRIST_STRETCH"
  },
  {
   "file": "character.py",
@@ -12603,6 +13547,14 @@
   "file": "character.py",
   "line": 10906,
   "end_line": 10906,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(height - _TAPER_FROM) / (_TAPER_TO - _TAPER_FROM)"
+ },
+ {
+  "file": "character.py",
+  "line": 10906,
+  "end_line": 10906,
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(1.0, max(0.0, (height - _TAPER_FROM) / (_TAPER_TO - _TAPER_FROM)))"
@@ -13158,6 +14110,14 @@
   "class": "fstr:.2f",
   "detail": "",
   "snippet": "{_outline_w(_stroke_w(sk), 0.85):.2f}"
+ },
+ {
+  "file": "character.py",
+  "line": 11227,
+  "end_line": 11227,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.limb_taper / _TAPER_MAX"
  },
  {
   "file": "character.py",
@@ -14537,6 +15497,14 @@
  },
  {
   "file": "character.py",
+  "line": 11574,
+  "end_line": 11574,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(lace_bot - lace_top) / steps"
+ },
+ {
+  "file": "character.py",
   "line": 11579,
   "end_line": 11579,
   "class": "fstr:.1f",
@@ -15547,6 +16515,14 @@
   "file": "character.py",
   "line": 11900,
   "end_line": 11900,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(belt_half - buckle_half - 2 * gap) / (2.11 * w0)"
+ },
+ {
+  "file": "character.py",
+  "line": 11900,
+  "end_line": 11900,
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(1.0, (belt_half - buckle_half - 2 * gap) / (2.11 * w0))"
@@ -15979,6 +16955,14 @@
   "file": "character.py",
   "line": 12037,
   "end_line": 12037,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(y - _JAW_START_Y) / (1.0 - _JAW_START_Y)"
+ },
+ {
+  "file": "character.py",
+  "line": 12037,
+  "end_line": 12037,
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(1.0, (y - _JAW_START_Y) / (1.0 - _JAW_START_Y))"
@@ -16027,6 +17011,14 @@
   "file": "character.py",
   "line": 12057,
   "end_line": 12057,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(y - prev[1]) / span"
+ },
+ {
+  "file": "character.py",
+  "line": 12057,
+  "end_line": 12057,
   "class": "truthiness",
   "detail": "ternary: name/attr (Name)",
   "snippet": "span"
@@ -16054,6 +17046,14 @@
   "class": "eq_nonconst",
   "detail": "NotEq",
   "snippet": "nxt[1] != here[1]"
+ },
+ {
+  "file": "character.py",
+  "line": 12098,
+  "end_line": 12098,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(y - here[1]) / (nxt[1] - here[1])"
  },
  {
   "file": "character.py",
@@ -16089,11 +17089,43 @@
  },
  {
   "file": "character.py",
+  "line": 12122,
+  "end_line": 12122,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "i / steps"
+ },
+ {
+  "file": "character.py",
+  "line": 12165,
+  "end_line": 12165,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "i / steps"
+ },
+ {
+  "file": "character.py",
   "line": 12167,
   "end_line": 12167,
   "class": "pow",
   "detail": "non-constant exponent",
   "snippet": "f**w_ease"
+ },
+ {
+  "file": "character.py",
+  "line": 12195,
+  "end_line": 12195,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "1 / math.cos(math.pi / _HEAD_SEGMENTS)"
+ },
+ {
+  "file": "character.py",
+  "line": 12195,
+  "end_line": 12195,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "math.pi / _HEAD_SEGMENTS"
  },
  {
   "file": "character.py",
@@ -16110,6 +17142,14 @@
   "class": "math.pi",
   "detail": "constant",
   "snippet": "math.pi"
+ },
+ {
+  "file": "character.py",
+  "line": 12196,
+  "end_line": 12196,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "360 / _HEAD_SEGMENTS"
  },
  {
   "file": "character.py",
@@ -16369,6 +17409,14 @@
  },
  {
   "file": "character.py",
+  "line": 12575,
+  "end_line": 12575,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / _LID_SAMPLES"
+ },
+ {
+  "file": "character.py",
   "line": 12591,
   "end_line": 12591,
   "class": "minmax",
@@ -16401,6 +17449,30 @@
  },
  {
   "file": "character.py",
+  "line": 12594,
+  "end_line": 12594,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "ty / tl"
+ },
+ {
+  "file": "character.py",
+  "line": 12594,
+  "end_line": 12594,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-tx / tl"
+ },
+ {
+  "file": "character.py",
+  "line": 12597,
+  "end_line": 12597,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "i / n"
+ },
+ {
+  "file": "character.py",
   "line": 12598,
   "end_line": 12598,
   "class": "pow",
@@ -16414,6 +17486,14 @@
   "class": "augassign",
   "detail": "Mult target=Name value=BinOp",
   "snippet": "t *= s / _LASH_ONSET"
+ },
+ {
+  "file": "character.py",
+  "line": 12600,
+  "end_line": 12600,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "s / _LASH_ONSET"
  },
  {
   "file": "character.py",
@@ -16457,6 +17537,22 @@
  },
  {
   "file": "character.py",
+  "line": 12606,
+  "end_line": 12606,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "tx / tl"
+ },
+ {
+  "file": "character.py",
+  "line": 12606,
+  "end_line": 12606,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "ty / tl"
+ },
+ {
+  "file": "character.py",
   "line": 12607,
   "end_line": 12607,
   "class": "math.radians",
@@ -16494,6 +17590,14 @@
   "class": "math.sin",
   "detail": "",
   "snippet": "math.sin(ang)"
+ },
+ {
+  "file": "character.py",
+  "line": 12614,
+  "end_line": 12614,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(reach - lid[n][0]) / (fx * er)"
  },
  {
   "file": "character.py",
@@ -17137,6 +18241,14 @@
  },
  {
   "file": "character.py",
+  "line": 12757,
+  "end_line": 12757,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / _LID_SAMPLES"
+ },
+ {
+  "file": "character.py",
   "line": 12759,
   "end_line": 12759,
   "class": "fstr_bare",
@@ -17297,11 +18409,27 @@
  },
  {
   "file": "character.py",
+  "line": 12966,
+  "end_line": 12966,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(eye_y - cy) / r"
+ },
+ {
+  "file": "character.py",
   "line": 12968,
   "end_line": 12968,
   "class": "minmax",
   "detail": "min no key nargs=2",
   "snippet": "min(w * (1.0 + gap), edge - w - _EYE_CORNER_CLEAR * r)"
+ },
+ {
+  "file": "character.py",
+  "line": 12989,
+  "end_line": 12989,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(_BLUSH_LIGHT_L - lum) / (_BLUSH_LIGHT_L - _BLUSH_DARK_L)"
  },
  {
   "file": "character.py",
@@ -17494,6 +18622,14 @@
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(_brow(sk, p, side) for side in (-1, 1))"
+ },
+ {
+  "file": "character.py",
+  "line": 13100,
+  "end_line": 13100,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(eye_y - cy) / r"
  },
  {
   "file": "character.py",
@@ -17953,6 +19089,14 @@
  },
  {
   "file": "character.py",
+  "line": 13243,
+  "end_line": 13243,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k / per"
+ },
+ {
+  "file": "character.py",
   "line": 13263,
   "end_line": 13263,
   "class": "neg_subscript",
@@ -17990,6 +19134,22 @@
   "class": "truthiness",
   "detail": "or: call (Call)",
   "snippet": "math.hypot(dx, dy)"
+ },
+ {
+  "file": "character.py",
+  "line": 13274,
+  "end_line": 13274,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "-dy / n"
+ },
+ {
+  "file": "character.py",
+  "line": 13274,
+  "end_line": 13274,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "dx / n"
  },
  {
   "file": "character.py",
@@ -18081,6 +19241,22 @@
  },
  {
   "file": "character.py",
+  "line": 13320,
+  "end_line": 13320,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "i / (n - 1)"
+ },
+ {
+  "file": "character.py",
+  "line": 13323,
+  "end_line": 13323,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(t - t0) / (t1 - t0)"
+ },
+ {
+  "file": "character.py",
   "line": 13324,
   "end_line": 13324,
   "class": "math.pi",
@@ -18110,6 +19286,14 @@
   "class": "sorted",
   "detail": "sorted no key",
   "snippet": "sorted( {round(k * (len(left) - 1) / (_SOFT_LOCK_POINTS - 1)) for k in range(_SOFT_LOCK_POINTS)} )"
+ },
+ {
+  "file": "character.py",
+  "line": 13331,
+  "end_line": 13331,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "k * (len(left) - 1) / (_SOFT_LOCK_POINTS - 1)"
  },
  {
   "file": "character.py",
@@ -18499,6 +19683,14 @@
   "file": "character.py",
   "line": 13528,
   "end_line": 13528,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sum(q[1] for q in pts) / len(pts)"
+ },
+ {
+  "file": "character.py",
+  "line": 13528,
+  "end_line": 13528,
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(q[1] for q in pts)"
@@ -18555,6 +19747,14 @@
   "file": "character.py",
   "line": 13942,
   "end_line": 13942,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.build - _KOU_CHIBI_BUILD) / (1.0 - _KOU_CHIBI_BUILD)"
+ },
+ {
+  "file": "character.py",
+  "line": 13942,
+  "end_line": 13942,
   "class": "minmax",
   "detail": "max no key nargs=2",
   "snippet": "max(0.0, (sk.build - _KOU_CHIBI_BUILD) / (1.0 - _KOU_CHIBI_BUILD))"
@@ -18582,6 +19782,14 @@
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(e for seg in c[1] for e in seg)"
+ },
+ {
+  "file": "character.py",
+  "line": 13959,
+  "end_line": 13959,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(sk.canvas_w / 2 - _stroke_w(sk)) / sk.head_r"
  },
  {
   "file": "character.py",
@@ -18755,6 +19963,14 @@
   "file": "character.py",
   "line": 13996,
   "end_line": 13996,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sum(q[0] for q in pts) / len(pts)"
+ },
+ {
+  "file": "character.py",
+  "line": 13996,
+  "end_line": 13996,
   "class": "generator",
   "detail": "generator expression",
   "snippet": "(q[0] for q in pts)"
@@ -18766,6 +19982,14 @@
   "class": "sum",
   "detail": "arg0=GeneratorExp start=no",
   "snippet": "sum(q[0] for q in pts)"
+ },
+ {
+  "file": "character.py",
+  "line": 13997,
+  "end_line": 13997,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sum(q[1] for q in pts) / len(pts)"
  },
  {
   "file": "character.py",
@@ -19161,6 +20385,30 @@
  },
  {
   "file": "skeleton.py",
+  "line": 183,
+  "end_line": 183,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(v - 1.0 + s) / s"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 186,
+  "end_line": 186,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "v / s"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 189,
+  "end_line": 189,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(self.heads - 1.0 + s) / s"
+ },
+ {
+  "file": "skeleton.py",
   "line": 221,
   "end_line": 221,
   "class": "dict_literal",
@@ -19169,11 +20417,51 @@
  },
  {
   "file": "skeleton.py",
+  "line": 281,
+  "end_line": 281,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "(v - sk.head_cy) / sk.head_r"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 285,
+  "end_line": 285,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "extra * (1 - legs_share) / (hip - sh)"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 286,
+  "end_line": 286,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "extra * legs_share / (foot - hip)"
+ },
+ {
+  "file": "skeleton.py",
   "line": 294,
   "end_line": 294,
   "class": "dict_literal",
   "detail": "1 entries",
   "snippet": "{\"build\": sk.build}"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 304,
+  "end_line": 304,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "getattr(sk, name) / sk.head_r"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 306,
+  "end_line": 306,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "sk.wrist_x / sk.head_r"
  },
  {
   "file": "skeleton.py",
@@ -19198,6 +20486,30 @@
   "class": "minmax",
   "detail": "max no key nargs=2",
   "snippet": "max(hair_margin, min_hair_margin)"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 379,
+  "end_line": 379,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "canvas_h * (1.0 - bottom_margin) / (1.0 + hair_margin / (2.0 * heads))"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 379,
+  "end_line": 379,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "hair_margin / (2.0 * heads)"
+ },
+ {
+  "file": "skeleton.py",
+  "line": 380,
+  "end_line": 380,
+  "class": "div",
+  "detail": "variable divisor: needs pyDiv or a proof it cannot be zero",
+  "snippet": "fig_h / heads"
  },
  {
   "file": "skeleton.py",

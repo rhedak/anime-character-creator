@@ -85,7 +85,8 @@ export const fmt3 = (x: number): string => fmtFixed(x, 3);
 
 /** `f"{n:02x}"` for an int. */
 export function fmtHex2(n: number): string {
-  if (n < 0) return `-${Math.abs(n).toString(16).padStart(2, "0")}`;
+  // The width of 2 counts the sign: `format(-1, "02x")` is "-1".
+  if (n < 0) return `-${Math.abs(n).toString(16)}`;
   return n.toString(16).padStart(2, "0");
 }
 
@@ -130,6 +131,7 @@ export function pyRound(x: number): number {
 
 /** `round(x, n)` for a float: the exact value rounded half to even to `n` decimals, then the nearest double. */
 export function roundTo(x: number, n: number): number {
+  if (n < 0) throw new PyError("NotImplementedError", "round() to a negative number of digits is not ported");
   if (!Number.isFinite(x)) return x;
   return Number(fmtFixed(x, n));
 }
@@ -248,11 +250,46 @@ export function pyCos(x: number): number {
   return Math.cos(x);
 }
 
-/** `x ** y` for floats: a negative base with a fractional exponent is a complex number in Python, a nan here. */
+const isOddInteger = (y: number): boolean => Number.isInteger(y) && Math.abs(y) < 9007199254740992 && Math.abs(y % 2) === 1;
+
+/**
+ * `x ** y` for floats, following CPython's `float_pow`: its special cases (`1.0 ** nan` is 1, `(-1.0) ** inf` is 1, which
+ * `Math.pow` gets differently), `ZeroDivisionError` for zero to a negative power, `OverflowError` where C's `pow` overflows,
+ * and for a negative base with a fractional exponent, which is a complex number in Python, a `ValueError` here (loud on purpose).
+ * Normal results come from the engine's `Math.pow` and can differ from the C library in the last bit.
+ */
 export function pyPow(x: number, y: number): number {
-  if (x === 0 && y < 0) throw new PyError("ZeroDivisionError", "zero to a negative power");
-  if (x < 0 && Number.isFinite(y) && !Number.isInteger(y)) throw new PyError("ValueError", "complex result");
-  return Math.pow(x, y);
+  if (y === 0) return 1;
+  if (x !== x) return x;
+  if (y !== y) return x === 1 ? 1 : y;
+  if (y === Infinity || y === -Infinity) {
+    const ax = Math.abs(x);
+    if (ax === 1) return 1;
+    return y > 0 === ax > 1 ? Infinity : 0;
+  }
+  if (x === Infinity || x === -Infinity) {
+    const odd = isOddInteger(y);
+    if (y > 0) return odd ? x : Math.abs(x);
+    return odd ? copysign(0, x) : 0;
+  }
+  if (x === 0 && y < 0) throw new PyError("ZeroDivisionError", "0.0 cannot be raised to a negative power");
+  let negate = false;
+  let a = x;
+  if (a < 0) {
+    if (!Number.isInteger(y)) throw new PyError("ValueError", "complex result");
+    negate = isOddInteger(y);
+    a = -a;
+  }
+  if (a === 1) return negate ? -1 : 1;
+  const r = Math.pow(a, y);
+  if (r === Infinity) throw new PyError("OverflowError", "(34, 'Numerical result out of range')");
+  return negate ? -r : r;
+}
+
+/** `a / b` for floats: Python raises `ZeroDivisionError` where JavaScript gives `Infinity` or `NaN`. */
+export function pyDiv(a: number, b: number): number {
+  if (b === 0) throw new PyError("ZeroDivisionError", "float division by zero");
+  return a / b;
 }
 
 // CPython 3.12+ `math.hypot`: scaled, with the squares and their sum carried as exact double-doubles, and a final
@@ -339,8 +376,9 @@ export function pyHypot(...values: number[]): number {
 
 /** `items[i]` with Python indexing: negative counts from the end, out of range raises. */
 export function at<T>(items: readonly T[], i: number): T {
+  if (!Number.isInteger(i)) throw new PyError("TypeError", "list indices must be integers or slices, not float");
   const j = i < 0 ? i + items.length : i;
-  if (j < 0 || j >= items.length || !Number.isInteger(j)) throw new PyError("IndexError", "list index out of range");
+  if (j < 0 || j >= items.length) throw new PyError("IndexError", "list index out of range");
   return items[j] as T;
 }
 
@@ -351,6 +389,11 @@ export function pySlice<T>(
   stop?: number | null,
   step: number = 1,
 ): T[] {
+  for (const v of [start, stop, step]) {
+    if (v != null && !Number.isInteger(v) && Math.abs(v) !== Infinity) {
+      throw new PyError("TypeError", "slice indices must be integers or None or have an __index__ method");
+    }
+  }
   if (step === 0) throw new PyError("ValueError", "slice step cannot be zero");
   const n = items.length;
   const adjust = (i: number, low: number, high: number): number => {
@@ -394,7 +437,24 @@ export function pyCompare(a: unknown, b: unknown): number {
     }
     return a.length - b.length;
   }
-  return (a as number | string) < (b as number | string) ? -1 : (a as number | string) > (b as number | string) ? 1 : 0;
+  if (typeof a === "string" && typeof b === "string") return compareCodePoints(a, b);
+  return (a as number) < (b as number) ? -1 : (a as number) > (b as number) ? 1 : 0;
+}
+
+/** Python orders strings by code point; JS `<` orders by UTF-16 unit, which differs between astral characters and U+E000 to U+FFFF. */
+export function compareCodePoints(a: string, b: string): number {
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) {
+    let ca = a.charCodeAt(i);
+    let cb = b.charCodeAt(i);
+    if (ca === cb) continue;
+    if (ca >= 0xd800 && cb >= 0xd800) {
+      ca = ca >= 0xe000 ? ca - 0x800 : ca + 0x2000;
+      cb = cb >= 0xe000 ? cb - 0x800 : cb + 0x2000;
+    }
+    return ca < cb ? -1 : 1;
+  }
+  return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
 }
 
 /** `sorted(items, key=key)`: stable, ascending, by Python's ordering (never JS's default string order). */
@@ -418,7 +478,8 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 
 /** `s.replace(old, new)`: every occurrence, and `new` is literal text (JS gives `$&` and friends a meaning). */
 export function pyReplace(s: string, old: string, replacement: string): string {
-  if (old === "") throw new PyError("ValueError", "empty pattern");
+  // `"abc".replace("", "-")` is "-a-b-c-": the replacement goes between every code point and at both ends.
+  if (old === "") return replacement + [...s].map((c) => c + replacement).join("");
   return s.split(old).join(replacement);
 }
 
@@ -431,10 +492,60 @@ export function pyFloat(s: string): number {
   return Number(t);
 }
 
-/** `int(s, 16)` for plain hexadecimal digits (Python also takes signs, spaces, `0x` and underscores; see the ledger). */
+/** The value of a decimal digit in any script (Python's `int()` accepts them all): the offset within its run of ten. */
+function decimalDigitValue(ch: string): number {
+  const cp = ch.codePointAt(0) as number;
+  if (cp < 128) return cp - 48;
+  let start = cp;
+  while (start > 0 && /^\p{Nd}$/u.test(String.fromCodePoint(start - 1)) && cp - start < 60) start--;
+  return (cp - start) % 10;
+}
+
+const PY_SPACE = /^[\t\n\v\f\r\x1c-\x20\x85\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+|[\t\n\v\f\r\x1c-\x20\x85\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+$/g;
+
+/**
+ * `int(s, 16)`: surrounding whitespace, an optional sign, an optional `0x`, single underscores between digits, and decimal
+ * digits of any script as well as `a` to `f`. Exact for up to 13 digits (the colour code reads two); more raise here.
+ */
 export function pyHex(s: string): number {
-  if (!/^[0-9a-fA-F]+$/.test(s)) {
-    throw new PyError("ValueError", `invalid literal for int() with base 16: '${s}'`);
+  const bad = (): PyError => new PyError("ValueError", `invalid literal for int() with base 16: ${pyStrRepr(s)}`);
+  let t = s.replace(PY_SPACE, "");
+  let sign = 1;
+  if (t.startsWith("+") || t.startsWith("-")) {
+    if (t[0] === "-") sign = -1;
+    t = t.slice(1);
   }
-  return parseInt(s, 16);
+  if (/^0[xX]/.test(t)) {
+    t = t.slice(2);
+    if (t.startsWith("_")) t = t.slice(1);
+  }
+  if (t === "" || t.startsWith("_") || t.endsWith("_") || t.includes("__")) throw bad();
+  let value = 0;
+  let digits = 0;
+  for (const ch of t) {
+    if (ch === "_") continue;
+    let d: number;
+    if (/^[0-9a-fA-F]$/.test(ch)) d = parseInt(ch, 16);
+    else if (/^\p{Nd}$/u.test(ch)) d = decimalDigitValue(ch);
+    else throw bad();
+    value = value * 16 + d;
+    if (value !== 0 && ++digits > 13) throw new PyError("OverflowError", "int() with more than 13 significant hex digits is not ported");
+  }
+  return sign * value === 0 ? 0 : sign * value;
+}
+
+/** `repr(s)` for a str: single quotes unless the text has a single and no double quote; backslash and control escapes. */
+export function pyStrRepr(s: string): string {
+  const quote = s.includes("'") && !s.includes('"') ? '"' : "'";
+  let out = quote;
+  for (const ch of s) {
+    const c = ch.codePointAt(0) as number;
+    if (ch === quote || ch === "\\") out += `\\${ch}`;
+    else if (ch === "\n") out += "\\n";
+    else if (ch === "\r") out += "\\r";
+    else if (ch === "\t") out += "\\t";
+    else if (c < 0x20 || c === 0x7f) out += `\\x${c.toString(16).padStart(2, "0")}`;
+    else out += ch;
+  }
+  return out + quote;
 }

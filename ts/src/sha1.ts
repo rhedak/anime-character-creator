@@ -1,6 +1,8 @@
 // A synchronous SHA-1, for the short ids in the SVG (`hashlib.sha1(text.encode()).hexdigest()[:10]`).
 // Browsers only offer an asynchronous hash and the drawing code is synchronous.
 
+import { PyError } from "./pynum.ts";
+
 const encoder = new TextEncoder();
 
 function rotl(x: number, n: number): number {
@@ -9,6 +11,8 @@ function rotl(x: number, n: number): number {
 
 /** SHA-1 of the UTF-8 bytes of `text`, as 40 lower-case hex digits. */
 export function sha1Hex(text: string): string {
+  // Python's `.encode()` raises on a lone surrogate; `TextEncoder` would hash U+FFFD in its place.
+  if (/\p{Cs}/u.test(text)) throw new PyError("UnicodeEncodeError", "'utf-8' codec can't encode a lone surrogate");
   const data = encoder.encode(text);
   const bitLen = data.length * 8;
   const padded = new Uint8Array((((data.length + 8) >> 6) + 1) << 6);

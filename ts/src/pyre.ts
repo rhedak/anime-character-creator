@@ -3,8 +3,8 @@
 // friends and `\` is ordinary. The drawing code builds a template out of a user-supplied `id_prefix`, so the
 // difference is visible in the output for a prefix such as `a$&b` or `x\1`.
 //
-// The rules follow `re._parser.parse_template` of CPython 3.13. Error classes match the reference
-// (CPython 3.13); the position text of the message is not reproduced (see the ledger).
+// The rules follow `re._parser.parse_template` of CPython 3.13. Error classes follow CPython 3.12
+// (decision D12); the position text of the message is not reproduced (see the ledger).
 
 import { PyError } from "./pynum.ts";
 
@@ -21,8 +21,9 @@ const ESCAPES: Record<string, string> = {
   "\\": "\\",
 };
 
-// `re.error` is named `PatternError` from CPython 3.13 (and `error` before); the reference is 3.13.
-const reError = (msg: string): PyError => new PyError("PatternError", msg);
+// `re.error` is named `PatternError` from CPython 3.13 and `error` before; decision D12 takes the class names of 3.12,
+// which is what Pyodide ships (docs/ts-port-errors.md).
+const reError = (msg: string): PyError => new PyError("error", msg);
 
 /** Parse a replacement template for a pattern with `groups` capture groups into literals and group numbers. */
 export function parseTemplate(source: string, groups: number): Piece[] {

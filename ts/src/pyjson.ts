@@ -2,7 +2,7 @@
 // the manifest hashes). JS cannot tell the int 1 from the float 1.0, so an int that must print as one is wrapped
 // in `PyInt`; every other number is a float and prints with Python's float repr (`1.0`, `1e-05`).
 
-import { pyRepr } from "./pynum.ts";
+import { compareCodePoints, pyRepr } from "./pynum.ts";
 
 /** An integer that `dumps` prints without a decimal point. */
 export class PyInt {
@@ -12,7 +12,7 @@ export class PyInt {
   }
 }
 
-export type Json = null | boolean | number | string | PyInt | readonly Json[] | { readonly [key: string]: Json };
+export type Json = null | boolean | number | string | PyInt | readonly Json[] | ReadonlyMap<string, Json> | { readonly [key: string]: Json };
 
 export interface DumpsOptions {
   /** `sort_keys`. Default false. */
@@ -74,9 +74,18 @@ export function dumps(value: Json, options: DumpsOptions = {}): string {
       if (v.length === 0) return "[]";
       return `[${v.map((x) => `${pad(depth + 1)}${write(x, depth + 1)}`).join(itemSep)}${pad(depth)}]`;
     }
-    const entries = Object.entries(v as { [key: string]: Json });
+    let entries: [string, Json][];
+    if (v instanceof Map) {
+      entries = [...v.entries()];
+    } else {
+      entries = Object.entries(v as { [key: string]: Json });
+      // A JS object lists integer-like keys first and in order, whatever the insertion order; Python keeps insertion order.
+      if (!sortKeys && entries.some(([k]) => /^(0|[1-9]\d*)$/.test(k))) {
+        throw new Error("dumps: an integer-like key would be reordered by a JS object; pass a Map to keep insertion order");
+      }
+    }
     if (entries.length === 0) return "{}";
-    if (sortKeys) entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    if (sortKeys) entries.sort(([a], [b]) => compareCodePoints(a, b));
     return `{${entries
       .map(([k, x]) => `${pad(depth + 1)}${quote(k, ensureAscii)}${keySep}${write(x, depth + 1)}`)
       .join(itemSep)}${pad(depth)}}`;

@@ -246,6 +246,7 @@ render calls changed when that behaviour alone was swapped for the JS one.
 | 19 | **Text length and escaping** | `:10160-10167`: `len()` counts code points, JS UTF-16 units; `escape` covers `& < >` only | user text only |
 | 20 | **Codecs** | `urlstate.py:48-111`, `catalogue.py:794`, `attribution.py` | section 4, item 2; lenient `urlsafe_b64decode`, `json.loads` accepts `NaN`; exception text embeds Python messages (`urlstate.py:68`, `:105`) |
 | 21 | **Type coercion on URL data** | `params_from_dict` validates only `finish` and `highlight_strength` | `"3" * 2` is 6 in JS; `?c=` links are user input |
+| 23 | **Division by zero** | 164 sites with a variable divisor (153 in `character.py`, 11 in `skeleton.py`; `hazards.json`, class `div`) | Python raises `ZeroDivisionError`; JS gives `Infinity` or `NaN` and the drawing carries on with `NaN` coordinates. `skeleton.ts` already uses `pyDiv`; every other site is checked in Phase 4, and a divisor that cannot be zero is noted in the ledger |
 | 22 | **Import cycle** | `render_character` imports `attribution` lazily (`:14255`) | ES modules handle cycles differently |
 
 The reviewer ranked "least likely to be caught by an SVG diff": error behaviour, the URL/JSON codec decode path,
