@@ -194,8 +194,6 @@ function leafStroke(pts: readonly Pt[], w: number, color: string): string {
 // Details read off the reference's left eye (the base eye; the right is its mirror), eye frame as above: the crease line above the
 // lid, and two lash flicks that fan down from the lid's inner end. From the 16x grids out/franzi/lashes-L-grid{,2}.png.
 const CREASE: Pt[] = [[18, -31.8], [12, -33.3], [6, -34.1], [-4, -33.6], [-11.5, -31.7], [-16.5, -29.2], [-20.3, -25.7], [-21.5, -23]];
-const LASH_1: Pt[] = [[-16.5, -20.7], [-21, -17], [-24.2, -11.6], [-25.2, -6.2]];
-const LASH_2: Pt[] = [[-14, -16.4], [-19.5, -11.4], [-24, -7.4]];
 
 /** Catmull-Rom through `pts` as cubic segments, the pen already at the first point. */
 function smooth(pts: readonly Pt[]): string {
@@ -260,10 +258,8 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     varStroke(lowerLine().map(at), ink * 0.66, 0.55, ink * 0.16, OUTLINE),
     // the thin line on along the top of the white, growing out of the lid and tapering to a point
     taperedStroke(lidTail().map(at), ink * 0.9, OUTLINE),
-    // the crease line above the lid, and the lash flicks at its inner end
+    // the crease line above the lid
     leafStroke(sampleSmooth(CREASE).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
-    taperedStroke(sampleSmooth(LASH_1).map(at), 3.2 * k, OUTLINE),
-    taperedStroke(sampleSmooth(LASH_2).map(at), 2.4 * k, OUTLINE),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
     `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
   ];
@@ -276,9 +272,9 @@ export function adultEyes(sk: Skeleton, p: CharacterParams): string {
 }
 
 /** The aperture and lid outlines in canvas units, for the harness's overlay on the reference (harness/franzi/eye_outline.ts). */
-export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; lid: Pt[]; crease: Pt[]; lash1: Pt[]; lash2: Pt[] }[] {
+export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; lid: Pt[]; crease: Pt[] }[] {
   return [-1, 1].map((side) => {
     const at = placer(h, side);
-    return { side, aperture: apertureOutline().map(at), lid: lidBand().map(at), crease: sampleSmooth(CREASE).map(at), lash1: sampleSmooth(LASH_1).map(at), lash2: sampleSmooth(LASH_2).map(at) };
+    return { side, aperture: apertureOutline().map(at), lid: lidBand().map(at), crease: sampleSmooth(CREASE).map(at) };
   });
 }

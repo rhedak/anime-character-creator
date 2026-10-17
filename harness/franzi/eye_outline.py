@@ -32,7 +32,7 @@ for name, box, side in (("L", (545, 275, 645, 365), -1), ("R", (690, 270, 790, 3
     c = bg.crop(box).resize(((box[2] - box[0]) * Z, (box[3] - box[1]) * Z), Image.LANCZOS)
     d = ImageDraw.Draw(c)
     e = next(x for x in o["eyes"] if x["side"] == side)
-    for key, col in (("aperture", (230, 0, 0)), ("lid", (0, 90, 255)), ("crease", (255, 140, 0)), ("lash1", (0, 200, 0)), ("lash2", (0, 200, 0))):
+    for key, col in (("aperture", (230, 0, 0)), ("lid", (0, 90, 255)), ("crease", (255, 140, 0))):
         pts = [((x - box[0]) * Z, (y - box[1]) * Z) for x, y in map(to_ref, e[key])]
         d.line(pts + ([pts[0]] if key in ('aperture', 'lid') else []), fill=col, width=3)
     c.save(f"out/franzi/eye-outline-{name}.png")
