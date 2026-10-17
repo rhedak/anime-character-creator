@@ -176,9 +176,24 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   return adultSkin(sk, p) + adultBand(sk, p);
 }
 
-/** The body outline alone, in skin colour. */
+/**
+ * The body outline alone, in skin colour, with the armpit creases: where the arm meets the chest the reference draws a line,
+ * from the top of the armpit (about half a head height below the chin, level with the top of the bust) down the arm's inner
+ * edge to the tip of the gap between arm and torso, which opens only at a head height. Without it the armpits seemed to sit
+ * far lower than the bust (the silhouette's gap starts there, the armpit does not). Read off ref 04 (the arm's inner contour,
+ * 0.48 to 1.0 H, x about 0.45 H from the centre line).
+ */
 export function adultSkin(sk: Skeleton, p: CharacterParams): string {
-  return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />`;
+  const { cx, y, w } = place(sk);
+  const sw = fmt2(outlineW(strokeW(sk), 0.7));
+  const crease = [1, -1]
+    .map((sign) => {
+      const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
+      const pts = [P(0.455, 0.48), P(0.452, 0.62), P(0.447, 0.78), P(0.438, 0.92), P(0.423, 1.0)];
+      return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`;
+    })
+    .join("");
+  return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />` + crease;
 }
 
 /**
