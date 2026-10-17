@@ -22,9 +22,13 @@ export const EYE_AT: Record<number, Pt> = { 1: [0.336, 0.28], [-1]: [0.307, 0.30
 const LID_TOP: Pt[] = [[-31, -11], [-23, -23], [-9, -31], [8, -32], [22, -28], [34, -19], [41, -13]];
 /** The lid band's lower edge, which is also the aperture's top, from the wing's tip back to the inner corner. */
 const LID_BOTTOM: Pt[] = [[41, -13], [35, -12], [27, -17], [14, -21], [0, -23], [-12, -21], [-23, -15], [-31, -11]];
-/** The aperture's lower edge, from the outer corner round to the inner corner (the white's soft lower outline). */
-const LOWER: Pt[] = [[41, -13], [37, -7], [30, 2], [20, 11], [6, 18], [-8, 19], [-20, 15], [-28, 6], [-31, -4], [-31, -11]];
-const IRIS: { c: Pt; rx: number; ry: number } = { c: [-1, 0], rx: 18, ry: 23 };
+/**
+ * The aperture's lower edge, from the outer corner round to the inner corner: a circular arc down from the wing's tip, a nearly
+ * straight base under the iris, and a small rounded arc up to the inner corner (the reference's lens with a flat bottom, read
+ * from the 8x grids). The iris is clipped to it, so its flat bottom is this base.
+ */
+const LOWER: Pt[] = [[41, -13], [40, -6], [36, 3], [29, 11], [18, 17], [4, 19.5], [-10, 19.5], [-20, 17], [-27, 11], [-31, 2], [-31, -11]];
+const IRIS: { c: Pt; rx: number; ry: number } = { c: [-1, -1], rx: 17, ry: 21 };
 const PUPIL: { c: Pt; rx: number; ry: number } = { c: [-4, 1], rx: 6, ry: 10 };
 const HILITE: { c: Pt; r: number } = { c: [-8, -14], r: 6.5 };
 const GLINT: { c: Pt; r: number } = { c: [7, 8], r: 2 };
