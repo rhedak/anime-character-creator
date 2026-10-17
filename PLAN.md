@@ -32,8 +32,8 @@ in the render code.
    forehead's shadow strip, smoothed; details in `docs/adult-body-status.md`). Left from the whole-hair recheck: the steps in the
    silhouette where the lock pieces meet the dome (about y 215 on both sides), a flat ledge on the left lock's inner edge under the
    eye, the ponytail's tip (a wedge, the reference flicks out) and a flat cut on its right side, the left ear is hidden, the strand
-   lines are hand-placed (about a dozen against the reference's many), the hair colour is near-black with lighter strands (tune
-   the contrast once the traces are right).
+   lines are now traced one by one on the stretched reference (27, most secondary fine lines still missing, see
+   the status file), the hair colour is near-black with lighter strands.
 2. **Smaller eye leftovers**: the lid is slightly heavy at the wing end, a thin tail runs along the top of the white at the inner
    end (the owner removed the lash flicks), the lower lash tick is missing.
 3. **5d**: the Franzi preset (the harness version is `harness/franzi/franzi.ts`).

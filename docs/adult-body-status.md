@@ -23,7 +23,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
   `uv`, which in a sandbox needs `UV_CACHE_DIR` pointed at a writable directory; the hair scripts hard-code a
   `/Users/henrik/...` path to `trace_lib`, so run them with `PYTHONPATH=.claude/skills/trace-reference`; `out/` is ignored, so
   make `out/franzi` and `out/franzi_hair` and run `harness/franzi/measure.py` once (it writes `target.png` that the body gate
-  reads). The hair chain is rebuilt with `face_trace.py`, `trace.py`, `pieces.py`, `slivers.py`, `strands.py --emit`, `emit.py`,
+  reads). The hair chain is rebuilt with `face_trace.py`, `trace.py`, `pieces.py`, `slivers.py`, `contrast.py` then `strands3.py emit`, `emit.py`,
   in that order; from a clean tree that reproduces the committed data byte for byte.
 
 ## Scoreboard
@@ -44,6 +44,30 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 7 guard, tests, catalogue, web | | | checkpoint 4 |
 
 ## Findings
+
+### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
+
+The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so
+they cannot be seen on the plain image or on the linear stretch `strands.py` used, and the hand-placed ones ran across the real arcs.
+`contrast.py` now writes four views (A linear, B gamma, C local contrast, D both); C has the crispest lines and is the tracing base. In
+`strands3.py` each strand is a few points read off a gridded zoom (reference px), snapped along its normal (within 3.5 px) to the darkest
+ridge of C, and reported with how much of it lies on a ridge against a control (the same curve shifted 8 px): 27 strands, 60 to 100%
+on a ridge against 4 to 38% for the control, most above 80%. A residual map paints every dark ridge no strand covers yet, which is how
+missing lines were found. `strands3.py emit` writes `out/franzi_hair/strands.json`; `emit.py` turns it into `ADULT_HAIR_STRANDS`.
+
+What the reference's hair is, once it can be read: a whorl at about (679, 158) with a fan of arcs above it, a stack of nested scallop arcs
+wrapping the right side of the crown (five traced), long arcs sweeping left and down the skull, a long sweep line that becomes the
+curtain's inner edge and runs on down the white highlight streak of the ponytail, and many fine parallel lines in the ponytail. The lower
+left lock has no dark lines at all (smooth, one faint highlight), so strands end near y 310 there; the old single line down it was wrong.
+
+Corrections made on the way, so they are not repeated: the first ridge measure used the plain luminance and called a correctly placed strand
+25% on a ridge (the measure moved to the stretched view and got a control); a line placed down the middle of the bright wedge by the right
+curtain was not on any line (the thin line is on the wedge's left edge); and highlight streaks dip on both sides in a difference of
+Gaussians and read as lines, so the residual map requires the pixel itself to be dark.
+
+Not traced yet (faint, secondary): the fine parallel lines in the lower left of the ponytail beyond two, the thin lines along the left
+silhouette beyond three, the outer arcs on the far right below the ear, the curtain's wedge-edge lines. The strand colour and weight in
+the render are unchanged (pale tapered lines on near-black hair, so they show); they are lighter than the reference's own lines.
 
 ### 2026-10-17, hairline pass (`face_trace.py`; the face chain above the brows)
 
@@ -69,7 +93,7 @@ Seen in the same renders and not fixed (candidates for the next pass): the lock 
 the silhouette at about y 215 on both sides (the pieces are dilated 4 px and their fill is unstroked above the stroke clip, so it
 pokes past the dome's outline); a flat ledge on the left lock's inner edge under the eye (the band cut at 0.5 radii); a thin tick
 at each temple where the face-band patch's clip starts; the pale temple strip now floats a little off the forehead edge; the
-ponytail's tip is a wedge and its right side has a flat cut; the left ear is hidden; the strand lines are still hand-placed.
+ponytail's tip is a wedge and its right side has a flat cut; the left ear is hidden; the strand lines are traced now (see the entry above).
 
 ### 2026-10-17, stage 2: profile (prediction, written before the first run)
 
