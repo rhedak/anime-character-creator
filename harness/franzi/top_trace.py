@@ -49,9 +49,24 @@ sym = np.zeros_like(mask)
 right = mask[:, c:]
 sym[:, c:] = right
 sym[:, c - right.shape[1] + 1 : c + 1] |= right[:, ::-1]
-sym = ndimage.gaussian_filter(sym.astype(float), 3.0) > 0.5  # the mask's edge is jagged: smooth it before fitting
+# the mask's edge is jagged: smooth it before fitting. A lower threshold than 0.5 keeps the convex corners (the cups' lower outer
+# corners) from being rounded off by the blur: at 3.0 and 0.5 the hem came out 0.04 H narrower than the reference's.
+sym = ndimage.gaussian_filter(sym.astype(float), 2.5) > 0.42
+# The owner's note: the top's lower edge must be as wide as the body there, as in the reference, where the hem runs out to the
+# arm line. The layer's own lower corners are rounded and a little narrow, so reach the hem out to the body's side (0.405 H)
+# over its last tenth of a head height, easing in so no corner appears.
+for y in range(int(CHIN + 0.86 * H), int(CHIN + 1.0 * H)):
+    row = np.where(sym[y])[0]
+    if len(row) == 0:
+        continue
+    t = min(1.0, max(0.0, ((y - CHIN) / H - 0.86) / 0.12))
+    reach = int(round(0.03 * H * t * t * (3 - 2 * t)))
+    lo, hi = row.min(), row.max()
+    target_lo, target_hi = int(round(CX - 0.405 * H)), int(round(CX + 0.405 * H))
+    sym[y, max(target_lo, lo - reach) : lo] = True
+    sym[y, hi + 1 : min(target_hi, hi + reach) + 1] = True
 pts = [((x - CX) / H, (y - CHIN) / H) for x, y in tl.boundary(sym)]  # (x in H, d in H)
-start, segs = tl.fit_closed(pts, 0.007)
+start, segs = tl.fit_closed(pts, 0.006)
 full = pts
 xs_ = [p[0] for p in full]; ds_ = [p[1] for p in full]
 print("top extent x", round(min(xs_), 3), round(max(xs_), 3), "d", round(min(ds_), 3), round(max(ds_), 3), "segments", len(segs))
