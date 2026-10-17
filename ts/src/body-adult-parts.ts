@@ -18,7 +18,7 @@ import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
-import { brow } from "./core-head.ts";
+import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
 import { MOUTH_REALISTIC_DROP, MOUTH_Y, noseDot } from "./face.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
@@ -493,6 +493,16 @@ export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   return clip + adultLocks(sk, p) + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + top + outline;
 }
 
+/** The brows: two filled, tapering shapes traced from the reference, thick at the outer end and thin toward the nose. */
+function adultBrows(h: Skeleton): string {
+  return [ADULT_BROW_L, ADULT_BROW_R]
+    .map((poly) => {
+      const pts = poly.map(([x, y]): Pt => [h.head_cx + x * h.head_r, h.head_cy + y * h.head_r]);
+      return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${pts.slice(1).map(line).join("")}Z" fill="${OUTLINE}" stroke="${OUTLINE}" stroke-width="0.3" stroke-linejoin="round" />`;
+    })
+    .join("");
+}
+
 /**
  * The adult face: brows from the shared code, eyes from the traced shape (body-adult-eyes.ts), the nose dot and the mouth. The
  * shared face code is not used because its eye is the chibi's round one.
@@ -502,7 +512,7 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
   const f = p.face;
   const sw = strokeW(sk);
   const parts: string[] = [];
-  for (const side of [-1, 1]) parts.push(brow(h, p, side));
+  parts.push(adultBrows(h));
   parts.push(adultEyes(h, p));
   parts.push(noseDot(h, sw));
   const mouthY = h.head_cy + h.head_r * (MOUTH_Y + MOUTH_REALISTIC_DROP * faceBuild(sk) + f.mouth_drop);

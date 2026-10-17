@@ -135,7 +135,7 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     // the soft outline round the lower half of the aperture: thin, a dark brown, not the lid's hard black
     `<path d="${poly(lowerLine(), false)}" fill="none" stroke="${shade(p.skin_tone, 0.42)}" stroke-width="${fmt2(ink * 0.55)}" stroke-linecap="round" stroke-linejoin="round" />`,
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
-    `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.3)}" stroke-linejoin="round" />`,
+    `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
   ];
   return parts.join("");
 }
