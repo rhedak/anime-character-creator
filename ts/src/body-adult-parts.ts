@@ -205,6 +205,35 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
   return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />` + crease;
 }
 
+/** One point on a breast's edge: canvas position and where it lies in head heights (|x| from the centre line, d below the chin). */
+export interface EdgePoint {
+  readonly pos: Pt;
+  readonly x: number;
+  readonly d: number;
+}
+
+/** Each breast's edge sampled as a polyline (viewer's left, then right), `per` points per quadratic. For the harness's variants. */
+export function adultBreastPoints(sk: Skeleton, per = 10): EdgePoint[][] {
+  const { cx, y, w } = place(sk);
+  const [start, segs] = ADULT_BREAST;
+  return [1, -1].map((sign) => {
+    const out: EdgePoint[] = [];
+    let p0: Pt = start;
+    const add = (q: Pt): void => {
+      out.push({ pos: [cx + sign * w(q[1], -q[0]), y(q[1])], x: -q[0], d: q[1] });
+    };
+    add(p0);
+    for (const [c, e] of segs) {
+      for (let i = 1; i <= per; i++) {
+        const t = i / per;
+        add([(1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * c[0] + t * t * e[0], (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * c[1] + t * t * e[1]]);
+      }
+      p0 = e;
+    }
+    return out;
+  });
+}
+
 /**
  * The two breasts' edges as outlines, traced from ref 04 and agreed with the owner (body-adult-bust-data.ts). For the
  * harness's bare chest view only (harness/franzi/bare_chest.ts): nothing in the figure's own render draws them, and the

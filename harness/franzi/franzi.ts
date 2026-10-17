@@ -36,7 +36,7 @@ export const FRANZI = characterParams({
 });
 
 const [out, json] = process.argv.slice(2);
-if (out !== undefined) {
+if (import.meta.main && out !== undefined) {
   const o = json === undefined ? {} : JSON.parse(json);
   const p = characterParams({ ...FRANZI, ...o, face: faceStyle({ ...FRANZI.face, ...(o.face ?? {}) }), outfit: outfit({ ...FRANZI.outfit, ...(o.outfit ?? {}) }) });
   mkdirSync(dirname(out), { recursive: true });
