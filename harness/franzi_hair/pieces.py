@@ -37,6 +37,10 @@ left = layer & (((X < -0.5) & (Y > -0.3)) | ((X < -0.15) & (Y > 0.6)))
 tail = layer & (((X > 0.5) & (Y > -0.3)) | ((X > 0.15) & (Y > 0.6)))
 # The dome is the whole skull down to the jaw line, the pieces' tops included (they are drawn over it); only below the temples
 # does it stop, so the thin locks and the ponytail keep their own outlines.
+# Keep the free pieces off the eyes: in the eye band (0 to 0.5 radii below the head centre) they start at 0.6 radii, past the outer
+# corner of the eye; the face's own edge does the rest below it.
+band = (np.abs(X) < 0.6) & (Y > -0.05) & (Y < 0.5)
+left, tail = left & ~band, tail & ~band
 dome = ((hair | head | left | tail) & (Y < 0.6)) | head
 # the free pieces overlap the dome by a few pixels so no hairline of page shows between them
 left_d, tail_d = ndimage.binary_dilation(left, iterations=4), ndimage.binary_dilation(tail, iterations=4)

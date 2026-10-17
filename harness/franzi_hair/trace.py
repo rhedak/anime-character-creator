@@ -43,6 +43,8 @@ _face = np.load(OUT / "face_mask.npy")
 _layer = hair | (head & ~ndimage.binary_dilation(_face, iterations=2))
 left_ = _layer & (((X_ < -0.5) & (Y_ > -0.3)) | ((X_ < -0.15) & (Y_ > 0.6)))
 tail_ = _layer & (((X_ > 0.5) & (Y_ > -0.3)) | ((X_ > 0.15) & (Y_ > 0.6)))
+_band = (np.abs(X_) < 0.6) & (Y_ > -0.05) & (Y_ < 0.5)
+left_, tail_ = left_ & ~_band, tail_ & ~_band
 hair = ndimage.gaussian_filter((hair & ~left_ & ~tail_).astype(float), 1.5) > 0.5
 mass_mask = ndimage.binary_closing(hair | head, iterations=3)
 
