@@ -73,6 +73,9 @@ function place(sk: Skeleton): Place {
 
 type Pt = readonly [number, number];
 
+/** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
+const GAP_TIP: Pt = [0.4, 0.955];
+
 /** A Catmull-Rom curve through `pts`, as cubic segments continuing from the first point (the pen is already there). */
 function smooth(pts: readonly Pt[]): string {
   let s = "";
@@ -111,7 +114,10 @@ export function adultBodyPath(sk: Skeleton): string {
     ...side(sign, ARM_OUTER),
   ];
   const handTip = (sign: number): Pt => [cx + sign * w(2.6, 0.69), y(2.7) - hs];
-  const apex = (sign: number): Pt => [cx + sign * (w(0.88, 0.41) - hs), y(0.88)];
+  const tip = (sign: number): Pt => [cx + sign * w(GAP_TIP[1], GAP_TIP[0]), y(GAP_TIP[1])];
+  // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
+  const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0)];
+  const capTor = (sign: number): Pt => [cx + sign * (w(1.0, 0.395) - hs * 0.4), y(1.0)];
   const legLine = (sign: number): Pt[] => [...side(sign, TORSO_SIDE), ...side(sign, LEG_OUTER)];
   const lastOuter = (sign: number): Pt => [cx + sign * (w(5.3, 0.349) - hs), y(5.4) - hs];
   const lastInner = (sign: number): Pt => [cx + sign * (w(5.3, 0.065) + hs), y(5.4) - hs];
@@ -145,7 +151,7 @@ export function adultBodyPath(sk: Skeleton): string {
   d += hand(L);
   d += smooth(rev(side(L, ARM_INNER)));
   const leg = legLine(L);
-  d += quad(apex(L), leg[0] as Pt);
+  d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
   d += smooth(leg);
   d += toes(L);
   // The inside of the left leg up to the crotch, across, and the same down the right leg.
@@ -155,7 +161,7 @@ export function adultBodyPath(sk: Skeleton): string {
   d += smooth(side(R, LEG_INNER));
   d += toes(R);
   d += smooth(rev(legLine(R)));
-  d += quad(apex(R), side(R, ARM_INNER)[0] as Pt);
+  d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
   d += smooth(side(R, ARM_INNER));
   {
     const tip = handTip(R);
@@ -190,8 +196,10 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
   const crease = [1, -1]
     .map((sign) => {
       const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
-      const pts = [P(0.455, 0.48), P(0.452, 0.62), P(0.447, 0.78), P(0.438, 0.92), P(0.426, 0.995)];
-      return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`;
+      // The arm's inner edge from the top of the armpit down: along the bust's outer side (widest about 0.455 H out at 0.8 H),
+      // then in to the gap's tip (GAP_TIP). Read off ref 04 (the contour at 5x, row by row).
+      const pts = [P(0.455, 0.48), P(0.454, 0.6), P(0.447, 0.7), P(0.455, 0.81), P(0.446, 0.87), P(0.418, 0.92), P(GAP_TIP[0], GAP_TIP[1])];
+      return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
     })
     .join("");
   return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />` + crease;

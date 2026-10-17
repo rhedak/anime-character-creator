@@ -35,4 +35,20 @@ Path("ts/src/body-adult-bust-data.ts").write_text(
     'import type { Chain } from "./tables.ts";\n\n'
     f"export const ADULT_BREAST: Chain = [{pt(start)}, [{body}]];\n"
 )
+# The breast's outer edge from the armpit down to the cup's lower outer corner, for the arm's inner outline to follow
+# (|x| in head heights, d below the chin), sampled from the agreed contour.
+outer = [(abs(x), d) for x, d in pts if 0.60 <= d <= 0.97 and x < -0.38]
+outer.sort(key=lambda q: q[1])
+keep, last = [], -1
+for x, d in outer:
+    if d - last >= 0.035:
+        keep.append((x, d))
+        last = d
+body_o = ", ".join(f"[{x:.4f}, {d:.4f}]" for x, d in keep)
+with open("ts/src/body-adult-bust-data.ts", "a") as fh:
+    fh.write(
+        "\n/** The outer edge of the breast, from the armpit down to the cup's lower outer corner: [|x|, d] samples. */\n"
+        f"export const ADULT_BREAST_OUTER: readonly (readonly [number, number])[] = [{body_o}];\n"
+    )
+print("outer edge samples", keep)
 print("wrote ts/src/body-adult-bust-data.ts")
