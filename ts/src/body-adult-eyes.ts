@@ -21,17 +21,28 @@ export const EYE_AT: Record<number, Pt> = { 1: [0.336, 0.28], [-1]: [0.307, 0.30
 /** The lid band's top edge, inner corner to the wing's tip. */
 const LID_TOP: Pt[] = [[-31, -11], [-23, -23], [-9, -31], [8, -32], [22, -28], [34, -19], [41, -13]];
 /** The lid band's lower edge, which is also the aperture's top, from the wing's tip back to the inner corner. */
-const LID_BOTTOM: Pt[] = [[41, -13], [35, -12], [27, -17], [14, -21], [0, -23], [-12, -21], [-23, -15], [-31, -11]];
+const LID_BOTTOM: Pt[] = [[41, -13], [35, -12], [27, -17], [14, -21], [0, -23], [-12, -20], [-23, -13], [-31, -9]];
 /**
  * The aperture's lower edge, from the outer corner round to the inner corner: a circular arc down from the wing's tip, a nearly
  * straight base under the iris, and a small rounded arc up to the inner corner (the reference's lens with a flat bottom, read
  * from the 8x grids). The iris is clipped to it, so its flat bottom is this base.
  */
-const LOWER: Pt[] = [[41, -13], [40, -6], [36, 3], [29, 11], [18, 17], [4, 19.5], [-10, 19.5], [-20, 17], [-27, 11], [-31, 2], [-31, -11]];
+const LOWER: Pt[] = [[41, -13], [40, -6], [36, 3], [29, 11], [18, 17], [4, 19.5], [-10, 19.5], [-20, 17], [-27, 11], [-31, 2], [-31, -9]];
 const IRIS: { c: Pt; rx: number; ry: number } = { c: [-1, -1], rx: 17, ry: 21 };
 const PUPIL: { c: Pt; rx: number; ry: number } = { c: [-4, 1], rx: 6, ry: 10 };
 const HILITE: { c: Pt; r: number } = { c: [-8, -14], r: 6.5 };
 const GLINT: { c: Pt; r: number } = { c: [7, 8], r: 2 };
+
+/**
+ * The left eye (the viewer's left) differs from the right in the reference: its wing runs about 4 px further out and its inner
+ * corner is about 3 px tighter. Applied to a point of the shared shape, in eye-frame pixels (x grows outward).
+ */
+function perEye(side: number, [x, y]: Pt): Pt {
+  if (side > 0) return [x, y];
+  const out = x > 30 ? 4 * Math.min(1, (x - 30) / 11) : 0;
+  const inner = x < -24 ? 3 * Math.min(1, (-24 - x) / 7) : 0;
+  return [x + out + inner, y];
+}
 
 /** Catmull-Rom through `pts` as cubic segments, the pen already at the first point. */
 function smooth(pts: readonly Pt[]): string {
@@ -58,7 +69,10 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
   const [ex, ey] = EYE_AT[side] as Pt;
   const cx = h.head_cx + side * ex * h.head_r;
   const cy = h.head_cy + ey * h.head_r;
-  const at = ([x, y]: Pt): Pt => [cx + side * x * k, cy + y * k];
+  const at = (q: Pt): Pt => {
+    const [x, y] = perEye(side, q);
+    return [cx + side * x * k, cy + y * k];
+  };
   const path = (pts: readonly Pt[]): string => {
     const a = pts.map(at);
     return `M ${fmt1((a[0] as Pt)[0])} ${fmt1((a[0] as Pt)[1])} ${smooth(a)}`;
@@ -102,7 +116,10 @@ export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; l
     const [ex, ey] = EYE_AT[side] as Pt;
     const cx = h.head_cx + side * ex * h.head_r;
     const cy = h.head_cy + ey * h.head_r;
-    const at = ([x, y]: Pt): Pt => [cx + side * x * k, cy + y * k];
+    const at = (q: Pt): Pt => {
+      const [x, y] = perEye(side, q);
+      return [cx + side * x * k, cy + y * k];
+    };
     return { side, aperture: [...LID_BOTTOM, ...[...LOWER].reverse()].map(at), lid: [...LID_TOP, ...LID_BOTTOM].map(at) };
   });
 }
