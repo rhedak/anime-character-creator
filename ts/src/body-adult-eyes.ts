@@ -147,6 +147,50 @@ function varStroke(pts: readonly Pt[], w: number, hold: number, wEnd: number, co
   return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(([x, y]) => `L ${fmt1(x)} ${fmt1(y)} `).join("")}Z" fill="${color}" /><circle cx="${fmt1(s0[0])}" cy="${fmt1(s0[1])}" r="${fmt2(w / 2)}" fill="${color}" />`;
 }
 
+/** `n` points per span along the Catmull-Rom curve through `pts`. */
+function sampleSmooth(pts: readonly Pt[], n = 6): Pt[] {
+  const out: Pt[] = [pts[0] as Pt];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)] as Pt;
+    const p1 = pts[i] as Pt;
+    const p2 = pts[i + 1] as Pt;
+    const p3 = pts[Math.min(pts.length - 1, i + 2)] as Pt;
+    for (let k = 1; k <= n; k++) {
+      const t = k / n;
+      const f = (a: number, b: number, c: number, d: number): number => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t * t + (-a + 3 * b - 3 * c + d) * t * t * t);
+      out.push([f(p0[0], p1[0], p2[0], p3[0]), f(p0[1], p1[1], p2[1], p3[1])]);
+    }
+  }
+  return out;
+}
+
+/** A filled leaf-shaped stroke along `pts`: a point at each end, widest in the middle. */
+function leafStroke(pts: readonly Pt[], w: number, color: string): string {
+  const n = pts.length;
+  const left: Pt[] = [];
+  const right: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = pts[Math.max(0, i - 1)] as Pt;
+    const b = pts[Math.min(n - 1, i + 1)] as Pt;
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const nx = -(b[1] - a[1]) / len;
+    const ny = (b[0] - a[0]) / len;
+    const t = i / (n - 1);
+    const half = (w / 2) * Math.sin(Math.PI * t) ** 0.7;
+    const q = pts[i] as Pt;
+    left.push([q[0] + nx * half, q[1] + ny * half]);
+    right.push([q[0] - nx * half, q[1] - ny * half]);
+  }
+  const poly = [...left, ...right.reverse()];
+  return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(([x, y]) => `L ${fmt1(x)} ${fmt1(y)} `).join("")}Z" fill="${color}" />`;
+}
+
+// Details read off the reference's left eye (the base eye; the right is its mirror), eye frame as above: the crease line above the
+// lid, and two lash flicks that fan down from the lid's inner end. From the 16x grids out/franzi/lashes-L-grid{,2}.png.
+const CREASE: Pt[] = [[18, -31.8], [12, -33.3], [6, -34.1], [-4, -33.6], [-11.5, -31.7], [-16.5, -29.2], [-20.3, -25.7], [-21.5, -23]];
+const LASH_1: Pt[] = [[-16.5, -20.7], [-20.6, -17.6], [-23, -12.3], [-23.7, -8.9]];
+const LASH_2: Pt[] = [[-14, -16.4], [-19, -12], [-22.7, -9.2]];
+
 /** Catmull-Rom through `pts` as cubic segments, the pen already at the first point. */
 function smooth(pts: readonly Pt[]): string {
   let s = "";
@@ -210,6 +254,10 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     varStroke(lowerLine().map(at), ink * 0.66, 0.55, ink * 0.16, OUTLINE),
     // the thin line on along the top of the white, growing out of the lid and tapering to a point
     taperedStroke(lidTail().map(at), ink * 0.9, OUTLINE),
+    // the crease line above the lid, and the lash flicks at its inner end
+    leafStroke(sampleSmooth(CREASE).map(at), 2.8 * k, shade(p.skin_tone, 0.5)),
+    taperedStroke(sampleSmooth(LASH_1).map(at), 3.2 * k, OUTLINE),
+    taperedStroke(sampleSmooth(LASH_2).map(at), 2.4 * k, OUTLINE),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
     `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
   ];
@@ -222,9 +270,9 @@ export function adultEyes(sk: Skeleton, p: CharacterParams): string {
 }
 
 /** The aperture and lid outlines in canvas units, for the harness's overlay on the reference (harness/franzi/eye_outline.ts). */
-export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; lid: Pt[] }[] {
+export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; lid: Pt[]; crease: Pt[]; lash1: Pt[]; lash2: Pt[] }[] {
   return [-1, 1].map((side) => {
     const at = placer(h, side);
-    return { side, aperture: apertureOutline().map(at), lid: lidBand().map(at) };
+    return { side, aperture: apertureOutline().map(at), lid: lidBand().map(at), crease: sampleSmooth(CREASE).map(at), lash1: sampleSmooth(LASH_1).map(at), lash2: sampleSmooth(LASH_2).map(at) };
   });
 }
