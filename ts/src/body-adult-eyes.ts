@@ -83,7 +83,13 @@ const onTop = (circ: { c: Pt; r: number }, x: number): Pt => [x, circ.c[1] - Mat
 const LID_END_OUT: Pt = onTop(GREEN, -15);
 const LID_END_IN: Pt = onTop(CYAN, -9);
 /** The lid band: green from the wing's tip over the top to the join, cyan back to where it ends outside, then the wing's lower line. */
-const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_END_OUT, TOP_VIA), ...arc(CYAN, LID_END_IN, CYAN_OUT, TOP_VIA)];
+/**
+ * The lid's lower edge is the cyan circle lowered by 3.4 px (the reference's lid is 10 to 12 px thick at the middle, the band between
+ * the owner's two circles 6.9); the aperture keeps the cyan circle itself, and the lid is drawn over the white and the iris top, as
+ * the reference's lid covers it.
+ */
+const CYAN_LID = { c: [CYAN.c[0], CYAN.c[1] + 3.4] as Pt, r: CYAN.r };
+const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_END_OUT, TOP_VIA), ...arc(CYAN_LID, LID_END_IN, CYAN_OUT, TOP_VIA)];
 /** The thin line along the aperture's top where the black lid has ended, to the crossing of the circles. */
 const lidTail = (): Pt[] => arc(CYAN, onTop(CYAN, 2), JOIN, onTop(CYAN, -12), 16);
 /** The aperture: the lower outline from the wing's tip round the base, up green's inner side, and back along cyan's lower edge. */
@@ -188,8 +194,8 @@ function leafStroke(pts: readonly Pt[], w: number, color: string): string {
 // Details read off the reference's left eye (the base eye; the right is its mirror), eye frame as above: the crease line above the
 // lid, and two lash flicks that fan down from the lid's inner end. From the 16x grids out/franzi/lashes-L-grid{,2}.png.
 const CREASE: Pt[] = [[18, -31.8], [12, -33.3], [6, -34.1], [-4, -33.6], [-11.5, -31.7], [-16.5, -29.2], [-20.3, -25.7], [-21.5, -23]];
-const LASH_1: Pt[] = [[-16.5, -20.7], [-20.6, -17.6], [-23, -12.3], [-23.7, -8.9]];
-const LASH_2: Pt[] = [[-14, -16.4], [-19, -12], [-22.7, -9.2]];
+const LASH_1: Pt[] = [[-16.5, -20.7], [-21, -17], [-24.2, -11.6], [-25.2, -6.2]];
+const LASH_2: Pt[] = [[-14, -16.4], [-19.5, -11.4], [-24, -7.4]];
 
 /** Catmull-Rom through `pts` as cubic segments, the pen already at the first point. */
 function smooth(pts: readonly Pt[]): string {
@@ -255,7 +261,7 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     // the thin line on along the top of the white, growing out of the lid and tapering to a point
     taperedStroke(lidTail().map(at), ink * 0.9, OUTLINE),
     // the crease line above the lid, and the lash flicks at its inner end
-    leafStroke(sampleSmooth(CREASE).map(at), 2.8 * k, shade(p.skin_tone, 0.5)),
+    leafStroke(sampleSmooth(CREASE).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
     taperedStroke(sampleSmooth(LASH_1).map(at), 3.2 * k, OUTLINE),
     taperedStroke(sampleSmooth(LASH_2).map(at), 2.4 * k, OUTLINE),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
