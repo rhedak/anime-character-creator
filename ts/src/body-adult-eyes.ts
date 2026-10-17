@@ -94,3 +94,15 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
 export function adultEyes(sk: Skeleton, p: CharacterParams): string {
   return oneEye(sk, p, -1, "adult-eye-l") + oneEye(sk, p, 1, "adult-eye-r");
 }
+
+/** The aperture and lid outlines in canvas units, for the harness's overlay on the reference (harness/franzi/eye_outline.ts). */
+export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; lid: Pt[] }[] {
+  const k = h.head_r / PX_PER_R;
+  return [-1, 1].map((side) => {
+    const [ex, ey] = EYE_AT[side] as Pt;
+    const cx = h.head_cx + side * ex * h.head_r;
+    const cy = h.head_cy + ey * h.head_r;
+    const at = ([x, y]: Pt): Pt => [cx + side * x * k, cy + y * k];
+    return { side, aperture: [...LID_BOTTOM, ...[...LOWER].reverse()].map(at), lid: [...LID_TOP, ...LID_BOTTOM].map(at) };
+  });
+}
