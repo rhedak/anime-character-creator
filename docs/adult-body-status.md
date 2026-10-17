@@ -11,7 +11,11 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 - Owner agreed (2026-10-17) to the CLAUDE.md amendment at stage 7 (adult build as its own decision: SFW rules, bare
   view in the harness only, age guard in the render code), and that the proper head, hands and feet for Franzi come
   after the body is done (stage 5, traced from the new references).
-- Checkpoint 1 passed (owner: overall yes, armpits fixed). Stage 4 done. Next action: stage 5a, the head and face from the new references.
+- Owner signed off (2026-10-17): the body, the chest, the bikini top and the briefs, the eye shape and lid. Head and hair still
+  being polished (5e). Next action: the hairline pass (trace it from the contrast-stretched hair layer, check with the overlays),
+  then 5d (preset) and stage 6 (garments). `PLAN.md` at the repo root points here with the order of work.
+- Last commit on `dev`: "Adult eyes: the lash flicks at the inner end removed". Gates were green (822 TS tests, refresh checks,
+  ruff, 1051 Python tests, body gate IoU 0.942). `ref/franzi/` is untracked; nothing is on `main`.
 
 ## Scoreboard
 
@@ -25,7 +29,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 5a head and face | done 2026-10-17: traced head and ears, face tuned | eyes 0.746 r apart (ref 0.75) | |
 | 5b hair | done 2026-10-17: `swept_ponytail` traced | silhouette matches the reference's by eye | |
 | 5c hands and feet | done 2026-10-17: G2 round 1 fixed (neck gap) | G0 IoU 0.942 | checkpoint 2 pending |
-| 5e head and face polish (before the garments) | started 2026-10-17 | | checkpoint 2b |
+| 5e head and face polish (before the garments) | eyes, brows, lid, crease done 2026-10-17; hairline pass next | | checkpoint 2b |
 | 5d Franzi preset | | | |
 | 6 garments | | | checkpoint 3 |
 | 7 guard, tests, catalogue, web | | | checkpoint 4 |
