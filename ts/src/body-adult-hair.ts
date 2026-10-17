@@ -11,7 +11,7 @@
 
 import { EXTRA_HAIRSTYLES, makeHairstyle } from "./core-head.ts";
 import type { Chain, Segment } from "./tables.ts";
-import { ADULT_HAIR_LINE, ADULT_HAIR_MASS, ADULT_HAIR_TOP_SEGMENTS } from "./body-adult-head-data.ts";
+import { ADULT_HAIR_LINE, ADULT_HAIR_MASS, ADULT_HAIR_STRANDS, ADULT_HAIR_TOP_SEGMENTS } from "./body-adult-head-data.ts";
 import type { Hairline } from "./core-head-cuts.ts";
 
 const [massStart, massSegments] = ADULT_HAIR_MASS;
@@ -27,7 +27,7 @@ const swept = makeHairstyle(
   (): Hairline => [lineStart, lineSegments, [straight(lineEnd, massStart), ...top]],
   (): Chain[] => [[massStart, top]],
   () => [],
-  { tip_range: [0.25, 0.7] },
+  { tip_range: [0.25, 0.7], strands: () => [...ADULT_HAIR_STRANDS], strand_weight: 0.5 },
 );
 
 EXTRA_HAIRSTYLES.swept_ponytail = swept;

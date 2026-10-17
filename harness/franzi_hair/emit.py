@@ -42,5 +42,18 @@ if hp.exists():
         chain("ADULT_HAIR_LINE", h["line"], "The hairline: the hair's inner edge against the face opening, from the jaw on the right up over the forehead to the left lock."),
         f"/** How many of the mass's segments, from its start (on the left lock, beside the hairline's end), run over the top and down the ponytail to the hairline's start. */\nexport const ADULT_HAIR_TOP_SEGMENTS = {k};\n",
     ]
+sp = OUT / "strands.json"
+if sp.exists():
+    import sys
+
+    sys.path.insert(0, "/Users/henrik/git/anime-character-creator/.claude/skills/trace-reference")
+    import trace_lib as tl
+
+    chains = []
+    for line in json.load(open(sp)):
+        pts = [tuple(q) for q in line]
+        chains.append(tl.fit_chain(pts, tl.simplify(pts, 0.012)))
+    body = ",\n  ".join(f"[{pt(st)}, [{', '.join(f'[{pt(c)}, {pt(e)}]' for c, e in sg)}]]" for st, sg in chains)
+    parts.append("/** Strand lines over the hair, open chains drawn by eye from the reference's hair layer (harness/franzi_hair/strands.py). */\n" f"export const ADULT_HAIR_STRANDS: readonly Chain[] = [\n  {body},\n];\n")
 Path("ts/src/body-adult-head-data.ts").write_text("\n".join(parts))
 print("wrote ts/src/body-adult-head-data.ts")

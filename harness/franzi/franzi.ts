@@ -12,7 +12,7 @@ export const FRANZI = characterParams({
   body: "adult_female",
   face_age: 1.0,
   skin_tone: "#ffd0b5",
-  hair_color: "#17181c",
+  hair_color: "#2a2d36",
   eye_color: "#c4922c",
   hairstyle: "swept_ponytail",
   hair_length: 0.5,
