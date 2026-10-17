@@ -179,7 +179,9 @@ function inkAttrs(sk: Skeleton, fill: string): string {
 /** The figure's skin: the whole body outline in one piece. */
 export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // The bikini top is drawn here, not in the chest layers, so the neck (the next layer) covers where its straps go behind it.
-  return adultSkin(sk, p) + adultBand(sk, p);
+  // The bust's tapered line goes on the skin and under the top, so only what the top leaves uncovered shows: the inner edges
+  // in the V and the lighter upper edge above the cups, as in the reference.
+  return adultSkin(sk, p) + adultBustLine(sk) + adultBand(sk, p);
 }
 
 /**
@@ -243,7 +245,7 @@ export interface Taper {
   readonly floor?: number;
 }
 
-export const DEFAULT_TAPER: Taper = { from: 0.47, to: 0.77, power: 1.4, floor: 0.5 };
+export const DEFAULT_TAPER: Taper = { from: 0.5, to: 0.95, power: 1.0, floor: 0.5 };
 
 /**
  * Each breast's edge as ONE filled shape of varying width: full weight on the underside and the lower inner edge, easing
