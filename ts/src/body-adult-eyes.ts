@@ -85,7 +85,7 @@ const LID_END_IN: Pt = onTop(CYAN, -9);
 /** The lid band: green from the wing's tip over the top to the join, cyan back to where it ends outside, then the wing's lower line. */
 const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_END_OUT, TOP_VIA), ...arc(CYAN, LID_END_IN, CYAN_OUT, TOP_VIA)];
 /** The thin line along the aperture's top where the black lid has ended, to the crossing of the circles. */
-const lidTail = (): Pt[] => arc(CYAN, LID_END_IN, JOIN, onTop(CYAN, -15), 8);
+const lidTail = (): Pt[] => arc(CYAN, onTop(CYAN, 2), JOIN, onTop(CYAN, -12), 16);
 /** The aperture: the lower outline from the wing's tip round the base, up green's inner side, and back along cyan's lower edge. */
 const apertureOutline = (): Pt[] => [
   WING,
@@ -95,7 +95,56 @@ const apertureOutline = (): Pt[] => [
   ...arc(CYAN, JOIN, CYAN_OUT, TOP_VIA).slice(1),
 ];
 /** The soft lower outline alone: wing tip, down the short line and along the base, and up green's inner side. */
-const lowerLine = (): Pt[] => [WING, CYAN_OUT, ...BASE, ...arc(GREEN, GREEN_LOW, JOIN, [GREEN.c[0] - GREEN.r, GREEN.c[1]], 10)];
+const lowerLine = (): Pt[] => [[WING[0] + (CYAN_OUT[0] - WING[0]) * 0.7, WING[1] + (CYAN_OUT[1] - WING[1]) * 0.7] as Pt, CYAN_OUT, ...BASE, ...arc(GREEN, GREEN_LOW, JOIN, [GREEN.c[0] - GREEN.r, GREEN.c[1]], 10)];
+
+/** A filled stroke along `pts` that is `w0` wide at the start and tapers to a point at the end (flat black, hard-edged). */
+function taperedStroke(pts: readonly Pt[], w0: number, color: string): string {
+  const n = pts.length;
+  const left: Pt[] = [];
+  const right: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = pts[Math.max(0, i - 1)] as Pt;
+    const b = pts[Math.min(n - 1, i + 1)] as Pt;
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const nx = -(b[1] - a[1]) / len;
+    const ny = (b[0] - a[0]) / len;
+    const half = (w0 / 2) * (1 - i / (n - 1)) ** 0.8;
+    const q = pts[i] as Pt;
+    left.push([q[0] + nx * half, q[1] + ny * half]);
+    right.push([q[0] - nx * half, q[1] - ny * half]);
+  }
+  const poly = [...left, ...right.reverse()];
+  return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(([x, y]) => `L ${fmt1(x)} ${fmt1(y)} `).join("")}Z" fill="${color}" />`;
+}
+
+/**
+ * A filled stroke along `pts` whose width falls with the distance along it: `w` at the start, held until `hold` of the length,
+ * then easing to `wEnd` at the end. Flat black, hard-edged; round at the start so it joins what it starts from.
+ */
+function varStroke(pts: readonly Pt[], w: number, hold: number, wEnd: number, color: string): string {
+  const n = pts.length;
+  const cum: number[] = [0];
+  for (let i = 1; i < n; i++) cum.push((cum[i - 1] as number) + Math.hypot((pts[i] as Pt)[0] - (pts[i - 1] as Pt)[0], (pts[i] as Pt)[1] - (pts[i - 1] as Pt)[1]));
+  const total = cum[n - 1] as number;
+  const left: Pt[] = [];
+  const right: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = pts[Math.max(0, i - 1)] as Pt;
+    const b = pts[Math.min(n - 1, i + 1)] as Pt;
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const nx = -(b[1] - a[1]) / len;
+    const ny = (b[0] - a[0]) / len;
+    const t = (cum[i] as number) / total;
+    const u = t <= hold ? 0 : (t - hold) / (1 - hold);
+    const half = ((w + (wEnd - w) * u * u * (3 - 2 * u)) / 2);
+    const q = pts[i] as Pt;
+    left.push([q[0] + nx * half, q[1] + ny * half]);
+    right.push([q[0] - nx * half, q[1] - ny * half]);
+  }
+  const poly = [...left, ...right.reverse()];
+  const s0 = pts[0] as Pt;
+  return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(([x, y]) => `L ${fmt1(x)} ${fmt1(y)} `).join("")}Z" fill="${color}" /><circle cx="${fmt1(s0[0])}" cy="${fmt1(s0[1])}" r="${fmt2(w / 2)}" fill="${color}" />`;
+}
 
 /** Catmull-Rom through `pts` as cubic segments, the pen already at the first point. */
 function smooth(pts: readonly Pt[]): string {
@@ -156,10 +205,10 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     `<circle cx="${fmt1(at(HILITE.c)[0])}" cy="${fmt1(at(HILITE.c)[1])}" r="${fmt1(HILITE.r * k)}" fill="#ffffff" />`,
     `<circle cx="${fmt1(at(GLINT.c)[0])}" cy="${fmt1(at(GLINT.c)[1])}" r="${fmt1(GLINT.r * k)}" fill="#ffffff" opacity="0.85" />`,
     `</g>`,
-    // the soft outline round the lower half of the aperture: thin, a dark brown, not the lid's hard black
-    `<path d="${poly(lowerLine(), false)}" fill="none" stroke="${shade(p.skin_tone, 0.42)}" stroke-width="${fmt2(ink * 0.55)}" stroke-linecap="round" stroke-linejoin="round" />`,
-    // the thin line on along the top of the white where the lid has ended
-    `<path d="${poly(lidTail(), false)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.5)}" stroke-linecap="round" />`,
+    // the outline round the lower half of the aperture: the same black as the lid, thinner, from where the lid ends
+    varStroke(lowerLine().map(at), ink * 0.66, 0.55, ink * 0.16, OUTLINE),
+    // the thin line on along the top of the white, growing out of the lid and tapering to a point
+    taperedStroke(lidTail().map(at), ink * 0.9, OUTLINE),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
     `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
   ];
