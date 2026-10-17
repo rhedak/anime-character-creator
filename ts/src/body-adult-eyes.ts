@@ -88,7 +88,8 @@ const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_END_OUT, TOP_VIA), ...arc(C
 const lidTail = (): Pt[] => arc(CYAN, onTop(CYAN, 2), JOIN, onTop(CYAN, -12), 16);
 /** The aperture: the lower outline from the wing's tip round the base, up green's inner side, and back along cyan's lower edge. */
 const apertureOutline = (): Pt[] => [
-  WING,
+  // Starts at the lid's lower corner, not the wing tip: the chord from the tip to the corner is the lid's own edge, and a white
+  // fill bounded by it showed as a hairline beside the black on both eyes.
   CYAN_OUT,
   ...BASE,
   ...arc(GREEN, GREEN_LOW, JOIN, [GREEN.c[0] - GREEN.r, GREEN.c[1]], 10),
