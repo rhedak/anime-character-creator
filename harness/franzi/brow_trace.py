@@ -34,6 +34,11 @@ for name, (x0, x1, y0, y1) in {"R": (684, 742, 254, 276), "L": (596, 640, 264, 2
     uy = ndimage.gaussian_filter1d(np.array([p[1] for p in up]), 1.5)
     ly = ndimage.gaussian_filter1d(np.array([p[1] for p in lo]), 1.5)
     poly = [(x, y) for x, y in zip(ux, uy)] + [(x, y) for x, y in zip(ux[::-1], ly[::-1])]
+    if name == "L":
+        # The brow runs on behind the hair strand that falls across it and tapers to a point at the big lock (read from the
+        # contrast-stretched view, out/franzi/browL-stretch.png): about 3 px thick at x=590, 2 px at x=577. The hair mask cut it at 596.
+        n_up = len(up)
+        poly = [(576.0, 274.2), (582.0, 273.2), (590.0, 271.8)] + poly + [(590.0, 275.0), (582.0, 275.6), (576.0, 276.0)]
     res[name] = [[(x - OX) / S, (y - OY) / S] for x, y in poly]
     print(name, "columns", len(up), "x", ux.min(), ux.max(), "thickness mid", round(float((ly - uy)[len(uy) // 2]), 1), "px")
 json.dump(res, open("out/franzi/brows.json", "w"))
