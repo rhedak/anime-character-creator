@@ -19,6 +19,7 @@ import { fmt1, fmt2 } from "./pynum.ts";
 import { shade } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
 import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
+import { ADULT_TEMPLE_SKIN_L } from "./body-adult-temple-data.ts";
 import { MOUTH_REALISTIC_DROP, MOUTH_Y, noseDot } from "./face.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
@@ -490,7 +491,11 @@ export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   const cut = h.head_cy - 0.05 * h.head_r;
   const top = `<clipPath id="adult-dome-top"><rect x="0" y="0" width="${fmt1(h.canvas_w)}" height="${fmt1(cut)}" /></clipPath>`;
   const outline = `<path d="${curve(h.head_cx, h.head_cy, h.head_r, ds, dsegs)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-dome-top)" />`;
-  return clip + adultLocks(sk, p) + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + top + outline;
+  // The pale strip of skin between the two falling strands at the left temple, which the traced face leaves out: skin over the
+  // hair, with the brow back on top of it (it runs across the strip in the reference).
+  const [ts0, tsegs] = ADULT_TEMPLE_SKIN_L;
+  const sliver = `<path d="${curve(h.head_cx, h.head_cy, h.head_r, ts0, tsegs)}" fill="${colorStr(p.skin_tone)}" />`;
+  return clip + adultLocks(sk, p) + sliver + adultBrows(h) + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + top + outline;
 }
 
 /** The brows: two filled, tapering shapes traced from the reference, thick at the outer end and thin toward the nose. */

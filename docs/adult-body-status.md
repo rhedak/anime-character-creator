@@ -41,6 +41,17 @@ hip_half_w 1.23, arm_half_w 0.14, arm_x 1.14, leg_half_w 0.38, neck_half_w 0.22,
 Predicted gate: the chibi limb and torso code on these anchors, so landmarks within 0.05 H but IoU about 0.80 to 0.88
 and a width failure at the hip and thigh (no hip curve, straight legs): G0 FAIL, which is expected at this stage.
 
+### 2026-10-17, why the lid looked too thick (owner's report)
+
+Measured, not guessed: the lid polygon is 5 to 8 px thick at the middle, the reference's 10 to 12, so the lid was not too
+thick. Three other things made it read so: (1) the shared brow bar sat on top of it (replaced by brows traced from the
+reference, `brow_trace.py`; the left one runs on behind the falling strand, read from a contrast-stretched view); (2) the traced
+face polygon had deep notches round both eyes (the eyes are dark, so not skin), and its full-weight outline ran along each lid,
+doubling it (fixed: the face is filled across each row from the brow to below the eyes before tracing, `face_trace.py`); (3) the
+pale strip of skin between the two falling strands at the left temple was not in the face trace, so the dome painted black over it
+(traced as its own shape, `slivers.py`, drawn over the hair with the brow back on top). Lesson: when something looks too heavy,
+measure each layer before blaming the one you drew last.
+
 ### 2026-10-17, review tools for head work (reuse them)
 
 Two overlays the owner asked to keep using at every matching step: `aligned.py NAME x0 y0 x1 y1` also writes

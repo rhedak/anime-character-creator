@@ -78,7 +78,16 @@ def symmetric_chain(mask, tol):
 
 
 # The face's own skin, with no hair interior: its top edge is the hairline, its sides the face's edge, its foot the jaw.
-out["face"] = symmetric_chain(ndimage.binary_closing(face, iterations=3), 0.01)
+# The eyes are dark, so the face skin has deep notches round them, and the outline stroke ran along each lid, doubling it. Fill the
+# face across each row between its outermost pixels (rows 240 to 400 of the reference: brow to below the eyes), so the outline
+# follows the face's real edge; the eyes, brows and lids are drawn over the skin.
+closed = ndimage.binary_closing(face, iterations=3)
+filled = closed.copy()
+for yy_ in range(240, 400):
+    xs_ = np.nonzero(closed[yy_])[0]
+    if len(xs_):
+        filled[yy_, xs_.min() : xs_.max() + 1] = True
+out["face"] = symmetric_chain(filled, 0.01)
 print("face segments", len(out["face"][1]))
 print("head segments", len(out["head"][1]))
 
