@@ -87,6 +87,23 @@ Side effect, which matches the reference: the small piece of back hair beside th
 reference does that this does not: its hair is in front of the bikini strap where they meet, ours is behind it, as the owner asked
 for the shoulder.
 
+### 2026-10-18, hair and face outlines smoothed (`fit_smooth` in `outline_trace.py`)
+
+The owner asked for the hair outline to be smoothed so it looks more natural. Measured first: the silhouette chain was 89 quadratics with a
+median length of 15 px, and 81 of its 89 joins turned the line by more than 10 degrees (51 by more than 25), because the edge is that of a
+ragged AI segmentation fitted with as few curves as stay within 2 px. Those kinks, not the overall shape, are what read as wobble.
+
+`fit_smooth` takes the mask edge, low-passes it along its length (sigma 7 px for the hair, 5 px for the face), blends the light smoothing
+(2 px) back in wherever the heavy one would move the edge more than about 2.5 px (so a narrow lock, the ponytail's wisp and the chin keep
+their points), resamples every 7 px and draws it as a quadratic B-spline (the curve through the midpoints of the polygon's sides with each
+vertex a control point), whose slope cannot jump at a join. The result stays within 1.9 px of the real edge (hair) and 1.7 px (face). It is
+now 278 + 16 curves for the hair and 105 for the face (more curves, each a short smooth one; the data file is 18 KB). The face got it too
+because the border where hair meets skin (curtain edges, temples, jaw) is part of how the hair reads, and it had the same kinks. Strips and
+ears keep the old fit (few curves, small).
+
+Not changed: the corner where the ponytail's extension polygon meets the mask's left edge (about ref 718, 450) is a real corner in the mask
+and shows as a slight angle beside the jaw.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so
