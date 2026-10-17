@@ -83,10 +83,16 @@ def symmetric_chain(mask, tol):
 # follows the face's real edge; the eyes, brows and lids are drawn over the skin.
 closed = ndimage.binary_closing(face, iterations=3)
 filled = closed.copy()
-for yy_ in range(240, 400):
+# The extent over the rows around, not the row's own: where the black wing line cuts a row the skin starts further in, and the
+# fill left a thin horizontal slit that the outline stroked (found with the face outline drawn over the reference).
+ext = {}
+for yy_ in range(225, 415):
     xs_ = np.nonzero(closed[yy_])[0]
     if len(xs_):
-        filled[yy_, xs_.min() : xs_.max() + 1] = True
+        ext[yy_] = (xs_.min(), xs_.max())
+for yy_ in range(240, 400):
+    win = [ext[k] for k in range(yy_ - 5, yy_ + 6) if k in ext]
+    filled[yy_, min(w[0] for w in win) : max(w[1] for w in win) + 1] = True
 out["face"] = symmetric_chain(filled, 0.01)
 print("face segments", len(out["face"][1]))
 print("head segments", len(out["head"][1]))

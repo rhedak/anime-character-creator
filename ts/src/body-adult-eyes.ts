@@ -29,8 +29,22 @@ const CYAN = { c: [4.1, 3.2] as Pt, r: 27.6 };
 const WING: Pt = [43.5, -6.25];
 /** Where the lid's lower edge ends on the outer side, on its way down to the base. */
 const CYAN_OUT: Pt = [28.25, 9.4];
-/** Where the lid band ends on the inner side: green and cyan meet there. */
-const JOIN: Pt = [-22.6, -10.5];
+/**
+ * Where the lid band ends on the inner side: the point where the two circles cross, so the band tapers to a point there rather
+ * than ending in a blunt stub (the arcs end at different radii if they stop at a point that is on neither circle).
+ */
+const JOIN: Pt = (() => {
+  const dx = CYAN.c[0] - GREEN.c[0];
+  const dy = CYAN.c[1] - GREEN.c[1];
+  const d = Math.hypot(dx, dy);
+  const a = (GREEN.r * GREEN.r - CYAN.r * CYAN.r + d * d) / (2 * d);
+  const h = Math.sqrt(GREEN.r * GREEN.r - a * a);
+  const mx = GREEN.c[0] + (a * dx) / d;
+  const my = GREEN.c[1] + (a * dy) / d;
+  const p1: Pt = [mx + (h * dy) / d, my - (h * dx) / d];
+  const p2: Pt = [mx - (h * dy) / d, my + (h * dx) / d];
+  return p1[0] < p2[0] ? p1 : p2; // the inner one (x outward-positive, so the smaller x)
+})();
 /** The base's points, outer to inner, and where green meets it on the inner side. */
 // Two straight lines (the owner's pink marks on the left eye): outer end, a low point, and green's lower end on the inner side.
 const BASE: Pt[] = [[21.25, 16.25], [11.25, 20.75]];
@@ -60,8 +74,18 @@ function arc(circ: { c: Pt; r: number }, a: Pt, b: Pt, via: Pt, n = 18): Pt[] {
 }
 
 const TOP_VIA: Pt = [0, -40];
+/** A point on the upper branch of `circ` at eye-frame x. */
+const onTop = (circ: { c: Pt; r: number }, x: number): Pt => [x, circ.c[1] - Math.sqrt(circ.r * circ.r - (x - circ.c[0]) * (x - circ.c[0]))];
+/**
+ * The black lid ends well before the circles cross (owner's circle on the reference: past this the area is skin): on green at
+ * x = -15 and on cyan at x = -9, joined by a short end. The thin line carries on along cyan to the crossing (`lidTail`).
+ */
+const LID_END_OUT: Pt = onTop(GREEN, -15);
+const LID_END_IN: Pt = onTop(CYAN, -9);
 /** The lid band: green from the wing's tip over the top to the join, cyan back to where it ends outside, then the wing's lower line. */
-const lidBand = (): Pt[] => [...arc(GREEN, WING, JOIN, TOP_VIA), ...arc(CYAN, JOIN, CYAN_OUT, TOP_VIA)];
+const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_END_OUT, TOP_VIA), ...arc(CYAN, LID_END_IN, CYAN_OUT, TOP_VIA)];
+/** The thin line along the aperture's top where the black lid has ended, to the crossing of the circles. */
+const lidTail = (): Pt[] => arc(CYAN, LID_END_IN, JOIN, onTop(CYAN, -15), 8);
 /** The aperture: the lower outline from the wing's tip round the base, up green's inner side, and back along cyan's lower edge. */
 const apertureOutline = (): Pt[] => [
   WING,
@@ -134,6 +158,8 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     `</g>`,
     // the soft outline round the lower half of the aperture: thin, a dark brown, not the lid's hard black
     `<path d="${poly(lowerLine(), false)}" fill="none" stroke="${shade(p.skin_tone, 0.42)}" stroke-width="${fmt2(ink * 0.55)}" stroke-linecap="round" stroke-linejoin="round" />`,
+    // the thin line on along the top of the white where the lid has ended
+    `<path d="${poly(lidTail(), false)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.5)}" stroke-linecap="round" />`,
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
     `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
   ];

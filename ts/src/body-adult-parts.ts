@@ -495,7 +495,19 @@ export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   // hair, with the brow back on top of it (it runs across the strip in the reference).
   const [ts0, tsegs] = ADULT_TEMPLE_SKIN_L;
   const sliver = `<path d="${curve(h.head_cx, h.head_cy, h.head_r, ts0, tsegs)}" fill="${colorStr(p.skin_tone)}" />`;
-  return clip + adultLocks(sk, p) + sliver + adultBrows(h) + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + top + outline;
+  // The face skin back over the hair in the eye band: the hair pieces and the dome cover skin beside the eyes that the reference
+  // shows (the owner's circles on the outer corners). Only the fill and the face's own outline, clipped to the band rows; the
+  // brows and eyes are drawn last, over it.
+  const bandTop = h.head_cy - 0.1 * h.head_r;
+  const bandBottom = h.head_cy + 0.55 * h.head_r;
+  const [fs, fsegs] = ADULT_FACE;
+  const faceD = curve(h.head_cx, h.head_cy, h.head_r, fs, fsegs);
+  const band = `<clipPath id="adult-face-band"><rect x="0" y="${fmt1(bandTop)}" width="${fmt1(h.canvas_w)}" height="${fmt1(bandBottom - bandTop)}" /></clipPath>`;
+  const patch =
+    band +
+    `<g clip-path="url(#adult-face-band)"><path d="${faceD}" fill="${colorStr(p.skin_tone)}" />` +
+    `<path d="${faceD}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" /></g>`;
+  return clip + adultLocks(sk, p) + sliver + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + top + outline + patch + adultBrows(h) + adultEyes(h, p);
 }
 
 /** The brows: two filled, tapering shapes traced from the reference, thick at the outer end and thin toward the nose. */
@@ -517,8 +529,6 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
   const f = p.face;
   const sw = strokeW(sk);
   const parts: string[] = [];
-  parts.push(adultBrows(h));
-  parts.push(adultEyes(h, p));
   parts.push(noseDot(h, sw));
   const mouthY = h.head_cy + h.head_r * (MOUTH_Y + MOUTH_REALISTIC_DROP * faceBuild(sk) + f.mouth_drop);
   const half = h.head_r * 0.12 * f.mouth_width;
