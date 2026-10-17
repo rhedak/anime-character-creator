@@ -41,6 +41,14 @@ hip_half_w 1.23, arm_half_w 0.14, arm_x 1.14, leg_half_w 0.38, neck_half_w 0.22,
 Predicted gate: the chibi limb and torso code on these anchors, so landmarks within 0.05 H but IoU about 0.80 to 0.88
 and a width failure at the hip and thigh (no hip curve, straight legs): G0 FAIL, which is expected at this stage.
 
+### 2026-10-17, review tools for head work (reuse them)
+
+Two overlays the owner asked to keep using at every matching step: `aligned.py NAME x0 y0 x1 y1` also writes
+`overlay-NAME.png`, a 50% blend of our render over the reference; `harness/franzi_hair/overlay_lines.py` draws our traced
+outlines and lines in contrasting colours on the reference. Owner's read of the head (2026-10-17): most of the visible hair
+mismatch is the eyes clashing with the reference's (ours are rounder and larger than its almonds) and the hairlines not lining
+up; do the eyes next, then redo the hairline from the contrast-stretched view and recheck the hair.
+
 ### 2026-10-17, chest polish rounds with the owner (bust contour, armpit, tapered line, straps)
 
 Sequence, so a fresh context knows why the chest looks as it does: the bust contour was traced over ref 04 with the owner

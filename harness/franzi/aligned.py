@@ -47,4 +47,9 @@ zoom = float(os.environ.get("ZOOM", "1"))
 if zoom != 1:
     im = im.resize((round(im.width * zoom), round(im.height * zoom)), Image.LANCZOS)
 im.save(f"out/franzi/aligned-{name}.png")
+# 50% overlay of ours on the reference, same alignment
+ov = Image.blend(ref, ren, 0.5)
+if zoom != 1:
+    ov = ov.resize((round(ov.width * zoom), round(ov.height * zoom)), Image.LANCZOS)
+ov.save(f"out/franzi/overlay-{name}.png")
 print("wrote", f"out/franzi/aligned-{name}.png", "scale", round(scale, 4))
