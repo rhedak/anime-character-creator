@@ -45,6 +45,33 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 
 ## Findings
 
+### 2026-10-18, outlines rebuilt from the visible regions (`outline_masks.py`, `outline_trace.py`, `outline_view.py`)
+
+The owner's report: the hair outline clashes with the face and looks odd in places. Looked at the four tiles (each temple, each side of the
+jaw) against the reference first. The faults were structural, not a matter of a few numbers: the hair was cut into a dome and two free
+pieces by straight lines, each with its own outline and its own stroke clip, so there were steps where they met (about y 215), a flat
+ledge at the eye-band cut, hook corners where the cut masks left their edges, an eye-band patch of face skin over the hair with a tick at
+each end, and two outlines on every skin/hair edge (the face's and the hair's) that never quite coincided. The face had been mirrored
+from its right half, and its eye-band polygon was a rectangle.
+
+Now every visible region is its own mask read from the reference, and each is traced to its real edge: the face (skin, with the eyes,
+lashes and brows counted as face since they are not hair; the thin slivers between a curtain and the face's edge line are taken out by an
+opening at the temples), the ears, the small skin strips beside the face (under each ear, the temple slivers), and the hair silhouette
+(every visible hair pixel plus the skin regions shrunk 4 px, so its edge only ever meets the page, the neck or the shoulder and never
+doubles a skin line). Drawn in this order: silhouette with strands clipped to it, strips, ears, then the face over them, then brows and
+eyes. `ADULT_HAIR_DOME/LEFT/TAIL`, `ADULT_FACE`, `ADULT_EAR_*` and the temple sliver are no longer used (the data files are left in place).
+Chains sit 2 px outside the skin (the drawn black line's centre) and 1 px inside the hair edge (hair has no drawn line).
+
+Found on the way: the jaw's drawn line is about 2 px wide and its anti-aliased edge is warm enough to bridge the face to the neck, so the
+face component is labelled on an eroded mask and grown back; a row-wise fill between the skin's outermost pixels cannot reach the strip
+left of the outer eye corner and left a rectangular hole round the eye; the segmentation counts the black brows as hair and cut a slit
+into the face from the curtain side (closed vertically in the eye rows); the first grow/shrink formula used a linear threshold and moved
+the edge the wrong distance (it is a normal-CDF threshold now).
+
+Open: the strips are still a little lumpy (the small blobs at the left outer eye corner and under the right ear); the ponytail's tip and
+the right side cut are as before; the silhouette follows the reference's ragged AI-segmentation edge at 1.6 px smoothing, which is
+slightly wobbly on the left side of the skull.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so
