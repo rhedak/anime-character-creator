@@ -11,6 +11,7 @@ import { OUTLINE, curve, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
+import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_EAR_L, ADULT_EAR_R, ADULT_HEAD } from "./body-adult-head-data.ts";
 import type { CharacterParams } from "./params.ts";
@@ -172,7 +173,31 @@ function inkAttrs(sk: Skeleton, fill: string): string {
 /** The figure's skin: the whole body outline in one piece. */
 export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // The bikini top is drawn here, not in the chest layers, so the neck (the next layer) covers where its straps go behind it.
-  return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />` + adultBand(sk, p);
+  return adultSkin(sk, p) + adultBand(sk, p);
+}
+
+/** The body outline alone, in skin colour. */
+export function adultSkin(sk: Skeleton, p: CharacterParams): string {
+  return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />`;
+}
+
+/**
+ * The two breasts' edges as outlines, traced from ref 04 and agreed with the owner (body-adult-bust-data.ts). For the
+ * harness's bare chest view only (harness/franzi/bare_chest.ts): nothing in the figure's own render draws them, and the
+ * bikini top covers where they lie. An outline and nothing inside it: no nipples, no other detail, ever.
+ */
+export function adultBreastOutlines(sk: Skeleton): string {
+  const { cx, y, w } = place(sk);
+  const [start, segs] = ADULT_BREAST;
+  const sw = fmt2(outlineW(strokeW(sk), 0.7));
+  return [1, -1]
+    .map((sign) => {
+      const map = (q: Pt): Pt => [cx + sign * w(q[1], -q[0]), y(q[1])];
+      const s0 = map(start);
+      const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
+      return `<path d="${d}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`;
+    })
+    .join("");
 }
 
 /** Underwear below the waist, always worn: briefs from the hip line to the top of the thigh. */
