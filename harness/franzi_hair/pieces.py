@@ -54,8 +54,8 @@ def fit(mask, tol, blur):
 
 res = {
     "dome": fit(dome, 0.012, 1.5),
-    "left": fit(left_d, 0.008, 1.0),  # thin: little smoothing, so its point survives
-    "tail": fit(tail_d, 0.012, 3.0),
+    "left": fit(left_d, 0.012, 2.2),  # thin: moderate smoothing, so its point survives
+    "tail": fit(tail_d, 0.016, 4.0),
 }
 json.dump(res, open(OUT / "pieces.json", "w"), default=lambda o: list(o), indent=1)
 for k, (st, sg) in res.items():

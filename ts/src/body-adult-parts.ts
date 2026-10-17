@@ -16,7 +16,9 @@ import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_EAR_L, ADULT_EAR_R, ADULT_FACE, ADULT_HAIR_DOME, ADULT_HAIR_LEFT, ADULT_HAIR_STRANDS, ADULT_HAIR_TAIL } from "./body-adult-head-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
+import { shade } from "./colorutil.ts";
 import type { PartTable } from "./parts.ts";
+import type { Chain } from "./tables.ts";
 import { replace as replaceSk, type Skeleton } from "./skeleton.ts";
 
 type Knots = readonly (readonly [number, number])[];
@@ -423,6 +425,42 @@ export function adultLocks(sk: Skeleton, p: CharacterParams): string {
 }
 
 /**
+ * One strand line as a single filled shape that swells from a point, holds its weight and thins to a point again, so a strand
+ * starts and ends inside the hair like a pen stroke and never stops abruptly. A flat black shape, hard-edged.
+ */
+function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string): string {
+  const pts: Pt[] = [];
+  let p0: Pt = start;
+  for (const [c, e] of segs) {
+    for (let i = 0; i < 6; i++) {
+      const t = i / 6;
+      pts.push([(1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * c[0] + t * t * e[0], (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * c[1] + t * t * e[1]]);
+    }
+    p0 = e;
+  }
+  pts.push(p0);
+  const n = pts.length;
+  const abs = (q: Pt): Pt => [h.head_cx + q[0] * h.head_r, h.head_cy + q[1] * h.head_r];
+  const P = pts.map(abs);
+  const left: Pt[] = [];
+  const right: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = P[Math.max(0, i - 1)] as Pt;
+    const b = P[Math.min(n - 1, i + 1)] as Pt;
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const nx = -(b[1] - a[1]) / len;
+    const ny = (b[0] - a[0]) / len;
+    const t = i / (n - 1);
+    const half = (weight / 2) * Math.min(1, t / 0.2, (1 - t) / 0.4);
+    const q = P[i] as Pt;
+    left.push([q[0] + nx * half, q[1] + ny * half]);
+    right.push([q[0] - nx * half, q[1] - ny * half]);
+  }
+  const poly = [...left, ...right.reverse()];
+  return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(line).join("")}Z" fill="${color}" />`;
+}
+
+/**
  * Franzi's front hair: the strand lines over the dome (clipped to it), then the two free pieces. The dome itself is the cut's
  * mass, drawn behind the head, and the face's skin (whose top edge is the hairline) covers its middle, so no front fill is
  * needed.
@@ -430,15 +468,18 @@ export function adultLocks(sk: Skeleton, p: CharacterParams): string {
 export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
   const [ds, dsegs] = ADULT_HAIR_DOME;
-  const clip = `<clipPath id="adult-dome-clip"><path d="${curve(h.head_cx, h.head_cy, h.head_r, ds, dsegs)}" /></clipPath>`;
+  // The strands run over the dome and the two free pieces together, so they are clipped to the three shapes' union.
+  const shapes = [ADULT_HAIR_DOME, ADULT_HAIR_LEFT, ADULT_HAIR_TAIL].map(([a, b]) => `<path d="${curve(h.head_cx, h.head_cy, h.head_r, a, b)}" />`).join("");
+  const clip = `<clipPath id="adult-dome-clip">${shapes}</clipPath>`;
   const sw = fmt2(outlineW(strokeW(sk), 0.5));
-  const strands = ADULT_HAIR_STRANDS.map(([s0, sg]) => `<path d="${curve(h.head_cx, h.head_cy, h.head_r, s0, sg, false)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`).join("");
+  void sw;
+  const strands = ADULT_HAIR_STRANDS.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.5), shade(p.hair_color, 2.6, 0.9))).join("");
   // The pieces' fill reaches up into the dome and covers its outline there, so the outline is drawn again over them, above the
   // temples (below them the pieces draw their own).
   const cut = h.head_cy - 0.05 * h.head_r;
   const top = `<clipPath id="adult-dome-top"><rect x="0" y="0" width="${fmt1(h.canvas_w)}" height="${fmt1(cut)}" /></clipPath>`;
   const outline = `<path d="${curve(h.head_cx, h.head_cy, h.head_r, ds, dsegs)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-dome-top)" />`;
-  return clip + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + adultLocks(sk, p) + top + outline;
+  return clip + adultLocks(sk, p) + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + top + outline;
 }
 
 /** The ears, drawn before the head so the face covers their inner edge. */
