@@ -185,11 +185,12 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
  */
 export function adultSkin(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
-  const sw = fmt2(outlineW(strokeW(sk), 0.7));
+  // The same weight as the arm's own outline: it is that outline carried up to the armpit, not a lighter interior line.
+  const sw = fmt2(outlineW(strokeW(sk)));
   const crease = [1, -1]
     .map((sign) => {
       const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
-      const pts = [P(0.455, 0.48), P(0.452, 0.62), P(0.447, 0.78), P(0.438, 0.92), P(0.423, 1.0)];
+      const pts = [P(0.455, 0.48), P(0.452, 0.62), P(0.447, 0.78), P(0.438, 0.92), P(0.426, 0.995)];
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`;
     })
     .join("");
