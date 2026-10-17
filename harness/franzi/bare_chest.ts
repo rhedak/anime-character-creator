@@ -3,7 +3,7 @@
 // on them: no nipples, no other detail, no underwear top (the briefs stay on). Reached only from here; nothing in the figure's
 // own render or in `CharacterParams` can ask for it.
 //
-//   node harness/franzi/bare_chest.ts OUT.svg [closed|open|thin]
+//   node harness/franzi/bare_chest.ts OUT.svg [closed|open|thin|taper-a|taper-b|taper-c]
 //
 // closed: both breasts as closed loops. open: the top arc left out (the line starts under the strap side and ends over the
 // inner edge), so each breast reads as a form fading into the chest. thin: the closed loop, its upper half tapering to a
@@ -11,7 +11,7 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { adultBreastOutlines, adultBreastPoints, adultSkin, ADULT_PARTS } from "../../ts/src/body-adult-parts.ts";
+import { adultBreastOutlines, adultBreastPoints, adultBustLine, adultSkin, ADULT_PARTS } from "../../ts/src/body-adult-parts.ts";
 import { characterParams, outfit } from "../../ts/src/model.ts";
 import { ALL_PARTS, renderStages } from "../../ts/src/render.ts";
 import { FRANZI } from "./franzi.ts";
@@ -27,8 +27,14 @@ if (out === undefined) {
 if (!(FRANZI.face_age >= 0.9)) throw new Error("the bare view is for adults only (face_age at the floor)");
 const p = characterParams({ ...FRANZI, outfit: outfit({ ...FRANZI.outfit }) });
 const none = (): string => "";
+const TAPERS: Record<string, { from: number; to: number; power: number }> = {
+  "taper-a": { from: 0.47, to: 0.77, power: 1.4 },
+  "taper-b": { from: 0.5, to: 0.95, power: 1.0 },
+  "taper-c": { from: 0.47, to: 0.66, power: 2.0 },
+};
 const outline = (sk: Skeleton, v: string): string => {
   if (v === "closed") return adultBreastOutlines(sk);
+  if (v in TAPERS) return adultBustLine(sk, TAPERS[v]);
   const sw = outlineW(strokeW(sk), 0.7);
   const seg = (a: [number, number], b: [number, number], width: number): string =>
     `<path d="M ${a[0].toFixed(1)} ${a[1].toFixed(1)} L ${b[0].toFixed(1)} ${b[1].toFixed(1)}" stroke="${OUTLINE}" stroke-width="${width.toFixed(2)}" stroke-linecap="round" fill="none" />`;

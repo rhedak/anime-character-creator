@@ -234,6 +234,54 @@ export function adultBreastPoints(sk: Skeleton, per = 10): EdgePoint[][] {
   });
 }
 
+/** How the tapered bust line's weight falls from the underside to the top: `from` is the depth where it has reached nothing much, `to` where it is full. */
+export interface Taper {
+  readonly from: number;
+  readonly to: number;
+  readonly power: number;
+}
+
+export const DEFAULT_TAPER: Taper = { from: 0.47, to: 0.77, power: 1.4 };
+
+/**
+ * Each breast's edge as ONE filled shape of varying width: full weight on the underside and the lower inner edge, easing
+ * down along both sides to a hairline at the top. A hard-edged flat shape, not a colour gradient, in the way the hair's tapered
+ * tip lines are. The width follows depth alone (smoothstep from `taper.from` to `taper.to`, raised to `taper.power`), so
+ * what the bikini top covers hides the heavy part and the inner edges, seen in the V, thin as they rise. The ends are the
+ * same hairline, so the ring closes without a visible join.
+ */
+export function adultBustLine(sk: Skeleton, taper: Taper = DEFAULT_TAPER): string {
+  const full = outlineW(strokeW(sk), 0.8);
+  const rings: string[] = [];
+  for (const side of adultBreastPoints(sk, 12)) {
+    const n = side.length - 1; // the chain closes on its first point
+    const pts = side.slice(0, n);
+    const width = pts.map((q) => {
+      const t = Math.min(1, Math.max(0, (q.d - taper.from) / (taper.to - taper.from)));
+      const smooth01 = t * t * (3 - 2 * t);
+      return full * (0.06 + 0.94 * Math.pow(smooth01, taper.power));
+    });
+    const outer: Pt[] = [];
+    const inner: Pt[] = [];
+    for (let i = 0; i < n; i++) {
+      const a = (pts[(i + n - 1) % n] as EdgePoint).pos;
+      const b = (pts[(i + 1) % n] as EdgePoint).pos;
+      const tx = b[0] - a[0];
+      const ty = b[1] - a[1];
+      const len = Math.hypot(tx, ty) || 1;
+      const nx = -ty / len;
+      const ny = tx / len;
+      const q = (pts[i] as EdgePoint).pos;
+      const h = (width[i] as number) / 2;
+      outer.push([q[0] + nx * h, q[1] + ny * h]);
+      inner.push([q[0] - nx * h, q[1] - ny * h]);
+    }
+    const poly = (a: readonly Pt[]): string => `M ${fmt1((a[0] as Pt)[0])} ${fmt1((a[0] as Pt)[1])} ` + a.slice(1).map(line).join("") + "Z";
+    rings.push(`<path d="${poly(outer)} ${poly(inner)}" fill="${OUTLINE}" fill-rule="evenodd" />`);
+  }
+  return rings.join("");
+}
+
 /**
  * The two breasts' edges as outlines, traced from ref 04 and agreed with the owner (body-adult-bust-data.ts). For the
  * harness's bare chest view only (harness/franzi/bare_chest.ts): nothing in the figure's own render draws them, and the
