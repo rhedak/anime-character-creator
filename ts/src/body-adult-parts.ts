@@ -410,30 +410,6 @@ export function adultHead(sk: Skeleton, p: CharacterParams): string {
 }
 
 /**
- * Franzi's hair behind the face, and the skin beside it. One silhouette, the visible hair plus the face, ears and strips shrunk a
- * few pixels (harness/franzi_hair/outline_masks.py), so its edge only ever meets the page, the neck or the shoulder and never
- * doubles a line the skin regions draw; the strand lines over it, clipped to it; then the strips of skin beside the face and the
- * ears, each its own traced region. Drawn after the body and before the face. It replaces the earlier dome, two free pieces and
- * the eye-band patch, whose straight cuts and separate outlines left steps, ledges and doubled lines.
- */
-export function adultHairBack(sk: Skeleton, p: CharacterParams): string {
-  const h = onHead(sk);
-  const sw = fmt2(outlineW(strokeW(sk)));
-  const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
-  const hair = ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
-  const clip = `<clipPath id="adult-hair-clip">${ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>`;
-  const strands = ADULT_HAIR_STRANDS.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.5), shade(p.hair_color, 2.6, 0.9))).join("");
-  const skin = (c: Chain, weight: number): string => `<path d="${d(c)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), weight))}" stroke-linejoin="round" />`;
-  return (
-    clip +
-    hair +
-    `<g clip-path="url(#adult-hair-clip)">${strands}</g>` +
-    ADULT_SKIN_STRIPS.map((c) => skin(c, 1)).join("") +
-    [...ADULT_SKIN_EAR_L, ...ADULT_SKIN_EAR_R].map((c) => skin(c, 0.8)).join("")
-  );
-}
-
-/**
  * One strand line as a single filled shape that swells from a point, holds its weight and thins to a point again, so a strand
  * starts and ends inside the hair like a pen stroke and never stops abruptly. A flat black shape, hard-edged.
  */
@@ -467,6 +443,34 @@ function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color:
   }
   const poly = [...left, ...right.reverse()];
   return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(line).join("")}Z" fill="${color}" />`;
+}
+
+/**
+ * Franzi's hair, drawn behind the whole body (the `_hair_tail` slot, before the torso). One silhouette, the visible hair plus the
+ * face, ears and strips shrunk a few pixels (harness/franzi_hair/outline_masks.py), so its edge only ever meets the page, the neck
+ * or the shoulder and never doubles a line the skin regions draw, with the strand lines over it, clipped to it. The ponytail runs on
+ * past the shoulder line, so the shoulder covers its end and it reads as going behind the shoulder. It replaces the earlier dome, two
+ * free pieces and the eye-band patch, whose straight cuts and separate outlines left steps, ledges and doubled lines.
+ */
+export function adultHairBehind(sk: Skeleton, p: CharacterParams): string {
+  const h = onHead(sk);
+  const sw = fmt2(outlineW(strokeW(sk)));
+  const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
+  const hair = ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
+  const clip = `<clipPath id="adult-hair-clip">${ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>`;
+  const strands = ADULT_HAIR_STRANDS.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.5), shade(p.hair_color, 2.6, 0.9))).join("");
+  return clip + hair + `<g clip-path="url(#adult-hair-clip)">${strands}</g>`;
+}
+
+/**
+ * The skin beside the face and the ears, each its own traced region, drawn over the body and the hair (the `_ears` slot, after the
+ * torso): the strips of neck and temple that show between a curtain and the cheek, and the two ears. The face goes over them.
+ */
+export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
+  const h = onHead(sk);
+  const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
+  const skin = (c: Chain, weight: number): string => `<path d="${d(c)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), weight))}" stroke-linejoin="round" />`;
+  return ADULT_SKIN_STRIPS.map((c) => skin(c, 1)).join("") + [...ADULT_SKIN_EAR_L, ...ADULT_SKIN_EAR_R].map((c) => skin(c, 0.8)).join("");
 }
 
 /** What is drawn over the face: the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */
@@ -563,6 +567,7 @@ export const ADULT_PARTS = {
   _head: adultHead,
   _hair_front: adultHairFront,
   _face: adultFace,
-  _ears: adultHairBack,
+  _ears: adultSkinBeside,
+  _hair_tail: adultHairBehind,
   _hair_mass: none,
 };

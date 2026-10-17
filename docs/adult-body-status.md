@@ -72,6 +72,21 @@ Open: the strips are still a little lumpy (the small blobs at the left outer eye
 the right side cut are as before; the silhouette follows the reference's ragged AI-segmentation edge at 1.6 px smoothing, which is
 slightly wobbly on the left side of the skull.
 
+### 2026-10-18, the ponytail goes behind the shoulder
+
+The owner asked for the ponytail to be extended so it looks as going behind the shoulders. In the reference its end tapers to a point exactly
+where the shoulder's line crosses it (the shoulder's top is at y 506 to 516 under it); ours stopped in a rounded end just above our
+shoulder, with a sliver of page between it and the neck, because the hair was drawn over the body and its mask ended there. Two changes:
+the hair mask is extended down past the shoulder line and left to the neck (a polygon in `outline_masks.py`, its right edge carrying on
+the mask's own taper, x 799 to 790 over rows 490 to 513, then dropping behind the shoulder), and the whole hair silhouette is drawn
+behind the body (`adultHairBehind`, the shared `_hair_tail` slot, before the torso) so the shoulder and neck cover the extension. The skin
+strips and ears stay over the body (`adultSkinBeside`, the `_ears` slot) and the face goes over them. A first version dropped the right
+edge vertically at x 800 and left a small step above the shoulder line; carrying the taper removed it.
+
+Side effect, which matches the reference: the small piece of back hair beside the neck is behind the neck now, not over it. One thing the
+reference does that this does not: its hair is in front of the bikini strap where they meet, ours is behind it, as the owner asked
+for the shoulder.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so

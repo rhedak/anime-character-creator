@@ -101,6 +101,16 @@ hair = ndimage.binary_fill_holes(seg | (dark & box & ndimage.binary_dilation(seg
 hair &= ~face
 hair = ndimage.gaussian_filter(hair.astype(float), 1.0) > 0.5
 
+# --- the ponytail runs on behind the shoulder. In the reference its end tapers to a point exactly where the shoulder's line crosses it
+# (the shoulder's top is at y 506 to 516 under it), so the hair appears to go behind. The mask stops there, which in the render leaves
+# a rounded end above the shoulder and a sliver of page between it and the neck. Extend it down past the shoulder line and left to
+# the neck, into the part the body covers when the hair is drawn behind it (render order: the silhouette first, then the body).
+from PIL import ImageDraw
+ext = Image.new("L", (W, H), 0)
+d = ImageDraw.Draw(ext)
+d.polygon([(718, 450), (734, 490), (752, 500), (761, 505), (783, 510), (790, 516), (791, 575), (700, 575), (700, 450)], fill=255)  # the right edge carries on the taper the mask has at rows 490 to 513 (x 799 to 790), then drops behind the shoulder
+hair = hair | (np.array(ext) > 0)
+
 # --- the silhouette
 sink_face = ndimage.binary_erosion(face, iterations=SINK)
 sink_ears = ndimage.binary_erosion(ear_r | ear_l | (strips & ~face), iterations=max(1, SINK - 1))
