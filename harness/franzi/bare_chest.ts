@@ -29,7 +29,8 @@ const p = characterParams({ ...FRANZI, outfit: outfit({ ...FRANZI.outfit }) });
 const none = (): string => "";
 const TAPERS: Record<string, { from: number; to: number; power: number }> = {
   "taper-a": { from: 0.47, to: 0.77, power: 1.4 },
-  "taper-b": { from: 0.5, to: 0.95, power: 1.0 },
+  "taper-b": { from: 0.5, to: 0.95, power: 1.0, floor: 0.5 },
+  "taper-b2": { from: 0.5, to: 0.95, power: 1.0, floor: 0.6 },
   "taper-c": { from: 0.47, to: 0.66, power: 2.0 },
 };
 const outline = (sk: Skeleton, v: string): string => {

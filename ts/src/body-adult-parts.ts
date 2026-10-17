@@ -239,9 +239,11 @@ export interface Taper {
   readonly from: number;
   readonly to: number;
   readonly power: number;
+  /** The weight at the top as a share of the full weight. A fraction of a pixel breaks up when rasterised, so never near zero. */
+  readonly floor?: number;
 }
 
-export const DEFAULT_TAPER: Taper = { from: 0.47, to: 0.77, power: 1.4 };
+export const DEFAULT_TAPER: Taper = { from: 0.47, to: 0.77, power: 1.4, floor: 0.5 };
 
 /**
  * Each breast's edge as ONE filled shape of varying width: full weight on the underside and the lower inner edge, easing
@@ -251,7 +253,7 @@ export const DEFAULT_TAPER: Taper = { from: 0.47, to: 0.77, power: 1.4 };
  * same hairline, so the ring closes without a visible join.
  */
 export function adultBustLine(sk: Skeleton, taper: Taper = DEFAULT_TAPER): string {
-  const full = outlineW(strokeW(sk), 0.8);
+  const full = outlineW(strokeW(sk), 0.9);
   const rings: string[] = [];
   for (const side of adultBreastPoints(sk, 12)) {
     const n = side.length - 1; // the chain closes on its first point
@@ -259,7 +261,8 @@ export function adultBustLine(sk: Skeleton, taper: Taper = DEFAULT_TAPER): strin
     const width = pts.map((q) => {
       const t = Math.min(1, Math.max(0, (q.d - taper.from) / (taper.to - taper.from)));
       const smooth01 = t * t * (3 - 2 * t);
-      return full * (0.06 + 0.94 * Math.pow(smooth01, taper.power));
+      const floor = taper.floor ?? 0.5;
+      return full * (floor + (1 - floor) * Math.pow(smooth01, taper.power));
     });
     const outer: Pt[] = [];
     const inner: Pt[] = [];
