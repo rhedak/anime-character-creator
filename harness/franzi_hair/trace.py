@@ -28,12 +28,30 @@ import trace_lib as tl  # noqa: E402
 OUT = Path("out/franzi_hair")
 OX, OY, S = 660.0, 270.5, 175.7
 ERODE = 3
-TOL = 0.026
+TOL = 0.012
 
 hair = ndimage.binary_erosion(ndimage.binary_fill_holes(np.array(Image.open("ref/franzi/segments/04-bikini-fullbody/black-hair.png"))[..., 3] > 128), iterations=ERODE)
 head = np.load(OUT / "head_mask.npy")
 face = np.load(OUT / "face_mask.npy")
-mass_mask = hair | head
+# The layer's edge is ragged (it is a segmented AI image), and the strand tips make notches: smooth both masks before tracing,
+# and close the small hollows between the ponytail and the neck, where the reference's hair meets the shoulder.
+hair = ndimage.gaussian_filter(hair.astype(float), 3.0) > 0.5
+mass_mask = ndimage.binary_closing(hair | head, iterations=12)
+# The ponytail hangs behind the neck and over the shoulder: its inner side is hidden by the neck, so fill the hollow beside the
+# neck by taking the convex hull of the part below the jaw on the viewer's right.
+from PIL import Image as _I, ImageDraw as _D  # noqa: E402
+from scipy.spatial import ConvexHull  # noqa: E402
+
+_yy, _xx = np.mgrid[0 : mass_mask.shape[0], 0 : mass_mask.shape[1]]
+_part = mass_mask & (_xx > OX + 0.1 * S) & (_yy > OY + 0.75 * S)
+_py, _px = np.nonzero(_part)
+_hull = ConvexHull(np.stack([_px, _py], 1))
+_img = _I.new("L", mass_mask.shape[::-1], 0)
+_D.Draw(_img).polygon([tuple(map(float, np.stack([_px, _py], 1)[v])) for v in _hull.vertices], fill=255)
+mass_mask = mass_mask | ((np.array(_img) > 128) & (_xx > OX + 0.1 * S))
+# round the hull's corners: a heavy blur and a threshold, below the jaw only, so the head and fringe keep their traced edge
+_soft = ndimage.gaussian_filter(mass_mask.astype(float), 9.0) > 0.5
+mass_mask = np.where(_yy > OY + 0.8 * S, _soft, mass_mask)
 
 
 def to_r(pts):
