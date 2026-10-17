@@ -8,7 +8,7 @@
 import { metadataBlock } from "./attribution.ts";
 import "./body-adult-hair.ts";
 import { ADULT_BODY_TYPES } from "./body-adult.ts";
-import { ADULT_PARTS } from "./body-adult-parts.ts";
+import { ADULT_PARTS, withLoweredHead } from "./body-adult-parts.ts";
 import { skeletonFor } from "./body.ts";
 import { documentWrap, namespaceIds, soft, softStrokeWidths } from "./character.ts";
 import { characterParams, validateFinish } from "./model.ts";
@@ -52,7 +52,7 @@ export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, s
   validateFinish(typed);
   const p = plainParams(typed);
   // An adult body draws its own torso, legs and underwear; the head, hair, face and garments are the shared parts.
-  const parts: PartTable = shared === ALL_PARTS && Object.hasOwn(ADULT_BODY_TYPES, p.body) ? { ...shared, ...ADULT_PARTS } : shared;
+  const parts: PartTable = shared === ALL_PARTS && Object.hasOwn(ADULT_BODY_TYPES, p.body) ? { ...shared, ...withLoweredHead(shared), ...ADULT_PARTS } : shared;
   const sk = opts.sk ?? skeletonFor(p);
   const missing = new Set<string>();
   const stages = new Map<string, string | null>();

@@ -11,7 +11,7 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { adultBreastOutlines, adultBreastPoints, adultBustLine, adultSkin, ADULT_PARTS } from "../../ts/src/body-adult-parts.ts";
+import { adultBreastOutlines, adultBreastPoints, adultBustLine, adultSkin, ADULT_PARTS, withLoweredHead } from "../../ts/src/body-adult-parts.ts";
 import { characterParams, outfit } from "../../ts/src/model.ts";
 import { ALL_PARTS, renderStages } from "../../ts/src/render.ts";
 import { FRANZI } from "./franzi.ts";
@@ -60,6 +60,7 @@ const outline = (sk: Skeleton, v: string): string => {
 };
 const parts = {
   ...ALL_PARTS,
+  ...withLoweredHead(ALL_PARTS),
   ...ADULT_PARTS,
   _torso: (sk: Skeleton, q: CharacterParams) => adultSkin(sk, q) + outline(sk, variant),
   _underwear_top: none,

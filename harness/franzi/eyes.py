@@ -27,6 +27,6 @@ sizes = ndimage.sum(amber, lab, range(1, n + 1))
 idx = np.argsort(sizes)[-2:] + 1
 cs = sorted((ndimage.center_of_mass(lab == i) for i in idx), key=lambda c: c[1])
 r = 35.8967 * 4
-cx, cy = 200 * 4, 61.4192 * 4
+cx, cy = 200 * 4, (61.4192 + 0.07 * 35.8967) * 4  # the head hangs 0.07 radii below the skeleton's chin line (HEAD_DROP)
 print("ours   x", [round((c[1] - cx) / r, 3) for c in cs], "y", [round((c[0] - cy) / r, 3) for c in cs], "distance", round((cs[1][1] - cs[0][1]) / r, 3))
 print("ref    x [-0.38, 0.37] y [0.28, 0.28] distance 0.75")

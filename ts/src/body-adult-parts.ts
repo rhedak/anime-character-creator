@@ -16,7 +16,8 @@ import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_EAR_L, ADULT_EAR_R, ADULT_HEAD } from "./body-adult-head-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
-import type { Skeleton } from "./skeleton.ts";
+import type { PartTable } from "./parts.ts";
+import { replace as replaceSk, type Skeleton } from "./skeleton.ts";
 
 type Knots = readonly (readonly [number, number])[];
 
@@ -352,19 +353,48 @@ export function adultBand(sk: Skeleton, p: CharacterParams): string {
 }
 
 /**
+ * How far the head hangs below the skeleton's chin line, in head radii. The body is mapped from the reference with its chin row
+ * at the skeleton's chin, but the reference's drawn chin is 0.06 head heights below that row (the drawn chin tip is at row 455,
+ * not 434) and ours is 0.025 below, so against the body our head sat 0.035 head heights (0.07 radii) too high and the neck
+ * looked too long. Found by the aligned comparison (harness/franzi/aligned.py). Every part drawn on the head takes the skeleton
+ * through `onHead`.
+ */
+export const HEAD_DROP = 0.07;
+
+/** The skeleton as the head parts see it: the head centre lowered by `HEAD_DROP` radii, everything else as it was. */
+export const onHead = (sk: Skeleton): Skeleton => replaceSk(sk, { head_cy: sk.head_cy + HEAD_DROP * sk.head_r });
+
+/** The shared parts that draw on the head, which the adult body wraps so they see the lowered head. */
+export const HEAD_PARTS = [
+  "_hair_defs", "_hair_mass", "_hair_front", "_hair_tail", "_hair_knot", "_hair_tie", "_hair_clip", "_brows_over_hair", "_face",
+  "_mask", "_beard", "_glasses", "_goggles_strap", "_goggles", "_blindfold", "_hat_underside", "_hat", "_headscarf",
+] as const;
+
+/** `shared` with every head part taking the lowered head. */
+export function withLoweredHead(shared: PartTable): PartTable {
+  const out: Record<string, ((...a: any[]) => any) | undefined> = {};
+  for (const name of HEAD_PARTS) {
+    const fn = shared[name];
+    if (fn !== undefined) out[name] = (sk: Skeleton, ...rest: unknown[]) => fn(onHead(sk), ...rest);
+  }
+  return out;
+}
+
+/**
  * The adult head: the skin of the face traced from ref/franzi/ (body-adult-head-data.ts), narrower than the chibi's round
  * skull, with the jaw coming down to a point at the chin. The hair drawn over it hides the skull's top and sides.
  */
 export function adultHead(sk: Skeleton, p: CharacterParams): string {
   const [start, segs] = ADULT_HEAD;
-  const d = curve(sk.head_cx, sk.head_cy, sk.head_r, start, segs);
+  const h = onHead(sk);
+  const d = curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   return `<path d="${d}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" />`;
 }
 
 /** The ears, drawn before the head so the face covers their inner edge. */
 export function adultEars(sk: Skeleton, p: CharacterParams): string {
   return [ADULT_EAR_L, ADULT_EAR_R]
-    .map(([start, segs]) => `<path d="${curve(sk.head_cx, sk.head_cy, sk.head_r, start, segs)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.8))}" stroke-linejoin="round" />`)
+    .map(([start, segs]) => `<path d="${curve(onHead(sk).head_cx, onHead(sk).head_cy, sk.head_r, start, segs)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.8))}" stroke-linejoin="round" />`)
     .join("");
 }
 

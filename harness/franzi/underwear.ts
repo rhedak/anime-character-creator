@@ -10,7 +10,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { characterParams, outfit } from "../../ts/src/model.ts";
 import { skeletonFor } from "../../ts/src/body.ts";
-import { ADULT_PARTS } from "../../ts/src/body-adult-parts.ts";
+import { ADULT_PARTS, withLoweredHead } from "../../ts/src/body-adult-parts.ts";
 import { ALL_PARTS, renderCharacter, renderStages } from "../../ts/src/render.ts";
 
 const [body, out, heightArg, mode] = process.argv.slice(2);
@@ -30,7 +30,7 @@ const p = characterParams({
 mkdirSync(dirname(out), { recursive: true });
 if (mode === "silhouette") {
   const none = (): string => "";
-  const parts = { ...ALL_PARTS, ...ADULT_PARTS, _legs_and_boots: none, _underwear_top: none };
+  const parts = { ...ALL_PARTS, ...withLoweredHead(ALL_PARTS), ...ADULT_PARTS, _legs_and_boots: none, _underwear_top: none };
   writeFileSync(out, renderStages(p, { metadata: false }, parts).stages.get("doc") as string);
 } else {
   writeFileSync(out, renderCharacter(p, null, null, false));

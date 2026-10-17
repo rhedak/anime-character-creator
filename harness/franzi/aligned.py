@@ -41,5 +41,10 @@ w, h = ref.size
 im = Image.new("RGB", (2 * w + 20, h), "white")
 im.paste(ref, (0, 0))
 im.paste(ren, (w + 20, 0))
+import os
+
+zoom = float(os.environ.get("ZOOM", "1"))
+if zoom != 1:
+    im = im.resize((round(im.width * zoom), round(im.height * zoom)), Image.LANCZOS)
 im.save(f"out/franzi/aligned-{name}.png")
 print("wrote", f"out/franzi/aligned-{name}.png", "scale", round(scale, 4))
