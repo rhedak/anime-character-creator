@@ -21,17 +21,19 @@ in the render code.
 | 0 to 3: target, gate, profile, torso and limbs | done, owner signed off the body |
 | 4: bust, bikini top, briefs | done, owner signed off the chest, top and underwear |
 | 5a to 5c: head, hair, hands and feet | built; head and hair being polished (5e) |
-| 5e: head and face polish | in progress: eyes, brows, lid, crease done and approved by eye; hairline pass next |
+| 5e: head and face polish | in progress: eyes, brows, lid, crease approved by eye; hairline pass done (uncommitted, awaiting the owner's look), lock-to-dome steps next |
 | 5d: Franzi preset in `presets.ts` | not started |
 | 6: garments (dirndl, blouse, shorts) | not started |
 | 7: age guard, rules tests, catalogue, web, CLAUDE.md amendment | not started |
 
 ### Next up, in order
 
-1. **Hairline pass.** Trace the hairline from the contrast-stretched hair layer, draw it on the reference, check with the 50% overlay,
-   then recheck the whole hair against the finished eyes. Known open items: the left temple and the strands there, the ponytail's
-   tip (a wedge, the reference flicks out), the left ear is hidden, the strand lines are hand-placed (about a dozen against the
-   reference's many), the hair colour is near-black with lighter strands (tune the contrast once the traces are right).
+1. **Hair, after the hairline pass.** The hairline itself is done (the face chain above the brows is traced as it is, includes the
+   forehead's shadow strip, smoothed; details in `docs/adult-body-status.md`). Left from the whole-hair recheck: the steps in the
+   silhouette where the lock pieces meet the dome (about y 215 on both sides), a flat ledge on the left lock's inner edge under the
+   eye, the ponytail's tip (a wedge, the reference flicks out) and a flat cut on its right side, the left ear is hidden, the strand
+   lines are hand-placed (about a dozen against the reference's many), the hair colour is near-black with lighter strands (tune
+   the contrast once the traces are right).
 2. **Smaller eye leftovers**: the lid is slightly heavy at the wing end, a thin tail runs along the top of the white at the inner
    end (the owner removed the lash flicks), the lower lash tick is missing.
 3. **5d**: the Franzi preset (the harness version is `harness/franzi/franzi.ts`).

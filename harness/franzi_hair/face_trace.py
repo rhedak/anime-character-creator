@@ -93,7 +93,85 @@ for yy_ in range(225, 415):
 for yy_ in range(240, 400):
     win = [ext[k] for k in range(yy_ - 5, yy_ + 6) if k in ext]
     filled[yy_, min(w[0] for w in win) : max(w[1] for w in win) + 1] = True
-out["face"] = symmetric_chain(filled, 0.01)
+# Hairline pass: above the brows the face is traced as it is, not mirrored from the right half, and smoothed. Mirroring drew the
+# left forehead about 0.05 radii wider than the reference's (its left curtain falls over the forehead), and the AI image's ragged
+# segmentation left stair-steps along the whole hairline. Below HAIR_ROW (the eye band the owner signed off) the symmetric trace is
+# kept; the two are blended over BLEND_ROWS so the edge has no seam.
+HAIR_ROW, BLEND_ROWS, HAIR_SIGMA = 253, 25, 2.5
+cols = np.arange(filled.shape[1])
+mirror = 2 * int(OX) - cols
+ok = (mirror >= 0) & (mirror < filled.shape[1])
+left_half = np.zeros_like(filled)
+left_half[:, cols[ok]] = filled[:, mirror[ok]]
+sym = np.where(cols[None, :] < int(OX), left_half, filled)
+# The skin test above (distance from the lit skin colour under 70) leaves out the shadow the hair casts on the forehead, a strip
+# about 8 px wide along the hairline ((214,154,123) against the lit (252,208,181)), so the hairline sat on its inner edge. It is
+# skin: warm (red minus blue about 85, hair is 0) and light. Take warm pixels that touch the face, in the hairline rows only.
+warm = ((rgb[..., 0] - rgb[..., 2]) > 50) & (rgb.mean(2) > 110) & (im[..., 3] > 128)
+warm[HAIR_ROW + BLEND_ROWS :] = False
+lab_w, _ = ndimage.label(warm | filled, structure=np.ones((3, 3)))
+touching = np.unique(lab_w[filled & (lab_w > 0)])
+shadowed = np.isin(lab_w, touching[touching > 0])
+smooth = ndimage.gaussian_filter(shadowed.astype(float), HAIR_SIGMA) > 0.5
+hairline = smooth.copy()
+hairline[HAIR_ROW + BLEND_ROWS :] = sym[HAIR_ROW + BLEND_ROWS :]
+# Through the blend rows the two edges are interpolated row by row. Blending the masks themselves flips the whole gap between the
+# two edges at once and leaves a horizontal ledge.
+for r in range(HAIR_ROW, HAIR_ROW + BLEND_ROWS):
+    t = (r - HAIR_ROW + 1) / (BLEND_ROWS + 1)
+    a, b = np.nonzero(smooth[r])[0], np.nonzero(sym[r])[0]
+    if len(a) and len(b):
+        lo, hi = round((1 - t) * a.min() + t * b.min()), round((1 - t) * a.max() + t * b.max())
+        hairline[r] = False
+        hairline[r, lo : hi + 1] = True
+hairline_mask = ndimage.binary_dilation(hairline, iterations=3)
+
+
+def reverse_chain(start, segs):
+    """The same quadratic chain walked the other way: each segment's control stays, its end becomes the previous end."""
+    starts = [start] + [e for _, e in segs[:-1]]
+    return segs[-1][1], [(c, s) for (c, _), s in zip(reversed(segs), reversed(starts))]
+
+
+def mirror_chain(start, segs):
+    return (-start[0], start[1]), [((-c[0], c[1]), (-e[0], e[1])) for c, e in segs]
+
+
+def symmetric_below(mask, y_join, tol):
+    """One closed chain, mirrored below `y_join` and free above it.
+
+    Fitting the whole loop at once picks different marks on the two sides and kinks the chin, so the lower part (cheeks, jaw, chin)
+    is fitted on the right side and mirrored, as the symmetric trace did, and only the forehead is fitted as it is.
+    """
+    pts = to_r(tl.boundary(mask))
+    # The chin's foot is a jagged few pixels wide, so its lowest pixel is not on the centre line: take the one nearest it.
+    low = max(p[1] for p in pts) - 0.1
+    k = min((i for i, p in enumerate(pts) if p[1] >= low), key=lambda i: abs(pts[i][0]))
+    loop = pts[k:] + pts[:k]
+    if loop[12][0] < 0:  # walk up the right side first
+        loop = [loop[0]] + loop[:0:-1]
+    j = next(i for i, p in enumerate(loop) if p[1] <= y_join)
+    m = max(i for i, p in enumerate(loop) if p[1] <= y_join)
+    # The lower arc is the one the owner signed off, so it is taken from the symmetric trace's own curve (which has no pixel
+    # sawtooth) rather than from the mask: fitting the mask's chin gave a bumpy one.
+    old = symmetric_chain(filled, tol)
+    op = tl.sample_chain(tuple(old[0]), [(tuple(c), tuple(e)) for c, e in old[1]], 8)
+    ko = min((i for i, p in enumerate(op) if p[1] >= max(q[1] for q in op) - 0.1), key=lambda i: abs(op[i][0]))
+    ol = op[ko:] + op[:ko]
+    if ol[12][0] < 0:
+        ol = [ol[0]] + ol[:0:-1]
+    jo = next(i for i, p in enumerate(ol) if p[1] <= y_join)
+    right = ol[: jo + 1][::-1]  # from the join down to the chin
+    right[-1] = (0.0, right[-1][1])
+    a_start, a_segs = tl.fit_chain(right, tl.simplify(right, tol))
+    upper = [right[0]] + loop[j + 1 : m] + [(-right[0][0], right[0][1])]
+    u_start, u_segs = tl.fit_chain(upper, tl.simplify(upper, tol))
+    l_start, l_segs = mirror_chain(a_start, a_segs)
+    b_start, b_segs = reverse_chain(a_start, a_segs)
+    return u_start, [*u_segs, *l_segs, *b_segs]
+
+
+out["face"] = symmetric_below(hairline_mask, (HAIR_ROW + BLEND_ROWS + 3 - OY) / S, 0.01)
 print("face segments", len(out["face"][1]))
 print("head segments", len(out["head"][1]))
 

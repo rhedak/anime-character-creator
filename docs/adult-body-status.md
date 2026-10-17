@@ -12,10 +12,19 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
   view in the harness only, age guard in the render code), and that the proper head, hands and feet for Franzi come
   after the body is done (stage 5, traced from the new references).
 - Owner signed off (2026-10-17): the body, the chest, the bikini top and the briefs, the eye shape and lid. Head and hair still
-  being polished (5e). Next action: the hairline pass (trace it from the contrast-stretched hair layer, check with the overlays),
-  then 5d (preset) and stage 6 (garments). `PLAN.md` at the repo root points here with the order of work.
-- Last commit on `dev`: "Adult eyes: the lash flicks at the inner end removed". Gates were green (822 TS tests, refresh checks,
-  ruff, 1051 Python tests, body gate IoU 0.942). `ref/franzi/` is untracked; nothing is on `main`.
+  being polished (5e). The hairline pass is done but uncommitted and not yet seen by the owner (see the first finding below).
+  Next action: the owner's look at the hairline, then the steps where the lock pieces meet the dome, then 5d (preset) and
+  stage 6 (garments). `PLAN.md` at the repo root points here with the order of work.
+- Last commit on `dev`: "PLAN.md: pointer to the Franzi and adult-body campaign, where it stands and what is next". Uncommitted:
+  `harness/franzi_hair/face_trace.py` and `ts/src/body-adult-head-data.ts` (the hairline pass). Gates green on it (823 TS tests
+  with 7 skipped, typecheck, refresh checks, ruff, 1051 Python tests, body gate IoU 0.957). `ref/franzi/` is tracked on `dev`
+  now; nothing is on `main`.
+- Running the harness in a fresh worktree: `cd ts && npm ci` first (typecheck needs `typescript`); `./harness/run.sh` goes through
+  `uv`, which in a sandbox needs `UV_CACHE_DIR` pointed at a writable directory; the hair scripts hard-code a
+  `/Users/henrik/...` path to `trace_lib`, so run them with `PYTHONPATH=.claude/skills/trace-reference`; `out/` is ignored, so
+  make `out/franzi` and `out/franzi_hair` and run `harness/franzi/measure.py` once (it writes `target.png` that the body gate
+  reads). The hair chain is rebuilt with `face_trace.py`, `trace.py`, `pieces.py`, `slivers.py`, `strands.py --emit`, `emit.py`,
+  in that order; from a clean tree that reproduces the committed data byte for byte.
 
 ## Scoreboard
 
@@ -29,12 +38,38 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 5a head and face | done 2026-10-17: traced head and ears, face tuned | eyes 0.746 r apart (ref 0.75) | |
 | 5b hair | done 2026-10-17: `swept_ponytail` traced | silhouette matches the reference's by eye | |
 | 5c hands and feet | done 2026-10-17: G2 round 1 fixed (neck gap) | G0 IoU 0.942 | checkpoint 2 pending |
-| 5e head and face polish (before the garments) | eyes, brows, lid, crease done 2026-10-17; hairline pass next | | checkpoint 2b |
+| 5e head and face polish (before the garments) | eyes, brows, lid, crease done 2026-10-17; hairline pass done (uncommitted, owner has not seen it); lock-to-dome steps next | | checkpoint 2b |
 | 5d Franzi preset | | | |
 | 6 garments | | | checkpoint 3 |
 | 7 guard, tests, catalogue, web | | | checkpoint 4 |
 
 ## Findings
+
+### 2026-10-17, hairline pass (`face_trace.py`; the face chain above the brows)
+
+The hairline is the top edge of the face chain (`ADULT_FACE`), so the pass is a change to how that chain is traced. Compared at
+4x with `aligned.py` and its 50% overlay, three things were wrong, each measured before it was changed:
+
+1. **The left forehead was a mirror of the right.** The face was made symmetric from its right half, which put the left
+   hairline about 0.05 radii (7 to 9 reference px) too far out; the reference's left curtain falls over the forehead. Above the
+   brows the face is now traced as it is.
+2. **The shadow the hair casts on the forehead was left out of the skin.** A strip about 8 px wide along both sides, `(214,154,123)`
+   against the lit `(252,208,181)`, is 153 from the lit colour and the skin test cuts at 70, so the hairline sat on the strip's inner
+   edge. It is skin (red minus blue about 85, hair is 0). Warm light pixels that touch the face are taken in the hairline rows only;
+   `face_mask.npy`, which `trace.py` and `pieces.py` read, is unchanged.
+3. **The edge was ragged**, stair-steps from the AI image's segmentation. The hairline rows are smoothed (sigma 2.5 px).
+
+Two mistakes on the way, kept so they are not repeated: blending the two masks over the transition rows flipped the whole gap at
+once and left a horizontal ledge (the edges are interpolated row by row now); and fitting the whole loop at once kinked the chin,
+whose bottom is a pixel sawtooth (below the join the chain is the old symmetric trace's own curve, so cheeks, jaw and chin are
+the ones the owner signed off). Measured, new against old: at most 2.0 px (mean 0.4) from the eye band down, 3 to 12 px above it.
+The forehead now has the reference's rounded trapezoid instead of a hexagon.
+
+Seen in the same renders and not fixed (candidates for the next pass): the lock pieces and the dome meet in a visible step in
+the silhouette at about y 215 on both sides (the pieces are dilated 4 px and their fill is unstroked above the stroke clip, so it
+pokes past the dome's outline); a flat ledge on the left lock's inner edge under the eye (the band cut at 0.5 radii); a thin tick
+at each temple where the face-band patch's clip starts; the pale temple strip now floats a little off the forehead edge; the
+ponytail's tip is a wedge and its right side has a flat cut; the left ear is hidden; the strand lines are still hand-placed.
 
 ### 2026-10-17, stage 2: profile (prediction, written before the first run)
 
