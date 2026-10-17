@@ -37,7 +37,8 @@ export const FRANZI = characterParams({
     mouth_curve: 0.6,
     mouth_width: 0.55,
     mouth_drop: 0.06,
-    blush: 0.1,
+    // no blush: the shared blush code redraws the chibi head's outline, which would show round the adult head
+    blush: 0,
   }),
   outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null, underwear_top: true }),
 });

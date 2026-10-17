@@ -10,24 +10,20 @@
 // in front is enough.
 
 import { EXTRA_HAIRSTYLES, makeHairstyle } from "./core-head.ts";
-import type { Chain, Segment } from "./tables.ts";
-import { ADULT_HAIR_LINE, ADULT_HAIR_MASS, ADULT_HAIR_STRANDS, ADULT_HAIR_TOP_SEGMENTS } from "./body-adult-head-data.ts";
+import type { Chain } from "./tables.ts";
+import { ADULT_HAIR_DOME } from "./body-adult-head-data.ts";
 import type { Hairline } from "./core-head-cuts.ts";
 
-const [massStart, massSegments] = ADULT_HAIR_MASS;
-const top: readonly Segment[] = massSegments.slice(0, ADULT_HAIR_TOP_SEGMENTS);
-const [lineStart, lineSegments] = ADULT_HAIR_LINE;
-const lineEnd = lineSegments[lineSegments.length - 1]![1];
+const [domeStart, domeSegments] = ADULT_HAIR_DOME;
+const nothing: Hairline = [domeStart, [], []];
 
-/** A quadratic that is a straight line, so the corners at its ends stay corners. */
-const straight = (a: readonly [number, number], b: readonly [number, number]): Segment => [[(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], b];
-
+/** The dome is the whole of the mass; the front piece, the free locks and the strands are `adultHairFront` (body-adult-parts.ts). */
 const swept = makeHairstyle(
-  () => ADULT_HAIR_MASS,
-  (): Hairline => [lineStart, lineSegments, [straight(lineEnd, massStart), ...top]],
-  (): Chain[] => [[massStart, top]],
+  () => ADULT_HAIR_DOME,
+  () => nothing,
+  (): Chain[] => [[domeStart, domeSegments.slice(0, 0)]],
   () => [],
-  { tip_range: [0.25, 0.7], strands: () => [...ADULT_HAIR_STRANDS], strand_weight: 0.5 },
+  { tip_range: [0.25, 0.7] },
 );
 
 EXTRA_HAIRSTYLES.swept_ponytail = swept;

@@ -45,7 +45,8 @@ yy, xx = np.mgrid[0 : im.shape[0], 0 : im.shape[1]]
 yr = (yy - OY) / S
 hair = ndimage.binary_fill_holes(np.array(Image.open("ref/franzi/segments/04-bikini-fullbody/black-hair.png"))[..., 3] > 128)
 face = ndimage.binary_fill_holes(ndimage.binary_closing(component(660, 330), iterations=10))
-inside_hair = ndimage.binary_fill_holes(hair | face) & (yr < JAW_R)
+# Only as wide as the face (0.62 radii): the hair beside it is the hair's, drawn by the cut's mass and its free pieces.
+inside_hair = ndimage.binary_fill_holes(hair | face) & (yr < JAW_R) & (np.abs((xx - OX) / S) < 0.62)
 head = ndimage.binary_dilation(face | inside_hair, iterations=3)
 np.save(OUT / "face_mask.npy", face)
 np.save(OUT / "head_mask.npy", head)
@@ -62,6 +63,23 @@ full = half + [(-x, y) for x, y in reversed(half[1:-1])]
 xs = [p[0] for p in full]; ys = [p[1] for p in full]
 print("head extent x", round(min(xs), 3), round(max(xs), 3), "y", round(min(ys), 3), round(max(ys), 3))
 out = {"head": tl.fit_closed(full, 0.012)}
+
+
+def symmetric_chain(mask, tol):
+    pts_ = to_r(tl.boundary(ndimage.binary_dilation(mask, iterations=3)))
+    k0_ = min(range(len(pts_)), key=lambda i: (pts_[i][1], abs(pts_[i][0])))
+    lp = pts_[k0_:] + pts_[:k0_]
+    kc_ = max(range(len(lp)), key=lambda i: lp[i][1])
+    sd = [lp[: kc_ + 1], lp[kc_:]]
+    rt = [q for q in sd if np.mean([p_[0] for p_ in q]) > 0][0]
+    rt = rt if rt[0][1] < rt[-1][1] else rt[::-1]
+    hf = [(abs(x), y) for x, y in rt]
+    return tl.fit_closed(hf + [(-x, y) for x, y in reversed(hf[1:-1])], tol)
+
+
+# The face's own skin, with no hair interior: its top edge is the hairline, its sides the face's edge, its foot the jaw.
+out["face"] = symmetric_chain(ndimage.binary_closing(face, iterations=3), 0.01)
+print("face segments", len(out["face"][1]))
 print("head segments", len(out["head"][1]))
 
 ear = ndimage.binary_dilation(ndimage.binary_fill_holes(ndimage.binary_closing(component(790, 335), iterations=4)), iterations=3)

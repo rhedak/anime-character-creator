@@ -13,7 +13,7 @@ import { ADULT_REF } from "./body-adult.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
-import { ADULT_EAR_L, ADULT_EAR_R, ADULT_HEAD } from "./body-adult-head-data.ts";
+import { ADULT_EAR_L, ADULT_EAR_R, ADULT_FACE, ADULT_HAIR_DOME, ADULT_HAIR_LEFT, ADULT_HAIR_STRANDS, ADULT_HAIR_TAIL } from "./body-adult-head-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import type { PartTable } from "./parts.ts";
@@ -375,7 +375,12 @@ export function withLoweredHead(shared: PartTable): PartTable {
   const out: Record<string, ((...a: any[]) => any) | undefined> = {};
   for (const name of HEAD_PARTS) {
     const fn = shared[name];
-    if (fn !== undefined) out[name] = (sk: Skeleton, ...rest: unknown[]) => fn(onHead(sk), ...rest);
+    if (fn === undefined) continue;
+    // The two free pieces of hair go over the face's edge, right after the front hair.
+    out[name] =
+      name === "_hair_front"
+        ? (sk: Skeleton, p: CharacterParams, ...rest: unknown[]) => fn(onHead(sk), p, ...rest) + adultLocks(sk, p)
+        : (sk: Skeleton, ...rest: unknown[]) => fn(onHead(sk), ...rest);
   }
   return out;
 }
@@ -385,10 +390,55 @@ export function withLoweredHead(shared: PartTable): PartTable {
  * skull, with the jaw coming down to a point at the chin. The hair drawn over it hides the skull's top and sides.
  */
 export function adultHead(sk: Skeleton, p: CharacterParams): string {
-  const [start, segs] = ADULT_HEAD;
+  const [start, segs] = ADULT_FACE;
   const h = onHead(sk);
   const d = curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   return `<path d="${d}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" />`;
+}
+
+/**
+ * The two free pieces of Franzi's hair, the long lock down the viewer's left and the curtain and ponytail down the right, each
+ * its own traced shape drawn over the face's edge (the dome behind and above is the cut's mass). Traced as separate pieces
+ * because smoothing one outline for all of the hair rounded the thin lock into a stub (harness/franzi_hair/pieces.py).
+ */
+export function adultLocks(sk: Skeleton, p: CharacterParams): string {
+  const h = onHead(sk);
+  const sw = fmt2(outlineW(strokeW(sk)));
+  // The pieces reach up into the dome, so their fill joins it with no seam; their outline is drawn only below the temples
+  // (the dome draws its own above), by clipping the stroke to what lies lower than `cut`.
+  const cut = h.head_cy - 0.05 * h.head_r;
+  const clip = `<clipPath id="adult-lock-stroke"><rect x="0" y="${fmt1(cut)}" width="${fmt1(h.canvas_w)}" height="${fmt1(h.canvas_h - cut)}" /></clipPath>`;
+  return (
+    clip +
+    [ADULT_HAIR_LEFT, ADULT_HAIR_TAIL]
+      .map(([start, segs]) => {
+        const d = curve(h.head_cx, h.head_cy, h.head_r, start, segs);
+        return (
+          `<path d="${d}" fill="${colorStr(p.hair_color)}" />` +
+          `<path d="${d}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#adult-lock-stroke)" />`
+        );
+      })
+      .join("")
+  );
+}
+
+/**
+ * Franzi's front hair: the strand lines over the dome (clipped to it), then the two free pieces. The dome itself is the cut's
+ * mass, drawn behind the head, and the face's skin (whose top edge is the hairline) covers its middle, so no front fill is
+ * needed.
+ */
+export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
+  const h = onHead(sk);
+  const [ds, dsegs] = ADULT_HAIR_DOME;
+  const clip = `<clipPath id="adult-dome-clip"><path d="${curve(h.head_cx, h.head_cy, h.head_r, ds, dsegs)}" /></clipPath>`;
+  const sw = fmt2(outlineW(strokeW(sk), 0.5));
+  const strands = ADULT_HAIR_STRANDS.map(([s0, sg]) => `<path d="${curve(h.head_cx, h.head_cy, h.head_r, s0, sg, false)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`).join("");
+  // The pieces' fill reaches up into the dome and covers its outline there, so the outline is drawn again over them, above the
+  // temples (below them the pieces draw their own).
+  const cut = h.head_cy - 0.05 * h.head_r;
+  const top = `<clipPath id="adult-dome-top"><rect x="0" y="0" width="${fmt1(h.canvas_w)}" height="${fmt1(cut)}" /></clipPath>`;
+  const outline = `<path d="${curve(h.head_cx, h.head_cy, h.head_r, ds, dsegs)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-dome-top)" />`;
+  return clip + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + adultLocks(sk, p) + top + outline;
 }
 
 /** The ears, drawn before the head so the face covers their inner edge. */
@@ -458,5 +508,6 @@ export const ADULT_PARTS = {
   _bust_over_arms: none,
   _neck: adultNeck,
   _head: adultHead,
+  _hair_front: adultHairFront,
   _ears: adultEars,
 };

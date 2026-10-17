@@ -30,6 +30,7 @@ parts = [
     "// Head radii from the head centre, the calibration in harness/franzi_hair/trace.py (175.7 reference px per radius).\n\n"
     'import type { Chain, Segment } from "./tables.ts";\n',
     chain("ADULT_HEAD", face["head"], "The head's skin: the skull inside the hair joined to the visible jaw and chin. Symmetric."),
+    chain("ADULT_FACE", face["face"], "The face's skin alone: its top edge is the hairline, its sides the face's edge, its foot the jaw. Symmetric."),
     chain("ADULT_EAR_R", face["ear_r"], "The right ear (the viewer's right), closed."),
     chain("ADULT_EAR_L", face["ear_l"], "The left ear, the right one mirrored."),
 ]
@@ -41,6 +42,14 @@ if hp.exists():
         chain("ADULT_HAIR_MASS", h["mass"], "The hair's whole outline joined with the head, closed across the face opening by the jaw."),
         chain("ADULT_HAIR_LINE", h["line"], "The hairline: the hair's inner edge against the face opening, from the jaw on the right up over the forehead to the left lock."),
         f"/** How many of the mass's segments, from its start (on the left lock, beside the hairline's end), run over the top and down the ponytail to the hairline's start. */\nexport const ADULT_HAIR_TOP_SEGMENTS = {k};\n",
+    ]
+pp = OUT / "pieces.json"
+if pp.exists():
+    pcs = json.load(open(pp))
+    parts += [
+        chain("ADULT_HAIR_DOME", pcs["dome"], "The hair on the skull, closed behind the face: drawn behind the head (the face skin covers its middle)."),
+        chain("ADULT_HAIR_LEFT", pcs["left"], "The long lock down the viewer's left, closed: drawn over the face's edge."),
+        chain("ADULT_HAIR_TAIL", pcs["tail"], "The curtain down the viewer's right, running into the ponytail, closed: drawn over the face's edge and the shoulder."),
     ]
 sp = OUT / "strands.json"
 if sp.exists():
