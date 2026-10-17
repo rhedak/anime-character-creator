@@ -32,8 +32,9 @@ const CYAN_OUT: Pt = [28.25, 9.4];
 /** Where the lid band ends on the inner side: green and cyan meet there. */
 const JOIN: Pt = [-22.6, -10.5];
 /** The base's points, outer to inner, and where green meets it on the inner side. */
-const BASE: Pt[] = [[21, 16], [6, 18], [-9, 16]];
-const GREEN_LOW: Pt = [-15, 17.5];
+// Two straight lines (the owner's pink marks on the left eye): outer end, a low point, and green's lower end on the inner side.
+const BASE: Pt[] = [[21.25, 16.25], [11.25, 20.75]];
+const GREEN_LOW: Pt = [-16.5, 18.25];
 const IRIS: { c: Pt; rx: number; ry: number } = { c: [0, 0], rx: 17, ry: 20.5 };
 const PUPIL: { c: Pt; rx: number; ry: number } = { c: [-1.5, 0], rx: 6.5, ry: 10 };
 const HILITE: { c: Pt; r: number } = { c: [9, -14], r: 5.5 };
