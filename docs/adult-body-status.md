@@ -25,6 +25,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 5a head and face | done 2026-10-17: traced head and ears, face tuned | eyes 0.746 r apart (ref 0.75) | |
 | 5b hair | done 2026-10-17: `swept_ponytail` traced | silhouette matches the reference's by eye | |
 | 5c hands and feet | done 2026-10-17: G2 round 1 fixed (neck gap) | G0 IoU 0.942 | checkpoint 2 pending |
+| 5e head and face polish (before the garments) | started 2026-10-17 | | checkpoint 2b |
 | 5d Franzi preset | | | |
 | 6 garments | | | checkpoint 3 |
 | 7 guard, tests, catalogue, web | | | checkpoint 4 |
