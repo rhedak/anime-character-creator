@@ -17,9 +17,12 @@ import { ADULT_EAR_L, ADULT_EAR_R, ADULT_FACE, ADULT_HAIR_DOME, ADULT_HAIR_LEFT,
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade } from "./colorutil.ts";
+import { adultEyes } from "./body-adult-eyes.ts";
+import { brow } from "./core-head.ts";
+import { MOUTH_REALISTIC_DROP, MOUTH_Y, noseDot } from "./face.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
-import { replace as replaceSk, type Skeleton } from "./skeleton.ts";
+import { faceBuild, replace as replaceSk, type Skeleton } from "./skeleton.ts";
 
 type Knots = readonly (readonly [number, number])[];
 
@@ -364,7 +367,15 @@ export function adultBand(sk: Skeleton, p: CharacterParams): string {
 export const HEAD_DROP = 0.07;
 
 /** The skeleton as the head parts see it: the head centre lowered by `HEAD_DROP` radii, everything else as it was. */
-export const onHead = (sk: Skeleton): Skeleton => replaceSk(sk, { head_cy: sk.head_cy + HEAD_DROP * sk.head_r });
+export const onHead = (sk: Skeleton): Skeleton =>
+  replaceSk(sk, { head_cy: sk.head_cy + HEAD_DROP * sk.head_r, head_cx: sk.head_cx + HEAD_SHIFT * sk.head_r });
+
+/**
+ * The head's centre in the reference is 8.2 px (0.047 head radii) left of the body's centre line, which the traces were
+ * calibrated on (origin x 660, the body's 668.2). Without this every traced head shape sat 0.047 radii too far right, which
+ * showed as eyes too far apart on one side and hair too wide on the other (found with the eye overlay, 8x).
+ */
+export const HEAD_SHIFT = -0.0467;
 
 /** The shared parts that draw on the head, which the adult body wraps so they see the lowered head. */
 export const HEAD_PARTS = [
@@ -482,6 +493,24 @@ export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   return clip + adultLocks(sk, p) + `<g clip-path="url(#adult-dome-clip)">${strands}</g>` + top + outline;
 }
 
+/**
+ * The adult face: brows from the shared code, eyes from the traced shape (body-adult-eyes.ts), the nose dot and the mouth. The
+ * shared face code is not used because its eye is the chibi's round one.
+ */
+export function adultFace(sk: Skeleton, p: CharacterParams): string {
+  const h = onHead(sk);
+  const f = p.face;
+  const sw = strokeW(sk);
+  const parts: string[] = [];
+  for (const side of [-1, 1]) parts.push(brow(h, p, side));
+  parts.push(adultEyes(h, p));
+  parts.push(noseDot(h, sw));
+  const mouthY = h.head_cy + h.head_r * (MOUTH_Y + MOUTH_REALISTIC_DROP * faceBuild(sk) + f.mouth_drop);
+  const half = h.head_r * 0.12 * f.mouth_width;
+  parts.push(`<path d="M ${fmt1(h.head_cx - half)} ${fmt1(mouthY)} Q ${fmt1(h.head_cx)} ${fmt1(mouthY + h.head_r * 0.08 * f.mouth_curve)} ${fmt1(h.head_cx + half)} ${fmt1(mouthY)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(sw, 0.62))}" stroke-linecap="round" />`);
+  return parts.join("");
+}
+
 /** The ears, drawn before the head so the face covers their inner edge. */
 export function adultEars(sk: Skeleton, p: CharacterParams): string {
   return [ADULT_EAR_L, ADULT_EAR_R]
@@ -550,5 +579,6 @@ export const ADULT_PARTS = {
   _neck: adultNeck,
   _head: adultHead,
   _hair_front: adultHairFront,
+  _face: adultFace,
   _ears: adultEars,
 };
