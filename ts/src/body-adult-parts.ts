@@ -181,7 +181,8 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // The bikini top is drawn here, not in the chest layers, so the neck (the next layer) covers where its straps go behind it.
   // The bust's tapered line goes on the skin and under the top, so only what the top leaves uncovered shows: the inner edges
   // in the V and the lighter upper edge above the cups, as in the reference.
-  return adultSkin(sk, p) + adultBustLine(sk) + adultBand(sk, p);
+  // The top is clipped to the body's outline, so its straps end at the shoulder line where they pass behind the neck.
+  return adultSkin(sk, p) + adultBustLine(sk) + `<clipPath id="adult-body-clip"><path d="${adultBodyPath(sk)}" /></clipPath><g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
 }
 
 /**

@@ -40,6 +40,23 @@ hip_half_w 1.23, arm_half_w 0.14, arm_x 1.14, leg_half_w 0.38, neck_half_w 0.22,
 Predicted gate: the chibi limb and torso code on these anchors, so landmarks within 0.05 H but IoU about 0.80 to 0.88
 and a width failure at the hip and thigh (no hip curve, straight legs): G0 FAIL, which is expected at this stage.
 
+### 2026-10-17, chest polish rounds with the owner (bust contour, armpit, tapered line, straps)
+
+Sequence, so a fresh context knows why the chest looks as it does: the bust contour was traced over ref 04 with the owner
+correcting it three times (`harness/franzi/bust_overlay.py`, `bust_fit.py`; the subtle crescent either side of the centre
+line was found with an edge filter), the armpit line was made the arm outline's own weight carried up from the gap's tip along
+the bust's outer side, the bust line became one filled tapered shape (`adultBustLine`, taper B, top at 0.5 of full weight: a
+floor under which the shape breaks up when rasterised, found when the first version went to 6% and showed holes), the top's
+hem was widened to the body's side, the straps stopped at the shoulder line (no extension round the neck, the top clipped to
+the body outline), and the inner edges now bow toward the centre and meet it at the bottom of the V (no parallel slit).
+The harness-only bare chest view (`bare_chest.ts`, variants closed, open, thin, taper-a to c) draws outlines only: no nipples
+or other detail. Side-by-side comparisons use `aligned.py` (the body gate's mapping); earlier hand-placed crops were about 0.3
+head heights out vertically.
+
+Known gap, to keep in mind for later (owner, 2026-10-17): our detail level is far below the reference's (shading,
+collarbone lines, the cleavage crescent, the gathered knot on the top). Expected for a flat style, and the source of some of
+the perceived polish gap; not to be closed by adding more lines.
+
 ### 2026-10-17, stage 4 redo: the top traced from the reference
 
 Owner at checkpoint 2: the lower piece works, the top does not look good, is far from the reference, does not connect to

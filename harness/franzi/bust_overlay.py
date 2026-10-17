@@ -15,12 +15,11 @@ CX_Z = (668.2 - OX) * 2  # the centre line in zoomed coordinates
 # Revised after the owner's note: the breasts' inner edges are the subtle shaded crescents either side of the centre line in
 # the V of ref 04 (edge-filtered view: out/franzi/vedge-c.png). Read from that view, they start near the cup's upper edge, sweep
 # inward and run almost vertical close to the centre line, meeting it near the bottom of the V.
-# Second revision, from the owner's pink corrections on the first one (read from the owner's image: scale 1.243 against these
-# coordinates, the right-hand polyline mirrored and averaged with the left): the inner edge is nearly straight up and down very
-# close to the centre line, and the underside is not a curve round to the centre but follows the cup hem, a diagonal from the
-# centre's low point out to the lowest point of the hem.
-VISIBLE = [(370, 342), (405, 372), (435, 405), (447, 430), (450, 490), (452, 566)]
-INFERRED = [(370, 342), (355, 336), (320, 330), (280, 335), (235, 358), (190, 400), (155, 455), (138, 520), (148, 590), (180, 635), (230, 664), (300, 674), (415, 625), (452, 566)]
+# Third revision (owner: the reference's breasts curve in the middle, ours were nearly straight and left an unnatural parallel
+# gap): the inner edges bow toward the centre line and meet it at the bottom of the V, wide apart at the top and touching
+# below, so the two read as one soft shape and there is no slit. The outer side and the underside are unchanged.
+VISIBLE = [(370, 342), (410, 372), (436, 410), (448, 452), (453, 505), (455.5, 566)]
+INFERRED = [(370, 342), (355, 336), (320, 330), (280, 335), (235, 358), (190, 400), (155, 455), (138, 520), (148, 590), (180, 635), (230, 664), (300, 674), (415, 625), (455.5, 566)]
 
 
 def catmull(pts, n=14):
