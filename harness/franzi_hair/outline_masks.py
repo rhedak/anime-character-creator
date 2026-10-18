@@ -64,18 +64,39 @@ temple = (yy < 345) & (np.abs(xx - 660) > 40)
 face = np.where(temple, opened, face)
 face = ndimage.label(face, structure=np.ones((3, 3)))[0] == ndimage.label(face, structure=np.ones((3, 3)))[0][330, 660]
 
-# --- the ears: the skin components beside the face at the ears' height
-def comp_near(x, y, avoid):
-    m = warm & ~avoid
-    lab2, _ = ndimage.label(ndimage.binary_closing(m, iterations=2), structure=np.ones((3, 3)))
-    ys, xs = np.nonzero(lab2)
-    i = int(np.argmin((xs - x) ** 2 + (ys - y) ** 2))
-    return ndimage.binary_fill_holes(lab2 == lab2[ys[i], xs[i]])
+# --- the ears. The whole visible ear, shaded inner part and the fold lines included: skin and its drawn lines are warm (red minus blue
+# 25 or more, the fold lines 38 to 77, the shaded concha 70 to 95) where hair is neutral (0 to 7), so no brightness test is used. The
+# first version required brightness over 105 like the face does and kept only the pale rim of each ear (263 and 844 px).
+warm_ear = ((rgb[..., 0] - rgb[..., 2]) > 25) & (alpha > 128)
 
 
-face_wide = ndimage.binary_dilation(face, iterations=2)
-ear_r = comp_near(790, 335, face_wide)
-ear_l = comp_near(535, 345, face_wide)
+def ear_in(box, seed):
+    x0, y0, x1, y1 = box
+    m = np.zeros_like(warm_ear)
+    m[y0:y1, x0:x1] = warm_ear[y0:y1, x0:x1]
+    m &= ~ndimage.binary_dilation(face, iterations=2)
+    lab_e, _ = ndimage.label(m, structure=np.ones((3, 3)))
+    c = lab_e == lab_e[seed[1], seed[0]]
+    return ndimage.binary_fill_holes(ndimage.binary_closing(c, iterations=1))
+
+
+ear_r = ear_in((765, 285, 830, 375), (792, 330))
+ear_l = ear_in((505, 295, 548, 375), (532, 340))
+
+# --- the concha: the shaded inner part of each ear (lum 80 to 160 against the pale rim's 200 or more). Taken inside the ear shrunk 2 px so
+# the ear's dark outline is not mistaken for shade, and opened a little so speckle does not count.
+def concha_of(ear):
+    c = ndimage.binary_erosion(ear, iterations=2) & (lum < 185)
+    c = ndimage.binary_opening(c, iterations=1)
+    lab_c, n = ndimage.label(c, structure=np.ones((3, 3)))
+    if n == 0:
+        return c
+    sizes = ndimage.sum(c, lab_c, range(1, n + 1))
+    keep = [1 + i for i, z in enumerate(sizes) if z >= 25]  # the upper and the lower shaded part are separate components
+    return ndimage.binary_fill_holes(np.isin(lab_c, keep))
+
+
+concha_r, concha_l = concha_of(ear_r), concha_of(ear_l)
 
 # --- strips: small skin components beside the face (the side of the neck under the ear, between a curtain and the cheek line). They are
 # separated from the cheek by its drawn line, so they are their own regions; each runs a few pixels under the face so the face's
@@ -116,7 +137,7 @@ sink_face = ndimage.binary_erosion(face, iterations=SINK)
 sink_ears = ndimage.binary_erosion(ear_r | ear_l | (strips & ~face), iterations=max(1, SINK - 1))
 sil = ndimage.binary_fill_holes(ndimage.binary_closing(hair | sink_face | sink_ears, iterations=2))
 
-np.savez_compressed("out/franzi_hair/outline_masks.npz", face=face, ear_l=ear_l, ear_r=ear_r, strips=strips, hair=hair, sil=sil)
-for name, m in (("face", face), ("ear_l", ear_l), ("ear_r", ear_r), ("strips", strips), ("hair", hair), ("sil", sil)):
+np.savez_compressed("out/franzi_hair/outline_masks.npz", face=face, ear_l=ear_l, ear_r=ear_r, concha_l=concha_l, concha_r=concha_r, strips=strips, hair=hair, sil=sil)
+for name, m in (("face", face), ("ear_l", ear_l), ("ear_r", ear_r), ("concha_l", concha_l), ("concha_r", concha_r), ("strips", strips), ("hair", hair), ("sil", sil)):
     ys, xs = np.nonzero(m)
     print(f"{name:6s} {int(m.sum()):7d} px  x {xs.min()}..{xs.max()}  y {ys.min()}..{ys.max()}")

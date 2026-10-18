@@ -36,12 +36,12 @@ for y in range((y0 // 20 + 1) * 20, y1, 20):
     gd.line([(0, (y - y0) * Z), (grid.width, (y - y0) * Z)], fill=(70, 120, 255) if y % 100 else (255, 140, 0), width=1)
     gd.text((2, (y - y0) * Z + 2), str(y), fill=(200, 0, 120))
 
-COL = {"face": (0, 200, 255), "ear_l": (255, 0, 200), "ear_r": (255, 0, 200), "hair": (60, 220, 0), "sil": (255, 200, 0), "strips": (255, 90, 0)}
+COL = {"face": (0, 200, 255), "ear_l": (255, 0, 200), "ear_r": (255, 0, 200), "hair": (60, 220, 0), "sil": (255, 200, 0), "strips": (255, 90, 0), "concha_l": (140, 60, 255), "concha_r": (140, 60, 255)}
 dd = ImageDraw.Draw(drawn)
 if mode == "masks":
     m = np.load("out/franzi_hair/outline_masks.npz")
     arr = np.array(drawn)
-    for k in ("hair", "sil", "face", "ear_l", "ear_r", "strips"):
+    for k in ("hair", "sil", "face", "ear_l", "ear_r", "concha_l", "concha_r", "strips"):
         edge = m[k] & ~ndimage.binary_erosion(m[k])
         e = np.array(Image.fromarray(edge[y0:y1, x0:x1].astype(np.uint8) * 255).resize(drawn.size, Image.NEAREST)) > 0
         arr[e] = COL[k]

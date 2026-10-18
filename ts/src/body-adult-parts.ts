@@ -14,7 +14,8 @@ import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE 
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
-import { ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
+import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
+import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R } from "./body-adult-ear-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade } from "./colorutil.ts";
@@ -464,13 +465,26 @@ export function adultHairBehind(sk: Skeleton, p: CharacterParams): string {
 
 /**
  * The skin beside the face and the ears, each its own traced region, drawn over the body and the hair (the `_ears` slot, after the
- * torso): the strips of neck and temple that show between a curtain and the cheek, and the two ears. The face goes over them.
+ * torso): the strips of neck and temple that show between a curtain and the cheek, and the two ears. An ear is three things as in the
+ * reference: the skin with its outline, the shaded inner part (the concha, a second tone of the skin on a small element), and the dark
+ * fold lines, each tapering to a point at both ends. The face goes over all of it.
  */
 export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   const skin = (c: Chain, weight: number): string => `<path d="${d(c)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), weight))}" stroke-linejoin="round" />`;
-  return ADULT_SKIN_STRIPS.map((c) => skin(c, 1)).join("") + [...ADULT_SKIN_EAR_L, ...ADULT_SKIN_EAR_R].map((c) => skin(c, 0.8)).join("");
+  const inner = shade(p.skin_tone, 0.83, 1.6);
+  const concha = (cs: readonly Chain[]): string => cs.map((c) => `<path d="${d(c)}" fill="${inner}" />`).join("");
+  const folds = (cs: readonly Chain[]): string => cs.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.38), OUTLINE)).join("");
+  return (
+    ADULT_SKIN_STRIPS.map((c) => skin(c, 1)).join("") +
+    ADULT_SKIN_EAR_L.map((c) => skin(c, 0.5)).join("") +
+    concha(ADULT_EAR_CONCHA_L) +
+    folds(ADULT_EAR_FOLDS_L) +
+    ADULT_SKIN_EAR_R.map((c) => skin(c, 0.5)).join("") +
+    concha(ADULT_EAR_CONCHA_R) +
+    folds(ADULT_EAR_FOLDS_R)
+  );
 }
 
 /** What is drawn over the face: the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */

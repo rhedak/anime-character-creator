@@ -58,7 +58,7 @@ def fit(mask, grow, blur, tol=TOL, min_px=40):
 SIL_SIGMA_HI, SIL_SIGMA_LO, SIL_STEP, SIL_KEEP = 7.0, 2.0, 7.0, 2.5
 
 
-def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None):
+def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None, step=None):
     """Closed chains whose slope is continuous at every join, for the hair silhouette.
 
     The hair's edge is the edge of an AI segmentation: ragged at the pixel scale, and fitted with the least number of quadratics that
@@ -85,7 +85,7 @@ def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None):
         sm = (1 - w) * hi + w * lo
         seg = np.hypot(*np.diff(np.vstack([sm, sm[:1]]), axis=0).T)
         arc = np.concatenate([[0], np.cumsum(seg)])
-        m = max(8, int(round(arc[-1] / SIL_STEP)))
+        m = max(8, int(round(arc[-1] / (step or SIL_STEP))))
         t = np.linspace(0, arc[-1], m, endpoint=False)
         verts = np.stack([np.interp(t, arc, np.append(sm[:, j], sm[0, j])) for j in (0, 1)], 1)
         q = np.array(to_r([tuple(v) for v in verts]))
@@ -100,8 +100,10 @@ def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None):
 res = {
     "face": fit_smooth(m["face"], shift=2, min_px=2000, sigma_hi=5.0),
     "strips": fit(m["strips"], 1.5, 1.2, min_px=15),
-    "ear_l": fit(m["ear_l"], 2, 1.5, tol=0.012, min_px=15),
-    "ear_r": fit(m["ear_r"], 2, 1.5, tol=0.012, min_px=15),
+    "ear_l": fit_smooth(m["ear_l"], shift=1, min_px=100, sigma_hi=2.2, step=3.5),
+    "ear_r": fit_smooth(m["ear_r"], shift=1, min_px=100, sigma_hi=2.2, step=3.5),
+    "concha_l": fit_smooth(m["concha_l"], shift=0, min_px=30, sigma_hi=2.0, step=3.0),
+    "concha_r": fit_smooth(m["concha_r"], shift=0, min_px=30, sigma_hi=2.0, step=3.0),
     "sil": fit_smooth(m["sil"], shift=-1),
 }
 json.dump(res, open("out/franzi_hair/outline.json", "w"), default=lambda o: list(o))
@@ -123,6 +125,8 @@ doc = {
     "strips": "Small skin regions beside the face (the side of the neck under each ear), each running a few pixels under the face.",
     "ear_l": "The visible skin of the left ear.",
     "ear_r": "The visible skin of the right ear.",
+    "concha_l": "The shaded inner part of the left ear, a second tone drawn over the ear.",
+    "concha_r": "The shaded inner part of the right ear, a second tone drawn over the ear.",
     "sil": "The hair silhouette: every visible hair pixel plus the face, ears and strips shrunk a few pixels, so its edge only ever meets the page, the neck or the shoulder.",
 }
 parts = [
@@ -130,7 +134,7 @@ parts = [
     "// Head radii from the head centre, the calibration in harness/franzi_hair/trace.py (175.7 reference px per radius).\n\n"
     'import type { Chain } from "./tables.ts";\n'
 ]
-for key, name in (("face", "ADULT_SKIN_FACE"), ("strips", "ADULT_SKIN_STRIPS"), ("ear_l", "ADULT_SKIN_EAR_L"), ("ear_r", "ADULT_SKIN_EAR_R"), ("sil", "ADULT_HAIR_SILHOUETTE")):
+for key, name in (("face", "ADULT_SKIN_FACE"), ("strips", "ADULT_SKIN_STRIPS"), ("ear_l", "ADULT_SKIN_EAR_L"), ("ear_r", "ADULT_SKIN_EAR_R"), ("concha_l", "ADULT_EAR_CONCHA_L"), ("concha_r", "ADULT_EAR_CONCHA_R"), ("sil", "ADULT_HAIR_SILHOUETTE")):
     body = ",\n  ".join(chain(c) for c in res[key])
     parts.append(f"/** {doc[key]} */\nexport const {name}: readonly Chain[] = [\n  {body},\n];\n")
 Path("ts/src/body-adult-outline-data.ts").write_text("\n".join(parts))

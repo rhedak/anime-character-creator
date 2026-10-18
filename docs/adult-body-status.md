@@ -104,6 +104,26 @@ ears keep the old fit (few curves, small).
 Not changed: the corner where the ponytail's extension polygon meets the mask's left edge (about ref 718, 450) is a real corner in the mask
 and shows as a slight angle beside the jaw.
 
+### 2026-10-18, ears traced properly (`outline_masks.py` ears and conchas, `ear_lines.py`)
+
+The ears were plain blobs. Looked at both at 12x against the reference first: the mask kept only the pale outer rim (263 px left, 844 px
+right) because it required brightness over 105 like the face does, and missed the shaded inner part (lum 80 to 160) and the fold lines
+(lum 13 to 80). Skin and its drawn lines are warm (red minus blue 25 or more; fold lines 38 to 77, shaded part 70 to 95) where hair is
+neutral (0 to 7), so the ear mask now uses that hue test with no brightness cut (422 and 1053 px).
+
+An ear is three layers in the reference and in the render now: (1) the skin with its outline (`ADULT_SKIN_EAR_L/R`, fitted with
+`fit_smooth`, 2.2 px smoothing and 3.5 px steps so the right ear's pointed lobe survives), stroke at 0.5 of the outline weight since the
+reference's ear outline is thin; (2) the shaded inner part, the concha (`ADULT_EAR_CONCHA_L/R`; the right one is two regions, the apex
+and the lower part left of the arc), filled with `shade(skin, 0.83, 1.6)`, which is the measured ratio of the reference's shade to its lit
+skin, a second tone on a small element as `CLAUDE.md` allows; (3) the fold lines (`ear_lines.py`, `ADULT_EAR_FOLDS_L/R`), traced like the
+hair strands, points read off a grid and snapped onto the dark ridge: the right ear's upper fold (86% on a ridge, control 10%), its
+arc (42%: it is a tan-to-pale boundary, dark only at the lower end, so the ridge test undersells it) and the left ear's short stroke
+(50%, a 5 px mark). Fold weight 0.38 of the outline, tapering at both ends.
+
+The left ear is only partly visible in the reference (the lock covers most of it), so it is traced as the visible region and not
+mirrored from the right. Left over: the strips beside the face are still lumpy (the blob under the right ear is the most visible), and
+the arc fold is drawn at constant weight where the reference's is thin at the top and heavy at the bottom.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so
