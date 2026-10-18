@@ -193,6 +193,17 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, the leg gap under the briefs and the wings reaching the thigh outline (owner: the inner thigh shapes read as anatomical; the sides should end at the outline, not before it)
+
+At 8x the two inner-thigh lines of the body outline converged to a point at 2.25 H (`line([cx, y(2.25)])`) and crossed the gusset's lower edge: an X over a pentagon of page, which is what read as
+anatomical. The gap now has a flat top at `GAP_TOP` (2.25 H) with its sides running straight up, as in the reference (a slot about 0.09 H wide); the briefs' gusset ends at the same depth
+(`BOTTOM_NOW`, was 2.238), so its lower edge is the slot's top. The body gate is sensitive here (the crotch landmark is read off the silhouette): a gap top at 2.2 H failed it (crotch 0.051 H, hip
+0.028), 2.238 passed at 0.045, 2.25 passes at crotch 0.031 and hip 0.020 (limit 0.05). The wings: the traced tip is 0.502 H from the centre at 1.739 H down and the body's side there is 0.522 H less
+half a stroke, 0.012 H short (4 px); the wing region (out from 0.34 H, down to 1.78 H, easing off over 0.10 H) is moved outward by that gap in `adultBriefs`, so each tip ends on the thigh's
+outline. Gates green.
+
+Left: the slot's top is a thick bar (the gusset's lower stroke and the gap's top stroke coincide at 2.25 H); the slot is a flat-topped rectangle where the reference's top is slightly rounded.
+
 ### 2026-10-18, the briefs traced from the reference (owner: the bottom is a completely different shape)
 
 The old briefs were a made-up band (`top` 1.85 H, `cut` 2.0 H, a straight waistband that dipped 0.07 H at the centre and a guessed leg curve); the reference's piece has a waistband that curves

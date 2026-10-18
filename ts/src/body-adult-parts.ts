@@ -86,6 +86,9 @@ function place(sk: Skeleton): Place {
 
 type Pt = readonly [number, number];
 
+/** Where the gap between the legs starts, in head heights below the chin: under the briefs' gusset (which ends at 2.238), so its top edge is hidden by it. */
+const GAP_TOP = 2.25;
+
 /** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
 const GAP_TIP: Pt = [0.4, 0.955];
 
@@ -163,8 +166,13 @@ export function adultBodyPath(sk: Skeleton): string {
   d += foot(L);
   // The inside of the left leg up to the crotch, across, and the same down the right leg.
   d += smooth(rev(side(L, legInnerAbove)));
-  d += line([cx, y(2.25)]);
-  d += line(side(R, LEG_INNER)[0] as Pt);
+  // The gap between the legs has a flat top under the briefs' gusset, its sides running straight up behind it, as in the reference (a slot about 0.09 H wide). It
+  // was two lines meeting in a point at 2.25 H, crossing the gusset's lower edge into an X over a pentagon of page, which read as anatomical (the owner).
+  const gapL = side(L, legInnerAbove)[0] as Pt;
+  const gapR = side(R, LEG_INNER)[0] as Pt;
+  d += line([gapL[0], y(GAP_TOP)]);
+  d += line([gapR[0], y(GAP_TOP)]);
+  d += line(gapR);
   d += smooth(side(R, legInnerAbove));
   d += foot(R);
   d += smooth(rev(legLine(R)));
@@ -391,9 +399,22 @@ export function adultBriefs(sk: Skeleton, p: CharacterParams): string {
   // The last stretch (from 2.10) is lengthened so the gusset ends at the top of the gap, under half a stroke short of it, rather than moving the crotch.
   const STRETCH_FROM = 2.1;
   const BOTTOM_REF = 2.193;
-  const BOTTOM_NOW = 2.238;
+  const BOTTOM_NOW = 2.25;
   const dd = (d: number): number => (d <= STRETCH_FROM ? d : STRETCH_FROM + ((d - STRETCH_FROM) * (BOTTOM_NOW - STRETCH_FROM)) / (BOTTOM_REF - STRETCH_FROM));
-  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(dd(q[1]))];
+  // The wings stopped short of the body's outline (the owner): the traced tip is at 0.502 H from the centre at 1.739 H down, the body's side there is 0.522 H less half a
+  // stroke. The region of the wings (out from 0.34 H, down to 1.78 H, easing off over 0.10 H) is moved outward by that gap, so the tips end on the thigh's outline.
+  const hs = outlineW(strokeW(sk)) / 2;
+  const TIP_D = 1.7386;
+  const TIP_V = 0.5016;
+  const reach = w(TIP_D, at(TORSO_SIDE, TIP_D)) - hs - w(TIP_D, TIP_V);
+  const ease = (t: number): number => {
+    const u = Math.min(1, Math.max(0, t));
+    return u * u * (3 - 2 * u);
+  };
+  const map = (q: Pt): Pt => {
+    const wing = ease((Math.abs(q[0]) - 0.34) / 0.14) * (1 - ease((q[1] - 1.78) / 0.1));
+    return [cx + w(q[1], q[0]) + Math.sign(q[0]) * reach * wing, y(dd(q[1]))];
+  };
   const s0 = map(start);
   const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
   return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.underwear_color))} />`;
