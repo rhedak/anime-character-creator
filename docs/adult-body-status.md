@@ -193,6 +193,38 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, the relaxed hand traced from the close-up (`harness/franzi_hands/`)
+
+The owner chose to start with the relaxed hand and to have every hand style as an option eventually (open palm, fist, pointing later). The relaxed
+close-up is the same pose as the full-body reference's hanging hand, so it goes on as the hanging hand. Pipeline, in order, all
+`./harness/run.sh harness/franzi_hands/NAME.py` as for the feet: `locate.py`, `mapping.py`, `outline.py`, `trace_lines.py view` (to place the
+lines), `lines.py`; `view.py` draws the traced outline on the close-up. `composite.py` is the earlier comparison of the four close-ups on the reference.
+
+- **Which hand:** the close-up has its thumb on the left of the image; the viewer's-left hand has the thumb on the inner side, so it is used
+  flipped there and as it is on the other (the owner caught the first composite having them the wrong way round). The traced hand is the
+  viewer's left (the person's right); the other is its mirror, as the body is.
+- **Segments located** (`locate.py`): the hand, the thumb, five finger pieces and four nails, all exact (RMS 0.00).
+- **Mapping** (`mapping.py`): IoU 0.836 against the reference's hand (scale 0.1265, wrist 7 rows low). Lower than the feet's 0.93: the reference's
+  curled fingers sweep inward and the close-up's hang almost straight down, so the traced hand is the close-up's, not the reference's.
+- **Outline** (`outline.py`, `ts/src/body-adult-hand-data.ts`, `HAND_OUTLINE`): the close-up's alpha with its holes filled, inset by the render's
+  half stroke, in the body's knot coordinates, taking over from the arm's knots at `HAND_D_CUT` (2.00; the close-up starts at 1.99) with a blend to 2.16.
+  The first blend to 2.30 dragged the outer edge outside the skin, because the arm's knots widen into the reference's outer corner there (found with
+  `view.py`). The fingertips are 8 to 10 px wide on ref 04, narrower than a stroke, so the gaps between them are closed (radius 60 close-up px) and
+  the tips are one lobe; the shaded fingers show the rest. Smaller radii (20, 34) left a zigzag of heavy lobes.
+- **Interior** (`lines.py`, `body-adult-hand-lines-data.ts`): the curled fingers in shadow as a second tone (`shade(skin, 0.83, 1.6)`, lightness 140 to 196
+  against lit skin's 205 to 220, below row 780); the dark wedge between the thumb and the fingers, which is transparent in the close-up, so a hole in
+  the silhouette, drawn as a dark shape; the nails from Grok's cut-outs (the thumbnail shifted and shrunk so the inset outline does not cover it); and
+  three contour lines placed by points read off a grid and snapped to the dark ridge (99, 97 and 93% on a ridge, control 2%), tapered by measured
+  thickness. An automatic line finder caught only fragments and was dropped. The shade and the cavity are clipped to the body outline and the outline's
+  stroke is drawn again over them in each hand's columns and rows (their edge is the skin's edge, so they covered half of the stroke), as for the toenails.
+- **Gate** (body, IoU at least 0.93): 0.944 (was 0.957 with the feet, before the hands), worst widths 4.3% and 3.2%. All other gates green.
+
+Not done / honest limits: the hand's fingers are far narrower than the stroke, so at this size the three curled fingers read as one shaded lobe with two
+thin lines, not three fingers (the toes had the same limit); the nails of the little curled fingers are not drawn (they sit in the closed tips); the
+thumb's crease lines and the knuckle wrinkles are left out (under a pixel wide); the thumb is narrower than the full-body reference's. For the
+other hand styles later: the same pipeline per close-up, with the data in one file per style and a style name selecting it (the data constants are
+`HAND_*` now, named for the one style, and would become a table keyed by style).
+
 ### 2026-10-18, feet: the big-toe divider reaches the notch (owner's report: skin joined the big toe to its neighbour)
 
 The divider between the big toe and the next one stopped short of the notch where the outline's two toe lobes meet (its end was set 3 rows past

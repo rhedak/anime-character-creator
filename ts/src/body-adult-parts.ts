@@ -15,6 +15,8 @@ import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
+import { HAND_D_CUT, HAND_OUTLINE } from "./body-adult-hand-data.ts";
+import { HAND_CAVITY, HAND_LINES, HAND_LINE_WIDTHS, HAND_NAILS, HAND_SHADE } from "./body-adult-hand-lines-data.ts";
 import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
@@ -115,7 +117,10 @@ export function adultBodyPath(sk: Skeleton): string {
   // The legs stop at `FOOT_D_CUT`, so the leg tables are cut there; a cut table is a new array, so it is recognised by being one of these.
   const legInnerAbove = LEG_INNER.filter(([dd]) => dd <= FOOT_D_CUT + 1e-6);
   const legOuterAbove = LEG_OUTER.filter(([dd]) => dd <= FOOT_D_CUT + 1e-6);
-  const inner = (tab: Knots): boolean => tab === ARM_INNER || tab === LEG_INNER || tab === legInnerAbove;
+  // The arms stop at `HAND_D_CUT` in the same way, where the traced hand (body-adult-hand-data.ts) takes over.
+  const armInnerAbove = ARM_INNER.filter(([dd]) => dd <= HAND_D_CUT + 1e-6);
+  const armOuterAbove = ARM_OUTER.filter(([dd]) => dd <= HAND_D_CUT + 1e-6);
+  const inner = (tab: Knots): boolean => tab === ARM_INNER || tab === LEG_INNER || tab === legInnerAbove || tab === armInnerAbove;
   const side = (sign: number, tab: Knots): Pt[] =>
     tab.map(([d, v]) => [cx + sign * (w(d, v) + (inner(tab) ? hs : -hs)), y(d)]);
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
@@ -124,9 +129,8 @@ export function adultBodyPath(sk: Skeleton): string {
     [cx + sign * (w(0.2, 0.2) - hs), y(0.2)],
     [cx + sign * (w(0.25, 0.4) - hs), y(0.25)],
     ...side(sign, SHOULDER_OUTER),
-    ...side(sign, ARM_OUTER),
+    ...side(sign, armOuterAbove),
   ];
-  const handTip = (sign: number): Pt => [cx + sign * w(2.6, 0.69), y(2.7) - hs];
   const tip = (sign: number): Pt => [cx + sign * w(GAP_TIP[1], GAP_TIP[0]), y(GAP_TIP[1])];
   // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
   const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0)];
@@ -135,26 +139,23 @@ export function adultBodyPath(sk: Skeleton): string {
   const legLine = (sign: number): Pt[] => [...side(sign, TORSO_SIDE), ...side(sign, legOuterAbove)];
   const L = -1;
   const R = 1;
-  // The foot, in the knots' own coordinates [v, d] (head heights): the left foot walks outer edge to inner edge, the right one the other way.
-  const footPt = (sign: number, q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
-  const foot = (sign: number): string => {
-    const [start, segs] = FOOT_OUTLINE;
-    if (sign < 0) return segs.map(([c, e]) => quad(footPt(sign, c), footPt(sign, e))).join("");
+  // A traced chain (the foot, the hand), in the knots' own coordinates [v, d] (head heights): the left side walks outer edge to inner edge, the
+  // right one the other way.
+  const chainPt = (sign: number, q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+  const walk = (sign: number, [start, segs]: Chain): string => {
+    if (sign < 0) return segs.map(([c, e]) => quad(chainPt(sign, c), chainPt(sign, e))).join("");
     const ends: Pt[] = [start, ...segs.map(([, e]) => e)];
-    return segs.map(([c], i) => quad(footPt(sign, c), footPt(sign, ends[i] as Pt))).reverse().join("");
+    return segs.map(([c], i) => quad(chainPt(sign, c), chainPt(sign, ends[i] as Pt))).reverse().join("");
   };
+  const foot = (sign: number): string => walk(sign, FOOT_OUTLINE);
+  const hand = (sign: number): string => walk(sign, HAND_OUTLINE);
   const a = out(L);
   const start = a[0] as Pt;
-  const hand = (sign: number): string => {
-    const tip = handTip(sign);
-    const end = side(sign, ARM_INNER).slice(-1)[0] as Pt;
-    return `Q ${fmt1(tip[0])} ${fmt1(tip[1])} ${fmt1(end[0])} ${fmt1(end[1])} `;
-  };
   // Left side down, round the left hand, up the arm's inside, over the armpit, down the torso and leg to the sole.
   let d = `M ${fmt1(start[0])} ${fmt1(start[1])} `;
   d += smooth(a);
   d += hand(L);
-  d += smooth(rev(side(L, ARM_INNER)));
+  d += smooth(rev(side(L, armInnerAbove)));
   const leg = legLine(L);
   d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
   d += smooth(leg);
@@ -167,12 +168,8 @@ export function adultBodyPath(sk: Skeleton): string {
   d += foot(R);
   d += smooth(rev(legLine(R)));
   d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
-  d += smooth(side(R, ARM_INNER));
-  {
-    const tip = handTip(R);
-    const end = side(R, ARM_OUTER).slice(-1)[0] as Pt;
-    d += `Q ${fmt1(tip[0])} ${fmt1(tip[1])} ${fmt1(end[0])} ${fmt1(end[1])} `;
-  }
+  d += smooth(side(R, armInnerAbove));
+  d += hand(R);
   d += smooth(rev(out(R)));
   return d + "Z";
 }
@@ -532,6 +529,43 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
 }
 
 /**
+ * The relaxed hand's interior, traced from the close-up (harness/franzi_hands/): the curled fingers in shadow (a second tone of the skin, on a small
+ * element), the dark wedge between them and the thumb, the nails and the contour lines, tapering. The viewer's-right hand is the mirror image. The
+ * shade and the cavity are clipped to the body outline and the outline's stroke is drawn again over them in the hands' rows, because their edge is
+ * the skin's edge, so they would otherwise cover half of the stroke there (the same as for the toenails).
+ */
+function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
+  const { cx, y, w } = place(sk);
+  const pixelFrame = { head_cx: 0, head_cy: 0, head_r: 1 } as Skeleton; // taperedStrand reads a chain in head radii; this frame makes it read pixels
+  const parts: string[] = [];
+  for (const sign of [-1, 1]) {
+    const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+    const inPx = ([start, segs]: Chain): Chain => [px(start), segs.map(([c, e]) => [px(c), px(e)] as [Pt, Pt])];
+    const closed = (ch: Chain, attrs: string): string => {
+      const [start, segs] = inPx(ch);
+      return `<path d="M ${fmt1(start[0])} ${fmt1(start[1])} ` + segs.map(([c, e]) => quad(c, e)).join("") + `Z" ${attrs} />`;
+    };
+    const fills = HAND_SHADE.map((c) => closed(c, `fill="${shade(p.skin_tone, 0.83, 1.6)}"`)).join("") + HAND_CAVITY.map((c) => closed(c, `fill="${OUTLINE}"`)).join("");
+    parts.push(`<g clip-path="url(#adult-hand-body)">${fills}</g>`);
+    parts.push(...HAND_NAILS.map((c) => closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round"`)));
+    HAND_LINES.forEach((c, i) => parts.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (HAND_LINE_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
+  }
+  // the outline's stroke over the fills, in each hand's own columns (the thighs' strokes are left alone) and rows
+  const top = y(HAND_D_CUT);
+  const bottom = y(2.8);
+  const stroke = [-1, 1]
+    .map((sign) => {
+      const x0 = cx + sign * w(2.3, 0.63);
+      const x1 = cx + sign * w(2.3, 0.98);
+      return `<clipPath id="adult-hand-rows-${sign < 0 ? "l" : "r"}"><rect x="${fmt1(Math.min(x0, x1))}" y="${fmt1(top)}" width="${fmt1(Math.abs(x1 - x0))}" height="${fmt1(bottom - top)}" /></clipPath>` +
+        `<path d="${adultBodyPath(sk)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-hand-rows-${sign < 0 ? "l" : "r"})" />`;
+    })
+    .join("");
+  const clip = `<clipPath id="adult-hand-body"><path d="${adultBodyPath(sk)}" /></clipPath>`;
+  return clip + parts.join("") + stroke;
+}
+
+/**
  * Thin interior lines on the hands and feet, over the body: a thumb and a finger line on each hand, the toe divisions and
  * the big toenail on each foot. Interior strokes, not outlines, so lighter than the outline.
  */
@@ -544,9 +578,6 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
   let footClip = "";
   for (const sign of [-1, 1]) {
     const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
-    // Hand: the thumb hanging along the inside of the hand, and where the curled fingers part from it.
-    out.push(stroke([P(0.715, 2.2), P(0.705, 2.32), P(0.715, 2.44), P(0.7, 2.52)]));
-    out.push(stroke([P(0.785, 2.34), P(0.775, 2.45), P(0.745, 2.55)]));
     // Foot, traced from the close-up (harness/franzi_feet/): the dividers between toes, thin at the base and heavy toward the notch, and the
     // five toenails, each a closed ring with a slightly lighter fill. The chains are in the knots' [v, d] coordinates, mapped like the legs.
     const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
@@ -570,7 +601,7 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
     }
     nailsHere.push(nailPaths);
   }
-  return out.join("") + footClip.replace("NAILS", nailsHere.join(""));
+  return out.join("") + footClip.replace("NAILS", nailsHere.join("")) + adultHandsDetail(sk, p);
 }
 
 /**
