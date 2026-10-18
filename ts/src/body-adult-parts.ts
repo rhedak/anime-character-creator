@@ -465,7 +465,8 @@ export function adultHairBehind(sk: Skeleton, p: CharacterParams): string {
 
 /**
  * The skin beside the face and the ears, each its own traced region, drawn over the body and the hair (the `_ears` slot, after the
- * torso): the strips of neck and temple that show between a curtain and the cheek, and the two ears. An ear is three things as in the
+ * torso): the strips of neck and temple that show between a curtain and the cheek (7 to 18 px wide in the reference, so drawn with a thin
+ * outline as the reference does, or the line would fill them), and the two ears. An ear is three things as in the
  * reference: the skin with its outline, the shaded inner part (the concha, a second tone of the skin on a small element), and the dark
  * fold lines, each tapering to a point at both ends. The face goes over all of it.
  */
@@ -477,7 +478,7 @@ export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
   const concha = (cs: readonly Chain[]): string => cs.map((c) => `<path d="${d(c)}" fill="${inner}" />`).join("");
   const folds = (cs: readonly Chain[]): string => cs.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.38), OUTLINE)).join("");
   return (
-    ADULT_SKIN_STRIPS.map((c) => skin(c, 1)).join("") +
+    ADULT_SKIN_STRIPS.map((c) => skin(c, 0.4)).join("") +
     ADULT_SKIN_EAR_L.map((c) => skin(c, 0.5)).join("") +
     concha(ADULT_EAR_CONCHA_L) +
     folds(ADULT_EAR_FOLDS_L) +

@@ -98,19 +98,28 @@ def concha_of(ear):
 
 concha_r, concha_l = concha_of(ear_r), concha_of(ear_l)
 
-# --- strips: small skin components beside the face (the side of the neck under the ear, between a curtain and the cheek line). They are
-# separated from the cheek by its drawn line, so they are their own regions; each runs a few pixels under the face so the face's
-# stroke is the only line between them and nothing doubles it.
-lab3, n3 = ndimage.label(warm & ~ndimage.binary_dilation(face, iterations=2) & ~ear_r & ~ear_l, structure=np.ones((3, 3)))
-near_face = ndimage.binary_dilation(face, iterations=14)
+# --- strips: the skin that shows beside the face between a curtain and the cheek's drawn edge line, three places in the reference:
+# the pale sliver at the left temple (between two dark lines, crossed by the brow's extension), the shaded two-lobed region at the left
+# cheek and the tan strip beside the right ear. Each is skin-warm and not a dark line (red minus blue over 40, brightness over 100), and
+# the thin dark dividers inside them (the brow line, the cheek's diagonal) are closed over so a strip is one region and not five. A first
+# version took any warm piece beside the face and got fragments (a sliver in five parts, a strip's top half missing). Each runs a few px
+# under the face so the face's stroke is the only line between them.
+tone = ((rgb[..., 0] - rgb[..., 2]) > 40) & (lum > 100) & (alpha > 128)
+tone &= ~ndimage.binary_dilation(face, iterations=2) & ~ear_r & ~ear_l
 strips = np.zeros_like(face)
-for i in range(1, n3 + 1):
-    c = lab3 == i
-    ys_, xs_ = np.nonzero(c)
-    if c.sum() >= 25 and (near_face & c).any() and ys_.min() > 185 and ys_.max() < 465 and 550 < xs_.min() and xs_.max() < 805:
-        strips |= c
-strips = ndimage.binary_fill_holes(ndimage.binary_closing(strips, iterations=3))
-strips = strips | (ndimage.binary_dilation(strips, iterations=4) & face)
+for (bx0, by0, bx1, by1), close_it, min_px in (((570, 236, 600, 318), 3, 60), ((552, 340, 590, 392), 2, 60), ((748, 338, 772, 378), 2, 40)):
+    m = np.zeros_like(tone)
+    m[by0:by1, bx0:bx1] = tone[by0:by1, bx0:bx1]
+    m = ndimage.binary_closing(m, structure=np.ones((7, 1)), iterations=1) | m  # close the dark dividers that cross a strip
+    m = ndimage.binary_fill_holes(ndimage.binary_closing(m, iterations=close_it))
+    lab3, n3 = ndimage.label(m, structure=np.ones((3, 3)))
+    for i in range(1, n3 + 1):
+        if (lab3 == i).sum() >= min_px:
+            strips |= lab3 == i
+# keep only the three strips themselves: the stray 1 to 14 px pieces the closing leaves are not regions
+lab_s, n_s = ndimage.label(strips, structure=np.ones((3, 3)))
+strips = np.isin(lab_s, [i for i in range(1, n_s + 1) if (lab_s == i).sum() >= 60])
+strips = strips | (ndimage.binary_dilation(strips, iterations=3) & face)
 
 # --- the hair: the segmentation layer, plus every dark opaque pixel in the head box that it missed. The layer's edge is ragged (an AI
 # segmentation), so smooth it a little; the silhouette is fitted from this.
@@ -135,7 +144,9 @@ hair = hair | (np.array(ext) > 0)
 # --- the silhouette
 sink_face = ndimage.binary_erosion(face, iterations=SINK)
 sink_ears = ndimage.binary_erosion(ear_r | ear_l | (strips & ~face), iterations=max(1, SINK - 1))
-sil = ndimage.binary_fill_holes(ndimage.binary_closing(hair | sink_face | sink_ears, iterations=2))
+# the strips are drawn over the silhouette, and the pale highlight and dark line between a strip and the face belong to neither mask, so
+# the silhouette covers each strip with a 6 px margin (up to the face, which is drawn over it) or the page shows through there
+sil = ndimage.binary_fill_holes(ndimage.binary_closing(hair | sink_face | sink_ears | ndimage.binary_dilation(strips, iterations=6), iterations=2))
 
 np.savez_compressed("out/franzi_hair/outline_masks.npz", face=face, ear_l=ear_l, ear_r=ear_r, concha_l=concha_l, concha_r=concha_r, strips=strips, hair=hair, sil=sil)
 for name, m in (("face", face), ("ear_l", ear_l), ("ear_r", ear_r), ("concha_l", concha_l), ("concha_r", concha_r), ("strips", strips), ("hair", hair), ("sil", sil)):

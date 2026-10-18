@@ -99,7 +99,7 @@ def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None, step=None):
 
 res = {
     "face": fit_smooth(m["face"], shift=2, min_px=2000, sigma_hi=5.0),
-    "strips": fit(m["strips"], 1.5, 1.2, min_px=15),
+    "strips": fit_smooth(m["strips"], shift=0, min_px=60, sigma_hi=2.0, step=3.0),
     "ear_l": fit_smooth(m["ear_l"], shift=1, min_px=100, sigma_hi=2.2, step=3.5),
     "ear_r": fit_smooth(m["ear_r"], shift=1, min_px=100, sigma_hi=2.2, step=3.5),
     "concha_l": fit_smooth(m["concha_l"], shift=0, min_px=30, sigma_hi=2.0, step=3.0),

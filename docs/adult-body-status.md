@@ -124,6 +124,24 @@ The left ear is only partly visible in the reference (the lock covers most of it
 mirrored from the right. Left over: the strips beside the face are still lumpy (the blob under the right ear is the most visible), and
 the arc fold is drawn at constant weight where the reference's is thin at the top and heavy at the bottom.
 
+### 2026-10-18, skin strips traced (`outline_masks.py` strips, `outline_trace.py`)
+
+The strips beside the face were lumpy. Looked at them at 12x: the old rule took any warm piece beside the face, which gave 15 fragments (a
+temple sliver in five parts, a cheek strip's top half missing, speckle). There are three real regions in the reference, each cut out in its
+own box: the pale sliver at the left temple, the shaded two-lobed region at the left cheek, and the tan strip beside the right ear. Each
+is skin-warm and not a line (red minus blue over 40, brightness over 100), the thin dark dividers inside them are closed over, and
+anything under 60 px is dropped, so the mask is three regions. Fitted with `fit_smooth` (2 px smoothing, 3 px steps, within 1.3 px of the
+edge).
+
+Two things found in the render, not in the masks: the right strip is 7 px wide and the full-weight outline (about 2.5 px each side) filled
+it with black, so strips are drawn at 0.4 of the outline weight, as the ears are, since the reference's lines there are thin; and the pale
+highlight and dark line between a strip and the face belong to neither the hair nor the strip mask, so the silhouette had a hole and the
+page showed through beside the right strip. The silhouette now covers each strip with a 6 px margin. The white gap between the left lock
+and the jaw is not a defect: the reference shows page there too.
+
+Not done: the upper part of the left temple sliver (y 237 to 277) is 2 to 4 px wide in the reference, less than one of our outlines, so it is
+left out; the lower part (y 277 to 304) is in. The pale highlight beside the face edge at the right strip is not drawn.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so
