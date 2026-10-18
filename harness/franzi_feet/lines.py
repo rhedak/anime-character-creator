@@ -63,7 +63,7 @@ for a, b in zip(ORDER, ORDER[1:]):
     # and leaving skin with no line in it. Up to there it snaps to the shadow line; in the slit there is no shadow to snap to.
     gaps = np.array([np.nonzero(mb[int(r)])[0].min() - np.nonzero(ma[int(r)])[0].max() for r, _ in mid])
     has_slit = (a, b) == (7, 5)  # only the pair with the open gap beside the big toe (the others touch down to their tips)
-    stop = int(np.argmin(gaps[: max(1, len(gaps) - 4)])) + 3 if has_slit else len(mid)
+    stop = min(len(mid), int(np.argmin(gaps[: max(1, len(gaps) - 4)])) + 16) if has_slit else len(mid)  # on to the notch where the outline's lobes meet
     mid = np.array(mid[: min(stop, len(mid))], float)
     page = np.array([alpha[int(r), int(xm)] < 128 for r, xm in mid])
     xs = []

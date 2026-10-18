@@ -193,6 +193,16 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, feet: the big-toe divider reaches the notch (owner's report: skin joined the big toe to its neighbour)
+
+The divider between the big toe and the next one stopped short of the notch where the outline's two toe lobes meet (its end was set 3 rows past
+the narrowest gap between the toe masks, 1432, where the notch is at about 1450), so the stub ended in skin. It now runs 16 rows past, to 1445,
+where it meets the outline. Two things measured on the way: the slit between those toes is only 17 close-up px of page at its top (y 1370) and 5
+by y 1430, about 5 and 1.5 px on ref 04, narrower than the stroke is wide, so it cannot be drawn as an opening and the divider carries it; and
+the shadow lines of the other dividers do start about where ours do (tracked upward on the close-up: the big-toe line is dark above 1340 only to
+about 1320), so "all the way" meant to the notch, not up. `CLOSE_R` went from 11 to 5, which changes no pixel that shows (the slit is under 10 px
+in the averaged mask) and keeps the setting honest.
+
 ### 2026-10-18, the four leftovers (wisp tip, arc fold weight, pale highlight, faint strands)
 
 1. **Ponytail wisp tip, done.** The wisp is a 4 px wide tail running to about y 486; ours ended near y 471 for two reasons. The 1 px shrink

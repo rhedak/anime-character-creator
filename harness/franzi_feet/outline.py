@@ -61,8 +61,10 @@ cx_m = xs_m.mean()
 mean = ndimage.affine_transform(mean.astype(float), [1, 1 / XS], offset=[0, cx_m - cx_m / XS], order=1) > 0.5
 # The toes touch, separated only by shadow lines; the slits between them are narrower than a stroke is wide and, followed as part of the
 # outline, draw as teeth (the first version did). Slits under 2 * CLOSE_R px wide are closed, so the outline keeps the stepped toe lobes and the
-# open gap beside the big toe (about 25 to 30 px), and the toe separations are drawn as thin divider lines instead (lines.py).
-CLOSE_R = 11
+# open gap beside the big toe (36 px at its top, narrowing to about 12 where two strokes would touch), and the toe separations are drawn as thin
+# divider lines instead (lines.py). CLOSE_R was 11, which closed the lower half of that gap and left skin, with a short divider in it, between
+# the big toe and its neighbour; 5 keeps the gap open as far down as a stroke can show it.
+CLOSE_R = 5
 disc = np.hypot(*np.mgrid[-CLOSE_R : CLOSE_R + 1, -CLOSE_R : CLOSE_R + 1]) <= CLOSE_R
 mean = ndimage.binary_closing(np.pad(mean, CLOSE_R + 2), structure=disc)[CLOSE_R + 2 : -(CLOSE_R + 2), CLOSE_R + 2 : -(CLOSE_R + 2)]
 
