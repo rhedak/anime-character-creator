@@ -94,7 +94,7 @@ for k in ("nail_1", "nail_2", "nail_3", "nail_4"):
         # its edge. Moved toward the thumb's middle by that half stroke and shrunk by a tenth, about its centre.
         ys_, xs_ = np.nonzero(m)
         cy_, cx_ = ys_.mean(), xs_.mean()
-        shift = -0.5 * 0.004 * H / s
+        shift = -0.5 * json.load(open(OUT / "hand.json"))["K"] * 0.008 * H / s  # half the hand stroke's half width
         m = ndimage.affine_transform(m.astype(float), [1 / 0.9, 1 / 0.9], offset=[cy_ - cy_ / 0.9, cx_ - cx_ / 0.9 - shift], order=1) > 0.5
     ch = fit_mask(m, 2.5, 0.0025, min_px=300)
     nails += ch

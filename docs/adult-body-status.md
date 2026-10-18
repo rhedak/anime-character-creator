@@ -193,6 +193,15 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, hands: outline at a third of the weight, tapered at the wrist (owner's option 1 for giving the fingers room)
+
+The owner asked about a larger image; a larger canvas would not help (a vector scales the figure and the stroke together; the stroke is figure-relative), so the
+first lever tried was a thinner hand outline. `HAND_K` 0.5 to 0.33 (`harness/franzi_hands/outline.py`, regenerated; `lines.py` reads it for the thumbnail shift).
+The step from the full weight to the hand weight showed as a jump at the wrist's outer edge, so the stroke now tapers over twenty bands from the wrist down
+(0.32 head heights, `adultBodyStroke`), each band reaching 0.6 up into the one above so no hairline of the page shows between them. At six bands each band's
+stroke ended in a small barb on the outer edge (the 'tick' noted earlier, which was these, not a stray line); at twenty it is mostly gone. One small spike on the
+thumb's outer edge is left, at about 8x. Gates green, body gate unchanged (IoU 0.944). Not tried yet: a larger hand relative to the body (option 2).
+
 ### 2026-10-18, hand outline thinner, smoother, with fingertips (owner's report: the thick outline covered part of the thumb, the fingers had no proper tips)
 
 Cause, measured: a finger on the close-up is 8 to 10 px on ref 04, about as wide as the full-weight stroke (about 5 px), so the stroke covered the thumb's edge

@@ -31,7 +31,7 @@ import trace_lib as tl  # noqa: E402
 OUT = Path("out/franzi_hands")
 H, CX, CHIN = 352.0, 668.2, 434.0
 HS_H = 0.008  # the arm's half stroke in head heights: the arm knots above the hand are inset by it
-HAND_K = 0.5  # the hands are stroked at this fraction of the outline weight (body-adult-parts.ts), so their chain is inset by HAND_K * HS_H
+HAND_K = 0.33  # the hands are stroked at this fraction of the outline weight (body-adult-parts.ts), so their chain is inset by HAND_K * HS_H
 HS_HAND = HAND_K * HS_H
 # The close-up starts at d 1.99 (its top row lands on y 1134), so there is nothing above D_CUT to blend with; the blend is short because the arm's
 # knots widen into the reference's outer corner at the hand (v 0.84 at d 2.3) where the close-up's hand is narrower, and a long blend dragged the
