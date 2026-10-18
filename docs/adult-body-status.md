@@ -193,6 +193,19 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, the briefs traced from the reference (owner: the bottom is a completely different shape)
+
+The old briefs were a made-up band (`top` 1.85 H, `cut` 2.0 H, a straight waistband that dipped 0.07 H at the centre and a guessed leg curve); the reference's piece has a waistband that curves
+down to the centre, wings that flare to the hips, and long diagonal leg openings to a flat gusset. `harness/franzi/bottom_trace.py` traces the layer `white-bikini-bottom.png` the way
+`top_trace.py` does the top (eroded 3 px so the line lands on our stroke's centre, smoothed at threshold 0.40 to keep the wings' tips, symmetric by averaging with the mirror image, fitted at
+tolerance 0.004; 26 segments) into `ts/src/body-adult-bottom-data.ts`. The garment's own centre line is column 663.55, not the body's 668.2 (the reference figure leans a few px), so x is
+relative to it. `adultBriefs` draws that chain with the same `place()` mapping as the top. The reference's gusset ends at 2.193 H, but our legs' gap starts at 2.25 H (the crotch the owner
+signed off), which left a band of skin between them; the last stretch of the chain (from 2.10 H) is lengthened to end at 2.238 H, just short of the gap, rather than moving the crotch (the
+body gate's crotch error improved from 0.031 to 0.023 H on the way). Gates green.
+
+Left: the wing tips at the hips are thin points narrower than a stroke, and draw as small loops with a light sliver inside; the gusset ends a little more pointed than the reference's rounded
+one (the lengthening narrows it); the reference's soft shading under the gusset is not drawn; the little pentagon of page at the top of the leg gap is the body's, unchanged.
+
 ### 2026-10-18, the top's outer edge follows the breast outline (owner: drawing the breast shapes on the cloth shows the top's sides do not match them)
 
 Measured: the breast's outer edge (`ADULT_BREAST`, agreed with the owner) is 0.011 to 0.013 H outside the top's from 0.65 to 0.90 H down (about 4 px on the reference; the cloth layer's

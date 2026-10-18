@@ -13,6 +13,7 @@ import { ADULT_REF } from "./body-adult.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
+import { ADULT_BOTTOM } from "./body-adult-bottom-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
 import { HAND_D_CUT, HAND_OUTLINE, HAND_STROKE_K } from "./body-adult-hand-data.ts";
@@ -379,34 +380,23 @@ export function adultBreastOutlines(sk: Skeleton): string {
     .join("");
 }
 
-/** Underwear below the waist, always worn: briefs from the hip line to the top of the thigh. */
+/**
+ * Underwear below the waist, always worn: briefs traced from the bikini-bottom layer of ref 04 (body-adult-bottom-data.ts): the waistband curving down to the
+ * centre, the wings flaring to the hips and the leg openings running in long diagonals to a flat gusset. A flat garment with nothing of the body drawn on it.
+ */
 export function adultBriefs(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
-  const hs = outlineW(strokeW(sk)) / 2;
-  const top = 1.85;
-  const cut = 2.0;
-  const crotch = 2.3;
-  const out = (sign: number, d: number): Pt => [cx + sign * (w(d, at(TORSO_SIDE, d)) - hs), y(d)];
-  const inn = (sign: number): Pt => [cx + sign * (w(crotch, at(LEG_INNER, crotch)) + hs), y(crotch)];
-  const ds: number[] = [];
-  for (let t = top; t <= cut + 1e-9; t += 0.05) ds.push(t);
-  const left = ds.map((t) => out(-1, t));
-  const right = ds.map((t) => out(1, t));
-  const first = left[0] as Pt;
-  const lastL = left[left.length - 1] as Pt;
-  const lastR = right[right.length - 1] as Pt;
-  // The leg opening leaves the side at the cut line and curves down to the crotch, high at the hip, low at the centre.
-  const ctrlL: Pt = [lastL[0] + (inn(-1)[0] - lastL[0]) * 0.55, lastL[1] + (inn(-1)[1] - lastL[1]) * 0.2];
-  const ctrlR: Pt = [2 * cx - ctrlL[0], ctrlL[1]];
-  let d = `M ${fmt1(first[0])} ${fmt1(first[1])} `;
-  d += smooth(left);
-  d += quad(ctrlL, inn(-1));
-  d += quad([cx, y(crotch + 0.05)], inn(1));
-  d += quad(ctrlR, lastR);
-  d += smooth([...right].reverse());
-  // The waistband dips a little at the centre rather than running dead straight.
-  d += quad([cx, y(top + 0.07)], first);
-  return `<path d="${d}Z" ${inkAttrs(sk, colorStr(p.outfit.underwear_color))} />`;
+  const [start, segs] = ADULT_BOTTOM;
+  // The gusset reaches the reference's depth 2.193, but our legs' gap starts lower (2.25: the crotch the owner signed off), which left a band of skin between them.
+  // The last stretch (from 2.10) is lengthened so the gusset ends at the top of the gap, under half a stroke short of it, rather than moving the crotch.
+  const STRETCH_FROM = 2.1;
+  const BOTTOM_REF = 2.193;
+  const BOTTOM_NOW = 2.238;
+  const dd = (d: number): number => (d <= STRETCH_FROM ? d : STRETCH_FROM + ((d - STRETCH_FROM) * (BOTTOM_NOW - STRETCH_FROM)) / (BOTTOM_REF - STRETCH_FROM));
+  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(dd(q[1]))];
+  const s0 = map(start);
+  const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
+  return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.underwear_color))} />`;
 }
 
 /**
