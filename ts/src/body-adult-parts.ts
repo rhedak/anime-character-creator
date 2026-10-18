@@ -188,7 +188,7 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // the sides it lay just beyond the top's own outer edge and drew a second line beside it (the owner's double outline).
   const { cx, w } = place(sk);
   const mid = `<clipPath id="adult-bust-mid"><rect x="${fmt1(cx - w(0.6, 0.33))}" y="0" width="${fmt1(2 * w(0.6, 0.33))}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
-  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk)}</g>` + `<clipPath id="adult-body-clip"><path d="${adultBodyPath(sk)}" /></clipPath><g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
+  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk, DEFAULT_TAPER, shade(p.skin_tone, 0.78, 1.6), 0.8)}</g>` + `<clipPath id="adult-body-clip"><path d="${adultBodyPath(sk)}" /></clipPath><g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
 }
 
 /**
@@ -327,8 +327,8 @@ export const DEFAULT_TAPER: Taper = { from: 0.5, to: 0.95, power: 1.0, floor: 0.
  * what the bikini top covers hides the heavy part and the inner edges, seen in the V, thin as they rise. The ends are the
  * same hairline, so the ring closes without a visible join.
  */
-export function adultBustLine(sk: Skeleton, taper: Taper = DEFAULT_TAPER): string {
-  const full = outlineW(strokeW(sk), 0.9);
+export function adultBustLine(sk: Skeleton, taper: Taper = DEFAULT_TAPER, color: string = OUTLINE, weight = 0.9): string {
+  const full = outlineW(strokeW(sk), weight);
   const rings: string[] = [];
   for (const side of adultBreastPoints(sk, 12)) {
     const n = side.length - 1; // the chain closes on its first point
@@ -355,7 +355,7 @@ export function adultBustLine(sk: Skeleton, taper: Taper = DEFAULT_TAPER): strin
       inner.push([q[0] - nx * h, q[1] - ny * h]);
     }
     const poly = (a: readonly Pt[]): string => `M ${fmt1((a[0] as Pt)[0])} ${fmt1((a[0] as Pt)[1])} ` + a.slice(1).map(line).join("") + "Z";
-    rings.push(`<path d="${poly(outer)} ${poly(inner)}" fill="${OUTLINE}" fill-rule="evenodd" />`);
+    rings.push(`<path d="${poly(outer)} ${poly(inner)}" fill="${color}" fill-rule="evenodd" />`);
   }
   return rings.join("");
 }

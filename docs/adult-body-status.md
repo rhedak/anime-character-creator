@@ -193,6 +193,17 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, bikini top step 3 of 3: soft breast contours (owner: the reference shows the breasts' shapes softly, trace the ones from the bare render)
+
+The breast outlines from the bare render (`ADULT_BREAST`, drawn by `adultBustLine` as the tapered ring) were already under the top; they showed as a near full-weight black line (0.9 of the
+outline weight, `OUTLINE`) in the V and above the cups. In the reference those shapes are soft tonal edges. `adultBustLine` now takes a colour and weight, and the figure draws it in a
+darker, more saturated tone of the skin (`shade(skin, 0.78, 1.6)`, a second tone on a thin element, as for the ears' folds) at 0.8 of the outline weight, still clipped to the middle of
+the chest (|x| < 0.33 H). The harness's bare chest view keeps the black default. A first try at 0.5 weight was too faint beside the reference's shading.
+
+Left: the two inner edges still converge into one line down the middle of the V and a small triangle at its foot (the owner's earlier ruling was that they meet, no parallel slit, while
+the reference has a pale strip about 0.055 H wide that stays open); the soft lines are lines where the reference has tonal shading; the stub of the armpit line next to each cup
+ends in a short hook toward the cup (the reference has the line there too, thin).
+
 ### 2026-10-18, bikini top step 2 of 3: the V where the cups meet (owner's observation: the reference has a `\_/`, ours a badly curved line)
 
 Measured in the reference's top layer (`white-bikini-top.png`): the V's edges are straight lines (half-gap 0.237 H at 0.585 H down, falling 0.68 H per H to 0.040 H at
