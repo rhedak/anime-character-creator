@@ -41,7 +41,8 @@ export const FRANZI = characterParams({
     // no blush: the shared blush code redraws the chibi head's outline, which would show round the adult head
     blush: 0,
   }),
-  outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null, underwear_top: true }),
+  outfit: // the white of the reference's top and briefs (its lit cup is rgb 250, 245, 244); the shared default underwear colour, #e8e4dc, read grey beside it
+  outfit({ tunic_color: null, skirt_color: null, boot_color: null, underwear_top: true, underwear_color: "#faf5f4" }),
 });
 
 const [out, json] = process.argv.slice(2);
