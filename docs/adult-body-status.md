@@ -193,6 +193,13 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-19, one line across the top of the leg gap (owner: the lower crotch has a double outline; lower the briefs so they cover the skin outline)
+
+The gap's flat top (`GAP_TOP` 2.25 H) and the gusset's lower edge (also 2.25 H) were two strokes a hair apart, which read as a double line. The gusset now ends at 2.262 H (`BOTTOM_NOW`) and the gap
+top is at 2.2 H, behind it, so the briefs cover the skin outline there and the gusset's lower edge is the only line across the slot. The body gate was unchanged by it (it reads the crotch off
+the gusset's bottom, not the gap's top: gap 2.2, 2.22 and 2.235 with the gusset at 2.26 all gave crotch 0.031, hip 0.020), which is why the gap top can be hidden. Gates green. Left: the slot is
+still a flat-topped rectangle, and the gusset's lower edge dips to a shallow V (the stretch from 2.10 H keeps the traced gusset's shape).
+
 ### 2026-10-18, the leg gap under the briefs and the wings reaching the thigh outline (owner: the inner thigh shapes read as anatomical; the sides should end at the outline, not before it)
 
 At 8x the two inner-thigh lines of the body outline converged to a point at 2.25 H (`line([cx, y(2.25)])`) and crossed the gusset's lower edge: an X over a pentagon of page, which is what read as

@@ -86,8 +86,8 @@ function place(sk: Skeleton): Place {
 
 type Pt = readonly [number, number];
 
-/** Where the gap between the legs starts, in head heights below the chin: under the briefs' gusset (which ends at 2.238), so its top edge is hidden by it. */
-const GAP_TOP = 2.25;
+/** Where the gap between the legs starts, in head heights below the chin: under the briefs' gusset (which ends at 2.262), so its top edge is hidden by it and the gusset's lower edge is the only line across the slot. */
+const GAP_TOP = 2.2;
 
 /** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
 const GAP_TIP: Pt = [0.4, 0.955];
@@ -399,7 +399,7 @@ export function adultBriefs(sk: Skeleton, p: CharacterParams): string {
   // The last stretch (from 2.10) is lengthened so the gusset ends at the top of the gap, under half a stroke short of it, rather than moving the crotch.
   const STRETCH_FROM = 2.1;
   const BOTTOM_REF = 2.193;
-  const BOTTOM_NOW = 2.25;
+  const BOTTOM_NOW = 2.262;
   const dd = (d: number): number => (d <= STRETCH_FROM ? d : STRETCH_FROM + ((d - STRETCH_FROM) * (BOTTOM_NOW - STRETCH_FROM)) / (BOTTOM_REF - STRETCH_FROM));
   // The wings stopped short of the body's outline (the owner): the traced tip is at 0.502 H from the centre at 1.739 H down, the body's side there is 0.522 H less half a
   // stroke. The region of the wings (out from 0.34 H, down to 1.78 H, easing off over 0.10 H) is moved outward by that gap, so the tips end on the thigh's outline.
