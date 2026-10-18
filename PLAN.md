@@ -20,20 +20,22 @@ in the render code.
 |---|---|
 | 0 to 3: target, gate, profile, torso and limbs | done, owner signed off the body |
 | 4: bust, bikini top, briefs | done, owner signed off the chest, top and underwear |
-| 5a to 5c: head, hair, hands and feet | built; head and hair being polished (5e) |
-| 5e: head and face polish | in progress: eyes, brows, lid, crease approved by eye; hairline pass done (uncommitted, awaiting the owner's look), lock-to-dome steps next |
+| 5a to 5c: head, hair, hands and feet | built; the head and hair are traced and approved (5e, committed to `dev`); the hands and feet are placeholders from the full-body reference |
+| 5e: head and face polish | done: eyes, brows, hairline, strands, outlines, ears, strips, ponytail and shoulder junction all traced and approved by eye; small leftovers in `docs/adult-body-status.md` |
+| 5f: hands and feet from the close-ups | not started (owner's call, 2026-10-18); feet first, see below |
 | 5d: Franzi preset in `presets.ts` | not started |
 | 6: garments (dirndl, blouse, shorts) | not started |
 | 7: age guard, rules tests, catalogue, web, CLAUDE.md amendment | not started |
 
 ### Next up, in order
 
-1. **Hair, after the hairline pass.** The hairline itself is done (the face chain above the brows is traced as it is, includes the
-   forehead's shadow strip, smoothed; details in `docs/adult-body-status.md`). Left from the whole-hair recheck: the steps in the
-   silhouette where the lock pieces meet the dome (about y 215 on both sides), a flat ledge on the left lock's inner edge under the
-   eye, the ponytail's tip (a wedge, the reference flicks out) and a flat cut on its right side, the left ear is hidden, the strand
-   lines are now traced one by one on the stretched reference (27, most secondary fine lines still missing, see
-   the status file), the hair colour is near-black with lighter strands.
+1. **Feet, then hands, traced from the close-ups in `ref/franzi/hands/`** (the owner's call, 2026-10-18: the ones in the body are placeholders
+   from the full-body reference, where the hands are only about 100 px tall). The close-ups are on a 1008 x 1792 canvas, scaled up and
+   not registered to the body, so each needs a mapping first (feet: ankle width and the toe row against the body's; hands: wrist width
+   and finger length). `feet-front.png` is the clean one and matches the standing pose. The hands are four poses (open palm, relaxed,
+   fist, pointing), none of them our hanging pose, so which one drives the hanging hand is the owner's call. Trace like the head: masks of
+   the visible regions, edges fitted and smoothed, interior lines snapped to the drawn ridges, each checked against the reference at
+   8x or more. The body gate (IoU at least 0.93) covers the feet and hands in the silhouette, so run it on every change.
 2. **Smaller eye leftovers**: the lid is slightly heavy at the wing end, a thin tail runs along the top of the white at the inner
    end (the owner removed the lash flicks), the lower lash tick is missing.
 3. **5d**: the Franzi preset (the harness version is `harness/franzi/franzi.ts`).
