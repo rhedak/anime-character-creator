@@ -159,6 +159,27 @@ The slight angle beside the jaw on the ponytail side had three causes, found by 
 What is left: two ticks of about 2 px, visible at 6x only, where that redrawn region's edges cross the outline (under the jaw, and at the
 shoulder). Clean at normal size.
 
+### 2026-10-18, the four leftovers (wisp tip, arc fold weight, pale highlight, faint strands)
+
+1. **Ponytail wisp tip, done.** The wisp is a 4 px wide tail running to about y 486; ours ended near y 471 for two reasons. The 1 px shrink
+   that puts the stroke's outer edge on the hair edge eats half of a 4 px part, so parts narrower than a disc of radius 2 are now kept
+   un-shrunk. And a smoothed edge plus a B-spline through side midpoints blunts any point (it cuts a corner by up to half a vertex spacing),
+   so `fit_smooth` now finds the real convex tips (turn over 105 degrees within 7 px each side, convex only: the first version counted
+   notches too, and flagged the notch where the lock meets the ear) and puts a doubled vertex on each, which makes the spline reach it.
+   Tips kept: the wisp, the left lock's tip, the two ends of the small neck piece. The wisp now ends near y 483.
+2. **Arc fold weight, done.** The reference's thickness along each fold was measured across the snapped line (coverage from skin brightness
+   150 toward line darkness 40), clamped to 0.7 to 3.4 px so hair beside a line's end does not inflate it, and stored with the line
+   (`ADULT_EAR_FOLD_WIDTHS_*`, head radii, nine points); `taperedStrand` takes an optional width list. The arc is now thin at the top and
+   heavy at the lower end, the upper fold heavier at the lock end.
+3. **Pale highlight beside the right strip, not drawn.** Measured: the cream wedge is 13 px of data (about 3 by 6 px) in the reference, smaller
+   than one of our outlines, so any shape drawn for it would be a guess rather than a trace. A first attempt with a brightness test found 12
+   px and one with a saturation test 13, and was removed.
+4. **Faint strands, one added.** The residual map (dark ridges no strand covers) was checked tile by tile with all strands drawn: ponytail,
+   left skull, right crown. What is left is the edges of the white highlight streaks (they dip dark beside a bright area) and the face
+   boundary, not dark lines; the one real gap was a thin line down the ponytail's left side (`pony-6`, 96% on a ridge, control 16%). 28 strands now.
+
+Still visible only at 6x: two ticks of about 2 px at the redrawn hair-over-neck region (see the corner entry).
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so
