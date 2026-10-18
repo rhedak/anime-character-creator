@@ -193,6 +193,14 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, bikini top step 2 of 3: the V where the cups meet (owner's observation: the reference has a `\_/`, ours a badly curved line)
+
+Measured in the reference's top layer (`white-bikini-top.png`): the V's edges are straight lines (half-gap 0.237 H at 0.585 H down, falling 0.68 H per H to 0.040 H at
+0.875 H) ending in a short flat base about 0.07 H wide at 0.885 H down, with sharp corners. Ours matched the edges (to within 0.004 H) but the bottom was a smooth round curve: the
+mask is blurred before tracing and the fit (tolerance 0.006) rounds a corner. `top_trace.py` now replaces the V's boundary points below 0.69 H with that geometry
+(two straight edges and a flat base) and fits with tolerance 0.004, so the corners stay. The V is now `\_/`. Left for step 3: the bust ring's inner edges converge into one heavy
+line down the middle of the V and a small triangle at its foot; the reference has a soft pale strip there, not a line.
+
 ### 2026-10-18, bikini top step 1 of 3: the double outlines at the outer edges (owner's observation)
 
 Confirmed at 9x: each outer side of the top showed two thick lines side by side. Two separate causes, found by switching layers off. (1) The armpit crease

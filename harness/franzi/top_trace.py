@@ -58,7 +58,26 @@ for y in range(int(CHIN + 0.86 * H), int(CHIN + 1.0 * H)):
     sym[y, max(target_lo, lo - reach) : lo] = True
     sym[y, hi + 1 : min(target_hi, hi + reach) + 1] = True
 pts = [((x - CX) / H, (y - CHIN) / H) for x, y in tl.boundary(sym)]  # (x in H, d in H)
-start, segs = tl.fit_closed(pts, 0.006)
+# The V where the cups meet. The reference's edges are straight lines (half-gap 0.237 H at 0.585 H down, falling 0.68 H per H to 0.040 H at 0.875 H) and
+# end in a short flat base (0.07 H wide, at 0.885 H down) with sharp corners. The mask is blurred before tracing and the fit rounds the corner, which gave a
+# smooth round bottom (the owner: "a badly curved line" where the reference has a \_/). The points of the V below 0.69 H are replaced here by that geometry,
+# so the fit sees two straight edges and a flat base.
+V_TOP_D, V_BASE_D, V_BASE_HALF, V_SLOPE = 0.69, 0.885, 0.036, 0.68
+inside = [i for i, (x, d) in enumerate(pts) if V_TOP_D < d < 0.905 and abs(x) < 0.17]
+assert inside and inside == list(range(inside[0], inside[-1] + 1)), "the V's points are not one run of the boundary"
+first, last = pts[inside[0]], pts[inside[-1]]
+half_top = lambda d: V_BASE_HALF + V_SLOPE * (V_BASE_D - d) * 0.97  # the edge's half-gap at depth d
+row = []
+for d in np.linspace(V_TOP_D, V_BASE_D - 0.004, 24):
+    row.append((half_top(d), d))
+v_left = [(-x, d) for x, d in row]            # down the left edge (x negative)
+v_right = [(x, d) for x, d in reversed(row)]  # up the right edge
+base = [(-V_BASE_HALF, V_BASE_D), (V_BASE_HALF, V_BASE_D)]
+path = v_left + base + v_right
+if first[0] > 0:  # the boundary walks the right side first
+    path = path[::-1]
+pts = pts[: inside[0]] + path + pts[inside[-1] + 1 :]
+start, segs = tl.fit_closed(pts, 0.004)
 full = pts
 xs_ = [p[0] for p in full]; ds_ = [p[1] for p in full]
 print("top extent x", round(min(xs_), 3), round(max(xs_), 3), "d", round(min(ds_), 3), round(max(ds_), 3), "segments", len(segs))
