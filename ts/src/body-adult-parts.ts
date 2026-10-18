@@ -15,7 +15,7 @@ import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
-import { HAND_D_CUT, HAND_OUTLINE } from "./body-adult-hand-data.ts";
+import { HAND_D_BLEND, HAND_D_CUT, HAND_OUTLINE, HAND_STROKE_K } from "./body-adult-hand-data.ts";
 import { HAND_CAVITY, HAND_FINGERS, HAND_GAPS, HAND_LINES, HAND_LINE_WIDTHS, HAND_NAILS, HAND_SHADE } from "./body-adult-hand-lines-data.ts";
 import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
@@ -207,7 +207,39 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
     })
     .join("");
-  return `<path d="${adultBodyPath(sk)}" ${inkAttrs(sk, colorStr(p.skin_tone))} />` + crease;
+  return `<path d="${adultBodyPath(sk)}" fill="${colorStr(p.skin_tone)}" />` + adultBodyStroke(sk) + crease;
+}
+
+/**
+ * The body outline's stroke. The hands are stroked thinner than the rest (`HAND_STROKE_K` of the weight): a finger on the close-up is about as wide
+ * as a full-weight stroke, which hid the thumb's edge and the finger tips. The stroke is the same path drawn in clipped pieces: full weight
+ * everywhere but the hand columns below the wrist, a step to 0.75 of the way between the two weights over the blend rows (`HAND_D_CUT` to
+ * `HAND_D_BLEND`), then the hand weight. The hand's own chain is inset by the hand weight's half stroke (harness/franzi_hands/outline.py).
+ */
+export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all"): string {
+  const { cx, y, w } = place(sk);
+  const path = adultBodyPath(sk);
+  const full = outlineW(strokeW(sk));
+  const stroke = (width: number, clip: string): string => `<path d="${path}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(width)}" stroke-linejoin="round" clip-path="url(#${clip})" />`;
+  const top = y(HAND_D_CUT);
+  const mid = y(HAND_D_BLEND);
+  const bottom = y(2.9);
+  const big = sk.canvas_w;
+  const bigH = sk.canvas_h;
+  // the hand columns: from the thigh's edge (0.635 H, clear of the thigh's own stroke) out past the arm's outer edge
+  const cols = [-1, 1].map((sign) => {
+    const a = cx + sign * w(2.3, 0.635);
+    const b = cx + sign * w(2.3, 1.0);
+    return [Math.min(a, b), Math.max(a, b)] as const;
+  });
+  const rect = (x0: number, y0: number, x1: number, y1: number): string => `<rect x="${fmt1(x0)}" y="${fmt1(y0)}" width="${fmt1(x1 - x0)}" height="${fmt1(y1 - y0)}" />`;
+  const [l, r] = cols as [readonly [number, number], readonly [number, number]];
+  const rest =
+    `<clipPath id="adult-stroke-rest">${rect(0, 0, big, top)}${rect(0, top, l[0], bigH)}${rect(l[1], top, r[0], bigH)}${rect(r[1], top, big, bigH)}${rect(l[0], bottom, l[1], bigH)}${rect(r[0], bottom, r[1], bigH)}</clipPath>`;
+  const band = (id: string, y0: number, y1: number): string => `<clipPath id="${id}">${rect(l[0], y0, l[1], y1)}${rect(r[0], y0, r[1], y1)}</clipPath>`;
+  const hands = band("adult-stroke-blend", top, mid) + band("adult-stroke-hand", mid, bottom);
+  const handsOnly = stroke(full * (1 - 0.25 * (1 - HAND_STROKE_K)), "adult-stroke-blend") + stroke(full * HAND_STROKE_K, "adult-stroke-hand");
+  return (only === "all" ? rest + stroke(full, "adult-stroke-rest") : "") + hands + handsOnly;
 }
 
 /** One point on a breast's edge: canvas position and where it lies in head heights (|x| from the centre line, d below the chin). */
@@ -554,17 +586,8 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
     parts.push(...HAND_NAILS.map((c) => closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round"`)));
     HAND_LINES.forEach((c, i) => parts.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (HAND_LINE_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
   }
-  // the outline's stroke over the fills, in each hand's own columns (the thighs' strokes are left alone) and rows
-  const top = y(HAND_D_CUT);
-  const bottom = y(2.8);
-  const stroke = [-1, 1]
-    .map((sign) => {
-      const x0 = cx + sign * w(2.3, 0.63);
-      const x1 = cx + sign * w(2.3, 0.98);
-      return `<clipPath id="adult-hand-rows-${sign < 0 ? "l" : "r"}"><rect x="${fmt1(Math.min(x0, x1))}" y="${fmt1(top)}" width="${fmt1(Math.abs(x1 - x0))}" height="${fmt1(bottom - top)}" /></clipPath>` +
-        `<path d="${adultBodyPath(sk)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-hand-rows-${sign < 0 ? "l" : "r"})" />`;
-    })
-    .join("");
+  // the outline's stroke over the fills, in each hand's columns and rows, at the hands' weight (their edge is the skin's edge, so they covered half of it)
+  const stroke = adultBodyStroke(sk, "hands");
   const clip = `<clipPath id="adult-hand-body"><path d="${adultBodyPath(sk)}" /></clipPath>`;
   return clip + parts.join("") + stroke;
 }

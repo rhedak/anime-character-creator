@@ -30,7 +30,9 @@ import trace_lib as tl  # noqa: E402
 
 OUT = Path("out/franzi_hands")
 H, CX, CHIN = 352.0, 668.2, 434.0
-HS_H = 0.008
+HS_H = 0.008  # the arm's half stroke in head heights: the arm knots above the hand are inset by it
+HAND_K = 0.5  # the hands are stroked at this fraction of the outline weight (body-adult-parts.ts), so their chain is inset by HAND_K * HS_H
+HS_HAND = HAND_K * HS_H
 # The close-up starts at d 1.99 (its top row lands on y 1134), so there is nothing above D_CUT to blend with; the blend is short because the arm's
 # knots widen into the reference's outer corner at the hand (v 0.84 at d 2.3) where the close-up's hand is narrower, and a long blend dragged the
 # outer edge outside the skin (found with view.py).
@@ -50,13 +52,13 @@ np.save(OUT / "cavity.npy", cavity)
 # The fingers' tips are separated by gaps narrower than two half strokes (2 x 22 close-up px), which followed as outline draw as heavy lobes (the
 # first version did, as the toes did). Gaps under 2 * CLOSE_R px are closed, so the outline keeps the stepped fingertips, and the separations are
 # drawn as thin lines instead (lines.py).
-CLOSE_R = 60
+CLOSE_R = 14
 disc = np.hypot(*np.mgrid[-CLOSE_R : CLOSE_R + 1, -CLOSE_R : CLOSE_R + 1]) <= CLOSE_R
 sil = ndimage.binary_closing(np.pad(sil, CLOSE_R + 2), structure=disc)[CLOSE_R + 2 : -(CLOSE_R + 2), CLOSE_R + 2 : -(CLOSE_R + 2)]
 np.save(OUT / "silhouette_closed.npy", sil)
 # what the closing added: the gaps between the fingertips (and the notch by the thumb's tip), drawn by lines.py as thin dark wedges so the fingers still read
 np.save(OUT / "gaps.npy", sil & ~ndimage.binary_fill_holes(cf))
-r_cc = HS_H * H / s
+r_cc = HS_HAND * H / s
 sd = ndimage.distance_transform_edt(sil) - ndimage.distance_transform_edt(~sil)
 sd = ndimage.gaussian_filter(sd, 2.5)
 inset = sd > r_cc
@@ -119,13 +121,50 @@ v_b[0] = np.interp(D_CUT, arm_o[:, 0], arm_o[:, 1]) - HS_H
 d_b[0] = D_CUT
 v_b[-1] = np.interp(D_CUT, arm_i[:, 0], arm_i[:, 1]) + HS_H
 d_b[-1] = D_CUT
+
+
+def find_tips(pts, win=25, min_turn=95.0, min_sep=70):
+    """Indices of the sharp convex tips of an open path (the fingertips): where it turns back by more than `min_turn` degrees over +-win samples."""
+    n = len(pts)
+    sm = np.stack([ndimage.gaussian_filter1d(pts[:, j], 3.0, mode="nearest") for j in (0, 1)], 1)
+    a_, b_ = sm[win : n - win] - sm[: n - 2 * win], sm[2 * win :] - sm[win : n - win]
+    cross = a_[:, 0] * b_[:, 1] - a_[:, 1] * b_[:, 0]
+    turn = np.degrees(np.arctan2(cross, (a_ * b_).sum(1)))
+    # the path runs outer edge down to the fingertips and back up the inner edge, so a convex tip turns the same way every time: the sign of the net turn
+    turn *= np.sign(np.sum(turn))
+    cand = [i for i in range(len(turn)) if turn[i] > min_turn and turn[i] >= turn[max(0, i - win) : i + win + 1].max()]
+    out = []
+    for i in sorted(cand, key=lambda i: -turn[i]):
+        if all(abs(i + win - j) > min_sep for j in out):
+            out.append(i + win)
+    return sorted(out)
+
+
+tips = find_tips(path)
+print("fingertip points kept at (close-up px):", [tuple(int(v) for v in path[i]) for i in tips])
+SIG, STEP = 7.0, 0.0034  # smoothing along the path in samples; vertex spacing in head heights
 arr = np.stack([v_b, d_b], 1)
-arr[1:-1, 0] = ndimage.gaussian_filter1d(arr[:, 0], 5.0, mode="nearest")[1:-1]
-arr[1:-1, 1] = ndimage.gaussian_filter1d(arr[:, 1], 5.0, mode="nearest")[1:-1]
-xy = [tuple(p) for p in arr]
-start, segs = tl.fit_chain(xy, tl.simplify(xy, TOL))
-print("hand outline: %d segments, from [v %.4f, d %.4f] to [v %.4f, d %.4f]; lowest point d %.4f" % (len(segs), *start, *segs[-1][1], arr[:, 1].max()))
-json.dump({"chain": [list(start), [[list(a), list(b)] for a, b in segs]], "D_CUT": D_CUT, "D_BLEND": D_BLEND}, open(OUT / "hand.json", "w"))
+sm = arr.copy()
+sm[1:-1, 0] = ndimage.gaussian_filter1d(arr[:, 0], SIG, mode="nearest")[1:-1]
+sm[1:-1, 1] = ndimage.gaussian_filter1d(arr[:, 1], SIG, mode="nearest")[1:-1]
+for i in tips:
+    sm[i] = arr[i]  # a tip is where the real edge turns back: smoothing would round it off
+seg = np.hypot(*np.diff(sm, axis=0).T)
+arc = np.concatenate([[0], np.cumsum(seg)])
+m = max(10, int(round(arc[-1] / STEP)))
+tpos = np.linspace(0, arc[-1], m)
+for i in tips:  # a vertex on each real tip, doubled so the spline reaches it
+    tpos = tpos[np.abs(tpos - arc[i]) > 0.5 * STEP]
+    tpos = np.sort(np.concatenate([tpos, [arc[i], arc[i]]]))
+verts = np.stack([np.interp(tpos, arc, sm[:, 0]), np.interp(tpos, arc, sm[:, 1])], 1)
+# an open quadratic B-spline: control at each vertex, ends at the midpoints, first and last points kept exactly
+start = tuple(verts[0])
+segs = []
+for i in range(1, len(verts) - 1):
+    end = tuple(verts[-1]) if i == len(verts) - 2 else tuple((verts[i] + verts[i + 1]) / 2)
+    segs.append((tuple(verts[i]), end))
+print("hand outline: %d segments, from [v %.4f, d %.4f] to [v %.4f, d %.4f]; lowest point d %.4f" % (len(segs), *start, *segs[-1][1], sm[:, 1].max()))
+json.dump({"chain": [list(start), [[list(a), list(b)] for a, b in segs]], "D_CUT": D_CUT, "D_BLEND": D_BLEND, "K": HAND_K}, open(OUT / "hand.json", "w"))
 
 
 def pt(p):
@@ -139,6 +178,8 @@ Path("ts/src/body-adult-hand-data.ts").write_text(
     "// inset by the render's half stroke like the arm knots: an open chain from the outer edge at HAND_D_CUT, round the fingers, to the inner edge.\n\n"
     'import type { Chain } from "./tables.ts";\n\n'
     f"/** Where the arm ends and the hand begins, in head heights below the chin. */\nexport const HAND_D_CUT = {D_CUT};\n\n"
+    f"/** Where the blend from the arm's full stroke to the hand's thinner one ends. */\nexport const HAND_D_BLEND = {D_BLEND};\n\n"
+    f"/** The stroke weight over the hand, as a fraction of the outline's; the chain is inset by this fraction of the half stroke. */\nexport const HAND_STROKE_K = {HAND_K};\n\n"
     f"/** The relaxed hand, viewer's-left (the person's right), outer edge to inner edge; the other hand is its mirror, walked the other way. */\nexport const HAND_OUTLINE: Chain = [{pt(start)}, [{body_ts}]];\n"
 )
 print("wrote ts/src/body-adult-hand-data.ts")

@@ -193,6 +193,20 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, hand outline thinner, smoother, with fingertips (owner's report: the thick outline covered part of the thumb, the fingers had no proper tips)
+
+Cause, measured: a finger on the close-up is 8 to 10 px on ref 04, about as wide as the full-weight stroke (about 5 px), so the stroke covered the thumb's edge
+and the fingertips could only be kept by closing the gaps between them into one lobe. Fix: the hands are stroked at half weight (`HAND_STROKE_K` 0.5).
+The body stroke is now drawn by `adultBodyStroke` in clipped pieces: full weight everywhere except the hand columns below the wrist, a step to 0.875 of
+the full weight over the blend rows (`HAND_D_CUT` to `HAND_D_BLEND`), then the hand weight; the redraw over the hand's fills uses the same function. The hand
+chain is inset by the hand weight's half stroke (`HS_HAND`), the gaps between the tips are closed only if narrower than 3.5 px on ref 04 (radius 14 close-up px,
+was 60), so the three curled fingers keep separate tips, and the outline is fitted as a smoothed quadratic B-spline (the foot and hair method, 375 short
+segments, slope continuous at every join) with a doubled vertex on any sharp convex tip. The thumbnail shift was halved to match. With no closed gaps left
+`HAND_GAPS` is empty (the generator now writes an empty list correctly; the first run produced a file that failed the typecheck, which the other gates did not catch).
+
+Left: the body gate's IoU is 0.944 (unchanged); the long lit finger's tip and the two curled ones now read as three tips at 4x; one tick of black about 2 px at
+8x on the inner edge near the wrist, not located. Next, as the owner suggested: a larger default hand.
+
 ### 2026-10-18, hand fingers separated (owner's report: the fingers were one blob of flesh, like the big toe and its neighbour but worse)
 
 Agreed and measured: the three curled fingers were one flat shaded region (`HAND_SHADE`), the traced lines only ran along its outside, and the gaps

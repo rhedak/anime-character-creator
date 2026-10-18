@@ -73,7 +73,7 @@ band[:SHADE_FROM] = False
 band = ndimage.binary_opening(band, structure=np.ones((9, 9)))
 band = ndimage.binary_closing(band, structure=np.ones((9, 9)))
 # fill the gaps between the fingertips that the outline closes (outline.py, CLOSE_R), so the shade and the outline agree at the tips
-CLOSE_R = 60
+CLOSE_R = 14
 disc = np.hypot(*np.mgrid[-CLOSE_R : CLOSE_R + 1, -CLOSE_R : CLOSE_R + 1]) <= CLOSE_R
 band = ndimage.binary_closing(np.pad(band, CLOSE_R + 2), structure=disc)[CLOSE_R + 2 : -(CLOSE_R + 2), CLOSE_R + 2 : -(CLOSE_R + 2)] & np.load(OUT / "silhouette_closed.npy")
 lab, n = ndimage.label(band)
@@ -94,7 +94,7 @@ for k in ("nail_1", "nail_2", "nail_3", "nail_4"):
         # its edge. Moved toward the thumb's middle by that half stroke and shrunk by a tenth, about its centre.
         ys_, xs_ = np.nonzero(m)
         cy_, cx_ = ys_.mean(), xs_.mean()
-        shift = -0.5 * 0.008 * H / s
+        shift = -0.5 * 0.004 * H / s
         m = ndimage.affine_transform(m.astype(float), [1 / 0.9, 1 / 0.9], offset=[cy_ - cy_ / 0.9, cx_ - cx_ / 0.9 - shift], order=1) > 0.5
     ch = fit_mask(m, 2.5, 0.0025, min_px=300)
     nails += ch
@@ -135,6 +135,8 @@ def chain_ts(c):
 
 
 def chains_ts(name, doc, chains):
+    if not chains:  # an empty list needs no body (a bare "[\n  ,\n]" does not typecheck)
+        return f"/** {doc} */\nexport const {name}: readonly Chain[] = [];\n\n"
     return f"/** {doc} */\nexport const {name}: readonly Chain[] = [\n  " + ",\n  ".join(chain_ts(c) for c in chains) + ",\n];\n\n"
 
 
