@@ -415,12 +415,23 @@ export function adultBriefs(sk: Skeleton, p: CharacterParams): string {
  * outline alone: a flat garment, with nothing of the body drawn on it and no line on the cups.
  */
 export function adultBand(sk: Skeleton, p: CharacterParams): string {
+  const d = adultBandPath(sk);
+  // The breasts' shapes over the cloth, as the reference's top follows them: the same outlines as the bare render (ADULT_BREAST), in a darker tone of the
+  // cloth at a light weight, clipped to the top so none of it lands on skin. Flat colour, a second tone on a thin line (the ears' folds do the same).
+  const soft = shade(colorStr(p.outfit.underwear_color), 0.8, 1.0);
+  return (
+    `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.underwear_color))} />` +
+    `<clipPath id="adult-top-cloth"><path d="${d}" /></clipPath><g clip-path="url(#adult-top-cloth)">${adultBustLine(sk, DEFAULT_TAPER, soft, 0.7)}</g>`
+  );
+}
+
+/** The bikini top's outline path (body-adult-top-data.ts). */
+function adultBandPath(sk: Skeleton): string {
   const { cx, y, w } = place(sk);
   const [start, segs] = ADULT_TOP;
   const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1])];
   const s0 = map(start);
-  const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
-  return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.underwear_color))} />`;
+  return `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
 }
 
 /**

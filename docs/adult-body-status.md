@@ -193,6 +193,13 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, the breast shapes over the bikini top (owner: the shape is fine, but draw a soft breast line on the top so the cups are seen to follow them)
+
+The breast outlines (`ADULT_BREAST`, the bare render's shapes) are now also drawn over the cloth: `adultBand` draws `adultBustLine` in `shade(cloth colour, 0.8)` at 0.7 of the outline
+weight, clipped to the top's own path so none of it lands on skin (the top's path is `adultBandPath` now, shared). What shows is each breast's lower curve, just above the hem, and its outer
+curve against the top's edge, which is where the reference's cups have their soft crescent. Flat colour, a second tone on a thin line. Subtle by design; the reference's crescent is a
+shaded band, ours is a line.
+
 ### 2026-10-18, bikini top step 3 of 3: soft breast contours (owner: the reference shows the breasts' shapes softly, trace the ones from the bare render)
 
 The breast outlines from the bare render (`ADULT_BREAST`, drawn by `adultBustLine` as the tapered ring) were already under the top; they showed as a near full-weight black line (0.9 of the
