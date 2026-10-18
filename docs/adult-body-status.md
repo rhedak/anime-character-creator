@@ -142,6 +142,23 @@ and the jaw is not a defect: the reference shows page there too.
 Not done: the upper part of the left temple sliver (y 237 to 277) is 2 to 4 px wide in the reference, less than one of our outlines, so it is
 left out; the lower part (y 277 to 304) is in. The pale highlight beside the face edge at the right strip is not drawn.
 
+### 2026-10-18, the ponytail corner beside the jaw
+
+The slight angle beside the jaw on the ponytail side had three causes, found by overlaying the silhouette chain on the reference at 8x:
+
+1. **The ponytail extension polygon** (added for "goes behind the shoulder") had its left edge straight down at x=700, but the reference's
+   hair edge curves in from x 721 at row 462 to x 748 at the shoulder line (row 499). The vertical stuck out beside the jaw. The polygon now
+   follows that curve and only drops vertically below the shoulder line, behind the body.
+2. **A sliver of page** between the hair edge and our neck: the reference's neck skin runs right up to the hair, ours is narrower there. A
+   skin region traced from the reference (`neckfill`, `ADULT_SKIN_NECKFILL`) is drawn behind the hair.
+3. **Two black lines side by side**: the hair's outline and the body's own neck outline 8 px to its left, which the reference does not have
+   (the hair sits directly on the neck). The hair is drawn again over the body for the rows above the shoulder only (reference rows 405 to 512,
+   columns 690 to 746, `adultHairOnNeck`), with the neck fill under it covering the neck line. Below row 499 the shoulder still covers
+   the hair, so the ponytail still goes behind it.
+
+What is left: two ticks of about 2 px, visible at 6x only, where that redrawn region's edges cross the outline (under the jaw, and at the
+shoulder). Clean at normal size.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so

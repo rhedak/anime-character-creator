@@ -102,6 +102,7 @@ res = {
     "strips": fit_smooth(m["strips"], shift=0, min_px=60, sigma_hi=2.0, step=3.0),
     "ear_l": fit_smooth(m["ear_l"], shift=1, min_px=100, sigma_hi=2.2, step=3.5),
     "ear_r": fit_smooth(m["ear_r"], shift=1, min_px=100, sigma_hi=2.2, step=3.5),
+    "neckfill": fit_smooth(m["neckfill"], shift=0, min_px=300, sigma_hi=3.0, step=4.0),
     "concha_l": fit_smooth(m["concha_l"], shift=0, min_px=30, sigma_hi=2.0, step=3.0),
     "concha_r": fit_smooth(m["concha_r"], shift=0, min_px=30, sigma_hi=2.0, step=3.0),
     "sil": fit_smooth(m["sil"], shift=-1),
@@ -125,6 +126,7 @@ doc = {
     "strips": "Small skin regions beside the face (the side of the neck under each ear), each running a few pixels under the face.",
     "ear_l": "The visible skin of the left ear.",
     "ear_r": "The visible skin of the right ear.",
+    "neckfill": "Skin between the jaw, the hair edge and the shoulder, drawn behind the hair with no outline.",
     "concha_l": "The shaded inner part of the left ear, a second tone drawn over the ear.",
     "concha_r": "The shaded inner part of the right ear, a second tone drawn over the ear.",
     "sil": "The hair silhouette: every visible hair pixel plus the face, ears and strips shrunk a few pixels, so its edge only ever meets the page, the neck or the shoulder.",
@@ -134,7 +136,7 @@ parts = [
     "// Head radii from the head centre, the calibration in harness/franzi_hair/trace.py (175.7 reference px per radius).\n\n"
     'import type { Chain } from "./tables.ts";\n'
 ]
-for key, name in (("face", "ADULT_SKIN_FACE"), ("strips", "ADULT_SKIN_STRIPS"), ("ear_l", "ADULT_SKIN_EAR_L"), ("ear_r", "ADULT_SKIN_EAR_R"), ("concha_l", "ADULT_EAR_CONCHA_L"), ("concha_r", "ADULT_EAR_CONCHA_R"), ("sil", "ADULT_HAIR_SILHOUETTE")):
+for key, name in (("face", "ADULT_SKIN_FACE"), ("strips", "ADULT_SKIN_STRIPS"), ("ear_l", "ADULT_SKIN_EAR_L"), ("ear_r", "ADULT_SKIN_EAR_R"), ("neckfill", "ADULT_SKIN_NECKFILL"), ("concha_l", "ADULT_EAR_CONCHA_L"), ("concha_r", "ADULT_EAR_CONCHA_R"), ("sil", "ADULT_HAIR_SILHOUETTE")):
     body = ",\n  ".join(chain(c) for c in res[key])
     parts.append(f"/** {doc[key]} */\nexport const {name}: readonly Chain[] = [\n  {body},\n];\n")
 Path("ts/src/body-adult-outline-data.ts").write_text("\n".join(parts))

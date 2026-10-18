@@ -138,8 +138,16 @@ hair = ndimage.gaussian_filter(hair.astype(float), 1.0) > 0.5
 from PIL import ImageDraw
 ext = Image.new("L", (W, H), 0)
 d = ImageDraw.Draw(ext)
-d.polygon([(718, 450), (734, 490), (752, 500), (761, 505), (783, 510), (790, 516), (791, 575), (700, 575), (700, 450)], fill=255)  # the right edge carries on the taper the mask has at rows 490 to 513 (x 799 to 790), then drops behind the shoulder
+d.polygon([(721, 440), (721, 462), (724, 474), (731, 484), (740, 492), (748, 499), (761, 505), (783, 510), (790, 516), (791, 575), (748, 575)], fill=255)  # left edge follows the reference's hair edge (it curves in from x 721 at row 462 to x 748 at the shoulder line, row 499), then drops behind the shoulder; a first version ran straight down at x 700 and stuck out beside the jaw
 hair = hair | (np.array(ext) > 0)
+
+# --- the neck fill: the skin between the jaw, the hair's edge and the shoulder (the neck's shaded and lit skin). Our body's neck is
+# narrower than the reference's at that height, so with the hair drawn behind the body a sliver of page showed between the neck and the
+# hair edge beside the jaw. This is skin drawn first, behind the hair, which draws over its edge; no outline of its own.
+skin_any = ((rgb[..., 0] - rgb[..., 2]) > 40) & (lum > 100) & (alpha > 128)
+nbox = np.zeros_like(face)
+nbox[432:505, 690:752] = True
+neckfill = ndimage.binary_dilation(ndimage.binary_fill_holes(ndimage.binary_closing(skin_any & nbox & ~hair, iterations=3)), iterations=4) & nbox
 
 # --- the silhouette
 sink_face = ndimage.binary_erosion(face, iterations=SINK)
@@ -148,7 +156,7 @@ sink_ears = ndimage.binary_erosion(ear_r | ear_l | (strips & ~face), iterations=
 # the silhouette covers each strip with a 6 px margin (up to the face, which is drawn over it) or the page shows through there
 sil = ndimage.binary_fill_holes(ndimage.binary_closing(hair | sink_face | sink_ears | ndimage.binary_dilation(strips, iterations=6), iterations=2))
 
-np.savez_compressed("out/franzi_hair/outline_masks.npz", face=face, ear_l=ear_l, ear_r=ear_r, concha_l=concha_l, concha_r=concha_r, strips=strips, hair=hair, sil=sil)
-for name, m in (("face", face), ("ear_l", ear_l), ("ear_r", ear_r), ("concha_l", concha_l), ("concha_r", concha_r), ("strips", strips), ("hair", hair), ("sil", sil)):
+np.savez_compressed("out/franzi_hair/outline_masks.npz", face=face, ear_l=ear_l, ear_r=ear_r, concha_l=concha_l, concha_r=concha_r, strips=strips, neckfill=neckfill, hair=hair, sil=sil)
+for name, m in (("face", face), ("ear_l", ear_l), ("ear_r", ear_r), ("concha_l", concha_l), ("concha_r", concha_r), ("strips", strips), ("neckfill", neckfill), ("hair", hair), ("sil", sil)):
     ys, xs = np.nonzero(m)
     print(f"{name:6s} {int(m.sum()):7d} px  x {xs.min()}..{xs.max()}  y {ys.min()}..{ys.max()}")
