@@ -180,6 +180,15 @@ shoulder). Clean at normal size.
 
 Still visible only at 6x: two ticks of about 2 px at the redrawn hair-over-neck region (see the corner entry).
 
+### 2026-10-18, the hair-strap-shoulder junction on the viewer's right (owner's report: an edge and a gap)
+
+The owner pointed at the spot where the ponytail meets the strap and shoulder: it looked like an edge with a gap. At 14x there were two causes, both mine from the earlier work on the corner:
+
+1. **A squared corner left of the strap.** The ponytail extension polygon closed with a diagonal running down past the strap, so the hair ended in a flat-bottomed corner below the hair edge. In the reference the hair edge runs to a point at the strap top, about (741, 495). The polygon now follows the hair edge to that point, then along the hair's bottom edge to the right, and drops straight down at x 750 behind the body.
+2. **A thin black spike pointing left at the strap top.** Bisected by switching the over-neck redraw off: the body's own neck outline sweeps down and into the shoulder line at rows 504 to 507, just below the bottom of the neck fill (row 504), and the exposed tail showed as a spike. The neck fill now reaches row 513 (left of the strap only, x under 744), so it covers that stretch. (The tip detector was tried first as the cause and ruled out: the spike was unchanged with it excluded, the exclusion is kept anyway since that corner is not a lock of hair.)
+
+At normal size both shoulders now read alike. What is left is one pixel of light colour at the strap's top-left corner, visible only at 14x.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so

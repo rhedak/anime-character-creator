@@ -111,6 +111,9 @@ def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None, step=None, keep_tips=F
         m = max(8, int(round(arc[-1] / (step or SIL_STEP))))
         t = np.linspace(0, arc[-1], m, endpoint=False)
         tips = find_tips(pts) if keep_tips else []
+        # the corner where the hair edge meets the strap and turns into the hair's bottom edge (about 745, 500) is made by the ponytail extension
+        # polygon, not a lock of hair, and kept sharp it draws a spike pointing left beside the strap
+        tips = [i for i in tips if not (720 < pts[i][0] < 800 and 485 < pts[i][1] < 525)]
         for i in tips:  # a vertex exactly on each real tip, twice, so the spline reaches it (a doubled control point is a corner)
             t = t[np.abs(t - arc[i]) > 3.0]
             t = np.sort(np.concatenate([t, [arc[i], arc[i]]]))

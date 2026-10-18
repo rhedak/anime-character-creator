@@ -138,7 +138,7 @@ hair = ndimage.gaussian_filter(hair.astype(float), 1.0) > 0.5
 from PIL import ImageDraw
 ext = Image.new("L", (W, H), 0)
 d = ImageDraw.Draw(ext)
-d.polygon([(721, 440), (721, 462), (724, 474), (731, 484), (740, 492), (748, 499), (761, 505), (783, 510), (790, 516), (791, 575), (748, 575)], fill=255)  # left edge follows the reference's hair edge (it curves in from x 721 at row 462 to x 748 at the shoulder line, row 499), then drops behind the shoulder; a first version ran straight down at x 700 and stuck out beside the jaw
+d.polygon([(721, 440), (721, 462), (724, 474), (731, 484), (741, 495), (748, 499), (761, 505), (783, 510), (790, 516), (791, 575), (750, 575), (750, 505)], fill=255)  # the hair edge runs to the strap top at (741, 495), then along the hair's bottom edge to the right; the left side drops straight down at x 750 behind the body, not on the diagonal a first version closed with (which left a squared corner left of the strap)
 hair = hair | (np.array(ext) > 0)
 
 # --- the neck fill: the skin between the jaw, the hair's edge and the shoulder (the neck's shaded and lit skin). Our body's neck is
@@ -147,6 +147,7 @@ hair = hair | (np.array(ext) > 0)
 skin_any = ((rgb[..., 0] - rgb[..., 2]) > 40) & (lum > 100) & (alpha > 128)
 nbox = np.zeros_like(face)
 nbox[432:505, 690:752] = True
+nbox[505:514, 690:744] = True  # a little lower and left of the strap, to cover where the body's own neck outline sweeps into the shoulder line (rows 504 to 507)
 neckfill = ndimage.binary_dilation(ndimage.binary_fill_holes(ndimage.binary_closing(skin_any & nbox & ~hair, iterations=3)), iterations=4) & nbox
 
 # --- the silhouette
