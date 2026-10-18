@@ -54,6 +54,8 @@ CLOSE_R = 60
 disc = np.hypot(*np.mgrid[-CLOSE_R : CLOSE_R + 1, -CLOSE_R : CLOSE_R + 1]) <= CLOSE_R
 sil = ndimage.binary_closing(np.pad(sil, CLOSE_R + 2), structure=disc)[CLOSE_R + 2 : -(CLOSE_R + 2), CLOSE_R + 2 : -(CLOSE_R + 2)]
 np.save(OUT / "silhouette_closed.npy", sil)
+# what the closing added: the gaps between the fingertips (and the notch by the thumb's tip), drawn by lines.py as thin dark wedges so the fingers still read
+np.save(OUT / "gaps.npy", sil & ~ndimage.binary_fill_holes(cf))
 r_cc = HS_H * H / s
 sd = ndimage.distance_transform_edt(sil) - ndimage.distance_transform_edt(~sil)
 sd = ndimage.gaussian_filter(sd, 2.5)

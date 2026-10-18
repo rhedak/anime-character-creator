@@ -193,6 +193,16 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, hand fingers separated (owner's report: the fingers were one blob of flesh, like the big toe and its neighbour but worse)
+
+Agreed and measured: the three curled fingers were one flat shaded region (`HAND_SHADE`), the traced lines only ran along its outside, and the gaps
+between the fingertips had been closed to keep the outline from drawing heavy lobes, which also removed the separations. Two additions in `lines.py`:
+the gaps the outline closed (`outline.py` now saves them as `gaps.npy`) are drawn as dark slits (`HAND_GAPS`, eroded 8 px so they are slits as in the
+reference and not the whole closed gap), and the three shaded finger pieces from Grok's cut-outs are each drawn as a closed shape with a thin outline
+(`HAND_FINGERS`, 0.4 of the outline weight). The long lit finger's piece is left out: it has a ragged top edge where Grok cut it from the back of the
+hand and drew a wiggly line across the hand; its separation from the shaded fingers is the traced `edge` line already. Gates green, body gate unchanged.
+Still small: at normal size the fingers are about 3 px each, so they read as three narrow bands, not as full fingers.
+
 ### 2026-10-18, the relaxed hand traced from the close-up (`harness/franzi_hands/`)
 
 The owner chose to start with the relaxed hand and to have every hand style as an option eventually (open palm, fist, pointing later). The relaxed

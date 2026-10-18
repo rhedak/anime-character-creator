@@ -16,7 +16,7 @@ import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
 import { HAND_D_CUT, HAND_OUTLINE } from "./body-adult-hand-data.ts";
-import { HAND_CAVITY, HAND_LINES, HAND_LINE_WIDTHS, HAND_NAILS, HAND_SHADE } from "./body-adult-hand-lines-data.ts";
+import { HAND_CAVITY, HAND_FINGERS, HAND_GAPS, HAND_LINES, HAND_LINE_WIDTHS, HAND_NAILS, HAND_SHADE } from "./body-adult-hand-lines-data.ts";
 import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
@@ -545,7 +545,11 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
       const [start, segs] = inPx(ch);
       return `<path d="M ${fmt1(start[0])} ${fmt1(start[1])} ` + segs.map(([c, e]) => quad(c, e)).join("") + `Z" ${attrs} />`;
     };
-    const fills = HAND_SHADE.map((c) => closed(c, `fill="${shade(p.skin_tone, 0.83, 1.6)}"`)).join("") + HAND_CAVITY.map((c) => closed(c, `fill="${OUTLINE}"`)).join("");
+    const fills =
+      HAND_SHADE.map((c) => closed(c, `fill="${shade(p.skin_tone, 0.83, 1.6)}"`)).join("") +
+      HAND_FINGERS.map((c) => closed(c, `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.4))}" stroke-linejoin="round"`)).join("") +
+      HAND_GAPS.map((c) => closed(c, `fill="${OUTLINE}"`)).join("") +
+      HAND_CAVITY.map((c) => closed(c, `fill="${OUTLINE}"`)).join("");
     parts.push(`<g clip-path="url(#adult-hand-body)">${fills}</g>`);
     parts.push(...HAND_NAILS.map((c) => closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round"`)));
     HAND_LINES.forEach((c, i) => parts.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (HAND_LINE_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));

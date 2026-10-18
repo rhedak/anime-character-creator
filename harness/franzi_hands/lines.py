@@ -100,6 +100,17 @@ for k in ("nail_1", "nail_2", "nail_3", "nail_4"):
     nails += ch
 print("nails: %d chains" % len(nails))
 
+# --- the gaps the outline closed between the fingertips, as dark wedges; and each finger piece (Grok's cut-outs of the four fingers) as a closed shape, to
+# be drawn with a thin outline of its own, so the separations between the curled fingers show. (Without them the shaded fingers were one flat blob.)
+# narrowed by 8 px so the wedges are slits, as the reference's are, not the full closed gap
+gaps = fit_mask(ndimage.binary_erosion(np.load(OUT / "gaps.npy"), iterations=8), 3.0, 0.003, min_px=300)
+fingers = []
+# finger_4, the long lit finger, is left out: its piece has a ragged top edge where Grok cut it from the back of the hand (it drew a wiggly line across it),
+# and its separation from the shaded fingers is the traced "edge" line already
+for k in ("finger_1", "finger_2", "finger_3"):
+    fingers += fit_mask(ndimage.binary_fill_holes(flip(L[k])), 3.0, 0.0025, min_px=3000)
+print("gaps: %d chains, fingers: %d chains" % (len(gaps), len(fingers)))
+
 # --- contour lines: hand-placed points snapped onto the drawn dark line, see trace_lines.py (the automatic finder caught only fragments of them)
 sys.path.insert(0, "harness/franzi_hands")
 import trace_lines as tr  # noqa: E402
@@ -134,6 +145,8 @@ Path("ts/src/body-adult-hand-lines-data.ts").write_text(
     'import type { Chain } from "./tables.ts";\n\n'
     + chains_ts("HAND_SHADE", "The curled fingers in shadow, drawn in a second tone of the skin.", shade_ch)
     + chains_ts("HAND_CAVITY", "The dark wedge between the thumb and the curled fingers.", cav_ch)
+    + chains_ts("HAND_GAPS", "The gaps between the fingertips that the outline closes, drawn as dark wedges.", gaps)
+    + chains_ts("HAND_FINGERS", "The three shaded finger pieces (the curled fingers), each closed, drawn with a thin outline of its own.", fingers)
     + chains_ts("HAND_NAILS", "The visible nails, thumb first: closed rings with a lighter fill.", nails)
     + chains_ts("HAND_LINES", "The contour lines, open chains snapped onto the drawn dark lines: the long outer line, the line down between the shaded fingers, the finger separation.", lines)
     + "/** Each contour line's thickness in head radii at nine evenly spaced points. */\nexport const HAND_LINE_WIDTHS: readonly (readonly number[])[] = [\n  "
