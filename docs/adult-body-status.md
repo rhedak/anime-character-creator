@@ -159,6 +159,40 @@ The slight angle beside the jaw on the ponytail side had three causes, found by 
 What is left: two ticks of about 2 px, visible at 6x only, where that redrawn region's edges cross the outline (under the jaw, and at the
 shoulder). Clean at normal size.
 
+### 2026-10-18, feet traced from the close-up (`harness/franzi_feet/`)
+
+The owner's call: the feet (and hands) in the body are placeholders from the full-body reference, where a foot is about 100 px; the close-ups in
+`ref/franzi/hands/` are the real references. This is the feet. Pipeline, in order: `locate.py`, `mapping.py`, `outline.py`, `lines.py` (all
+`./harness/run.sh harness/franzi_feet/NAME.py`, from the repo root with `UV_CACHE_DIR` and `PYTHONPATH=.claude/skills/trace-reference` as for the
+hair); `view.py` draws the traced foot on the close-up for checking.
+
+- **Segments located** (`locate.py`): Grok's cut-outs (ten toes, three lower-leg layers, two feet) are small cropped PNGs, not full-canvas layers,
+  so a masked template match finds each in the 1008 x 1792 close-up; all 15 match with RMS 0.00 (they are crops of the same pixels).
+- **Mapping** (`mapping.py`): the close-up is 3.5x the body reference's feet and not registered; each foot is fitted to the body's matching foot by
+  scale and offset (IoU 0.933 and 0.927, scale 0.288). The two close-up feet are mirror twins (IoU 0.991), so the traced foot is the mean of one
+  and the mirror of the other, symmetric like the rest of the body, placed centred on the mean of where the body's feet stand.
+- **Outline** (`outline.py` to `ts/src/body-adult-foot-data.ts`, `FOOT_OUTLINE`): in the body knots' own coordinates [v, d] (head heights), inset
+  by the render's half stroke like the leg knots. The legs stop at `FOOT_D_CUT` (4.40 head heights below the chin) and the foot takes over,
+  blended from the leg knots over 4.40 to 4.85 so there is no step. Narrow slits between toes (under 22 close-up px) are closed, since followed
+  as outline they drew as teeth (the first version did); the open gap beside the big toe stays as a notch. The old placeholder sole is gone.
+- **Dividers** (`lines.py`, `FOOT_DIVIDERS`, with `FOOT_DIVIDER_WIDTHS`): the shadow line between each pair of toes, from the midline of the gap
+  between the two toe segments, snapped to the darkest pixel, thickness measured across it (thin at the base, heavy at the notch), drawn as tapered
+  strokes. The pair beside the big toe (7/5) has an open slit, so it snaps only above the slit and runs on down the middle of it to the notch,
+  drawn thin. (A first version judged "page" by brightness and read transparent pixels, which are black, as shadow; it is judged by alpha now.)
+- **Nails** (`FOOT_NAILS`): rim found by casting rays from a centre read off the grid and taking the darkest point near the guessed ring; big toe's
+  search is held near the ring (it leaked into the shadow wedge beside it and drew a point). Drawn as a thin ring with a lighter skin fill, clipped
+  to the body outline with the outline's stroke redrawn over it below the ankle, because the stroke (about 10 close-up px a side) is wider than the
+  gap between a little toe's nail and its edge.
+
+**A bug of mine, found by the gate:** the body path decides which way to inset a knot table by `tab === LEG_INNER`; my cut copy of the table failed
+that test, so the inner leg edge was inset the wrong way (leg 8 px wider at 60% of chin-to-sole, gate failing on width). The cut tables are
+recognised by reference now.
+
+**Gate** (body, IoU at least 0.93): 0.957, worst width error 4.3% (the toes' outer width at 90% of chin-to-sole; the close-up's forefoot is 5% narrower
+than the body reference's rough feet, so the foot is stretched 6% horizontally about its centre line, `XS` in `outline.py`; without it 5.3% fails the 5%
+limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
+the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
+
 ### 2026-10-18, the four leftovers (wisp tip, arc fold weight, pale highlight, faint strands)
 
 1. **Ponytail wisp tip, done.** The wisp is a 4 px wide tail running to about y 486; ours ended near y 471 for two reasons. The 1 px shrink

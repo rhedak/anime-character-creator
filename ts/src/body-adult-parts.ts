@@ -14,11 +14,13 @@ import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE 
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
+import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
+import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
-import { shade } from "./colorutil.ts";
+import { shade, tint } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
 import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
 import { MOUTH_REALISTIC_DROP, MOUTH_Y, noseDot } from "./face.ts";
@@ -110,7 +112,10 @@ export function adultBodyPath(sk: Skeleton): string {
   // The knots are the ink's outer edge, stroke included, so the path sits half a stroke inside it: an outer edge moves
   // toward the centre line, an inner edge (the arm's inside, the legs' gap) away from it.
   const hs = outlineW(strokeW(sk)) / 2;
-  const inner = (tab: Knots): boolean => tab === ARM_INNER || tab === LEG_INNER;
+  // The legs stop at `FOOT_D_CUT`, so the leg tables are cut there; a cut table is a new array, so it is recognised by being one of these.
+  const legInnerAbove = LEG_INNER.filter(([dd]) => dd <= FOOT_D_CUT + 1e-6);
+  const legOuterAbove = LEG_OUTER.filter(([dd]) => dd <= FOOT_D_CUT + 1e-6);
+  const inner = (tab: Knots): boolean => tab === ARM_INNER || tab === LEG_INNER || tab === legInnerAbove;
   const side = (sign: number, tab: Knots): Pt[] =>
     tab.map(([d, v]) => [cx + sign * (w(d, v) + (inner(tab) ? hs : -hs)), y(d)]);
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
@@ -126,25 +131,17 @@ export function adultBodyPath(sk: Skeleton): string {
   // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
   const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0)];
   const capTor = (sign: number): Pt => [cx + sign * (w(1.0, 0.395) - hs * 0.4), y(1.0)];
-  const legLine = (sign: number): Pt[] => [...side(sign, TORSO_SIDE), ...side(sign, LEG_OUTER)];
-  const lastOuter = (sign: number): Pt => [cx + sign * (w(5.3, 0.349) - hs), y(5.4) - hs];
-  const lastInner = (sign: number): Pt => [cx + sign * (w(5.3, 0.065) + hs), y(5.4) - hs];
+  // The legs end at `FOOT_D_CUT`; from there the traced foot (body-adult-foot-data.ts) takes over, round the toes and back to the inner edge.
+  const legLine = (sign: number): Pt[] => [...side(sign, TORSO_SIDE), ...side(sign, legOuterAbove)];
   const L = -1;
   const R = 1;
-  // The sole as one rounded curve, the little toe's side highest and the big toe lowest; the toes themselves are lines
-  // inside it (`adultDetail`). Walked from the outer edge to the big toe on the left foot and back on the right.
-  const sole = (sign: number): Pt[] => {
-    const xo = cx + sign * (w(5.3, 0.349) - hs);
-    const xi = cx + sign * (w(5.3, 0.065) + hs);
-    const yBase = y(5.4) - hs;
-    const hH = 2 * sk.head_r;
-    const at = (t: number, rise: number): Pt => [xo + (xi - xo) * t, yBase - rise * hH];
-    return [at(0, 0.05), at(0.1, 0.03), at(0.35, 0.016), at(0.7, 0.004), at(0.93, 0.0), at(1, 0.03)];
-  };
-  const toes = (sign: number): string => {
-    const pts = sole(sign);
-    const run = sign < 0 ? pts : [...pts].reverse();
-    return line(run[0] as Pt) + smooth(run);
+  // The foot, in the knots' own coordinates [v, d] (head heights): the left foot walks outer edge to inner edge, the right one the other way.
+  const footPt = (sign: number, q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+  const foot = (sign: number): string => {
+    const [start, segs] = FOOT_OUTLINE;
+    if (sign < 0) return segs.map(([c, e]) => quad(footPt(sign, c), footPt(sign, e))).join("");
+    const ends: Pt[] = [start, ...segs.map(([, e]) => e)];
+    return segs.map(([c], i) => quad(footPt(sign, c), footPt(sign, ends[i] as Pt))).reverse().join("");
   };
   const a = out(L);
   const start = a[0] as Pt;
@@ -161,13 +158,13 @@ export function adultBodyPath(sk: Skeleton): string {
   const leg = legLine(L);
   d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
   d += smooth(leg);
-  d += toes(L);
+  d += foot(L);
   // The inside of the left leg up to the crotch, across, and the same down the right leg.
-  d += smooth(rev(side(L, LEG_INNER)));
+  d += smooth(rev(side(L, legInnerAbove)));
   d += line([cx, y(2.25)]);
   d += line(side(R, LEG_INNER)[0] as Pt);
-  d += smooth(side(R, LEG_INNER));
-  d += toes(R);
+  d += smooth(side(R, legInnerAbove));
+  d += foot(R);
   d += smooth(rev(legLine(R)));
   d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
   d += smooth(side(R, ARM_INNER));
@@ -539,30 +536,41 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
  * the big toenail on each foot. Interior strokes, not outlines, so lighter than the outline.
  */
 export function adultDetail(sk: Skeleton, p: CharacterParams): string {
-  void p;
   const { cx, y, w } = place(sk);
   const sw = outlineW(strokeW(sk), 0.55);
   const stroke = (pts: Pt[]): string => `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(sw)}" stroke-linecap="round" stroke-linejoin="round" />`;
   const out: string[] = [];
+  const nailsHere: string[] = [];
+  let footClip = "";
   for (const sign of [-1, 1]) {
     const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
     // Hand: the thumb hanging along the inside of the hand, and where the curled fingers part from it.
     out.push(stroke([P(0.715, 2.2), P(0.705, 2.32), P(0.715, 2.44), P(0.7, 2.52)]));
     out.push(stroke([P(0.785, 2.34), P(0.775, 2.45), P(0.745, 2.55)]));
-    // Foot: four short lines marking the toes, and the big toenail.
-    const xo = w(5.3, 0.349);
-    const xi = w(5.3, 0.065);
-    const hH = 2 * sk.head_r;
-    for (const t of [0.14, 0.3, 0.46, 0.66]) {
-      const x = cx + sign * (xo + (xi - xo) * t);
-      const yb = y(5.4) - hH * (0.05 - 0.046 * t);
-      out.push(stroke([[x, yb - 0.04 * hH], [x + sign * 0.002 * hH, yb - 0.004 * hH]]));
+    // Foot, traced from the close-up (harness/franzi_feet/): the dividers between toes, thin at the base and heavy toward the notch, and the
+    // five toenails, each a closed ring with a slightly lighter fill. The chains are in the knots' [v, d] coordinates, mapped like the legs.
+    const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+    const inPx = ([start, segs]: Chain): Chain => [px(start), segs.map(([c, e]) => [px(c), px(e)] as [Pt, Pt])];
+    const pixelFrame = { head_cx: 0, head_cy: 0, head_r: 1 } as Skeleton; // taperedStrand reads a chain in head radii; this frame makes it read pixels
+    FOOT_DIVIDERS.forEach((c, i) => out.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (FOOT_DIVIDER_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
+    // The nails are clipped to the body outline and the outline's stroke is drawn again over them below the ankle, because the stroke
+    // (about 10 close-up px a side) is wider than the gap between a little toe's nail and the toe's edge, so a nail would spill over it.
+    const nailPaths = FOOT_NAILS.map((ring) => {
+      const [start, segs] = inPx(ring);
+      const d = `M ${fmt1(start[0])} ${fmt1(start[1])} ` + segs.map(([c, e]) => quad(c, e)).join("") + "Z";
+      return `<path d="${d}" fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round" />`;
+    }).join("");
+    if (sign < 0) {
+      const top = y(FOOT_D_CUT);
+      const frame = `<rect x="0" y="${fmt1(top)}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h - top)}" />`;
+      footClip =
+        `<clipPath id="adult-foot-body"><path d="${adultBodyPath(sk)}" /></clipPath><clipPath id="adult-foot-rows">${frame}</clipPath>` +
+        `<g clip-path="url(#adult-foot-body)">NAILS</g>` +
+        `<path d="${adultBodyPath(sk)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-foot-rows)" />`;
     }
-    const nx = cx + sign * (xo + (xi - xo) * 0.85);
-    const ny = y(5.4) - 0.045 * hH;
-    out.push(stroke([[nx - 0.03 * hH, ny - 0.01 * hH], [nx, ny + 0.012 * hH], [nx + 0.03 * hH, ny - 0.01 * hH]]));
+    nailsHere.push(nailPaths);
   }
-  return out.join("");
+  return out.join("") + footClip.replace("NAILS", nailsHere.join(""));
 }
 
 /**
