@@ -16,7 +16,7 @@ import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
 import { HAND_D_CUT, HAND_OUTLINE, HAND_STROKE_K } from "./body-adult-hand-data.ts";
-import { HAND_CAVITY, HAND_FINGERS, HAND_GAPS, HAND_LINES, HAND_LINE_WIDTHS, HAND_NAILS, HAND_SHADE } from "./body-adult-hand-lines-data.ts";
+import { HAND_CAVITY, HAND_FINGERS, HAND_GAPS, HAND_LINES, HAND_LINE_WIDTHS, HAND_NAILS, HAND_SHADE, HAND_THUMB, HAND_THUMB_FROM } from "./body-adult-hand-lines-data.ts";
 import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
@@ -224,31 +224,50 @@ export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all"): st
   const bottom = y(2.9);
   const big = sk.canvas_w;
   const bigH = sk.canvas_h;
-  // the hand columns: from the thigh's edge (0.635 H, clear of the thigh's own stroke) out past the arm's outer edge
-  const cols = [-1, 1].map((sign) => {
-    const a = cx + sign * w(2.3, 0.635);
-    const b = cx + sign * w(2.3, 1.0);
-    return [Math.min(a, b), Math.max(a, b)] as const;
-  });
+  // The hand zone: from the arm's outer side in to an inner edge that follows the thigh (the lowest fingertip reaches 0.60 H from the centre line, past
+  // the straight 0.635 H edge this had at first, which cut the tip off and drew it at full weight with a vertical edge: the owner's barb), clear of the
+  // thigh's own stroke (its outer edge is 0.611 H at 2.3, 0.583 at 2.5, 0.561 at 2.6; the stroke reaches 0.008 H beyond that).
+  const V_IN: readonly (readonly [number, number])[] = [[HAND_D_CUT, 0.635], [2.3, 0.625], [2.4, 0.612], [2.5, 0.598], [2.6, 0.595], [2.9, 0.595]];
+  const vIn = (d: number): number => {
+    for (let i = 0; i < V_IN.length - 1; i++) {
+      const [d0, v0] = V_IN[i] as readonly [number, number];
+      const [d1, v1] = V_IN[i + 1] as readonly [number, number];
+      if (d <= d1) return v0 + ((v1 - v0) * (d - d0)) / (d1 - d0);
+    }
+    return (V_IN[V_IN.length - 1] as readonly [number, number])[1];
+  };
+  const dAt = (d0: number, d1: number): number[] => [d0, ...V_IN.map(([d]) => d).filter((d) => d > d0 && d < d1), d1];
+  const poly = (pts: readonly Pt[]): string => `<polygon points="${pts.map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ")}" />`;
+  const px = (sign: number, d: number, v: number): Pt => [cx + sign * w(d, v), y(d)];
   const rect = (x0: number, y0: number, x1: number, y1: number): string => `<rect x="${fmt1(x0)}" y="${fmt1(y0)}" width="${fmt1(x1 - x0)}" height="${fmt1(y1 - y0)}" />`;
-  const [l, r] = cols as [readonly [number, number], readonly [number, number]];
-  const rest =
-    `<clipPath id="adult-stroke-rest">${rect(0, 0, big, top)}${rect(0, top, l[0], bigH)}${rect(l[1], top, r[0], bigH)}${rect(r[1], top, big, bigH)}${rect(l[0], bottom, l[1], bigH)}${rect(r[0], bottom, r[1], bigH)}</clipPath>`;
-  const band = (id: string, y0: number, y1: number): string => `<clipPath id="${id}">${rect(l[0], y0, l[1], y1)}${rect(r[0], y0, r[1], y1)}</clipPath>`;
-  // The stroke tapers from the full weight to the hand weight over twenty bands from the wrist down (0.32 head heights) (a single step showed as a jump at the
-  // wrist's outer edge).
-  const taperEnd = y(HAND_D_CUT + 0.32);
-  const N = 20; // many thin bands: each band's stroke ends in a small barb on the outer edge, which at six bands showed as a tick
+  const OUT = 1.0;
+  // one hand's piece between depths d0 and d1: outer side straight, inner side along vIn
+  const piece = (sign: number, d0: number, d1: number): string => {
+    const ds = dAt(d0, d1);
+    return poly([...ds.map((d) => px(sign, d, OUT)), ...[...ds].reverse().map((d) => px(sign, d, vIn(d)))]);
+  };
+  const xl = Math.min(cx - w(2.3, OUT), cx + w(2.3, OUT));
+  const xr = Math.max(cx - w(2.3, OUT), cx + w(2.3, OUT));
+  // the rest: everything but the hand zones. Above the wrist and below the hands, the whole width; between, the outside of each arm and the middle.
+  const dsAll = dAt(HAND_D_CUT, 2.9);
+  const middle = poly([...dsAll.map((d) => px(-1, d, vIn(d))), ...[...dsAll].reverse().map((d) => px(1, d, vIn(d)))]);
+  const rest = `<clipPath id="adult-stroke-rest">${rect(0, 0, big, top)}${rect(0, top, xl, bottom)}${rect(xr, top, big, bottom)}${middle}${rect(0, bottom, big, bigH)}</clipPath>`;
+  // The stroke tapers from the full weight to the hand weight over N bands from the wrist down (a single step showed as a jump at the wrist's outer
+  // edge), each band reaching a little up into the one above, which is thicker, so no hairline of the page shows where they meet.
+  const taperEnd = HAND_D_CUT + 0.32;
+  const N = 20;
+  const lap = 0.008;
+  const band = (id: string, d0: number, d1: number): string => `<clipPath id="${id}">${piece(-1, d0, d1)}${piece(1, d0, d1)}</clipPath>`;
   let hands = "";
   let strokes = "";
   for (let i = 0; i < N; i++) {
-    const y0 = top + ((taperEnd - top) * i) / N;
-    const y1 = top + ((taperEnd - top) * (i + 1)) / N;
+    const d0 = HAND_D_CUT + ((taperEnd - HAND_D_CUT) * i) / N;
+    const d1 = HAND_D_CUT + ((taperEnd - HAND_D_CUT) * (i + 1)) / N;
     const k = 1 - (1 - HAND_STROKE_K) * ((i + 1) / N);
-    hands += band(`adult-stroke-t${i}`, i === 0 ? y0 : y0 - 0.6, y1); // each band reaches 0.6 up into the one above, which is thicker, so no hairline of the page shows where the two meet
+    hands += band(`adult-stroke-t${i}`, i === 0 ? d0 : d0 - lap, d1);
     strokes += stroke(full * k, `adult-stroke-t${i}`);
   }
-  hands += band("adult-stroke-hand", taperEnd - 0.6, bottom);
+  hands += band("adult-stroke-hand", taperEnd - lap, 2.9);
   strokes += stroke(full * HAND_STROKE_K, "adult-stroke-hand");
   return (only === "all" ? rest + stroke(full, "adult-stroke-rest") : "") + hands + strokes;
 }
@@ -594,6 +613,10 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
       HAND_GAPS.map((c) => closed(c, `fill="${OUTLINE}"`)).join("") +
       HAND_CAVITY.map((c) => closed(c, `fill="${OUTLINE}"`)).join("");
     parts.push(`<g clip-path="url(#adult-hand-body)">${fills}</g>`);
+    // the thumb over the finger outlines, from `HAND_THUMB_FROM` down (the rows of its tip): skin, with a thin outline of its own
+    const thumbClip = `adult-thumb-rows-${sign < 0 ? "l" : "r"}`;
+    parts.push(`<clipPath id="${thumbClip}"><rect x="0" y="${fmt1(y(HAND_THUMB_FROM))}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h)}" /></clipPath>`);
+    parts.push(`<g clip-path="url(#${thumbClip})">` + HAND_THUMB.map((c) => closed(c, `fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.4))}" stroke-linejoin="round"`)).join("") + "</g>");
     parts.push(...HAND_NAILS.map((c) => closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round"`)));
     HAND_LINES.forEach((c, i) => parts.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (HAND_LINE_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
   }

@@ -193,6 +193,21 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, hands: the barb and the cut-off fingertip (owner's two circled flaws)
+
+Both were found by switching layers off one at a time at 12x to 24x, and neither was what it first looked like.
+1. **The barb at the fingertip.** Not the sharp-tip detector (turned off for the hand anyway), not the silhouette, not any of the hand's interior layers (it stayed with
+   all of them off). It was the hand's stroke zone: a rectangle starting 0.635 H from the centre line, which the lowest fingertip (reaching 0.60 H) stuck out of, so the
+   tip outside it was drawn at full weight with a vertical edge. The zone's inner edge now follows the thigh (a polygon, `V_IN` in `adultBodyStroke`), taking in the tip
+   and staying clear of the thigh's own stroke. `adultBodyStroke` builds its clips from polygons in (depth, half-width) now, which also removed the rectangle seams.
+2. **The cut-off fingertip beside the thumb.** The close-up's second curled finger pokes out past the thumb as a tail about 4 px wide on ref 04; the finger outline I
+   drew across it and the thumb's own edge made it look like a separate piece of flesh. The silhouette is opened with a disc of radius 20 close-up px
+   (`OPEN_R`), which removes that tail and nothing else (every other thin part is under 150 px at that radius), and the finger pieces are trimmed to it. The thumb is drawn
+   over the finger outlines below its tip's row (`HAND_THUMB`, `HAND_THUMB_FROM`) so a finger outline no longer runs across it. The close-up's sliver of nail on that finger
+   (24 px tall) is skipped: drawn with a stroke it was a black wedge.
+Also: the outline is sampled more finely (717 segments, smoothing 4 samples) since a fingertip is a U-turn only a few vertices wide at the coarser setting. Gates green.
+Left: a tiny nub (under 1 px) at that fingertip at 18x; two faint hairlines under the thumbnail at 18x.
+
 ### 2026-10-18, hands: outline at a third of the weight, tapered at the wrist (owner's option 1 for giving the fingers room)
 
 The owner asked about a larger image; a larger canvas would not help (a vector scales the figure and the stroke together; the stroke is figure-relative), so the

@@ -44,6 +44,10 @@ W = M["W"]
 c = np.array(Image.open("ref/franzi/hands/relaxed.png").convert("RGBA"))[..., 3] > 128
 cf = c[:, ::-1]
 sil = ndimage.binary_fill_holes(cf)
+# The tip of the second curled finger pokes out past the thumb in the close-up as a tail about 4 px wide on ref 04 (a barb in the render, the owner's report):
+# an opening with a disc of radius 20 close-up px removes it, and nothing else (every other thin part is under 150 px at that radius).
+OPEN_R = 20
+sil = ndimage.binary_opening(np.pad(sil, OPEN_R + 2), structure=np.hypot(*np.mgrid[-OPEN_R : OPEN_R + 1, -OPEN_R : OPEN_R + 1]) <= OPEN_R)[OPEN_R + 2 : -(OPEN_R + 2), OPEN_R + 2 : -(OPEN_R + 2)]
 cavity = sil & ~cf
 print("silhouette %d px, holes (the cavity) %d px" % (sil.sum(), cavity.sum()))
 np.save(OUT / "silhouette.npy", sil)
@@ -140,9 +144,11 @@ def find_tips(pts, win=25, min_turn=95.0, min_sep=70):
     return sorted(out)
 
 
-tips = find_tips(path)
+# No sharp tips on the hand: the one the detector found (the tip of the curled finger beside the thumb) is a round fingertip that the closing leaves slightly
+# pointed, and keeping it as a corner drew a barb there (the owner's report); the fingertips are rounded by the smoothing.
+tips = []
 print("fingertip points kept at (close-up px):", [tuple(int(v) for v in path[i]) for i in tips])
-SIG, STEP = 7.0, 0.0034  # smoothing along the path in samples; vertex spacing in head heights
+SIG, STEP = 4.0, 0.0018  # a fingertip is a U-turn only a few vertices wide at the coarser 7.0, 0.0034, which folded the path into a small spike there  # smoothing along the path in samples; vertex spacing in head heights
 arr = np.stack([v_b, d_b], 1)
 sm = arr.copy()
 sm[1:-1, 0] = ndimage.gaussian_filter1d(arr[:, 0], SIG, mode="nearest")[1:-1]
