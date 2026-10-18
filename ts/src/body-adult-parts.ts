@@ -14,7 +14,7 @@ import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE 
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
-import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_NECKFILL, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
+import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
@@ -464,8 +464,7 @@ export function adultHairBehind(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   const clip = `<clipPath id="adult-hair-clip">${ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>`;
-  const neck = ADULT_SKIN_NECKFILL.map((c) => `<path d="${d(c)}" fill="${colorStr(p.skin_tone)}" />`).join("");
-  return clip + neck + adultHairShape(sk, p);
+  return clip + adultHairShape(sk, p);
 }
 
 /** The hair silhouette with its outline and the strand lines over it, clipped to the silhouette (the shared body of the two draws). */
@@ -476,22 +475,6 @@ function adultHairShape(sk: Skeleton, p: CharacterParams): string {
   const hair = ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
   const strands = ADULT_HAIR_STRANDS.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.5), shade(p.hair_color, 2.6, 0.9))).join("");
   return hair + `<g clip-path="url(#adult-hair-clip)">${strands}</g>`;
-}
-
-/**
- * The hair beside the neck, drawn again over the body for the rows above the shoulder (reference rows 405 to 512, columns 690 to 746: the top runs under the jaw, which is drawn over it, and the right edge stops short of the shoulder, whose top is at row 499 by column 748).
- * In the reference the hair sits directly on the neck's side there, and our body's neck is narrower, so its outline ran down beside the
- * hair's own and left a second black line with a sliver of skin between. The neck's skin is drawn first, with no outline, to cover that
- * neck line, then the hair over it. Below row 497 the body's shoulder covers the hair, which is what puts the ponytail behind it.
- */
-function adultHairOnNeck(sk: Skeleton, p: CharacterParams): string {
-  const h = onHead(sk);
-  const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
-  const u = (x: number): number => h.head_cx + ((x - 660) / 175.7) * h.head_r;
-  const v = (y: number): number => h.head_cy + ((y - 270.5) / 175.7) * h.head_r;
-  const rect = `<clipPath id="adult-hair-on-neck"><rect x="${fmt1(u(690))}" y="${fmt1(v(405))}" width="${fmt1(u(746) - u(690))}" height="${fmt1(v(512) - v(405))}" /></clipPath>`;
-  const neck = ADULT_SKIN_NECKFILL.map((c) => `<path d="${d(c)}" fill="${colorStr(p.skin_tone)}" />`).join("");
-  return rect + `<g clip-path="url(#adult-hair-on-neck)">${neck}${adultHairShape(sk, p)}</g>`;
 }
 
 /**
@@ -509,7 +492,6 @@ export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
   const concha = (cs: readonly Chain[]): string => cs.map((c) => `<path d="${d(c)}" fill="${inner}" />`).join("");
   const folds = (cs: readonly Chain[], ws: readonly (readonly number[])[]): string => cs.map((c, i) => taperedStrand(h, c, outlineW(strokeW(sk), 0.38), OUTLINE, ws[i])).join("");
   return (
-    adultHairOnNeck(sk, p) +
     ADULT_SKIN_STRIPS.map((c) => skin(c, 0.4)).join("") +
     ADULT_SKIN_EAR_L.map((c) => skin(c, 0.5)).join("") +
     concha(ADULT_EAR_CONCHA_L) +

@@ -140,15 +140,12 @@ ext = Image.new("L", (W, H), 0)
 d = ImageDraw.Draw(ext)
 d.polygon([(721, 440), (721, 462), (724, 474), (731, 484), (741, 495), (748, 499), (761, 505), (783, 510), (790, 516), (791, 575), (750, 575), (750, 505)], fill=255)  # the hair edge runs to the strap top at (741, 495), then along the hair's bottom edge to the right; the left side drops straight down at x 750 behind the body, not on the diagonal a first version closed with (which left a squared corner left of the strap)
 hair = hair | (np.array(ext) > 0)
-
-# --- the neck fill: the skin between the jaw, the hair's edge and the shoulder (the neck's shaded and lit skin). Our body's neck is
-# narrower than the reference's at that height, so with the hair drawn behind the body a sliver of page showed between the neck and the
-# hair edge beside the jaw. This is skin drawn first, behind the hair, which draws over its edge; no outline of its own.
-skin_any = ((rgb[..., 0] - rgb[..., 2]) > 40) & (lum > 100) & (alpha > 128)
-nbox = np.zeros_like(face)
-nbox[432:505, 690:752] = True
-nbox[505:514, 690:744] = True  # a little lower and left of the strap, to cover where the body's own neck outline sweeps into the shoulder line (rows 504 to 507)
-neckfill = ndimage.binary_dilation(ndimage.binary_fill_holes(ndimage.binary_closing(skin_any & nbox & ~hair, iterations=3)), iterations=4) & nbox
+# Under the neck: the body's own neck line (x about 715) sweeps into the shoulder line over the hair, as it does on the other side, so the
+# hair has to run on behind it: from the neck line out to the hair's real edge, down to the shoulder. (The reference has the hair edge itself
+# as the neck's boundary, which left a second black line and a skin sliver beside the body's neck line here.)
+under = Image.new("L", (W, H), 0)
+ImageDraw.Draw(under).polygon([(716, 425), (726, 425), (724, 474), (731, 484), (741, 495), (748, 499), (752, 508), (716, 514)], fill=255)
+hair = hair | (np.array(under) > 0)
 
 # --- the silhouette
 sink_face = ndimage.binary_erosion(face, iterations=SINK)
@@ -157,7 +154,7 @@ sink_ears = ndimage.binary_erosion(ear_r | ear_l | (strips & ~face), iterations=
 # the silhouette covers each strip with a 6 px margin (up to the face, which is drawn over it) or the page shows through there
 sil = ndimage.binary_fill_holes(ndimage.binary_closing(hair | sink_face | sink_ears | ndimage.binary_dilation(strips, iterations=6), iterations=2))
 
-np.savez_compressed("out/franzi_hair/outline_masks.npz", face=face, ear_l=ear_l, ear_r=ear_r, concha_l=concha_l, concha_r=concha_r, strips=strips, neckfill=neckfill, hair=hair, sil=sil)
-for name, m in (("face", face), ("ear_l", ear_l), ("ear_r", ear_r), ("concha_l", concha_l), ("concha_r", concha_r), ("strips", strips), ("neckfill", neckfill), ("hair", hair), ("sil", sil)):
+np.savez_compressed("out/franzi_hair/outline_masks.npz", face=face, ear_l=ear_l, ear_r=ear_r, concha_l=concha_l, concha_r=concha_r, strips=strips, hair=hair, sil=sil)
+for name, m in (("face", face), ("ear_l", ear_l), ("ear_r", ear_r), ("concha_l", concha_l), ("concha_r", concha_r), ("strips", strips), ("hair", hair), ("sil", sil)):
     ys, xs = np.nonzero(m)
     print(f"{name:6s} {int(m.sum()):7d} px  x {xs.min()}..{xs.max()}  y {ys.min()}..{ys.max()}")

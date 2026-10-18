@@ -189,6 +189,20 @@ The owner pointed at the spot where the ponytail meets the strap and shoulder: i
 
 At normal size both shoulders now read alike. What is left is one pixel of light colour at the strap's top-left corner, visible only at 14x.
 
+### 2026-10-18, the right neck-to-shoulder curve mirrors the left (owner's request)
+
+The body outline is already left/right symmetric (the knot tables are the mean of both sides); what differed was the layering on the right. The
+earlier corner fix drew the hair again over the body beside the neck, with a skin fill under it, which hid the body's own neck line and its
+curve into the shoulder, so the hair edge stood in for the neck and the shoulder line came out from under the hair at the strap. Mirroring
+the left means the opposite: the body's neck line and curve are on top, as on the left, and the hair goes behind them.
+
+Done by dropping `adultHairOnNeck` and the neck fill (`ADULT_SKIN_NECKFILL`, `neckfill` in the harness) and adding hair under the neck to the
+mask (a polygon from the neck line, x 716, out to the hair's real edge, rows 425 to 514, in `outline_masks.py`), so the body curve, drawn
+over the hair, is the boundary between neck skin and hair. This puts the hair edge a few px nearer the neck than the reference has it (the
+reference's hair edge is itself the neck's boundary), which is the trade the owner accepted. The strap-top junction fix from the previous
+entry (hair edge to the strap point, no squared corner) stays. Both neck lines now end in the same small joint where the rect's bottom meets
+the body curve, 2 px at 8x on both sides.
+
 ### 2026-10-17, strand lines traced one by one (`strands3.py`, replaces the by-eye `strands.py`)
 
 The owner's read was that the strand lines did not match the reference's at all. Checked: the reference's lines are dark on near-black, so
