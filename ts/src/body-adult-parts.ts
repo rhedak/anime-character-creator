@@ -15,7 +15,7 @@ import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_NECKFILL, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
-import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R } from "./body-adult-ear-data.ts";
+import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade } from "./colorutil.ts";
@@ -414,7 +414,7 @@ export function adultHead(sk: Skeleton, p: CharacterParams): string {
  * One strand line as a single filled shape that swells from a point, holds its weight and thins to a point again, so a strand
  * starts and ends inside the hair like a pen stroke and never stops abruptly. A flat black shape, hard-edged.
  */
-function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string): string {
+function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string, widths?: readonly number[]): string {
   const pts: Pt[] = [];
   let p0: Pt = start;
   for (const [c, e] of segs) {
@@ -437,7 +437,14 @@ function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color:
     const nx = -(b[1] - a[1]) / len;
     const ny = (b[0] - a[0]) / len;
     const t = i / (n - 1);
-    const half = (weight / 2) * Math.min(1, t / 0.2, (1 - t) / 0.4);
+    let half = (weight / 2) * Math.min(1, t / 0.2, (1 - t) / 0.4);
+    if (widths) {
+      // measured thickness (head radii) interpolated along the line; the ends still close to a point
+      const x = t * (widths.length - 1);
+      const k = Math.min(widths.length - 2, Math.floor(x));
+      const w = (widths[k] as number) * (1 - (x - k)) + (widths[k + 1] as number) * (x - k);
+      half = ((w * h.head_r) / 2) * Math.min(1, t / 0.08, (1 - t) / 0.08);
+    }
     const q = P[i] as Pt;
     left.push([q[0] + nx * half, q[1] + ny * half]);
     right.push([q[0] - nx * half, q[1] - ny * half]);
@@ -500,16 +507,16 @@ export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
   const skin = (c: Chain, weight: number): string => `<path d="${d(c)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), weight))}" stroke-linejoin="round" />`;
   const inner = shade(p.skin_tone, 0.83, 1.6);
   const concha = (cs: readonly Chain[]): string => cs.map((c) => `<path d="${d(c)}" fill="${inner}" />`).join("");
-  const folds = (cs: readonly Chain[]): string => cs.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.38), OUTLINE)).join("");
+  const folds = (cs: readonly Chain[], ws: readonly (readonly number[])[]): string => cs.map((c, i) => taperedStrand(h, c, outlineW(strokeW(sk), 0.38), OUTLINE, ws[i])).join("");
   return (
     adultHairOnNeck(sk, p) +
     ADULT_SKIN_STRIPS.map((c) => skin(c, 0.4)).join("") +
     ADULT_SKIN_EAR_L.map((c) => skin(c, 0.5)).join("") +
     concha(ADULT_EAR_CONCHA_L) +
-    folds(ADULT_EAR_FOLDS_L) +
+    folds(ADULT_EAR_FOLDS_L, ADULT_EAR_FOLD_WIDTHS_L) +
     ADULT_SKIN_EAR_R.map((c) => skin(c, 0.5)).join("") +
     concha(ADULT_EAR_CONCHA_R) +
-    folds(ADULT_EAR_FOLDS_R)
+    folds(ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_R)
   );
 }
 

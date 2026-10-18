@@ -72,6 +72,25 @@ def snap(pts):
     return out, best, at(out)
 
 
+WIDTH_MIN, WIDTH_MAX = 0.7, 3.4  # px: floor so a faint line still draws; cap so the hair beside a line's end does not inflate it
+
+
+def widths(pts, n=9):
+    """The line's thickness at n evenly spaced points, in reference px, measured across it on the plain reference.
+
+    Coverage along the normal: how far each pixel is from skin brightness (150) toward line darkness (40), summed. The measure is taken at
+    the snapped curve, so it is the drawn line's own thickness; the ends read high where the line runs into hair, hence the cap.
+    """
+    out, _, _ = snap(pts)
+    nrm = normals(out)
+    res = []
+    for i in np.linspace(0, len(out) - 1, n).astype(int):
+        offs = np.linspace(-6, 6, 61)
+        v = ndimage.map_coordinates(_lum, [out[i, 1] + offs * nrm[i, 1], out[i, 0] + offs * nrm[i, 0]], order=1, mode="nearest")
+        res.append(float(np.clip((150 - v) / 110, 0, 1).sum() * (offs[1] - offs[0])))
+    return ndimage.gaussian_filter1d(np.clip(res, WIDTH_MIN, WIDTH_MAX), 0.8, mode="nearest")
+
+
 def report(name, pts):
     out, mv, on = snap(pts)
     n = normals(out)
@@ -116,7 +135,9 @@ def emit():
         return f"[{p[0]:.4f}, {p[1]:.4f}]"
 
     rows = {"r": [], "l": []}
+    wrows = {"r": [], "l": []}
     for name, (ear, pts) in LINES.items():
+        wrows[ear].append("[" + ", ".join(f"{w / S:.4f}" for w in widths(pts)) + "]")
         out, _, _ = snap(pts)
         rad = [((x - OX) / S, (y - OY) / S) for x, y in out]
         st, sg = tl.fit_chain(rad, tl.simplify(rad, 0.004))
@@ -127,6 +148,7 @@ def emit():
         'import type { Chain } from "./tables.ts";\n\n'
         + "".join(
             f"/** The fold lines of the {side} ear, each snapped onto the drawn dark line. */\nexport const ADULT_EAR_FOLDS_{key.upper()}: readonly Chain[] = [\n  " + ",\n  ".join(rows[key]) + ",\n];\n\n"
+            f"/** Each fold line's thickness (head radii) at nine evenly spaced points, measured on the reference. */\nexport const ADULT_EAR_FOLD_WIDTHS_{key.upper()}: readonly (readonly number[])[] = [\n  " + ",\n  ".join(wrows[key]) + ",\n];\n\n"
             for key, side in (("l", "left"), ("r", "right"))
         )
     )

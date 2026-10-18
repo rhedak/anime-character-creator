@@ -58,7 +58,23 @@ def fit(mask, grow, blur, tol=TOL, min_px=40):
 SIL_SIGMA_HI, SIL_SIGMA_LO, SIL_STEP, SIL_KEEP = 7.0, 2.0, 7.0, 2.5
 
 
-def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None, step=None):
+def find_tips(pts, win=7, min_turn=105.0, min_sep=20):
+    """Indices of the sharp convex tips of a closed contour: where the edge turns back by more than `min_turn` degrees over +-win px."""
+    n = len(pts)
+    sm = np.stack([ndimage.gaussian_filter1d(pts[:, j], 1.2, mode="wrap") for j in (0, 1)], 1)
+    a, b = sm - np.roll(sm, win, axis=0), np.roll(sm, -win, axis=0) - sm
+    area = 0.5 * np.sum(sm[:, 0] * np.roll(sm[:, 1], -1) - np.roll(sm[:, 0], -1) * sm[:, 1])
+    # signed turn, positive where the edge bends the same way the contour winds (a convex tip), negative in a notch
+    turn = np.degrees(np.arctan2(a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0], (a * b).sum(1))) * np.sign(area)
+    cand = [i for i in range(n) if turn[i] > min_turn and turn[i] >= turn[np.arange(i - win, i + win + 1) % n].max()]
+    out = []
+    for i in sorted(cand, key=lambda i: -turn[i]):
+        if all(min(abs(i - j), n - abs(i - j)) > min_sep for j in out):
+            out.append(i)
+    return sorted(out)
+
+
+def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None, step=None, keep_tips=False):
     """Closed chains whose slope is continuous at every join, for the hair silhouette.
 
     The hair's edge is the edge of an AI segmentation: ragged at the pixel scale, and fitted with the least number of quadratics that
@@ -70,7 +86,14 @@ def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None, step=None):
     """
     sig_hi = sigma_hi or SIL_SIGMA_HI
     out = []
-    moved = ndimage.binary_erosion(mask, iterations=-shift) if shift < 0 else ndimage.binary_dilation(mask, iterations=shift) if shift > 0 else mask
+    if shift < 0:
+        # The shrink puts the stroke's outer edge on the hair edge, but on a part only a few px wide it eats half the width and shortens the
+        # tip (the ponytail's wisp is 4 px wide and ran out 15 px early). Parts narrower than a disc of radius 2 are kept as they are.
+        disc = np.hypot(*np.mgrid[-2:3, -2:3]) <= 2
+        thin = mask & ~ndimage.binary_opening(mask, structure=disc)
+        moved = ndimage.binary_erosion(mask, iterations=-shift) | thin
+    else:
+        moved = ndimage.binary_dilation(mask, iterations=shift) if shift > 0 else mask
     for c in components(moved, min_px):
         pts = np.array(tl.boundary(c), float)
         n = len(pts)
@@ -87,6 +110,15 @@ def fit_smooth(mask, shift=-1, min_px=150, sigma_hi=None, step=None):
         arc = np.concatenate([[0], np.cumsum(seg)])
         m = max(8, int(round(arc[-1] / (step or SIL_STEP))))
         t = np.linspace(0, arc[-1], m, endpoint=False)
+        tips = find_tips(pts) if keep_tips else []
+        for i in tips:  # a vertex exactly on each real tip, twice, so the spline reaches it (a doubled control point is a corner)
+            t = t[np.abs(t - arc[i]) > 3.0]
+            t = np.sort(np.concatenate([t, [arc[i], arc[i]]]))
+        sm = sm.copy()
+        for i in tips:
+            sm[i] = pts[i]
+        if tips:
+            print("    tips kept at", [tuple(int(v) for v in pts[i]) for i in tips])
         verts = np.stack([np.interp(t, arc, np.append(sm[:, j], sm[0, j])) for j in (0, 1)], 1)
         q = np.array(to_r([tuple(v) for v in verts]))
         mid = (q + np.roll(q, -1, axis=0)) / 2
@@ -105,7 +137,7 @@ res = {
     "neckfill": fit_smooth(m["neckfill"], shift=0, min_px=300, sigma_hi=3.0, step=4.0),
     "concha_l": fit_smooth(m["concha_l"], shift=0, min_px=30, sigma_hi=2.0, step=3.0),
     "concha_r": fit_smooth(m["concha_r"], shift=0, min_px=30, sigma_hi=2.0, step=3.0),
-    "sil": fit_smooth(m["sil"], shift=-1),
+    "sil": fit_smooth(m["sil"], shift=-1, keep_tips=True),
 }
 json.dump(res, open("out/franzi_hair/outline.json", "w"), default=lambda o: list(o))
 for k, v in res.items():
