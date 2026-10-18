@@ -193,6 +193,14 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-18, bikini top step 1 of 3: the double outlines at the outer edges (owner's observation)
+
+Confirmed at 9x: each outer side of the top showed two thick lines side by side. Two separate causes, found by switching layers off. (1) The armpit crease
+(`adultSkin`, full weight, down the arm's inner edge) ran 0.015 H outside the top's own edge from 0.7 H down; the two merged into one heavy band with a thin gap.
+It now stops at the top's edge (a Y join at 0.65 H) since in the reference the armpit line is hidden behind the cup there. (2) With the crease gone a heavy
+band remained: the bust's tapered ring (`adultBustLine`, meant for the V and the arcs above the cups) lies just beyond the top's outer edge. It is clipped to
+|x| < 0.33 H of the centre line, so it only shows in the middle. Each side is one line now. Steps 2 (the V) and 3 (soft breast contours) follow.
+
 ### 2026-10-18, hands: the barb and the cut-off fingertip (owner's two circled flaws)
 
 Both were found by switching layers off one at a time at 12x to 24x, and neither was what it first looked like.

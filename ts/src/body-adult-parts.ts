@@ -184,7 +184,11 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // The bust's tapered line goes on the skin and under the top, so only what the top leaves uncovered shows: the inner edges
   // in the V and the lighter upper edge above the cups, as in the reference.
   // The top is clipped to the body's outline, so its straps end at the shoulder line where they pass behind the neck.
-  return adultSkin(sk, p) + adultBustLine(sk) + `<clipPath id="adult-body-clip"><path d="${adultBodyPath(sk)}" /></clipPath><g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
+  // The bust's tapered ring is for what the top leaves uncovered (the V and the arcs above the cups), so it is clipped to the middle of the chest: out at
+  // the sides it lay just beyond the top's own outer edge and drew a second line beside it (the owner's double outline).
+  const { cx, w } = place(sk);
+  const mid = `<clipPath id="adult-bust-mid"><rect x="${fmt1(cx - w(0.6, 0.33))}" y="0" width="${fmt1(2 * w(0.6, 0.33))}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
+  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk)}</g>` + `<clipPath id="adult-body-clip"><path d="${adultBodyPath(sk)}" /></clipPath><g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
 }
 
 /**
@@ -203,7 +207,11 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
       const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
       // The arm's inner edge from the top of the armpit down: along the bust's outer side (widest about 0.455 H out at 0.8 H),
       // then in to the gap's tip (GAP_TIP). Read off ref 04 (the contour at 5x, row by row).
-      const pts = [P(0.455, 0.48), P(0.454, 0.6), P(0.447, 0.7), P(0.455, 0.81), P(0.446, 0.87), P(0.418, 0.92), P(GAP_TIP[0], GAP_TIP[1])];
+      // The line stops where it meets the bikini top's edge, which carries on from there: below that point the two ran 0.015 H apart (the top's
+      // outer edge is at 0.432 H at 0.7 H down, this line at 0.447), each at full weight, and drew as one heavy band with a thin gap (the owner's
+      // double outline). In the reference the armpit line is hidden behind the cup's edge there. The first rows follow it as before; the last point
+      // is on the top's edge (0.412 H at 0.65 H down), so the two join in a Y.
+      const pts = [P(0.455, 0.48), P(0.454, 0.6), P(0.4125, 0.652)];
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
     })
     .join("");
