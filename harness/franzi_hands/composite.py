@@ -104,7 +104,7 @@ for name, rot in CANDS:
     results.append((name, im, wy, (wl + wr_) / 2, s))
 
 
-def paste_hand(base, name, im, wy, wcx, s, mirror):
+def paste_hand(base, name, im, wy, wcx, s, mirror, flip):
     """Clear the reference's hand below its wrist and draw the candidate's, wrist centre on wrist centre."""
     out = base.copy()
     arr = np.array(out)
@@ -127,7 +127,8 @@ def paste_hand(base, name, im, wy, wcx, s, mirror):
     # scale the candidate, mirror it if needed, and place its wrist centre on the reference's
     w, h = im.size
     sc = im.resize((round(w * s), round(h * s)), Image.LANCZOS)
-    if mirror:
+    # `mirror` says which hand this is (False: the viewer's left, True: the viewer's right); `flip` whether the close-up is flipped to suit it.
+    if flip:
         sc = sc.transpose(Image.FLIP_LEFT_RIGHT)
         px = (w * s) - wcx * s  # the wrist centre after the flip
     else:
@@ -167,8 +168,12 @@ def pair(img):
 
 tiles = [("original (full-body reference)", pair(ref))]
 for name, im, wy, wcx, s in results:
-    e = paste_hand(ref, name, im, wy, wcx, s, False)
-    e = paste_hand(e, name, im, wy, wcx, s, True)
+    # Which hand each close-up goes on. First version put every close-up as it is on the viewer's left hand and its mirror image on the right;
+    # the owner caught that the relaxed and the fist were on the wrong hands (the thumb has to be on the inner side, toward the body), so for those
+    # two it is the other way round. The open palm was not flagged and stays as it was.
+    swapped = name in ("relaxed", "fist")
+    e = paste_hand(ref, name, im, wy, wcx, s, False, swapped)
+    e = paste_hand(e, name, im, wy, wcx, s, True, not swapped)
     e.save(OUT / f"hands-edit-{name}.png")
     tiles.append((f"{name} close-up scaled in" + (" (rotated to hang)" if name != "relaxed" else ""), pair(e)))
 
