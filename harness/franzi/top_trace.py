@@ -58,6 +58,29 @@ for y in range(int(CHIN + 0.86 * H), int(CHIN + 1.0 * H)):
     sym[y, max(target_lo, lo - reach) : lo] = True
     sym[y, hi + 1 : min(target_hi, hi + reach) + 1] = True
 pts = [((x - CX) / H, (y - CHIN) / H) for x, y in tl.boundary(sym)]  # (x in H, d in H)
+# The top's outer edge follows the breast. The breast outlines (body-adult-bust-data.ts, traced from ref 04 and agreed with the owner) are drawn over the cloth as soft
+# lines, and put beside them the top's own edge did not match: the breast's outer edge is 0.011 to 0.013 H wider than the top's from 0.65 to 0.90 H down (about 4 px on
+# the reference, the cloth layer's edge having been smoothed in), while at the ends (0.5 H, 0.95 H) the top is up to 0.04 H wider, where the cloth runs into the strap and
+# the hem. Between BR_FROM and BR_TO the top's outer |x| is brought onto the breast's, blended in and out with a smoothstep so there is no corner.
+import json as _json, re as _re
+_bust = _re.search(r"ADULT_BREAST: Chain = (\[.*?\]);\n", open("ts/src/body-adult-bust-data.ts").read(), re.S if False else _re.S).group(1)
+_bs, _bg = _json.loads(_bust)
+_bp = np.array(tl.sample_chain(tuple(_bs), [(tuple(c), tuple(e)) for c, e in _bg], 14))
+_ds = np.linspace(0.49, 0.975, 120)
+_outer = np.array([np.abs(_bp[np.abs(_bp[:, 1] - d) < 0.006][:, 0]).max() if (np.abs(_bp[:, 1] - d) < 0.006).any() else np.nan for d in _ds])
+_ok = ~np.isnan(_outer)
+BR_FROM, BR_TO, FADE_IN, FADE_OUT = 0.56, 0.95, 0.07, 0.06
+_ss = lambda t: np.clip(t, 0, 1) ** 2 * (3 - 2 * np.clip(t, 0, 1))
+_moved = []
+for i, (x, d) in enumerate(pts):
+    if abs(x) > 0.30 and BR_FROM < d < BR_TO:
+        tgt = float(np.interp(d, _ds[_ok], _outer[_ok]))
+        wgt = float(_ss((d - BR_FROM) / FADE_IN) * (1 - _ss((d - (BR_TO - FADE_OUT)) / FADE_OUT)))
+        nx = (1 - wgt) * abs(x) + wgt * tgt
+        _moved.append(abs(abs(x) - nx))
+        pts[i] = (nx if x > 0 else -nx, d)
+print("top outer edge brought onto the breast outline: %d points, largest move %.3f H" % (len(_moved), max(_moved)))
+
 # The V where the cups meet. The reference's edges are straight lines (half-gap 0.237 H at 0.585 H down, falling 0.68 H per H to 0.040 H at 0.875 H) and
 # end in a short flat base (0.07 H wide, at 0.885 H down) with sharp corners. The mask is blurred before tracing and the fit rounds the corner, which gave a
 # smooth round bottom (the owner: "a badly curved line" where the reference has a \_/). The points of the V below 0.69 H are replaced here by that geometry,

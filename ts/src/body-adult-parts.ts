@@ -420,8 +420,10 @@ export function adultBand(sk: Skeleton, p: CharacterParams): string {
   // cloth at a light weight, clipped to the top so none of it lands on skin. Flat colour, a second tone on a thin line (the ears' folds do the same).
   const soft = shade(colorStr(p.outfit.underwear_color), 0.8, 1.0);
   return (
-    `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.underwear_color))} />` +
-    `<clipPath id="adult-top-cloth"><path d="${d}" /></clipPath><g clip-path="url(#adult-top-cloth)">${adultBustLine(sk, DEFAULT_TAPER, soft, 0.7)}</g>`
+    `<path d="${d}" fill="${colorStr(p.outfit.underwear_color)}" />` +
+    `<clipPath id="adult-top-cloth"><path d="${d}" /></clipPath><g clip-path="url(#adult-top-cloth)">${adultBustLine(sk, DEFAULT_TAPER, soft, 0.7)}</g>` +
+    // the outline over the soft line: where the top's edge follows the breast's the two share a centreline, and the outline covers the soft one
+    `<path d="${d}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" />`
   );
 }
 
