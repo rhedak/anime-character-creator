@@ -88,8 +88,52 @@ const LID_END_IN: Pt = onTop(CYAN, -9);
  * the owner's two circles 6.9); the aperture keeps the cyan circle itself, and the lid is drawn over the white and the iris top, as
  * the reference's lid covers it.
  */
-const CYAN_LID = { c: [CYAN.c[0], CYAN.c[1] + 3.4] as Pt, r: CYAN.r };
-const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_END_OUT, TOP_VIA), ...arc(CYAN_LID, LID_END_IN, CYAN_OUT, TOP_VIA)];
+const CYAN_LID = { c: [CYAN.c[0], CYAN.c[1] + 2.0] as Pt, r: CYAN.r };
+/**
+ * The lid tapers to a point at the inner end, as the reference's does (measured on its viewer's-left eye, the black run of each column, lightness under 45:
+ * 7 to 8 px thick from the middle out to x = 20, 6 px at x = -12, 3 px at -16, 2 px at -20, and gone by -22). It used to stop at x = -15 on its upper arc with a
+ * blunt chord to the lower arc at x = -9, a heavy crescent that ended abruptly where the reference's thins out and runs into the lashes. Its upper edge is still the
+ * circle GREEN, now to the inner tip at x = -20.5; its lower edge is the upper edge plus the thickness below (x outward-positive, as in the eye frame), joined to the
+ * lowered CYAN circle at x = 14.
+ */
+const LID_TIP: Pt = onTop(GREEN, -20.5);
+const LID_THICK: readonly (readonly [number, number])[] = [[-20.5, 0], [-18, 2], [-15, 4], [-12, 6], [-8, 7.5], [-4, 8], [0, 8], [6, 8.5], [10, 9.5], [14, 10.4]];
+const lidLower = (): Pt[] => {
+  const out: Pt[] = [];
+  for (let x = -20.5; x <= 14 + 1e-9; x += 1.5) {
+    let t = LID_THICK[LID_THICK.length - 1]![1];
+    for (let i = 0; i < LID_THICK.length - 1; i++) {
+      const [x0, t0] = LID_THICK[i] as readonly [number, number];
+      const [x1, t1] = LID_THICK[i + 1] as readonly [number, number];
+      if (x <= x1) {
+        t = t0 + ((t1 - t0) * (x - x0)) / (x1 - x0);
+        break;
+      }
+    }
+    out.push([x, onTop(GREEN, x)[1] + t]);
+  }
+  return out;
+};
+const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_TIP, TOP_VIA), ...lidLower().slice(1), ...arc(CYAN_LID, onTop(CYAN_LID, 14), CYAN_OUT, onTop(CYAN_LID, 24)).slice(1)];  // the via point is between the two ends: the top of the circle is not, from x = 14
+
+/**
+ * The lash flicks, per eye (read off each eye's 16x grid: out/franzi/lash-ref-L.png and lash-ref-R.png, eye frame points, widths in ref px). The two eyes differ in
+ * the reference. The viewer's-left eye's inner tail splits into three flicks fanning down and out from where the lid thins out (the thick one is dark from
+ * (623, 309) to (629, 315) on ref 04). The viewer's-right eye's is one long tail sweeping down and out to (691, 311), and it has two small flicks on top of the lid
+ * near the outer corner, pointing up and out (at (735 to 740, 285 to 288) and (748 to 753, 292 to 296)).
+ */
+const LASHES: Record<number, readonly { pts: readonly Pt[]; w: number }[]> = {
+  [-1]: [
+    { pts: [[-15.5, -18.5], [-19, -16], [-21.8, -13], [-23.4, -9.5]], w: 3.0 },
+    { pts: [[-17, -20.5], [-20, -18.2], [-22.8, -15.7], [-25, -13.5]], w: 1.8 },
+    { pts: [[-15, -22.5], [-17.5, -21], [-20.5, -19.5], [-23, -18.2]], w: 1.3 },
+  ],
+  1: [
+    { pts: [[-17, -23.5], [-21, -20], [-24.5, -16], [-28, -11]], w: 3.4 },
+    { pts: [[16.5, -33], [19, -35], [21.5, -37]], w: 1.6 },
+    { pts: [[29.5, -26], [32, -27.5], [34.5, -29.5]], w: 1.4 },
+  ],
+};
 /** The thin line along the aperture's top where the black lid has ended, to the crossing of the circles. */
 const lidTail = (): Pt[] => arc(CYAN, onTop(CYAN, 2), JOIN, onTop(CYAN, -12), 16);
 /** The aperture: the lower outline from the wing's tip round the base, up green's inner side, and back along cyan's lower edge. */
@@ -262,6 +306,8 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     leafStroke(sampleSmooth(CREASE).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
     `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
+    // the lash flicks, growing out of the lid's thin inner end and tapering to points
+    ...(LASHES[side] as readonly { pts: readonly Pt[]; w: number }[]).map((l) => taperedStroke(sampleSmooth(l.pts).map(at), l.w * k, OUTLINE)),
   ];
   return parts.join("");
 }

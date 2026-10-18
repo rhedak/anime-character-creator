@@ -193,6 +193,17 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-19, the eyelid shape and the eyelashes (owner: a quick pass; the lid shape and the lack of lashes stick out)
+
+Measured on both eyes of the reference at 16x (the black run of each column, lightness under 45, on the viewer's-left eye: 7 to 8 px thick from the middle out to x = 20 in the eye frame, 6 px at -12, 3 px at -16,
+2 px at -20, gone by -22; the viewer's-right eye the same with a longer tail, 4 px at -24). Ours was heavier (9 to 13 px, thicker toward the outer corner) and stopped in a blunt chord at x = -15 and -9,
+where the reference's thins out and runs into the lashes. Changes in `body-adult-eyes.ts`: the lid's lower edge is the lowered CYAN circle raised from +3.4 to +2.0 px, the lid's upper edge (GREEN) runs on to an inner
+tip at x = -20.5, and between the tip and x = 14 the lower edge is the upper edge plus a thickness table read off the reference (0 at the tip, 4 at -15, 8 from -4 to 6, 10.4 at 14), joined to the CYAN arc there
+(the arc's via-point must lie between its ends: the first version went the long way round and drew black discs). The lashes are per eye, since the reference's differ: the viewer's-left eye's inner tail splits into three
+flicks (one thick, two thin, fanning down and out; the thick one is dark from (623, 309) to (629, 315)); the viewer's-right eye has one long tail sweeping down and out to (691, 311) and two small flicks on top of the lid
+near the outer corner. Tapered strokes (`taperedStroke`), 1.3 to 3.4 px at the base. The 16x grids are `out/franzi/lash-ref-L.png` and `lash-ref-R.png`. Gates green. Left: the lid's top edge on the right eye is up to
+5 px lower than the reference's on the inner side (the one GREEN circle serves both eyes); the lashes are placed by eye from the grids, not snapped to the drawn ridges, since they are 1 to 3 px wide.
+
 ### 2026-10-19, one line across the top of the leg gap (owner: the lower crotch has a double outline; lower the briefs so they cover the skin outline)
 
 The gap's flat top (`GAP_TOP` 2.25 H) and the gusset's lower edge (also 2.25 H) were two strokes a hair apart, which read as a double line. The gusset now ends at 2.262 H (`BOTTOM_NOW`) and the gap
