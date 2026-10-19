@@ -2713,15 +2713,15 @@
     "beard_color": null,
     "beard_length": 0.15,
     "outfit": {
-     "tunic_color": null,
+     "tunic_color": "#faf6f5",
      "boot_color": null,
      "undersleeve_color": null,
      "belt_color": null,
      "belt_keeper_pair": false,
      "belt_reach": 1,
      "belt_cut": null,
-     "apron_color": null,
-     "skirt_color": null,
+     "apron_color": "#812127",
+     "skirt_color": "#285032",
      "skirt_cut": null,
      "underskirt_color": null,
      "trouser_color": null,
@@ -2742,7 +2742,7 @@
      "placket_color": null,
      "chest_pocket_color": null,
      "strap_color": null,
-     "bodice_color": null,
+     "bodice_color": "#27482e",
      "boot_shaft": 0,
      "boot_cut": null,
      "knee_sock_color": null,
@@ -2833,7 +2833,7 @@
     "finish": "flat",
     "highlight_strength": 1
    },
-   "json": "{\"beard_color\":null,\"beard_length\":0.15,\"body\":\"adult_female\",\"bust\":0.0,\"chest\":0.0,\"eye_color\":\"#c4922c\",\"face\":{\"blush\":1.0,\"brow_length\":1.0,\"brow_tilt\":0.0,\"brow_weight\":1.0,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":1.0,\"eye_tilt\":0.1,\"eye_width\":0.88,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":0.72,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":1.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.0,\"nose_dot\":false,\"scar_side\":0},\"face_age\":1.0,\"familiar_color\":null,\"familiar_eye_color\":null,\"familiar_smile\":false,\"finish\":\"flat\",\"frame\":0.0,\"grip_style\":\"mitten\",\"hair_color\":\"#1b1c22\",\"hair_knot\":false,\"hair_length\":0.5,\"hair_tail\":0.0,\"hair_tip_color\":null,\"hairstyle\":\"swept_ponytail\",\"hand_style\":\"mitten\",\"height\":1.0,\"highlight_strength\":1.0,\"left_arm_out\":0.0,\"outfit\":{\"apron_color\":null,\"belt_color\":null,\"belt_cut\":null,\"belt_keeper_pair\":false,\"belt_reach\":1.0,\"belt_scale\":1.0,\"blindfold_color\":null,\"bodice_color\":null,\"boot_color\":null,\"boot_cut\":null,\"boot_shaft\":0.0,\"chest_pocket_color\":null,\"coat_button_color\":null,\"coat_color\":null,\"coat_cut\":null,\"coat_length\":0.55,\"coat_sleeves\":false,\"collar_color\":null,\"collar_cut\":null,\"collar_mock\":false,\"crystal_color_1\":null,\"crystal_color_2\":null,\"crystal_color_3\":null,\"crystal_color_4\":null,\"crystal_tongs\":false,\"goggle_color\":null,\"hair_clip\":\"bar\",\"hair_clip_color\":null,\"hakama_color\":null,\"hakama_length\":null,\"hakama_length_chibi\":null,\"hat_band_color\":null,\"hat_color\":null,\"headscarf_color\":null,\"hip_pocket_color\":null,\"katana_color\":null,\"katana_fittings_color\":null,\"katana_length\":1.0,\"knee_sock_color\":null,\"mask_color\":null,\"neckline_notch\":null,\"neckline_round\":false,\"neckline_stand\":true,\"neckline_trim\":true,\"placket_color\":null,\"pouch_color\":null,\"ribbon_color\":null,\"robe_color\":null,\"shoulder_bars\":3,\"shoulder_bars_color\":null,\"shoulder_bars_side\":1,\"skirt_color\":null,\"skirt_cut\":null,\"skirt_length\":null,\"skirt_length_chibi\":null,\"sleeve_cut\":null,\"sleeve_drop\":0.0,\"sleeve_long\":false,\"sleeve_under_cap\":true,\"staff_color\":null,\"staff_crystal_color\":null,\"strap_color\":null,\"trouser_color\":null,\"tunic_color\":null,\"tunic_tucked\":false,\"underskirt_color\":null,\"undersleeve_color\":null,\"underwear_color\":\"#faf5f4\",\"underwear_top\":true,\"wristband_color\":null,\"wristband_side\":1,\"wristband_text\":null},\"right_arm_out\":0.0,\"shaded\":true,\"skin_tone\":\"#ffd0b5\",\"waist_shift\":0.0}"
+   "json": "{\"beard_color\":null,\"beard_length\":0.15,\"body\":\"adult_female\",\"bust\":0.0,\"chest\":0.0,\"eye_color\":\"#c4922c\",\"face\":{\"blush\":1.0,\"brow_length\":1.0,\"brow_tilt\":0.0,\"brow_weight\":1.0,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":1.0,\"eye_tilt\":0.1,\"eye_width\":0.88,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":0.72,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":1.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.0,\"nose_dot\":false,\"scar_side\":0},\"face_age\":1.0,\"familiar_color\":null,\"familiar_eye_color\":null,\"familiar_smile\":false,\"finish\":\"flat\",\"frame\":0.0,\"grip_style\":\"mitten\",\"hair_color\":\"#1b1c22\",\"hair_knot\":false,\"hair_length\":0.5,\"hair_tail\":0.0,\"hair_tip_color\":null,\"hairstyle\":\"swept_ponytail\",\"hand_style\":\"mitten\",\"height\":1.0,\"highlight_strength\":1.0,\"left_arm_out\":0.0,\"outfit\":{\"apron_color\":\"#812127\",\"belt_color\":null,\"belt_cut\":null,\"belt_keeper_pair\":false,\"belt_reach\":1.0,\"belt_scale\":1.0,\"blindfold_color\":null,\"bodice_color\":\"#27482e\",\"boot_color\":null,\"boot_cut\":null,\"boot_shaft\":0.0,\"chest_pocket_color\":null,\"coat_button_color\":null,\"coat_color\":null,\"coat_cut\":null,\"coat_length\":0.55,\"coat_sleeves\":false,\"collar_color\":null,\"collar_cut\":null,\"collar_mock\":false,\"crystal_color_1\":null,\"crystal_color_2\":null,\"crystal_color_3\":null,\"crystal_color_4\":null,\"crystal_tongs\":false,\"goggle_color\":null,\"hair_clip\":\"bar\",\"hair_clip_color\":null,\"hakama_color\":null,\"hakama_length\":null,\"hakama_length_chibi\":null,\"hat_band_color\":null,\"hat_color\":null,\"headscarf_color\":null,\"hip_pocket_color\":null,\"katana_color\":null,\"katana_fittings_color\":null,\"katana_length\":1.0,\"knee_sock_color\":null,\"mask_color\":null,\"neckline_notch\":null,\"neckline_round\":false,\"neckline_stand\":true,\"neckline_trim\":true,\"placket_color\":null,\"pouch_color\":null,\"ribbon_color\":null,\"robe_color\":null,\"shoulder_bars\":3,\"shoulder_bars_color\":null,\"shoulder_bars_side\":1,\"skirt_color\":\"#285032\",\"skirt_cut\":null,\"skirt_length\":null,\"skirt_length_chibi\":null,\"sleeve_cut\":null,\"sleeve_drop\":0.0,\"sleeve_long\":false,\"sleeve_under_cap\":true,\"staff_color\":null,\"staff_crystal_color\":null,\"strap_color\":null,\"trouser_color\":null,\"tunic_color\":\"#faf6f5\",\"tunic_tucked\":false,\"underskirt_color\":null,\"undersleeve_color\":null,\"underwear_color\":\"#faf5f4\",\"underwear_top\":true,\"wristband_color\":null,\"wristband_side\":1,\"wristband_text\":null},\"right_arm_out\":0.0,\"shaded\":true,\"skin_tone\":\"#ffd0b5\",\"waist_shift\":0.0}"
   }
  },
  "neutral_bases": {

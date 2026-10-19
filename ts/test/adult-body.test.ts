@@ -11,6 +11,9 @@ import { FRANZI, PRESETS } from "../src/presets.ts";
 import { adultBodiceCloth } from "../src/body-adult-garments.ts";
 import { renderCharacter } from "../src/render.ts";
 
+/** Franzi in her underwear alone: the preset starts in the dirndl, and most of these tests add one garment at a time to a figure that wears none. */
+const BARE = characterParams({ ...FRANZI, outfit: outfit({ ...FRANZI.outfit, tunic_color: null, bodice_color: null, skirt_color: null, apron_color: null }) });
+
 const adult = (o: Parameters<typeof outfit>[0] = {}) =>
   characterParams({ body: "adult_female", face_age: 1.0, outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null, ...o }) });
 
@@ -63,9 +66,9 @@ test("Franzi is a preset on the adult body, at or above the age floor", () => {
 });
 
 test("Franzi draws, in the white she is given, with her top and her briefs", () => {
-  const svg = renderCharacter(FRANZI, null, null, false);
+  const svg = renderCharacter(BARE, null, null, false);
   assert.ok(paths(svg, "#faf5f4") >= 2, "a top and briefs in her white");
-  assert.equal(renderCharacter(FRANZI, null, null, false), svg, "a render is deterministic");
+  assert.equal(renderCharacter(BARE, null, null, false), svg, "a render is deterministic");
 });
 
 for (const finish of ["flat", "soft"] as const) {
@@ -90,12 +93,12 @@ test("Franzi's drawing defines the 46 KB body outline once and stays small", () 
 // ---- garments fitted to the adult body (body-adult-garments.ts)
 
 const shortsOn = (body: string | null) => {
-  const base = body === null ? PRESETS.satoko! : FRANZI;
+  const base = body === null ? PRESETS.satoko! : BARE;
   return characterParams({ ...base, outfit: outfit({ ...base.outfit, trouser_color: "#efe9dc" }) });
 };
 
 test("adult shorts: drawn on trouser_color, in that colour, and nothing without it", () => {
-  const without = renderCharacter(FRANZI, null, null, false);
+  const without = renderCharacter(BARE, null, null, false);
   const withShorts = renderCharacter(shortsOn("adult_female"), null, null, false);
   assert.notEqual(without, withShorts);
   assert.ok(withShorts.includes('fill="#efe9dc"'));
@@ -121,10 +124,10 @@ test("trouser_color on a chibi body is untouched by the adult garments", () => {
 });
 
 const wearing = (fields: Record<string, unknown>, finish: "flat" | "soft" = "flat") =>
-  replace(characterParams({ ...FRANZI, outfit: outfit({ ...FRANZI.outfit, ...fields }) }), { finish });
+  replace(characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, ...fields }) }), { finish });
 
 test("the adult blouse: drawn on tunic_color in that colour, not without it, and not on a chibi's tunic path", () => {
-  const without = renderCharacter(FRANZI, null, null, false);
+  const without = renderCharacter(BARE, null, null, false);
   const svg = renderCharacter(wearing({ tunic_color: "#faf8f4" }), null, null, false);
   assert.ok(svg.includes('fill="#faf8f4"'));
   assert.ok(!without.includes("#faf8f4"));
@@ -155,7 +158,7 @@ test("the blouse is drawn over the body and under the hands' layer, and over the
 });
 
 test("the adult skirt and apron: drawn on skirt_color and apron_color, the arms redrawn over them, nothing extra without them", () => {
-  const without = renderCharacter(FRANZI, null, null, false);
+  const without = renderCharacter(BARE, null, null, false);
   assert.ok(!without.includes("adult-arm-strip"), "no arm redraw when nothing hangs in front of the legs");
   const skirt = renderCharacter(wearing({ skirt_color: "#2b5a37" }), null, null, false);
   assert.ok(skirt.includes('fill="#2b5a37"'));
@@ -193,7 +196,7 @@ test("worn with a skirt the blouse is tucked in: drawn before the skirt, so it d
 });
 
 test("the dirndl bodice: sixteen buttons, a lacing of crossing ribbons, cut at the hem it is given", () => {
-  const sk = skeletonFor(FRANZI);
+  const sk = skeletonFor(BARE);
   const whole = adultBodiceCloth(sk, "#245c33");
   assert.equal((whole.match(/<circle [^>]*fill="#dfae45"/g) ?? []).length, 16);
   assert.ok(!whole.includes("adult-bodice-cut"), "whole: not cut");

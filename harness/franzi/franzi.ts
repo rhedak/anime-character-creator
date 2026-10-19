@@ -8,12 +8,16 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { characterParams, faceStyle, outfit } from "../../ts/src/model.ts";
-import { FRANZI } from "../../ts/src/presets.ts";
+import { FRANZI as PRESET } from "../../ts/src/presets.ts";
 import { skeletonFor } from "../../ts/src/body.ts";
 import { adultBreastOutlines } from "../../ts/src/body-adult-parts.ts";
 import { renderCharacter } from "../../ts/src/render.ts";
 
-export { FRANZI };
+/**
+ * Franzi in her underwear alone: the preset without the dirndl (her blouse, bodice, skirt and apron). The harness compares the body, the head, the hands and the feet with the
+ * references, which show her in a bikini, so this is the base here; the preset itself starts in the dirndl.
+ */
+export const FRANZI = characterParams({ ...PRESET, outfit: outfit({ ...PRESET.outfit, tunic_color: null, bodice_color: null, skirt_color: null, apron_color: null }) });
 
 const [out, json] = process.argv.slice(2);
 if (import.meta.main && out !== undefined) {

@@ -1327,7 +1327,7 @@ export const RISA = characterParams({
  * `ref/franzi/`. Her head, hair, hands and feet are drawn from the reference by the adult body's own parts (`body-adult-*.ts`), not by the shared face code, so she
  * states only what differs from the defaults: the body, the age (the floor, `ADULT_FACE_AGE`, is 0.9 and she is drawn at 1.0), her colours and her hair. The shared face
  * settings (eye size, mouth, blush and the rest) are not read for her, and are left at their defaults; she wears the briefs and the top (the adult body's underwear is always
- * drawn) in the white of the reference, which the shared default, `#e8e4dc`, reads as grey against. Her outfits (blouse, shorts, the dirndl) are options on the same fields
+ * drawn) in the white of the reference, which the shared default, `#e8e4dc`, reads as grey against. She starts in the dirndl; her other outfits (the blouse and shorts, the underwear alone) are options on the same fields
  * the other characters use (docs/franzi-outfits-plan.md).
  *
  * She joined `PRESETS` on 2026-10-19, once the Python the other presets were proved against was gone (docs/python-removal-audit.md, stage 7).
@@ -1340,7 +1340,17 @@ export const FRANZI: CharacterParams = characterParams({
   eye_color: "#c4922c",
   hairstyle: "swept_ponytail",
   hair_length: 0.5,
-  outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null, underwear_top: true, underwear_color: "#faf5f4" }),
+  // The dirndl of the references (ref/franzi/00-base-dirndl.png): blouse, bodice, skirt and apron, the colours taken as the median of each garment's layer.
+  // Underneath she wears the always-worn white top and briefs; take the four garment colours away for her in underwear (a bikini) alone.
+  outfit: outfit({
+    tunic_color: "#faf6f5",
+    bodice_color: "#27482e",
+    skirt_color: "#285032",
+    apron_color: "#812127",
+    boot_color: null,
+    underwear_top: true,
+    underwear_color: "#faf5f4",
+  }),
 });
 
 export const PRESETS: Record<string, CharacterParams> = {
