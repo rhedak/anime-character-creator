@@ -363,3 +363,22 @@ test("the adult collar: a band on collar_color at the neck, standing or mock, an
   assert.notEqual(draw({ collar_color: "#2a2a5a", collar_mock: true }), standing);
   assert.equal(draw({ collar_color: "#2a2a5a", collar_cut: "pointed" }), standing);
 });
+
+test("the soft finish on her: hair clumps and a shaded iris, nothing in the flat finish, none at highlight strength 0, ids unique, costing little over the flat one", () => {
+  const withFinish = (finish: "flat" | "soft", extra: Record<string, unknown> = {}) => renderCharacter(replace(characterParams({ ...FRANZI, ...extra }), { finish }), null, null, false);
+  const flat = withFinish("flat");
+  const softer = withFinish("soft");
+  assert.ok(!flat.includes("-grad") && !flat.includes("-glow"));
+  assert.ok(softer.includes('id="adult-eye-l-grad"') && softer.includes('id="adult-eye-r-glow"'));
+  // the strands are one group clipped to the hair; the clumps are a second
+  const clumps = (svg: string) => (svg.match(/<g clip-path="url\(#adult-hair-clip\)">/g) ?? []).length - 1;
+  assert.equal(clumps(flat), 0);
+  assert.equal(clumps(softer), 1);
+  const none = withFinish("soft", { highlight_strength: 0 });
+  assert.equal(clumps(none), 0);
+  assert.ok(none.includes('id="adult-eye-l-grad"'), "the eyes are shaded whatever the highlight strength is");
+  assert.notEqual(withFinish("soft", { highlight_strength: 2 }), softer);
+  assert.deepEqual(uniqueIds(softer), []);
+  // her flat document is already 230 KB (the body outline), over the chibis' 150 KB soft budget: what the soft finish adds to it is what is held down
+  assert.ok(softer.length - flat.length < 20_000, `${softer.length - flat.length} bytes added`);
+});

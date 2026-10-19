@@ -7,7 +7,9 @@
 // The arms are part of the one outline for now: a garment that needs the arm in front of it (a sleeve over the
 // upper arm is drawn over the body anyway) will split them off at stage 6.
 
-import { OUTLINE, curve, outlineW, strokeW } from "./character.ts";
+import { OUTLINE, curve, outlineW, soft, strokeW } from "./character.ts";
+import { SOFT_LOCK_STRENGTH_SCALE, softLocks } from "./hair.ts";
+import type { Lock } from "./core-head-tables.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
@@ -564,6 +566,18 @@ function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color:
   return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(line).join("")}Z" fill="${color}" />`;
 }
 
+/** The soft finish's clumps on her hair, in head radii about the head's centre (hand placed on a grid over the render, as the chibi cuts' `Lock`s are): the crown's two arcs from the parting, the curtains' and the ponytail's falls. */
+const ADULT_HAIR_LOCKS: readonly Lock[] = [
+  ["lit", [[0.12, -1.0], [0.4, -0.92], [0.68, -0.7], [0.84, -0.35]], 0.18, 0.94],
+  ["lit", [[-0.12, -1.0], [-0.42, -0.92], [-0.68, -0.7], [-0.84, -0.35]], 0.18, 0.94],
+  ["shadow", [[0.1, -0.9], [0.3, -0.82], [0.52, -0.62], [0.62, -0.35]], 0.12, 0.9],
+  ["shadow", [[-0.1, -0.9], [-0.3, -0.82], [-0.52, -0.62], [-0.62, -0.35]], 0.12, 0.9],
+  ["shadow", [[-0.86, -0.3], [-0.88, 0.1], [-0.8, 0.6], [-0.66, 1.1]], 0.14, 0.92],
+  ["lit", [[-0.7, 0.0], [-0.68, 0.4], [-0.6, 0.8]], 0.1, 0.9],
+  ["shadow", [[0.8, 0.0], [0.86, 0.5], [0.8, 1.0], [0.68, 1.35]], 0.16, 0.92],
+  ["lit", [[0.62, 0.2], [0.7, 0.6], [0.66, 1.0], [0.58, 1.3]], 0.11, 0.9],
+];
+
 /**
  * Franzi's hair, drawn behind the whole body (the `_hair_tail` slot, before the torso). One silhouette, the visible hair plus the
  * face, ears and strips shrunk a few pixels (harness/franzi_hair/outline_masks.py), so its edge only ever meets the page, the neck
@@ -584,8 +598,10 @@ function adultHairShape(sk: Skeleton, p: CharacterParams): string {
   const sw = fmt2(outlineW(strokeW(sk)));
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   const hair = ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
+  // the soft finish's clumps over the fill, in the hair's tones, clipped to the silhouette, under the strands
+  const clumps = soft(p) && p.highlight_strength > 0 ? softLocks(h, colorStr(p.hair_color), ADULT_HAIR_LOCKS, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE, "adult-hair-clip") : "";
   const strands = ADULT_HAIR_STRANDS.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.5), shade(p.hair_color, 2.6, 0.9))).join("");
-  return hair + `<g clip-path="url(#adult-hair-clip)">${strands}</g>`;
+  return hair + clumps + `<g clip-path="url(#adult-hair-clip)">${strands}</g>`;
 }
 
 /**

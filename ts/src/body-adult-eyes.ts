@@ -6,9 +6,9 @@
 // grid in out/franzi/eyeR-grid.png), and drawn for the viewer's right eye, then mirrored. 175.7 reference px are one head
 // radius (the calibration of harness/franzi_hair/trace.py). Flat colour, hard-edged, as the rest of the figure.
 
-import { OUTLINE, outlineW, strokeW } from "./character.ts";
+import { OUTLINE, outlineW, soft, strokeW } from "./character.ts";
 import { LID_L } from "./body-adult-lid-data.ts";
-import { shade } from "./colorutil.ts";
+import { shade, tint } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
@@ -309,13 +309,25 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
   const clip = `<clipPath id="${id}"><path d="${apertureD}" /></clipPath>`;
   const ic = at(IRIS.c);
   const irisTop = shade(iris, 0.55);
+  // The soft finish: the iris darker at the top, where the lid shades it, and lighter at the bottom, with a glow of light coming up into it (the chibi's eye does the same).
+  const isSoft = soft(p);
+  const gradient = isSoft
+    ? `<linearGradient id="${id}-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(iris, 0.62)}" /><stop offset="0.55" stop-color="${iris}" /><stop offset="1" stop-color="${tint(iris, 0.38)}" /></linearGradient>` +
+      `<radialGradient id="${id}-glow"><stop offset="0" stop-color="${tint(iris, 0.5)}" stop-opacity="0.6" /><stop offset="1" stop-color="${tint(iris, 0.5)}" stop-opacity="0" /></radialGradient>` +
+      `<clipPath id="${id}-iris"><ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(IRIS.rx * k)}" ry="${fmt1(IRIS.ry * k)}" /></clipPath>`
+    : "";
+  const glow = isSoft
+    ? `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1] + IRIS.ry * k * 0.5)}" rx="${fmt1(IRIS.rx * k * 0.62)}" ry="${fmt1(IRIS.ry * k * 0.4)}" fill="url(#${id}-glow)" clip-path="url(#${id}-iris)" />`
+    : "";
   const parts = [
     clip,
+    gradient,
     `<path d="${apertureD}" fill="#ffffff" />`,
     `<g clip-path="url(#${id})">`,
-    ellipse(ic, IRIS.rx * k, IRIS.ry * k, iris, ""),
+    ellipse(ic, IRIS.rx * k, IRIS.ry * k, isSoft ? `url(#${id}-grad)` : iris, ""),
     `<path d="M ${fmt1(ic[0] - IRIS.rx * k)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k)} A ${fmt1(IRIS.rx * k)} ${fmt1(IRIS.ry * k)} 0 0 1 ${fmt1(ic[0] + IRIS.rx * k)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k)} Z" fill="${irisTop}" />`,
     ellipse(at(PUPIL.c), PUPIL.rx * k, PUPIL.ry * k, shade(iris, 0.18)),
+    glow,
     `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(IRIS.rx * k)}" ry="${fmt1(IRIS.ry * k)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.7)}" />`,
     `<circle cx="${fmt1(at(HILITE.c)[0])}" cy="${fmt1(at(HILITE.c)[1])}" r="${fmt1(HILITE.r * k)}" fill="#ffffff" />`,
     `<circle cx="${fmt1(at(GLINT.c)[0])}" cy="${fmt1(at(GLINT.c)[1])}" r="${fmt1(GLINT.r * k)}" fill="#ffffff" opacity="0.85" />`,
