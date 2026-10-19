@@ -7,6 +7,7 @@
 // radius (the calibration of harness/franzi_hair/trace.py). Flat colour, hard-edged, as the rest of the figure.
 
 import { OUTLINE, outlineW, strokeW } from "./character.ts";
+import { LID_L, LID_R } from "./body-adult-lid-data.ts";
 import { shade } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
@@ -96,25 +97,53 @@ const CYAN_LID = { c: [CYAN.c[0], CYAN.c[1] + 2.0] as Pt, r: CYAN.r };
  * circle GREEN, now to the inner tip at x = -20.5; its lower edge is the upper edge plus the thickness below (x outward-positive, as in the eye frame), joined to the
  * lowered CYAN circle at x = 14.
  */
-const LID_TIP: Pt = onTop(GREEN, -20.5);
-const LID_THICK: readonly (readonly [number, number])[] = [[-20.5, 0], [-18, 2], [-15, 4], [-12, 6], [-8, 7.5], [-4, 8], [0, 8], [6, 8.5], [10, 9.5], [14, 10.4]];
-const lidLower = (): Pt[] => {
-  const out: Pt[] = [];
-  for (let x = -20.5; x <= 14 + 1e-9; x += 1.5) {
-    let t = LID_THICK[LID_THICK.length - 1]![1];
-    for (let i = 0; i < LID_THICK.length - 1; i++) {
-      const [x0, t0] = LID_THICK[i] as readonly [number, number];
-      const [x1, t1] = LID_THICK[i + 1] as readonly [number, number];
-      if (x <= x1) {
-        t = t0 + ((t1 - t0) * (x - x0)) / (x1 - x0);
-        break;
-      }
-    }
-    out.push([x, onTop(GREEN, x)[1] + t]);
-  }
-  return out;
+// The lid is per eye (harness/franzi/lid_measure.py measures each in the reference: LID_L and LID_R, [x, top edge, bottom edge] in the eye frame). One pair of circles
+// drawn for the left eye and mirrored put the right eye's lid in the wrong place (the right eye's sits about 4.5 px higher and ends in a longer, thinner tail, so a
+// lash drawn on that tail did not touch the lid) and about 3 px high on the left eye. The measured edges are used from the tip out to x = XB0; from there to XB1 they
+// blend into the circles above, which keep the outer wing (the owner's marks).
+const XB0 = 14;
+const XB1 = 22;
+const smoothstep = (t: number): number => {
+  const u = Math.min(1, Math.max(0, t));
+  return u * u * (3 - 2 * u);
 };
-const lidBand = (): Pt[] => [...arc(GREEN, WING, LID_TIP, TOP_VIA), ...lidLower().slice(1), ...arc(CYAN_LID, onTop(CYAN_LID, 14), CYAN_OUT, onTop(CYAN_LID, 24)).slice(1)];  // the via point is between the two ends: the top of the circle is not, from x = 14
+const tableAt = (tab: readonly (readonly [number, number, number])[], x: number, col: 1 | 2): number => {
+  const first = tab[0] as readonly [number, number, number];
+  const last = tab[tab.length - 1] as readonly [number, number, number];
+  if (x <= first[0]) return first[col];
+  if (x >= last[0]) return last[col];
+  for (let i = 0; i < tab.length - 1; i++) {
+    const r0 = tab[i] as readonly [number, number, number];
+    const r1 = tab[i + 1] as readonly [number, number, number];
+    if (x <= r1[0]) return r0[col] + ((r1[col] - r0[col]) * (x - r0[0])) / (r1[0] - r0[0]);
+  }
+  return last[col];
+};
+/** Where the circle arcs are defined: GREEN reaches x = -22.2 and CYAN x = -23.5; the table alone is used past that (its weight is 1 there). */
+const circleTop = (circ: { c: Pt; r: number }, x: number): number | null => (x > circ.c[0] - circ.r + 0.3 ? onTop(circ, x)[1] : null);
+const lidBand = (side: number): Pt[] => {
+  const tab = side < 0 ? LID_L : LID_R;
+  const xTip = (tab[0] as readonly [number, number, number])[0];
+  const upper: Pt[] = [];
+  const lower: Pt[] = [];
+  for (let x = XB1; x >= xTip - 1e-9; x -= 1) {
+    const wgt = 1 - smoothstep((x - XB0) / (XB1 - XB0));
+    const gt = circleTop(GREEN, x);
+    const ct = circleTop(CYAN_LID, x);
+    upper.push([x, gt === null || wgt >= 1 ? tableAt(tab, x, 1) : gt + (tableAt(tab, x, 1) - gt) * wgt]);
+    lower.push([x, ct === null || wgt >= 1 ? tableAt(tab, x, 2) : ct + (tableAt(tab, x, 2) - ct) * wgt]);
+  }
+  const tipU = upper[upper.length - 1] as Pt;
+  const tipL = lower[lower.length - 1] as Pt;
+  const tip: Pt = [xTip - 1.5, (tipU[1] + tipL[1]) / 2 + 0.5];
+  return [
+    ...arc(GREEN, WING, onTop(GREEN, XB1), onTop(GREEN, 32)),
+    ...upper.slice(1),
+    tip,
+    ...[...lower].reverse(),
+    ...arc(CYAN_LID, onTop(CYAN_LID, XB1), CYAN_OUT, onTop(CYAN_LID, 26)).slice(1),
+  ];
+};
 
 /**
  * The lash flicks, per eye (read off each eye's 16x grid: out/franzi/lash-ref-L.png and lash-ref-R.png, eye frame points, widths in ref px). The two eyes differ in
@@ -126,10 +155,10 @@ const LASHES: Record<number, readonly { pts: readonly Pt[]; w: number }[]> = {
   [-1]: [
     { pts: [[-15.5, -18.5], [-19, -16], [-21.8, -13], [-23.4, -9.5]], w: 3.0 },
     { pts: [[-17, -20.5], [-20, -18.2], [-22.8, -15.7], [-25, -13.5]], w: 1.8 },
-    { pts: [[-15, -22.5], [-17.5, -21], [-20.5, -19.5], [-23, -18.2]], w: 1.3 },
+    { pts: [[-15, -21.5], [-17.5, -20.5], [-20.5, -19.2], [-23, -18]], w: 1.3 },
   ],
   1: [
-    { pts: [[-17, -23.5], [-21, -20], [-24.5, -16], [-28, -11]], w: 3.4 },
+    { pts: [[-21, -21], [-23.5, -18.5], [-26.5, -14.5], [-27.5, -10.5]], w: 3.4 },
     { pts: [[16.5, -33], [19, -35], [21.5, -37]], w: 1.6 },
     { pts: [[29.5, -26], [32, -27.5], [34.5, -29.5]], w: 1.4 },
   ],
@@ -237,7 +266,11 @@ function leafStroke(pts: readonly Pt[], w: number, color: string): string {
 
 // Details read off the reference's left eye (the base eye; the right is its mirror), eye frame as above: the crease line above the
 // lid, and two lash flicks that fan down from the lid's inner end. From the 16x grids out/franzi/lashes-L-grid{,2}.png.
-const CREASE: Pt[] = [[18, -31.8], [12, -33.3], [6, -34.1], [-4, -33.6], [-11.5, -31.7], [-16.5, -29.2], [-20.3, -25.7], [-21.5, -23]];
+const CREASE_L: Pt[] = [[18, -31.8], [12, -33.3], [6, -34.1], [-4, -33.6], [-11.5, -31.7], [-16.5, -29.2], [-20.3, -25.7], [-21.5, -23]];
+// The viewer's-right eye's crease is not the left's mirrored: its lid is about 4.5 px higher and its crease sits a clear 5 to 6 px above the lid's top edge (the mirrored one lay
+// on the lid's edge, the owner: it does not attach and looks off). Read off its 12x grid (out/franzi/eye-outline-R.png), outer end first.
+const CREASE_R: Pt[] = [[16.5, -38.2], [8.2, -38.6], [-0.2, -38.2], [-8.5, -36.9], [-16.8, -34], [-23.5, -30.7], [-31, -25.7]];
+const CREASE: Record<number, Pt[]> = { [-1]: CREASE_L, 1: CREASE_R };
 
 /** Catmull-Rom through `pts` as cubic segments, the pen already at the first point. */
 function smooth(pts: readonly Pt[]): string {
@@ -303,9 +336,9 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     // the thin line on along the top of the white, growing out of the lid and tapering to a point
     taperedStroke(lidTail().map(at), ink * 0.9, OUTLINE),
     // the crease line above the lid
-    leafStroke(sampleSmooth(CREASE).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
+    leafStroke(sampleSmooth(CREASE[side] as Pt[]).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
-    `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
+    `<path d="${poly(lidBand(side), true)}" fill="${OUTLINE}" />`,
     // the lash flicks, growing out of the lid's thin inner end and tapering to points
     ...(LASHES[side] as readonly { pts: readonly Pt[]; w: number }[]).map((l) => taperedStroke(sampleSmooth(l.pts).map(at), l.w * k, OUTLINE)),
   ];
@@ -318,9 +351,9 @@ export function adultEyes(sk: Skeleton, p: CharacterParams): string {
 }
 
 /** The aperture and lid outlines in canvas units, for the harness's overlay on the reference (harness/franzi/eye_outline.ts). */
-export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; lid: Pt[]; crease: Pt[] }[] {
+export function adultEyeOutlines(h: Skeleton): { side: number; aperture: Pt[]; lid: Pt[]; crease: Pt[]; lashes: Pt[][] }[] {
   return [-1, 1].map((side) => {
     const at = placer(h, side);
-    return { side, aperture: apertureOutline().map(at), lid: lidBand().map(at), crease: sampleSmooth(CREASE).map(at) };
+    return { side, aperture: apertureOutline().map(at), lid: lidBand(side).map(at), crease: sampleSmooth(CREASE[side] as Pt[]).map(at), lashes: (LASHES[side] as readonly { pts: readonly Pt[] }[]).map((l) => sampleSmooth(l.pts).map(at)) };
   });
 }

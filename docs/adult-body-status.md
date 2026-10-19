@@ -193,6 +193,19 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-19, per-eye lids, creases and lashes (owner: draw our lid, secondary line and lashes on the reference; the right eye's lashes do not attach, the left's are hidden)
+
+`harness/franzi/eye_outline.py` now draws the aperture (red), the lid (blue), the crease (orange) and the lashes' centre lines (green, a ring at each base) on the plain reference at 12x, for both eyes. It showed what the owner
+suspected: the left eye's circles mirrored onto the right put the right eye's lid in the wrong place. Measured per eye (`harness/franzi/lid_measure.py`, tracked column by column from the middle, black = lightness under 40,
+edges to sub-pixel; tables in `ts/src/body-adult-lid-data.ts`): the right eye's lid sits 4.5 px higher than the left's (top at -33.4 against -28.6 at the middle), both are 7 to 9 px thick, and the right eye's inner end is a
+long thin tail, steep past x = -24. Three changes in `body-adult-eyes.ts`: (1) the lid is per eye: the measured top and bottom edges from the tip out to x = 14, blended into the old circles by x = 22 (the outer wing is kept, it
+was agreed with the owner's marks), with a point at the inner tip; (2) the crease is per eye: the left keeps its curve, the right's is read off its own 12x grid and lies 5 to 6 px above its lid's top edge (the mirrored one lay on it);
+(3) the right eye's tail lash now follows the reference's tail ((-21, -21) to (-27.5, -10.5) in its frame) and starts inside the lid, and the left eye's third flick starts on the lid. Lids' lower edge smoothed harder (3.2 columns) since it
+runs along the iris and its highlight. Gates green.
+
+On "hidden behind the hair strand": the eyes are drawn last and cannot go behind hair, but a black lash drawn over black hair is invisible; the right eye's two small flicks at the outer top corner lie on the boundary of skin and the
+hair curtain. If this means something else, it needs a pointer to which lash.
+
 ### 2026-10-19, the eyelid shape and the eyelashes (owner: a quick pass; the lid shape and the lack of lashes stick out)
 
 Measured on both eyes of the reference at 16x (the black run of each column, lightness under 45, on the viewer's-left eye: 7 to 8 px thick from the middle out to x = 20 in the eye frame, 6 px at -12, 3 px at -16,
