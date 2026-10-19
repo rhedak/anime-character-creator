@@ -20,6 +20,8 @@ npm test                    # node --test "test/*.test.ts", with a larger heap
 npm run build:web           # node ../web-stage.mjs: compile with tsc and stage the web tool into ../out/web-stage
 node bin/render.ts --out ../out/satoko --preset satoko      # the SVG command line
 node bin/catalogue.ts > ../out/catalogue.json               # the web tool's catalogue
+node bin/cover.ts --out ../out/cover --no-metadata           # the book cover (SVG; PNG is harness/svg2png.py)
+node bin/sheet.ts --out ../out/sheet --roster satoshi        # a cast sheet (--members a,b,c for your own)
 ```
 
 The test command is a glob, not a directory (`node --test test/` does not work on Node 22). One file:

@@ -1,0 +1,259 @@
+{
+ "note": "SVGs the frozen Python cover.py / sheet.py drew for these arguments (cairosvg stubbed out, so SVG only). local_faces: ACC_LOCAL_DIR held cover_faces.json = {\"satoko\": 0.55, \"kyoko\": 1, \"tomohiro\": \"0.7\"}; otherwise it pointed at nowhere. Sizes are bytes; hashes SHA-256 of the SVG.",
+ "cases": [
+  {
+   "kind": "cover",
+   "args": [
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "c3347cfabba3944a367ada9b5b954eca783cebd024cf6fc21cbb3618bd47f069",
+   "bytes": 30652
+  },
+  {
+   "kind": "cover",
+   "args": [],
+   "local_faces": false,
+   "sha256": "1961daffa9908b4fc8556a7f46511736cf7e24b57db8e8c133a378f523dedc4c",
+   "bytes": 34565
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--preset",
+    "katherina",
+    "--expression",
+    "wry",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "c4167c0babbaf85ed1c6d9f46dc1c3eb0cdcb28bf6d175bd9840211b77a4df15",
+   "bytes": 66762
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--preset",
+    "risa",
+    "--no-expression",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "0813fe73a438415c2b395628cc5d454785a8582d705850ca6a9775874bac5138",
+   "bytes": 53606
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--title",
+    "A",
+    "--title",
+    "B",
+    "--subtitle",
+    "sub <&>",
+    "--author",
+    "me",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "7882174e6fbbaff414f86550c4bc5aea6a9f74f062156db3a155627295452d4b",
+   "bytes": 30599
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--author",
+    "",
+    "--width",
+    "640",
+    "--height",
+    "960",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "1c55f88ac149c0507e24f141fea6744ce26b69922baf02fb5c9fc900ac31521f",
+   "bytes": 30157
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--width",
+    "1234.56",
+    "--height",
+    "1777.7",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "a088a612a21263486eef01975c813f16aed55e1e789b7cf98ebca8997542953b",
+   "bytes": 30712
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--preset",
+    "satoko",
+    "--no-metadata"
+   ],
+   "local_faces": true,
+   "sha256": "2d9d6e6fcf91a362bb64663f477edcf5d758a04f4b71879750f0e09cae3390f3",
+   "bytes": 35244
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--preset",
+    "kyoko",
+    "--no-expression",
+    "--no-metadata"
+   ],
+   "local_faces": true,
+   "sha256": "4eaa1454af235b050301ce97dca93d91bcc89a67784ed6c5de889caefd1b0ed1",
+   "bytes": 36681
+  },
+  {
+   "kind": "cover",
+   "args": [
+    "--preset",
+    "tomohiro",
+    "--no-metadata"
+   ],
+   "local_faces": true,
+   "sha256": "667ba18717f90b231796ef2f3e3d70204b8dd8ecd3543abd5184377ed8312c0f",
+   "bytes": 23647
+  },
+  {
+   "kind": "sheet",
+   "args": [],
+   "local_faces": false,
+   "sha256": "347a944d4dcb431455f5e288bfc079d1c8158a3b94967902c4e2bfd01d214fe4",
+   "bytes": 447356
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "ecb0c8c7e497c70dea22bbb72a61469a0d7e5c2b64ad0bf1590c773686826745",
+   "bytes": 398017
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--roster",
+    "katherina",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "9d1efba2cfdabba6ed9bfcbcaf2f8107dd04d373aad1e9c6219b28bf75e1e70f",
+   "bytes": 63402
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--roster",
+    "everglow",
+    "--columns",
+    "1",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "dd7fed4bb0b3f8406a864e2c44ef5df490edf18d97dd18f992562768ca0a2de9",
+   "bytes": 46011
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--roster",
+    "bureaucracy",
+    "--columns",
+    "3",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "4f316538b0391ac20190456fb123034fc97d02bd0f9fd10f65417bdfc314ec7b",
+   "bytes": 48374
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--roster",
+    "risa",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "54bb9841300cf3bcea4d1054c7bf8cd9f5f11f594c6814c89d7d8e9ea3a80948",
+   "bytes": 50723
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--columns",
+    "5",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "8192fa14db65fd49901ccfc5d6f4b8cd37301a9828303290631dab1f0a46dae5",
+   "bytes": 398019
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--columns",
+    "20",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "ff7b80c4def97ca6b43fc14b788228bca091b74243db65860847c888428086cb",
+   "bytes": 398022
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--members",
+    "satoko, viktor ,reika",
+    "--columns",
+    "2",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "17012a1ef217e31d019f4972e67c7ec8c0e0992627e2bad74f00daf1fcd12e3f",
+   "bytes": 89951
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--members",
+    "risa,katherina,gero,linnea,dritan,lindita,tenno",
+    "--columns",
+    "3"
+   ],
+   "local_faces": false,
+   "sha256": "a46d1864225d4db2c76b4ff079f0ddfc53035fe7dee479ba7607f300de583b25",
+   "bytes": 252774
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--members",
+    "viktor,viktor",
+    "--no-metadata"
+   ],
+   "local_faces": false,
+   "sha256": "34ae7ad4d5ac82210350d9df69001c98248296984decf0518774fb6c52c88f22",
+   "bytes": 45277
+  },
+  {
+   "kind": "sheet",
+   "args": [
+    "--members",
+    "elara",
+    "--roster",
+    "satoshi"
+   ],
+   "local_faces": false,
+   "sha256": "9d51dca62b3b1d269d28759105c5d5af595dff059fe3de654aa9ada6478be660",
+   "bytes": 35463
+  }
+ ]
+}
