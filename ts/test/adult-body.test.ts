@@ -8,6 +8,7 @@ import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import { BODY_TYPES, skeletonFor } from "../src/body.ts";
 import { ADULT_FACE_AGE, characterParams, outfit, replace } from "../src/model.ts";
 import { ADULT_PRESETS, FRANZI, PRESETS } from "../src/presets.ts";
+import { ADULT_GARMENT_PARTS, adultBodice } from "../src/body-adult-garments.ts";
 import { renderCharacter } from "../src/render.ts";
 
 const adult = (o: Parameters<typeof outfit>[0] = {}) =>
@@ -194,4 +195,38 @@ test("worn with a skirt the blouse is tucked in: drawn before the skirt, so it d
   // without a skirt the blouse stays in the chest layers, over the shorts
   const loose = renderCharacter(wearing({ tunic_color: "#faf8f4", trouser_color: "#efe9dc" }), null, null, false);
   assert.ok(loose.indexOf('fill="#faf8f4"') > loose.indexOf('fill="#efe9dc"'));
+});
+
+test("the dirndl bodice: sixteen buttons, a lacing of crossing ribbons, cut at the hem it is given, and nothing on the chibi", () => {
+  const sk = skeletonFor(FRANZI);
+  const whole = adultBodice(sk, "#245c33");
+  assert.equal((whole.match(/<circle [^>]*fill="#dfae45"/g) ?? []).length, 16);
+  assert.ok(!whole.includes("adult-bodice-cut"), "whole: not cut");
+  assert.ok((whole.match(/stroke-linecap="round"/g) ?? []).length >= 2 * 15, "two layers (outline and band) for each of the 15 ribbons, plus the top one");
+  const cut = adultBodice(sk, "#245c33", 1.34);
+  assert.ok(cut.includes('id="adult-bodice-cut"'));
+  assert.equal(adultBodice(sk, "#245c33", 1.34), cut, "deterministic");
+  // it has no field yet, so a character cannot ask for it: the registry of outfit fields is unchanged
+  assert.ok(!("bodice_color" in FRANZI.outfit));
+  // drawn in a slot, it ends up in the document once and its ids are unique with the rest
+  const parts = ADULT_GARMENT_PARTS as Record<string, unknown>;
+  const saved = parts._strap;
+  try {
+    parts._strap = (s: typeof sk) => adultBodice(s, "#245c33", 1.34);
+    const svg = renderCharacter(wearing({ tunic_color: "#faf8f4", skirt_color: "#2b5a37", apron_color: "#7d1f27" }));
+    const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+    assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), [], "an id is defined twice");
+    assert.ok(svg.indexOf('id="adult-bodice-clip"') > svg.indexOf('fill="#faf8f4"'), "the bodice is over the blouse");
+    assert.ok(svg.indexOf('id="adult-apron-sash"') > svg.indexOf('id="adult-bodice-clip"'), "and under the apron's sash");
+  } finally {
+    if (saved === undefined) delete parts._strap;
+    else parts._strap = saved;
+  }
+});
+
+test("a blouse is tucked into the shorts when the outfit says so, and lies over them otherwise", () => {
+  const tuckedSvg = renderCharacter(wearing({ tunic_color: "#faf8f4", trouser_color: "#efe9dc", tunic_tucked: true }), null, null, false);
+  const looseSvg = renderCharacter(wearing({ tunic_color: "#faf8f4", trouser_color: "#efe9dc" }), null, null, false);
+  assert.ok(tuckedSvg.indexOf('fill="#faf8f4"') < tuckedSvg.indexOf('fill="#efe9dc"'), "tucked: the shorts are over the blouse");
+  assert.ok(looseSvg.indexOf('fill="#faf8f4"') > looseSvg.indexOf('fill="#efe9dc"'), "loose: the blouse is over the shorts");
 });

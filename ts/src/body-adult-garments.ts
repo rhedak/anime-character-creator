@@ -8,13 +8,14 @@ import { OUTLINE, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { LEG_INNER, LEG_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BLOUSE, ADULT_BLOUSE_LINES } from "./body-adult-blouse-data.ts";
+import { ADULT_BODICE, BODICE_BUTTONS, BODICE_BUTTON_R } from "./body-adult-bodice-data.ts";
 import { ADULT_BOW } from "./body-adult-bow-data.ts";
 import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
 import { DEFAULT_TAPER, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
-import { shade } from "./colorutil.ts";
+import { shade, tint } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
-import { fmt1, fmt2 } from "./pynum.ts";
+import { fmt1, fmt2, truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
 import type { Chain } from "./tables.ts";
 
@@ -191,27 +192,69 @@ export function adultApron(sk: Skeleton, p: CharacterParams): string {
   return `<path d="${d}" ${inkAttrs(sk, fill)} /><path id="adult-apron-sash" d="${sashPath}" ${inkAttrs(sk, fill)} />${bow}`;
 }
 
-/** The legs' slot on an adult body: the briefs (always worn), then what is worn over them. */
-export function adultLegsAndGarments(sk: Skeleton, p: CharacterParams): string {
-  return adultBriefs(sk, p) + adultShorts(sk, p);
+/**
+ * The dirndl's bodice, traced from the corset layer of ref 03 (body-adult-bodice-data.ts): straps, the scooped neckline that shows the blouse, sides that nip in at the waist and a hem
+ * with a notch at the front, with the lacing (a ribbon from each button to the next row's button on the other side, and one across the top) and the sixteen gold buttons, two columns
+ * of eight. One flat colour; the laces are a darker tone of it, the buttons gold with a small lighter highlight (small elements, so a second tone is allowed).
+ *
+ * Not wired to a field yet: a new outfit field would change every pinned fixture, so `bodice_color` waits for the Python removal (docs/python-removal-audit.md). Until then this is drawn
+ * by the harness (harness/franzi/franzi.ts, BODICE=#hex) and has no slot. `hem` is the depth, in head heights below the chin, where the bodice is cut off when something lies over its
+ * lower part (the sash at 1.34, a skirt's top at 1.315); null draws the whole bodice, down to the hips as in the reference.
+ */
+export function adultBodice(sk: Skeleton, color: string, hem: number | null = null): string {
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const d = chainPath(sk, ADULT_BODICE);
+  const body = `<path d="${d}" ${inkAttrs(sk, colorStr(color))} />`;
+  const clip = `<clipPath id="adult-bodice-clip"><path d="${d}" /></clipPath>`;
+  // The lacing, over the bodice: crossing ribbons, each a dark outline under a band of the lace tone.
+  const lace = shade(colorStr(color), 0.62, 1.0);
+  const btn = (side: number, i: number): Pt => [cx + side * w((BODICE_BUTTONS[i] as readonly [number, number])[1], (BODICE_BUTTONS[i] as readonly [number, number])[0]), y((BODICE_BUTTONS[i] as readonly [number, number])[1])];
+  const ribbonW = 0.017 * 2 * sk.head_r;
+  const ribbon = (a: Pt, b: Pt): string =>
+    `<path d="M ${fmt1(a[0])} ${fmt1(a[1])} L ${fmt1(b[0])} ${fmt1(b[1])}" stroke="${OUTLINE}" stroke-width="${fmt2(ribbonW + ink * 0.55)}" stroke-linecap="round" fill="none" />` +
+    `<path d="M ${fmt1(a[0])} ${fmt1(a[1])} L ${fmt1(b[0])} ${fmt1(b[1])}" stroke="${lace}" stroke-width="${fmt2(ribbonW)}" stroke-linecap="round" fill="none" />`;
+  let ribbons = ribbon(btn(-1, 0), btn(1, 0));
+  for (let i = 0; i < BODICE_BUTTONS.length - 1; i++) ribbons += ribbon(btn(-1, i), btn(1, i + 1)) + ribbon(btn(1, i), btn(-1, i + 1));
+  const r = BODICE_BUTTON_R * 2 * sk.head_r;
+  const gold = "#dfae45";
+  let buttons = "";
+  for (let i = 0; i < BODICE_BUTTONS.length; i++) {
+    for (const s of [-1, 1]) {
+      const c = btn(s, i);
+      buttons += `<circle cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" r="${fmt1(r)}" fill="${gold}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.5)}" />`;
+      buttons += `<circle cx="${fmt1(c[0] - r * 0.28)}" cy="${fmt1(c[1] - r * 0.28)}" r="${fmt1(r * 0.3)}" fill="${tint(gold, 0.55)}" />`;
+    }
+  }
+  const inside = `${clip}<g clip-path="url(#adult-bodice-clip)">${ribbons}${buttons}</g>`;
+  if (hem === null) return body + inside;
+  // Cut where something lies over the lower part: the outline stops there and a line closes the bottom edge.
+  const cutY = y(hem);
+  const cut = `<clipPath id="adult-bodice-cut"><rect x="0" y="0" width="${fmt1(sk.canvas_w)}" height="${fmt1(cutY)}" /></clipPath>`;
+  const edge = `<g clip-path="url(#adult-bodice-clip)"><path d="M 0 ${fmt1(cutY)} H ${fmt1(sk.canvas_w)}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" fill="none" /></g>`;
+  return `${cut}<g clip-path="url(#adult-bodice-cut)">${body}${inside}</g>${edge}`;
 }
 
-/** The adult body's garment parts, laid over `ADULT_PARTS` by render.ts. */
+/**
+ * A blouse is tucked in when the outfit says so (`tunic_tucked`) or a skirt is worn (the skirt is drawn before the chest layers, so an untucked blouse would lay its hem over it and show as
+ * white strips along the apron's edge, the owner). A tucked blouse is drawn in the legs' layer, after the briefs and before the shorts or the skirt, which then cover its lower part; an untucked
+ * one is in the chest layers, over everything below the waist (as in ref 02, the blouse over the shorts).
+ */
+const tucked = (p: CharacterParams): boolean => p.outfit.tunic_color !== null && (truthy(p.outfit.tunic_tucked) || p.outfit.skirt_color !== null);
+
+/** The legs' slot on an adult body: the briefs (always worn), a tucked blouse, then what is worn over them. */
+export function adultLegsAndGarments(sk: Skeleton, p: CharacterParams): string {
+  return adultBriefs(sk, p) + (tucked(p) ? adultBlouse(sk, p) : "") + adultShorts(sk, p);
+}
+
 /** The chibi's underskirt is drawn from its own anchors and has no adult version yet, so it is not drawn on an adult body. */
 const none = (): string => "";
 
-/**
- * Worn with a skirt, the blouse is tucked in, so it is drawn with the skirt, in the skirt's own layer and before it, and not in the chest layers, which come after the skirt and would
- * lay the blouse's hem over it (it showed as white strips along the apron's edge, the owner). The skirt then covers the blouse from the waist down. Without a skirt the blouse is in the
- * chest layers as usual, over the shorts.
- */
-const tuckedBlouse = (sk: Skeleton, p: CharacterParams): string => (p.outfit.skirt_color === null ? "" : adultBlouse(sk, p));
-const looseBlouse = (sk: Skeleton, p: CharacterParams): string => (p.outfit.skirt_color === null ? adultBlouse(sk, p) : "");
-
+/** The adult body's garment parts, laid over `ADULT_PARTS` by render.ts. */
 export const ADULT_GARMENT_PARTS = {
   _legs_and_boots: adultLegsAndGarments,
-  _tunic: looseBlouse,
-  _skirt: (sk: Skeleton, p: CharacterParams): string => tuckedBlouse(sk, p) + adultSkirt(sk, p),
+  _tunic: (sk: Skeleton, p: CharacterParams): string => (tucked(p) ? "" : adultBlouse(sk, p)),
+  _skirt: adultSkirt,
   _underskirt: none,
   _apron: adultApron,
 };
