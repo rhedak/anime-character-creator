@@ -613,8 +613,7 @@
         "field": "apron_color",
         "label": "Apron",
         "optional": true
-      },
-      "requires": "belt"
+      }
     },
     {
       "id": "bodice",

@@ -92,7 +92,7 @@ export const BELT: GarmentSlot = garmentSlot(
   color("belt_color", "Belt"),
   { ranges: [range("belt_scale", "Belt height", 1, 3), range("belt_reach", "Belt reach", 0.8, 1.4)], bools: [bool("belt_keeper_pair", "Keeper either side")], selects: [selectField("belt_cut", "Cut", [[null, "Band"], ...sorted(Object.entries(BELT_CUT_LABELS), (e) => e[0])])] },
 );
-export const APRON: GarmentSlot = garmentSlot("apron", "Apron", color("apron_color", "Apron"), { requires: "belt" });
+export const APRON: GarmentSlot = garmentSlot("apron", "Apron", color("apron_color", "Apron"));
 export const CRYSTAL_1: GarmentSlot = garmentSlot(
   "crystal_1",
   "Crystal (outer left)",

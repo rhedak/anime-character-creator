@@ -188,7 +188,7 @@ piece.
 | `underwear_top` | `False` | The top is drawn with the tunic off whenever there is a bust; this adds one without. |
 | `undersleeve_color` | `None` | Long sleeve under the tunic's short one. `None` leaves the arm bare. |
 | `belt_color` | `None` | A belt with no apron over it also draws a buckle. |
-| `apron_color` | `None` | Front panel hanging from the belt, over the skirt. |
+| `apron_color` | `None` | Front panel over the skirt. A belt over it covers its top edge; without one the adult woman's apron has its own sash. |
 | `skirt_color` | `#4f7a52` | `None` for a character in trousers. |
 | `underskirt_color` | `None` | Longer skirt beneath the first, its hem showing below. |
 | `trouser_color` | `None` | Fills the legs, which are otherwise bare skin. |
