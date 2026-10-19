@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import { BODY_TYPES, skeletonFor } from "../src/body.ts";
 import { ADULT_FACE_AGE, characterParams, outfit, replace } from "../src/model.ts";
+import { buildCatalogue } from "../src/catalogue.ts";
 import { ADULT_CUT_ON_CHIBI, hairstyleFor, hairstyleOf } from "../src/core-head.ts";
 import { FRANZI, PRESETS } from "../src/presets.ts";
 import { adultBodiceCloth } from "../src/body-adult-garments.ts";
@@ -252,4 +253,27 @@ test("her cut on a chibi body falls back to a chibi cut, so the head has hair, a
   assert.equal(hairstyleOf(FRANZI), hairstyleFor("swept_ponytail"));
   assert.equal(hairstyleOf(characterParams({ ...FRANZI, body: "tall_chibi" })), hairstyleFor(ADULT_CUT_ON_CHIBI));
   assert.equal(FRANZI.hairstyle, "swept_ponytail", "the character still says swept_ponytail");
+});
+
+// ---- the controls a body does not use (catalogue.body_ignores, hidden by the page)
+
+test("BODY_IGNORES is what drawing the adult woman shows, plus the three controls hidden because they draw something wrong", async () => {
+  const { BODY_HIDDEN_EXTRA, BODY_IGNORES } = await import("../src/catalogue-tables.ts");
+  const { ignoredFields } = await import("./ignored-fields.ts");
+  const derived = ignoredFields("adult_female");
+  const table = [...(BODY_IGNORES["adult_female"] ?? [])];
+  assert.deepEqual(table, [...new Set([...derived, ...(BODY_HIDDEN_EXTRA["adult_female"] ?? [])])].sort(), "the table drifted from the drawing: node harness/franzi/ignored_fields.ts prints what it should be");
+  for (const f of ["hair_tail", "hair_knot", "waist_shift"]) assert.ok(table.includes(f), f);
+  // the controls she does use are not hidden
+  for (const f of ["skin_tone", "hair_color", "eye_color", "height", "tunic_color", "skirt_color", "apron_color", "bodice_color", "trouser_color", "hat_color", "glasses", "familiar_color"]) assert.ok(!table.includes(f), `${f} is used`);
+});
+
+test("the catalogue carries body_ignores, only for bodies that are in it, only of fields that exist", async () => {
+  const cat = buildCatalogue() as unknown as { bodies: { id: string }[]; body_ignores: Record<string, string[]> };
+  const { controls } = await import("./ignored-fields.ts");
+  const known = new Set(controls().map((c) => c.field));
+  for (const [body, fields] of Object.entries(cat.body_ignores)) {
+    assert.ok(cat.bodies.some((b) => b.id === body), body);
+    for (const f of fields) assert.ok(known.has(f), `${body} ignores ${f}, which no control has`);
+  }
 });

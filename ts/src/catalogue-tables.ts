@@ -482,3 +482,65 @@ export const FACE_BOOLS: readonly BoolField[] = [
 // docstring: "Right cheek" here is the viewer's right, the character's left.
 export const FACE_SCAR: SelectField = faceSelect("scar_side", "Scar", [[0, "None"], [-1, "Left cheek"], [1, "Right cheek"]]);
 export const FACE_SELECTS: readonly SelectField[] = [FACE_SCAR];
+
+// The controls a body does not use, by body type: the page hides them there (`catalogue.body_ignores`, web/app.js). The adult woman's head, hair, hands and feet are traced, not driven by
+// the chibi's settings, so a control that changes nothing in her drawing is a control that only misleads. `BODY_IGNORES` is what drawing her showed (ts/test/ignored-fields.ts finds
+// it again and ts/test/catalogue.test.ts pins it: `node harness/franzi/ignored_fields.ts` prints it), and `BODY_HIDDEN_EXTRA` is what draws something wrong on her (docs/adult-body-audit.md, D1 to
+// D3: a chibi ponytail root and a chibi bun on her traced hair, and a waist shift the traced head and hands do not follow), hidden on purpose.
+export const BODY_HIDDEN_EXTRA: Readonly<Record<string, readonly string[]>> = {
+  adult_female: ["hair_knot", "hair_tail", "waist_shift"],
+};
+export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
+  adult_female: sorted([
+    ...BODY_HIDDEN_EXTRA["adult_female"]!,
+    "boot_color",
+    "boot_cut",
+    "boot_shaft",
+    "brow_length",
+    "bust",
+    "chest",
+    "chin_shadow",
+    "coat_button_color",
+    "coat_sleeves",
+    "eye_corner",
+    "eye_gap",
+    "eye_size",
+    "eye_tilt",
+    "eye_width",
+    "face_age",
+    "grip_style",
+    "hair_length",
+    "hair_tip_color",
+    "hairstyle",
+    "hakama_length_chibi",
+    "hand_style",
+    "highlight_strength",
+    "hip_pocket_color",
+    "iris_aspect",
+    "iris_inset",
+    "iris_size",
+    "knee_sock_color",
+    "lash",
+    "lid_shadow",
+    "mouth_drop",
+    "mouth_width",
+    "neckline_notch",
+    "neckline_round",
+    "neckline_stand",
+    "neckline_trim",
+    "nose_dot",
+    "scar_side",
+    "skirt_cut",
+    "skirt_length",
+    "skirt_length_chibi",
+    "sleeve_cut",
+    "sleeve_long",
+    "sleeve_under_cap",
+    "underskirt_color",
+    "undersleeve_color",
+    "underwear_top",
+    "wristband_color",
+    "wristband_side",
+    "wristband_text"
+  ]),
+};

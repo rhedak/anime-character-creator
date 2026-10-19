@@ -26,6 +26,7 @@ import type { Json } from "./pyjson.ts";
 import { pyStrRepr, sorted } from "./pynum.ts";
 import { DISPLAY_NAMES, NEUTRAL_BASES, PRESETS } from "./presets.ts";
 import {
+  BODY_IGNORES,
   BODY_LABELS,
   COLORS,
   FACE_BOOLS,
@@ -173,6 +174,7 @@ export function buildCatalogue(): JsonObject {
       bases: basePoints().map((s) => ({ id: s.id, label: s.label })),
     },
     bodies: sorted(Object.keys(BODY_TYPES)).map((name) => ({ id: name, label: lookup(BODY_LABELS, name) })),
+    body_ignores: Object.fromEntries(Object.entries(BODY_IGNORES).map(([body, fields]) => [body, [...fields]])),
     hand_styles: HAND_STYLES.map((name) => ({ id: name, label: lookup(HAND_LABELS, name) })),
     grip_styles: GRIP_STYLES.map((name) => ({ id: name, label: lookup(GRIP_LABELS, name) })),
     height: rangeJson(HEIGHT),

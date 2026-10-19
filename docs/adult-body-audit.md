@@ -62,6 +62,11 @@ The mechanism for all of this is one thing: **the catalogue has no way to say "t
 
 The page's list of hand styles shows chibi names ("Mitten (chibi)") for her. That is C, not a fault of its own.
 
+## Done 2026-10-19
+
+- A1 and B1 (above).
+- **C and D1 to D3:** the catalogue has a new key, `body_ignores`: for each body, the fields the page hides. For the adult woman it lists the 49 fields that drawing her showed to change nothing visible (found by `ts/test/ignored-fields.ts`, printed by `node harness/franzi/ignored_fields.ts`) and the three that draw something wrong on her (`hair_tail`, `hair_knot`, `waist_shift`). The page (`applyBodyIgnores` in `web/app.js`) hides those rows, a garment whose fields are all ignored, and a section left empty, and shows them again when the body is changed back: on Franzi the page shows 66 of the 121 fields and no Hair section. The list is pinned by a test against what is drawn, so it cannot drift. Not hidden, by the drawing's own answer: the finish (it thins her strokes), glasses, `brows_over_hair`, and the chibi garments of D4 and D5.
+
 ## Suggested order, if the owner wants fixes
 
 1. A1 (the coat's double ids): small, a real fault.

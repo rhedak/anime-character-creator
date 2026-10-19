@@ -105,6 +105,7 @@ function setFaceField(field, value) {
 function colorRow(container, field, label, value, onInput) {
   const row = document.createElement("div");
   row.className = "control-row";
+  row.dataset.field = field;
   const id = `field-${field}`;
   const lbl = document.createElement("label");
   lbl.htmlFor = id;
@@ -122,6 +123,7 @@ function colorRow(container, field, label, value, onInput) {
 function rangeRow(container, field, label, lo, hi, value, onInput) {
   const row = document.createElement("div");
   row.className = "control-row";
+  row.dataset.field = field;
   const id = `field-${field}`;
   const lbl = document.createElement("label");
   lbl.htmlFor = id;
@@ -142,6 +144,7 @@ function rangeRow(container, field, label, lo, hi, value, onInput) {
 function selectRow(container, field, label, options, value, onInput) {
   const row = document.createElement("div");
   row.className = "control-row";
+  row.dataset.field = field;
   const id = `field-${field}`;
   const lbl = document.createElement("label");
   lbl.htmlFor = id;
@@ -167,6 +170,7 @@ function selectRow(container, field, label, options, value, onInput) {
 function boolRow(container, field, label, value, onInput) {
   const row = document.createElement("div");
   row.className = "control-row";
+  row.dataset.field = field;
   const id = `field-${field}`;
   const lbl = document.createElement("label");
   lbl.htmlFor = id;
@@ -205,6 +209,7 @@ function buildFinishControls() {
       scheduleRender();
     });
   }
+  applyBodyIgnores();
 }
 
 // The build slider and its snaps are retired with the realistic build and the
@@ -232,6 +237,7 @@ function buildBuildControls() {
   }
   select.addEventListener("input", () => {
     setField("body", select.value);
+    applyBodyIgnores();
     scheduleRender();
   });
   row.append(lbl, select);
@@ -241,6 +247,7 @@ function buildBuildControls() {
   // open drawn hand, a choice per character (`docs/hands-plan.md`).
   const handRow = document.createElement("div");
   handRow.className = "control-row";
+  handRow.dataset.field = "hand_style";
   const handLbl = document.createElement("label");
   handLbl.htmlFor = "field-hand-style";
   handLbl.textContent = "Hands";
@@ -264,6 +271,7 @@ function buildBuildControls() {
   // as the other or the canon's fist (`docs/hands-plan.md`).
   const gripRow = document.createElement("div");
   gripRow.className = "control-row";
+  gripRow.dataset.field = "grip_style";
   const gripLbl = document.createElement("label");
   gripLbl.htmlFor = "field-grip-style";
   gripLbl.textContent = "Staff grip";
@@ -322,6 +330,7 @@ function buildBuildControls() {
     setField(chest.field, v);
     scheduleRender();
   });
+  applyBodyIgnores();
 }
 
 function buildColorControls() {
@@ -347,6 +356,7 @@ function buildColorControls() {
       });
     }
   }
+  applyBodyIgnores();
 }
 
 function swatchRow(container, swatches, onPick) {
@@ -403,6 +413,7 @@ function buildHairControls() {
 
   const row = document.createElement("div");
   row.className = "control-row";
+  row.dataset.field = "hairstyle";
   const lbl = document.createElement("label");
   lbl.htmlFor = "field-hairstyle";
   lbl.textContent = "Cut";
@@ -438,6 +449,7 @@ function buildHairControls() {
   const tip = catalogue.colors.find((c) => c.field === "hair_tip_color");
   const tipRow = document.createElement("div");
   tipRow.className = "control-row";
+  tipRow.dataset.field = "hair_tip_color";
   const tipCheckbox = boolRow(
     tipRow,
     "hair_tip_on",
@@ -474,6 +486,7 @@ function buildHairControls() {
     state.hair_knot = v;
     scheduleRender();
   });
+  applyBodyIgnores();
 }
 
 function buildFaceControls() {
@@ -496,6 +509,7 @@ function buildFaceControls() {
       scheduleRender();
     });
   }
+  applyBodyIgnores();
 }
 
 function buildGarmentControls() {
@@ -579,13 +593,33 @@ function turnOffDependents(garmentId) {
   }
 }
 
-function applyRequiresVisibility() {
-  for (const g of catalogue.garments) {
-    if (!g.requires) continue;
-    const block = garmentsControls.querySelector(`[data-garment-id="${g.id}"]`);
-    const requirementOn = fieldValue(garmentField(g.requires)) !== null;
-    block.hidden = !requirementOn;
+// What the page shows for the current body and garments. `catalogue.body_ignores[body]` names the fields that body does not use (the adult woman's head, hair and hands are traced and
+// ignore most of the chibi's settings, docs/adult-body-audit.md): their rows are hidden, a garment whose every field is ignored is hidden whole, and a section left with nothing is
+// hidden with them. A garment that requires another is shown only when that one is worn. Safe to call at any time and from any builder, since it only reads what is on the page.
+function applyBodyIgnores() {
+  const ignored = new Set((catalogue.body_ignores || {})[state.body] || []);
+  for (const el of document.querySelectorAll("#editor-section [data-field]")) {
+    el.hidden = ignored.has(el.dataset.field);
   }
+  for (const g of catalogue.garments) {
+    const block = garmentsControls.querySelector(`[data-garment-id="${g.id}"]`);
+    if (!block) continue;
+    const fields = [g.color.field, ...(g.ranges || []).map((r) => r.field), ...(g.bools || []).map((b) => b.field), ...(g.selects || []).map((s) => s.field)];
+    const requirementOn = !g.requires || fieldValue(garmentField(g.requires)) !== null;
+    block.hidden = !requirementOn || fields.every((f) => ignored.has(f));
+  }
+  for (const fs of document.querySelectorAll("#editor-section fieldset:not(#garments-fieldset)")) {
+    const rows = [...fs.querySelectorAll("[data-field]")];
+    const shown = (row) => {
+      for (let e = row; e && e !== fs; e = e.parentElement) if (e.hidden) return false;
+      return true;
+    };
+    fs.hidden = rows.length > 0 && !rows.some(shown);
+  }
+}
+
+function applyRequiresVisibility() {
+  applyBodyIgnores();
 }
 
 function garmentField(garmentId) {
