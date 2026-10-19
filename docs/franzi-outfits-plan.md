@@ -59,3 +59,14 @@ The render route is the one `adultBriefs` already uses: `render.ts` swaps the ga
 1. Is "adult slots under the existing controls" the right way, or should adult outfits be their own list of named outfits only?
 2. The missing garments (boots, knee socks, trousers, undersleeve, wristband, which draw nothing on her): trace them too, or hide them in the adult catalogue? Boots and knee socks look like the first ones worth having after the dirndl.
 3. Whether the shared `catalogue.json` and `ref-out/` offer her at all before the Python is gone: today she is only in the local preview (`web-stage.mjs --adult`); after the Python removal she moves into `PRESETS` (stage 7 of the removal audit) and the preview flag goes.
+
+## Order and progress (2026-10-19)
+
+The method changed from "trace each garment" to "cut each garment from the body's own edge tables, a little outside the skin, then trace only the design details". Measured on the shorts layers of refs 02 and 03: the cloth's outer edge is within 0.00 to 0.06 H of the body's side knots all the way down, so a body-following cut matches the reference. The garments live in `ts/src/body-adult-garments.ts` and replace the shared parts only on an adult body (`ADULT_GARMENT_PARTS`, laid over `ADULT_PARTS` in `render.ts`).
+
+1. Shorts, on `trouser_color`. **Done**: waist to mid-thigh, hem cuff, waistband and front seam; compared with refs 02 and 03 (`REF=02-blouse tools/.venv/bin/python harness/franzi/aligned.py ...`). Full-length trousers are the same cut with a longer hem; they need a `trouser_cut` choice, which the owner has not been asked about yet.
+2. Blouse (`tunic_color`). **Done**: traced from ref 02's `white-blouse` layer as one piece (bodice, puff sleeves, sweetheart neckline, frilled cuffs, front opening), mapped onto the skeleton like the top and the briefs (`harness/franzi/blouse_trace.py`, `ts/src/body-adult-blouse-data.ts`). The traced outline is widened, outwards only, to the body's own edge where ref 02's pose is slimmer than ours at the waist and shoulders. Inside lines: the neckline's binding, each sleeve's seam, the gather above each cuff, the front opening. Not drawn: the scallops of the neckline and frills are smoothed, and the blouse's `sleeve_long`, `neckline_*` and collar options are ignored on the adult body. The arm of ref 02 touches the blouse at the waist where ours (from ref 04) stands a little apart, so a sliver of page shows between them, as it does in the bikini render.
+3. Skirt and apron (`skirt_color`, `apron_color`): from the hip knots down, with the dirndl's flare; the chibi cuts are replaced.
+4. Bodice (new `bodice_color`): over the blouse, lacing and buttons traced.
+5. Boots and knee socks (`boot_color`, `knee_sock_color`): follow the leg and foot outline.
+6. Coat, robe, strap, belt: from the torso cut, once the blouse exists.

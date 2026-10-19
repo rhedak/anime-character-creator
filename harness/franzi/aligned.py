@@ -2,6 +2,8 @@
 
     ./harness/run.sh harness/franzi/aligned.py NAME x0 y0 x1 y1 [OVERRIDES_JSON]
 
+REF=02-blouse (or any file of ref/franzi/ without .png) compares against that reference instead of ref 04, for the outfits.
+
 The box (x0, y0, x1, y1) is in reference canvas pixels (ref 04, 1312 x 2440). Our figure is rendered at the scale that makes a head
 height equal to the reference's 352 px, and cropped to the same box through the mapping, so the shoulders, the bust and the hem
 line up. Writes out/franzi/aligned-NAME.png (reference left, ours right). Replaces the earlier hand-placed crops, which were
@@ -32,7 +34,9 @@ def flat(p):
     return bg.convert("RGB")
 
 
-ref = flat("ref/franzi/04-bikini-fullbody.png").crop((x0, y0, x1, y1))
+import os
+
+ref = flat(f"ref/franzi/{os.environ.get('REF', '04-bikini-fullbody')}.png").crop((x0, y0, x1, y1))
 ours_cx = (meta["canvas_w"] / 2) * scale
 ours_chin = meta["chin_y"] * scale
 ox0, oy0 = ours_cx + (x0 - CX_REF), ours_chin + (y0 - CHIN_REF)

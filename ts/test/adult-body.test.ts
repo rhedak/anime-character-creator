@@ -90,3 +90,70 @@ test("Franzi's drawing defines the 46 KB body outline once and stays small", () 
   // 2.3 MB when each clip and stroke carried its own copy of the outline; 184 KB with one. The limit leaves room for the detail still to come.
   assert.ok(svg.length < 400_000, `${svg.length} bytes`);
 });
+
+// ---- garments fitted to the adult body (body-adult-garments.ts)
+
+const shortsOn = (body: string | null) => {
+  const base = body === null ? PRESETS.satoko! : FRANZI;
+  return characterParams({ ...base, outfit: outfit({ ...base.outfit, trouser_color: "#efe9dc" }) });
+};
+
+test("adult shorts: drawn on trouser_color, in that colour, and nothing without it", () => {
+  const without = renderCharacter(FRANZI, null, null, false);
+  const withShorts = renderCharacter(shortsOn("adult_female"), null, null, false);
+  assert.notEqual(without, withShorts);
+  assert.ok(withShorts.includes('fill="#efe9dc"'));
+  assert.ok(!without.includes("#efe9dc"));
+  assert.equal(renderCharacter(shortsOn("adult_female"), null, null, false), withShorts, "deterministic");
+});
+
+test("adult shorts cover the briefs' top and show no more of the body than the briefs do", () => {
+  // The briefs' waistband is at 1.713 H and the shorts' top at 1.68 H: the shorts begin above it, so the briefs' top edge is hidden by them.
+  const svg = renderCharacter(shortsOn("adult_female"), null, null, false);
+  const shorts = svg.indexOf('fill="#efe9dc"');
+  const briefs = svg.indexOf('fill="#faf5f4"');
+  assert.ok(briefs >= 0 && shorts > briefs, "the shorts are drawn after the briefs, over them");
+});
+
+test("trouser_color on a chibi body is untouched by the adult garments", () => {
+  // The adult garment parts are laid over the adult body's parts only; a chibi with trousers draws as before.
+  const chibi = shortsOn(null);
+  assert.equal(chibi.body === "adult_female", false);
+  const svg = renderCharacter(chibi, null, null, false);
+  assert.ok(svg.includes("#efe9dc"));
+  assert.ok(!svg.includes("adult-body-outline"));
+});
+
+const wearing = (fields: Record<string, unknown>, finish: "flat" | "soft" = "flat") =>
+  replace(characterParams({ ...FRANZI, outfit: outfit({ ...FRANZI.outfit, ...fields }) }), { finish });
+
+test("the adult blouse: drawn on tunic_color in that colour, not without it, and not on a chibi's tunic path", () => {
+  const without = renderCharacter(FRANZI, null, null, false);
+  const svg = renderCharacter(wearing({ tunic_color: "#faf8f4" }), null, null, false);
+  assert.ok(svg.includes('fill="#faf8f4"'));
+  assert.ok(!without.includes("#faf8f4"));
+  assert.ok(svg.includes('id="adult-blouse-clip"'));
+  assert.equal(renderCharacter(wearing({ tunic_color: "#faf8f4" }), null, null, false), svg, "deterministic");
+  // a chibi's tunic does not go through the adult blouse
+  assert.ok(!renderCharacter(PRESETS.satoko!, null, null, false).includes("adult-blouse-clip"));
+});
+
+for (const finish of ["flat", "soft"] as const) {
+  test(`blouse and shorts together: ids defined once, references resolve, small [${finish}]`, () => {
+    const svg = renderCharacter(wearing({ tunic_color: "#faf8f4", trouser_color: "#efe9dc" }, finish));
+    const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+    assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), [], "an id is defined twice");
+    const refs = [...svg.matchAll(/url\(#([^)]+)\)/g)].map((m) => m[1] as string);
+    assert.deepEqual(refs.filter((r) => !ids.includes(r)), []);
+    assert.ok(svg.length < 400_000, `${svg.length} bytes`);
+  });
+}
+
+test("the blouse is drawn over the body and under the hands' layer, and over the shorts' top", () => {
+  const svg = renderCharacter(wearing({ tunic_color: "#faf8f4", trouser_color: "#efe9dc" }), null, null, false);
+  const shorts = svg.indexOf('fill="#efe9dc"');
+  const blouse = svg.indexOf('fill="#faf8f4"');
+  const hands = svg.indexOf('id="adult-hand-zone"');
+  assert.ok(shorts >= 0 && blouse > shorts, "the blouse comes after the shorts, so its hem lies over their waist");
+  assert.ok(hands > blouse, "the hands' layer comes after the blouse");
+});

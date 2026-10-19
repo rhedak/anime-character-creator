@@ -30,7 +30,7 @@ import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
 import { replace as replaceSk, type Skeleton } from "./skeleton.ts";
 
-type Knots = readonly (readonly [number, number])[];
+export type Knots = readonly (readonly [number, number])[];
 
 /** Depths (in H below the chin) the profile's anchors sit at in the reference, in the order `anchorYs` returns. */
 const REF_DEPTHS = [0.0, 0.28, 1.3, 2.2, 4.7, 5.4];
@@ -56,18 +56,18 @@ function piecewise(v: number, xs: readonly number[], ys: readonly number[]): num
 }
 
 /** A knot table read at depth `d`, linear between knots. */
-function at(tab: Knots, d: number): number {
+export function at(tab: Knots, d: number): number {
   return piecewise(d, tab.map((k) => k[0]), tab.map((k) => k[1]));
 }
 
-interface Place {
+export interface Place {
   y: (d: number) => number;
   /** Half-width in pixels of a knot value `v` (H) at depth `d`, following the profile's widths. */
   w: (d: number, v: number) => number;
   cx: number;
 }
 
-function place(sk: Skeleton): Place {
+export function place(sk: Skeleton): Place {
   const ys = anchorYs(sk);
   const ratio = (now: number, ref: number): number => now / (ref * sk.head_r);
   const rs = ratio(sk.shoulder_half_w, ADULT_REF.shoulder_half_w);
@@ -83,7 +83,7 @@ function place(sk: Skeleton): Place {
   };
 }
 
-type Pt = readonly [number, number];
+export type Pt = readonly [number, number];
 
 /** Where the gap between the legs starts, in head heights below the chin: under the briefs' gusset (which ends at 2.262), so its top edge is hidden by it and the gusset's lower edge is the only line across the slot. */
 const GAP_TOP = 2.2;
@@ -92,7 +92,7 @@ const GAP_TOP = 2.2;
 const GAP_TIP: Pt = [0.4, 0.955];
 
 /** A Catmull-Rom curve through `pts`, as cubic segments continuing from the first point (the pen is already there). */
-function smooth(pts: readonly Pt[]): string {
+export function smooth(pts: readonly Pt[]): string {
   let s = "";
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(0, i - 1)] as Pt;
@@ -109,7 +109,7 @@ function smooth(pts: readonly Pt[]): string {
 const line = (pt: Pt): string => `L ${fmt1(pt[0])} ${fmt1(pt[1])} `;
 
 /** A quadratic from the pen to `end` through the control point `ctrl`. */
-const quad = (ctrl: Pt, end: Pt): string => `Q ${fmt1(ctrl[0])} ${fmt1(ctrl[1])} ${fmt1(end[0])} ${fmt1(end[1])} `;
+export const quad = (ctrl: Pt, end: Pt): string => `Q ${fmt1(ctrl[0])} ${fmt1(ctrl[1])} ${fmt1(end[0])} ${fmt1(end[1])} `;
 
 /**
  * The body outline is defined once per drawing, in `<defs>`, and everything else refers to it with `<use>`: its fill, the clip paths of the toenails, the hands and the foot, and the stroke bands
@@ -194,7 +194,7 @@ export function adultBodyPath(sk: Skeleton): string {
   return d + "Z";
 }
 
-function inkAttrs(sk: Skeleton, fill: string): string {
+export function inkAttrs(sk: Skeleton, fill: string): string {
   return `fill="${fill}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round"`;
 }
 
@@ -238,19 +238,9 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
   return adultBodyDef(sk) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
 }
 
-/**
- * The body outline's stroke. The hands are stroked thinner than the rest (`HAND_STROKE_K` of the weight): a finger on the close-up is about as wide
- * as a full-weight stroke, which hid the thumb's edge and the finger tips. The stroke is the same path drawn in clipped pieces: full weight
- * everywhere but the hand columns below the wrist, a taper over twenty bands to the hand weight, from `HAND_D_CUT` down. The hand's own chain is inset by the hand weight's half stroke (harness/franzi_hands/outline.py).
- */
-export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all", idPrefix = "adult-stroke"): string {
+/** The hand zones' geometry: each hand's piece between two depths, from the arm's outer side to an inner edge that follows the thigh. */
+function handPieces(sk: Skeleton) {
   const { cx, y, w } = place(sk);
-  const full = outlineW(strokeW(sk));
-  const stroke = (width: number, clip: string): string => adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(width)}" stroke-linejoin="round" clip-path="url(#${clip})"`);
-  const top = y(HAND_D_CUT);
-  const bottom = y(2.9);
-  const big = sk.canvas_w;
-  const bigH = sk.canvas_h;
   // The hand zone: from the arm's outer side in to an inner edge that follows the thigh (the lowest fingertip reaches 0.60 H from the centre line, past
   // the straight 0.635 H edge this had at first, which cut the tip off and drew it at full weight with a vertical edge: the owner's barb), clear of the
   // thigh's own stroke (its outer edge is 0.611 H at 2.3, 0.583 at 2.5, 0.561 at 2.6; the stroke reaches 0.008 H beyond that).
@@ -273,6 +263,29 @@ export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all", idP
     const ds = dAt(d0, d1);
     return poly([...ds.map((d) => px(sign, d, OUT)), ...[...ds].reverse().map((d) => px(sign, d, vIn(d)))]);
   };
+  return { piece, poly, px, vIn, dAt, rect, OUT };
+}
+
+/** A clip path of both hands from the wrist down (the zone `adultBodyStroke` strokes), so a hand can be drawn over a garment that passes in front of it. */
+export function adultHandZoneClip(sk: Skeleton, id: string): string {
+  const { piece } = handPieces(sk);
+  return `<clipPath id="${id}">${piece(-1, HAND_D_CUT, 2.9)}${piece(1, HAND_D_CUT, 2.9)}</clipPath>`;
+}
+
+/**
+ * The body outline's stroke. The hands are stroked thinner than the rest (`HAND_STROKE_K` of the weight): a finger on the close-up is about as wide
+ * as a full-weight stroke, which hid the thumb's edge and the finger tips. The stroke is the same path drawn in clipped pieces: full weight
+ * everywhere but the hand columns below the wrist, a taper over twenty bands to the hand weight, from `HAND_D_CUT` down. The hand's own chain is inset by the hand weight's half stroke (harness/franzi_hands/outline.py).
+ */
+export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all", idPrefix = "adult-stroke"): string {
+  const { cx, y, w } = place(sk);
+  const full = outlineW(strokeW(sk));
+  const stroke = (width: number, clip: string): string => adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(width)}" stroke-linejoin="round" clip-path="url(#${clip})"`);
+  const top = y(HAND_D_CUT);
+  const bottom = y(2.9);
+  const big = sk.canvas_w;
+  const bigH = sk.canvas_h;
+  const { piece, poly, px, vIn, dAt, rect, OUT } = handPieces(sk);
   const xl = Math.min(cx - w(2.3, OUT), cx + w(2.3, OUT));
   const xr = Math.max(cx - w(2.3, OUT), cx + w(2.3, OUT));
   // the rest: everything but the hand zones. Above the wrist and below the hands, the whole width; between, the outside of each arm and the middle.
@@ -684,7 +697,10 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
   // the outline's stroke over the fills, in each hand's columns and rows, at the hands' weight (their edge is the skin's edge, so they covered half of it)
   const stroke = adultBodyStroke(sk, "hands", "adult-hand-stroke");
   const clip = adultBodyClip("adult-hand-body");
-  return clip + parts.join("") + stroke;
+  // The hands' skin again, first: a garment drawn before this layer (the shorts) passes behind the hand, so the hand's skin goes over it, and its lines and
+  // outline below are then on skin and not on cloth.
+  const skin = adultHandZoneClip(sk, "adult-hand-zone") + adultBodyRef(`fill="${colorStr(p.skin_tone)}" clip-path="url(#adult-hand-zone)"`);
+  return clip + skin + parts.join("") + stroke;
 }
 
 /**

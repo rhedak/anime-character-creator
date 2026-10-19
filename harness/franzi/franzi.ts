@@ -3,11 +3,14 @@
 // from here still do.
 //
 //   node harness/franzi/franzi.ts OUT.svg ['{"face":{"eye_size":0.8}}']     overrides are merged over the base
+//   OVERLAY=breasts node harness/franzi/franzi.ts ...                          the full breast contours in red over the figure
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { characterParams, faceStyle, outfit } from "../../ts/src/model.ts";
 import { FRANZI } from "../../ts/src/presets.ts";
+import { skeletonFor } from "../../ts/src/body.ts";
+import { adultBreastOutlines } from "../../ts/src/body-adult-parts.ts";
 import { renderCharacter } from "../../ts/src/render.ts";
 
 export { FRANZI };
@@ -17,5 +20,8 @@ if (import.meta.main && out !== undefined) {
   const o = json === undefined ? {} : JSON.parse(json);
   const p = characterParams({ ...FRANZI, ...o, face: faceStyle({ ...FRANZI.face, ...(o.face ?? {}) }), outfit: outfit({ ...FRANZI.outfit, ...(o.outfit ?? {}) }) });
   mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, renderCharacter(p, null, null, false));
+  let svg = renderCharacter(p, null, null, false);
+  // OVERLAY=breasts draws the full breast contours in red over everything, to check a garment against the bust (harness/franzi/aligned.py runs this).
+  if (process.env.OVERLAY === "breasts") svg = svg.replace(/<\/svg>\s*$/, `${adultBreastOutlines(skeletonFor(p)).replaceAll("#0d0d0d", "#e0102a")}</svg>`);
+  writeFileSync(out, svg);
 }
