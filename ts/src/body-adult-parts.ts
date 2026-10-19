@@ -26,10 +26,9 @@ import { fmt1, fmt2 } from "./pynum.ts";
 import { shade, tint } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
 import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
-import { MOUTH_REALISTIC_DROP, MOUTH_Y, noseDot } from "./face.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
-import { faceBuild, replace as replaceSk, type Skeleton } from "./skeleton.ts";
+import { replace as replaceSk, type Skeleton } from "./skeleton.ts";
 
 type Knots = readonly (readonly [number, number])[];
 
@@ -612,13 +611,27 @@ function adultBrows(h: Skeleton): string {
  */
 export function adultFace(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
-  const f = p.face;
-  const sw = strokeW(sk);
+  // Traced from ref 04 (harness: the pixel maps in docs/adult-body-status.md), in reference pixels and drawn through the head calibration of the eyes (origin (660, 270.5), 175.7 px
+  // per head radius). The shared face (a dot for the nose, one symmetric arc for the mouth, placed by the chibi's proportions) read as a smile that was off: the reference's mouth is
+  // two thin strokes with a gap between them, 42 px wide and about 9 px higher than ours was, uneven (the right half rises further), and its nose is a pale oval with a short
+  // dark tick at its lower right, not a dot.
+  const k = h.head_r / 175.7;
+  const ref = (q: Pt): Pt => [h.head_cx + (q[0] - 660) * k, h.head_cy + (q[1] - 270.5) * k];
+  const line = shade(p.skin_tone, 0.28, 1.4);
+  const stroke = (pts: readonly Pt[], widths: readonly number[]): string => {
+    // a polyline as a chain of straight quadratics, in head radii for taperedStrand; widths in reference px
+    const r = pts.map(([x, y]): Pt => [(x - 660) / 175.7, (y - 270.5) / 175.7]);
+    const segs = r.slice(1).map((e, i) => [[((r[i] as Pt)[0] + e[0]) / 2, ((r[i] as Pt)[1] + e[1]) / 2] as Pt, e] as [Pt, Pt]);
+    return taperedStrand(h, [r[0] as Pt, segs], 0, line, widths.map((v) => v / 175.7));
+  };
   const parts: string[] = [];
-  parts.push(noseDot(h, sw));
-  const mouthY = h.head_cy + h.head_r * (MOUTH_Y + MOUTH_REALISTIC_DROP * faceBuild(sk) + f.mouth_drop);
-  const half = h.head_r * 0.12 * f.mouth_width;
-  parts.push(`<path d="M ${fmt1(h.head_cx - half)} ${fmt1(mouthY)} Q ${fmt1(h.head_cx)} ${fmt1(mouthY + h.head_r * 0.08 * f.mouth_curve)} ${fmt1(h.head_cx + half)} ${fmt1(mouthY)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(sw, 0.62))}" stroke-linecap="round" />`);
+  // the nose: the pale oval highlight, a lighter tone of the skin, then the dark tick
+  const c = ref([657, 360.5]);
+  parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(3.1 * k)}" ry="${fmt1(5.8 * k)}" transform="rotate(4 ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint(p.skin_tone, 0.62)}" />`);
+  parts.push(stroke([[660.6, 366.2], [661.8, 368.8], [663, 372.2]], [1.8, 2.4, 1.2]));
+  // the mouth: two strokes, the left one thickest toward its outer end and thinning to the gap, the right one thick toward its outer end and thin at both
+  parts.push(stroke([[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [664.5, 403.2]], [1.5, 1.8, 1.9, 1.9, 1.7, 1.3, 0.8]));
+  parts.push(stroke([[670, 403.2], [673, 402.6], [676, 401.6], [679, 400.4], [682, 399], [684.5, 397.6], [687.5, 395.8]], [0.9, 1.5, 1.9, 2.0, 1.9, 1.4, 0.8]));
   return parts.join("");
 }
 

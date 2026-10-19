@@ -193,6 +193,15 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-19, the nose and the mouth traced (owner: the smile looks a bit off; match the reference's positions)
+
+The shared face drew a dot for the nose and one symmetric arc for the mouth, placed by the chibi's proportions. Pixel maps of ref 04 show something else. Mouth: two thin strokes with a small gap between them, not an arc. The left runs from
+(645.5, 399.3) down to (664.5, 403.2), the right from (670, 403.2) rising to (687.5, 395.8), so the whole mouth is 42 px wide with its low point at the left of centre (about x 663), the right half rising further. Ours was a symmetric arc 26 px wide, about 9 px lower
+and heavier. Nose: a pale oval (x 653 to 660, y 355 to 366, about 7 by 12 px, lightness 235 and up against skin's 215) with a short dark tick at its lower right (661 to 663, 366 to 372). `adultFace` (`body-adult-parts.ts`) now draws them in reference pixels through the same head
+calibration as the eyes: an ellipse in a lighter tone of the skin (`tint(skin, 0.62)`, rotated 4 degrees) and a tapered tick, and two tapered strokes along the mouth's centre lines (1.5 to 2.0 px wide, thinning at the ends) in a dark tone of the skin (`shade(skin, 0.28, 1.4)`,
+not the outline's black: the reference's line is dark brown, lightness under 120). The mouth's width and curve fields of the shared face are no longer read for the adult body (the strokes are traced; an expression for her would be a second set of points). Gates green.
+Left: the small cream gleam under the centre of the mouth is not drawn; the reference's line is slightly more continuous than ours (a thinner gap).
+
 ### 2026-10-19, back to one eye set: the left eye's lid, crease and lashes mirrored (owner: the right eye looks broken because its components do not align; treat the left eye as the reference set)
 
 The per-eye version above (c2e1915) fitted the right eye's lid, crease and lashes to the reference's right eye, while its aperture, iris, pupil and highlights are the left eye's, mirrored, in the iris frame the owner approved. The pieces of
