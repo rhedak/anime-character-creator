@@ -117,9 +117,6 @@
   ],
   "body_ignores": {
     "adult_female": [
-      "boot_color",
-      "boot_cut",
-      "boot_shaft",
       "brow_length",
       "bust",
       "chest",
@@ -145,7 +142,6 @@
       "iris_aspect",
       "iris_inset",
       "iris_size",
-      "knee_sock_color",
       "lash",
       "lid_shadow",
       "mouth_drop",

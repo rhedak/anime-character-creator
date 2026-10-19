@@ -277,3 +277,27 @@ test("the catalogue carries body_ignores, only for bodies that are in it, only o
     for (const f of fields) assert.ok(known.has(f), `${body} ignores ${f}, which no control has`);
   }
 });
+
+// ---- knee socks and boots
+
+test("adult knee socks and boots: drawn on their colours, the foot's toes and nails left out under a boot, ids unique", () => {
+  const bare = renderCharacter(BARE, null, null, false);
+  const socks = renderCharacter(wearing({ knee_sock_color: "#f1ece4" }), null, null, false);
+  const boots = renderCharacter(wearing({ boot_color: "#5b4632" }), null, null, false);
+  const both = renderCharacter(wearing({ knee_sock_color: "#f1ece4", boot_color: "#5b4632" }), null, null, false);
+  assert.ok(socks.includes('fill="#f1ece4"') && !bare.includes("#f1ece4"));
+  assert.ok(boots.includes('fill="#5b4632"') && !bare.includes("#5b4632"));
+  assert.ok(both.indexOf('fill="#5b4632"') > both.indexOf('fill="#f1ece4"'), "the boot is over the sock");
+  assert.ok(bare.includes('id="adult-foot-rows"'), "a bare foot has its outline redrawn below the ankle");
+  assert.ok(!boots.includes('id="adult-foot-rows"') && !boots.includes('id="adult-foot-body"'), "a boot covers the foot: no toes, nails or foot outline under it");
+  assert.ok(socks.includes('id="adult-foot-rows"'), "socks stop at the ankle and leave the foot bare");
+  for (const svg of [socks, boots, both, renderCharacter(wearing({ boot_color: "#5b4632", boot_cut: "loafer" })), renderCharacter(wearing({ boot_color: "#5b4632", boot_shaft: 1 }))]) {
+    const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+    assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), []);
+  }
+  // a taller shaft draws a different, longer boot; a loafer a shorter one; the same call twice is the same drawing
+  const full = renderCharacter(wearing({ boot_color: "#5b4632", boot_shaft: 1 }), null, null, false);
+  const loafer = renderCharacter(wearing({ boot_color: "#5b4632", boot_cut: "loafer" }), null, null, false);
+  assert.ok(new Set([boots, full, loafer]).size === 3);
+  assert.equal(renderCharacter(wearing({ boot_color: "#5b4632" }), null, null, false), boots);
+});

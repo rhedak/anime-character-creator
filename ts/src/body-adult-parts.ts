@@ -721,7 +721,7 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
     const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
     const inPx = ([start, segs]: Chain): Chain => [px(start), segs.map(([c, e]) => [px(c), px(e)] as [Pt, Pt])];
     const pixelFrame = { head_cx: 0, head_cy: 0, head_r: 1 } as Skeleton; // taperedStrand reads a chain in head radii; this frame makes it read pixels
-    FOOT_DIVIDERS.forEach((c, i) => out.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (FOOT_DIVIDER_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
+    if (p.outfit.boot_color === null) FOOT_DIVIDERS.forEach((c, i) => out.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (FOOT_DIVIDER_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
     // The nails are clipped to the body outline and the outline's stroke is drawn again over them below the ankle, because the stroke
     // (about 10 close-up px a side) is wider than the gap between a little toe's nail and the toe's edge, so a nail would spill over it.
     const nailPaths = FOOT_NAILS.map((ring) => {
@@ -739,7 +739,9 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
     }
     nailsHere.push(nailPaths);
   }
-  return out.join("") + footClip.replace("NAILS", nailsHere.join("")) + adultArmsOver(sk, p) + adultHandsDetail(sk, p);
+  // A boot covers the foot: its toes, nails and the outline stroke redrawn below the ankle are not drawn then, or they would show through the leather.
+  const bare = p.outfit.boot_color === null;
+  return out.join("") + (bare ? footClip.replace("NAILS", nailsHere.join("")) : "") + adultArmsOver(sk, p) + adultHandsDetail(sk, p);
 }
 
 /**

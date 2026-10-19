@@ -44,7 +44,7 @@ On the dirndl base 132 of the 230 variants draw the same picture: her head, hair
 | **Finish** | `soft` changes nothing (no gradients on her parts) and `highlight_strength` with it | Hide on the adult body, or make the soft finish apply to her (large). |
 | **Bust, chest** | do nothing: her bust is traced | Hide, or drive her bust (medium, and a thing to decide with the owner). |
 | **Garment options** | tunic neckline, sleeve and tuck options, skirt cut and length, belt cut and scale, collar cut, boot shaft and cut: chibi cuts she does not have | Hide the ones the adult versions do not read. |
-| **Garments that draw nothing** | boots, knee socks, undersleeve, wristband, shoulder bars (a coat is needed), pouch and crystals without a belt | Trace boots and knee socks first (plan step 5); hide the rest for now. |
+| **Garments that draw nothing** | ~~boots, knee socks~~ (done), undersleeve, wristband, shoulder bars (a coat is needed), pouch and crystals without a belt | Hidden by `body_ignores` (below), except what needs a parent. |
 
 The mechanism for all of this is one thing: **the catalogue has no way to say "this control does not apply to this body"**. A `bodies` list per control (absent means all) read by `web/app.js` would let the page hide or grey the controls she ignores and keep them for the chibi. Medium; it adds a field to `catalogue.json` and to the golden.
 
@@ -65,6 +65,7 @@ The page's list of hand styles shows chibi names ("Mitten (chibi)") for her. Tha
 ## Done 2026-10-19
 
 - A1 and B1 (above).
+- **Knee socks and boots** (the missing garments of C): drawn for the adult body from the legs' tables and the traced foot (`adultKneeSocks`, `adultBoots`), on `knee_sock_color`, `boot_color`, `boot_shaft` and `boot_cut`; the toes and nails are not drawn under a boot. They left the ignore list.
 - **C and D1 to D3:** the catalogue has a new key, `body_ignores`: for each body, the fields the page hides. For the adult woman it lists the 49 fields that drawing her showed to change nothing visible (found by `ts/test/ignored-fields.ts`, printed by `node harness/franzi/ignored_fields.ts`) and the three that draw something wrong on her (`hair_tail`, `hair_knot`, `waist_shift`). The page (`applyBodyIgnores` in `web/app.js`) hides those rows, a garment whose fields are all ignored, and a section left empty, and shows them again when the body is changed back: on Franzi the page shows 66 of the 121 fields and no Hair section. The list is pinned by a test against what is drawn, so it cannot drift. Not hidden, by the drawing's own answer: the finish (it thins her strokes), glasses, `brows_over_hair`, and the chibi garments of D4 and D5.
 
 ## Suggested order, if the owner wants fixes

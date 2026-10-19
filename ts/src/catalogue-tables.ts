@@ -493,9 +493,6 @@ export const BODY_HIDDEN_EXTRA: Readonly<Record<string, readonly string[]>> = {
 export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
   adult_female: sorted([
     ...BODY_HIDDEN_EXTRA["adult_female"]!,
-    "boot_color",
-    "boot_cut",
-    "boot_shaft",
     "brow_length",
     "bust",
     "chest",
@@ -519,7 +516,6 @@ export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
     "iris_aspect",
     "iris_inset",
     "iris_size",
-    "knee_sock_color",
     "lash",
     "lid_shadow",
     "mouth_drop",
