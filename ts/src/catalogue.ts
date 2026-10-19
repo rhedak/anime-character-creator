@@ -19,12 +19,14 @@
 // `catalogue-types.ts`. Both are re-exported here, so a caller imports everything from this module.
 
 import { BODY_TYPES } from "./body.ts";
-import { HAIRSTYLES } from "./core-head.ts";
+import { ADULT_BODY_TYPES } from "./body-adult.ts";
+import "./body-adult-hair.ts"; // registers the adult cut in EXTRA_HAIRSTYLES, which the preview catalogue lists
+import { EXTRA_HAIRSTYLES, HAIRSTYLES } from "./core-head.ts";
 import { FINISHES } from "./character.ts";
 import { PyInt, dumps } from "./pyjson.ts";
 import type { Json } from "./pyjson.ts";
 import { pyStrRepr, sorted } from "./pynum.ts";
-import { DISPLAY_NAMES, NEUTRAL_BASES, PRESETS } from "./presets.ts";
+import { ADULT_PRESETS, DISPLAY_NAMES, NEUTRAL_BASES, PRESETS } from "./presets.ts";
 import {
   BODY_LABELS,
   COLORS,
@@ -166,8 +168,8 @@ export function garmentJson(g: GarmentSlot): JsonObject {
  * and judged. A visitor's browser turns this into controls without ever
  * knowing what the fields mean; only `render_character` does.
  */
-export function buildCatalogue(): JsonObject {
-  return {
+export function buildCatalogue(adult = false): JsonObject {
+  const cat = {
     starting_points: {
       cast: castPoints().map((s) => ({ id: s.id, label: s.label })),
       bases: basePoints().map((s) => ({ id: s.id, label: s.label })),
@@ -195,9 +197,31 @@ export function buildCatalogue(): JsonObject {
       selects: FACE_SELECTS.map(selectJson),
     },
   };
+  return adult ? withAdult(cat) : cat;
+}
+
+/**
+ * What the adult woman adds to the catalogue, for a local preview only (`web-stage.mjs --adult`). Not in the committed catalogue, whose
+ * text is pinned: the adult body, her cut and her preset live in TypeScript-only tables (`ADULT_BODY_TYPES`, `EXTRA_HAIRSTYLES`,
+ * `ADULT_PRESETS`) until she joins the main ones (docs/adult-body-plan.md, stage 7).
+ */
+const ADULT_LABELS: Readonly<Record<string, string>> = {
+  adult_female: "Adult woman (about 6.4 heads)",
+  swept_ponytail: "Swept ponytail",
+  franzi: "Franzi",
+};
+function withAdult(cat: JsonObject): JsonObject {
+  const more = (name: string) => ({ id: name, label: lookup(ADULT_LABELS, name) });
+  const sp = cat.starting_points as { cast: Json[]; bases: Json[] };
+  return {
+    ...cat,
+    starting_points: { ...sp, cast: [...sp.cast, ...sorted(Object.keys(ADULT_PRESETS)).map(more)] },
+    bodies: [...(cat.bodies as Json[]), ...sorted(Object.keys(ADULT_BODY_TYPES)).map(more)],
+    hairstyles: [...(cat.hairstyles as Json[]), ...sorted(Object.keys(EXTRA_HAIRSTYLES)).map(more)],
+  };
 }
 
 /** The committed form: stable key order, trailing newline, diffable. */
-export function toJson(): string {
-  return `${dumps(buildCatalogue(), { indent: 2, sortKeys: false })}\n`;
+export function toJson(adult = false): string {
+  return `${dumps(buildCatalogue(adult), { indent: 2, sortKeys: false })}\n`;
 }

@@ -8,7 +8,7 @@
 
 import { renderCharacter } from "./render.ts";
 import { loadsText } from "./pyjsonload.ts";
-import { NEUTRAL_BASES, PRESETS } from "./presets.ts";
+import { ADULT_PRESETS, NEUTRAL_BASES, PRESETS } from "./presets.ts";
 import { PyError } from "./pynum.ts";
 import { decodeParams, encodeParams, paramsFromDict, paramsJsonText } from "./urlstate.ts";
 
@@ -18,9 +18,9 @@ function stateFrom(stateJson: string): ReturnType<typeof paramsFromDict> {
   return paramsFromDict(loaded as Map<string, unknown>);
 }
 
-/** The state of a starting point (a preset or a neutral base) as JSON text. */
+/** The state of a starting point (a preset, a neutral base or, for the local adult preview, an adult preset) as JSON text. */
 export function stateForStart(startId: string): string {
-  const p = PRESETS[startId] ?? NEUTRAL_BASES[startId];
+  const p = PRESETS[startId] ?? NEUTRAL_BASES[startId] ?? ADULT_PRESETS[startId];
   if (p === undefined) throw new PyError("ValueError", `no such starting point: ${startId}`);
   return paramsJsonText(p);
 }

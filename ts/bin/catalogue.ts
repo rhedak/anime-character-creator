@@ -3,20 +3,23 @@
 //
 //   node ts/bin/catalogue.ts                 to stdout
 //   node ts/bin/catalogue.ts out/cat.json    to a file (directories are created)
+//   node ts/bin/catalogue.ts --adult [PATH]  with the adult woman added, for a local preview (not the committed catalogue)
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { toJson } from "../src/catalogue.ts";
 
-const args = process.argv.slice(2);
+const all = process.argv.slice(2);
+const adult = all.includes("--adult");
+const args = all.filter((a) => a !== "--adult");
 if (args.length > 1 || args[0] === "--help" || args[0] === "-h") {
-  process.stderr.write("usage: node ts/bin/catalogue.ts [PATH]\n");
+  process.stderr.write("usage: node ts/bin/catalogue.ts [--adult] [PATH]\n");
   process.exit(args.length > 1 ? 2 : 0);
 }
 const path = args[0];
 if (path === undefined) {
-  process.stdout.write(toJson());
+  process.stdout.write(toJson(adult));
 } else {
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, toJson(), "utf8");
+  writeFileSync(path, toJson(adult), "utf8");
 }
