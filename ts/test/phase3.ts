@@ -61,13 +61,3 @@ export function fromTagged(x: Tagged): unknown {
     default: throw new Error(`unknown tag ${x.t}`);
   }
 }
-
-/** The text of each whole-line comment of a source file, in order (`#` in Python, `//` in TS), for the parity checks. */
-export function commentLines(source: string, marker: "#" | "//"): string[] {
-  const out: string[] = [];
-  for (const line of source.split("\n")) {
-    const t = line.trimStart();
-    if (t.startsWith(marker)) out.push(t.slice(marker.length).trim());
-  }
-  return out;
-}

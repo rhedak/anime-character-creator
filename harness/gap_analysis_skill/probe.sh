@@ -17,8 +17,8 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root="$(cd "$here/../../.." && pwd)"
 
-if [ ! -x "$root/.venv/bin/python" ]; then
-    echo "no .venv here; create one with:  uv sync" >&2
+if [ ! -x "$root/tools/.venv/bin/python" ]; then
+    echo "no .venv here; create one with:  uv sync --project tools" >&2
     exit 1
 fi
 
@@ -28,4 +28,4 @@ fi
 # caller stood.** Called from elsewhere, pass absolute paths, which work
 # unchanged.
 cd "$root"
-exec "$root/.venv/bin/python" "$here/probe.py" "$@"
+exec "$root/tools/.venv/bin/python" "$here/probe.py" "$@"

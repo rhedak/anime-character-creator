@@ -2,8 +2,6 @@
 // tells an int from a float in each of the 134 fields), and the tables around them.
 
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { test } from "node:test";
 import { ADULT_FACE_AGE } from "../src/model.ts";
 import {
@@ -23,8 +21,7 @@ import {
 import { SUPPORTING } from "../src/supporting.ts";
 import { dumps } from "../src/pyjson.ts";
 import { dataclassJson, paramsJsonText } from "../src/urlstate.ts";
-import { REPO_ROOT, TS_ROOT } from "./fixtures.ts";
-import { commentLines, fixture } from "./phase3.ts";
+import { fixture } from "./phase3.ts";
 
 const fx = fixture("presets.json");
 
@@ -91,14 +88,3 @@ test("Kyoko and Tomohiro differ from Satoko and Satoshi in the three disguise fi
   assert.equal(PRESETS.satoko!.face.scar_side, 1);
 });
 
-// The comments are the design record. The Python's whole-line comments are all still here, in order, text for text
-// (the module header and the two docstrings became `//` and `/** */` blocks, which have no `#` counterpart).
-const pyPath = join(REPO_ROOT, "src/anime_character_creator/presets.py");
-test("presets.ts keeps every whole-line comment of presets.py, in order", { skip: !existsSync(pyPath) && "the Python source is gone" }, () => {
-  const py = commentLines(readFileSync(pyPath, "utf8"), "#");
-  const ts = readFileSync(join(TS_ROOT, "src/presets.ts"), "utf8");
-  const body = ts.slice(ts.indexOf("export const MAN_LASH") - 400);
-  const got = commentLines(body.slice(body.indexOf("// The men's upper lash")), "//");
-  const norm = (s: string): string => s.replace("(ch1/ch2) \u2014 these people", "(ch1/ch2), these people");
-  assert.deepEqual(got, py.map(norm));
-});

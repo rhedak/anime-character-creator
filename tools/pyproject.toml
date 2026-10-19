@@ -1,0 +1,21 @@
+[project]
+name = "anime-character-creator-tools"
+version = "0.0.0"
+description = "The Python the repository still needs once the drawing is TypeScript: PNG export and the reference-tracing scripts"
+requires-python = ">=3.11"
+dependencies = [
+    # PNG export: the committed renders under ref-out/ are what cairosvg makes from the TypeScript's SVG, so
+    # these are pinned to the versions that made them. A new cairosvg or Pillow can move pixels; bump on purpose
+    # and run `./refresh-ref-out.sh --pixels`.
+    "cairosvg==2.9.0",
+    "pillow==12.3.0",
+    # Reference tracing (`harness/`, the `trace-reference` skill's `trace_lib.py`).
+    "numpy==2.4.6",
+    "scipy==1.17.1",
+]
+
+# A set of tools, not a package: nothing here is built or installed, only the dependencies.
+[tool.uv]
+package = false
+# The rest of the cairosvg chain at the versions the root lock had, so the same pixels come out.
+constraint-dependencies = ["cssselect2==0.9.0", "webencodings==0.5.1", "tinycss2==1.5.1", "cairocffi==1.7.1", "defusedxml==0.7.1"]

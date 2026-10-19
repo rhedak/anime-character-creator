@@ -41,7 +41,7 @@
 #
 # Who draws what: the characters (SVG) come from the TypeScript package, `ts/bin/render.ts`,
 # which is the source of truth for the drawing. Each PNG, and the on-white PNG, is then made
-# from that SVG by cairosvg in Python (`harness/svg2png.py`, through the project's .venv), so
+# from that SVG by cairosvg in Python (`harness/svg2png.py`, through tools/.venv), so
 # the PNGs are what the Python CLI made from the same SVG, pixel for pixel. The three pages
 # (cover, sheet, sheet_satoshi) stay on the frozen Python, through `cover.sh` and `sheet.sh`.
 #
@@ -50,9 +50,9 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-py="$root/.venv/bin/python"
+py="$root/tools/.venv/bin/python"
 if [ ! -x "$py" ]; then
-    echo "no .venv here; create one with:  uv sync" >&2
+    echo "no tools/.venv here; create one with:  uv sync --project tools" >&2
     exit 1
 fi
 if ! command -v node >/dev/null 2>&1; then

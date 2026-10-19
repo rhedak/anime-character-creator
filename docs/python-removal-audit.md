@@ -8,6 +8,18 @@ commit, so the history is safe whatever is decided here.
 Doing it is sound, and it unlocks real things (below). It is not one change but six, and the order matters because the Python currently does five jobs besides drawing, three of which
 have no TypeScript replacement. One of the five has a consumer that is not in this repository and has to be asked about first.
 
+## Decisions (owner, 2026-10-19)
+
+1. **Cover and sheets are ported to TypeScript. The comic package is dropped.** The port has to land before the Python is deleted, because the Python `cover.py`/`sheet.py` output is the oracle to compare the port against (the six files in `ref-out/` are the first golden: `cover`, `sheet`, `sheet_satoshi`, SVG and PNG). `ROSTERS` moves with `sheet.py`. Nothing is frozen.
+2. **`render.sh`, `cover.sh`, `sheet.sh` and `sheet_satoshi.sh` are dropped**, with the Python. The sibling consumers are checked by the owner in separate sessions; the `python-final` tag keeps the scripts runnable for them.
+3. **The 182 harness scripts that import the package are deleted** (they are in the history). The 136 that need only numpy, scipy, pillow and cairosvg stay.
+
+## Progress
+
+- Stage 2 done: `tools/` is a small uv project (cairosvg 2.9.0, pillow 12.3.0, numpy 2.4.6, scipy 1.17.1, and the rest of the cairosvg chain at the versions the root lock had). `refresh-ref-out.sh`, `refresh-bases.sh`, `harness/run.sh` and `probe.sh` use it. `./refresh-ref-out.sh --pixels` reports 0 of 43 PNGs differ, `--check` of bases and catalogue clean. Create it with `uv sync --project tools`.
+- Stage 3 done: the live-Python comparisons in `cli.test.ts` and `catalogue.test.ts`, and the three tests that read the Python source for comment parity (`presets`, `supporting`, `catalogue`), are gone; the options tests (finish, highlight strength, background, id prefix) are TypeScript-only now. The committed fixtures are the golden files.
+- Found on the way: `--id-prefix` takes the prefix through a replacement template, as the Python did, so a prefix containing a backslash and a digit (`back\1`) is mangled. Harmless for the ids the tools use; not pinned by a test.
+
 ## What the Python does today
 
 | job | where | has a TypeScript replacement? |
@@ -56,7 +68,7 @@ The generators that made them (`harness/ts_port/gen_*.py`, `cases.py`, `manifest
 
 Each stage is its own commit (or few), green on its own, and only the last one deletes anything.
 
-1. **Decide** (owner). (a) What happens to cover, sheets and comic: port, freeze the six files, or drop. (b) Who is the sibling consumer, and does it need `render.sh`, `cover.sh`, `sheet.sh` after the next release. (c) Whether the 182 historical harness scripts are kept as records (needing the `python-final` tag to run) or removed.
+1. **Decide** (owner; done, see Decisions above). (a) What happens to cover, sheets and comic: port, freeze the six files, or drop. (b) Who is the sibling consumer, and does it need `render.sh`, `cover.sh`, `sheet.sh` after the next release. (c) Whether the 182 historical harness scripts are kept as records (needing the `python-final` tag to run) or removed.
 2. **Separate the PNG toolchain.** A small Python project (or `uv run --with`) holding cairosvg, pillow, numpy and scipy, not the package; point the two refresh scripts and the harness runner at it. `pyproject.toml` keeps working meanwhile. Nothing deleted.
 3. **Cut the TypeScript tests loose from live Python.** Delete the Python comparisons in `cli.test.ts` and `catalogue.test.ts` (fix the hard-coded path while there); keep the committed fixtures as golden. Gate: `npm test` without a `.venv`.
 4. **Handle cover, sheets and comic** as decided in stage 1. If frozen: take the three pages out of `refresh-ref-out.sh` and its `--check`, keep the six files, and say in the README that they are not regenerated. If ported: that is its own project.

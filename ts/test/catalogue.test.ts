@@ -4,8 +4,7 @@
 
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -36,7 +35,6 @@ import {
 import { dumps } from "../src/pyjson.ts";
 import { PyError } from "../src/pynum.ts";
 import { REPO_ROOT, TS_ROOT } from "./fixtures.ts";
-import { commentLines } from "./phase3.ts";
 
 interface Expected {
   text: string;
@@ -66,21 +64,6 @@ test("toJson() is the text Python's to_json() produced (fixture), with its sha25
   assert.equal(expected.text, committed, "the fixture is stale against ref-out/catalogue.json");
 });
 
-const PYTHON = process.env.CATALOGUE_PYTHON ?? "/Users/hanssen.henrik/git/self-study/anime-character-creator-dev/.venv/bin/python";
-const SCRIPT = join(REPO_ROOT, "harness", "ts_port", "gen_catalogue_expected.py");
-test(
-  "toJson() is a fresh Python run's to_json() (runs the expected-fixture script with --print)",
-  { skip: !existsSync(PYTHON) && `no Python at ${PYTHON} (set CATALOGUE_PYTHON)` },
-  () => {
-    const run = spawnSync(PYTHON, [SCRIPT, "--print"], { encoding: "utf8", env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" } });
-    assert.equal(run.status, 0, run.stderr);
-    const fresh = JSON.parse(run.stdout) as Expected;
-    assert.ok(toJson() === fresh.text, "differs from a fresh Python run");
-    assert.equal(createHash("sha256").update(toJson(), "utf8").digest("hex"), fresh.sha256);
-    // the committed fixture is current
-    assert.deepEqual(fresh, expected, "ts/fixtures/catalogue-expected.json is stale: run gen_catalogue_expected.py");
-  },
-);
 
 test("the starting points and the helpers the tests name are Python's", () => {
   assert.deepEqual(castPoints().map((s) => [s.id, s.label]), expected.cast_points);
@@ -138,18 +121,3 @@ test("a label table is read like a dict: a missing key is a KeyError with the ke
   assert.throws(() => lookup(BODY_LABELS, "toString"), (e: unknown) => e instanceof PyError && e.pyType === "KeyError");
 });
 
-// The Python's whole-line comments are the design record. Every one is in the TypeScript, in one of the three files.
-const pyPath = join(REPO_ROOT, "src/anime_character_creator/catalogue.py");
-test("catalogue.ts, catalogue-types.ts and catalogue-tables.ts keep every whole-line comment of catalogue.py", { skip: !existsSync(pyPath) && "the Python source is gone" }, () => {
-  const py = commentLines(readFileSync(pyPath, "utf8"), "#");
-  const ts = ["catalogue.ts", "catalogue-types.ts", "catalogue-tables.ts"].flatMap((f) => commentLines(readFileSync(join(TS_ROOT, "src", f), "utf8"), "//"));
-  const pool = new Map<string, number>();
-  for (const c of ts) pool.set(c, (pool.get(c) ?? 0) + 1);
-  const missing: string[] = [];
-  for (const c of py) {
-    const n = pool.get(c) ?? 0;
-    if (n === 0) missing.push(c);
-    else pool.set(c, n - 1);
-  }
-  assert.deepEqual(missing, []);
-});

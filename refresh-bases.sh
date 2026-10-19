@@ -20,9 +20,9 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-py="$root/.venv/bin/python"
+py="$root/tools/.venv/bin/python"
 if [ ! -x "$py" ]; then
-    echo "no .venv here; create one with:  uv sync" >&2
+    echo "no tools/.venv here; create one with:  uv sync --project tools" >&2
     exit 1
 fi
 if ! command -v node >/dev/null 2>&1; then
