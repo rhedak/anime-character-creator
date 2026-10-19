@@ -8,6 +8,7 @@ import { OUTLINE, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { LEG_INNER, LEG_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BLOUSE, ADULT_BLOUSE_LINES } from "./body-adult-blouse-data.ts";
+import { ADULT_BOW } from "./body-adult-bow-data.ts";
 import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
 import { DEFAULT_TAPER, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
@@ -155,19 +156,39 @@ export function adultSkirt(sk: Skeleton, p: CharacterParams): string {
 
 /**
  * The apron on `apron_color`: the red apron of ref 00, narrower and shorter than the skirt so a band of it shows round the hem, with its sash at the waist. One flat
- * colour; the sash's lower edge is a line. The bow of the reference is not drawn yet.
+ * colour; the sash's lower edge is a line, and the bow with its two tails hangs from the sash's right side.
  */
 export function adultApron(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.apron_color === null) return "";
   const { cx, y, w } = place(sk);
   const d = chainPath(sk, ADULT_APRON);
-  const lineAttrs = `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)) * 0.67)}" stroke-linecap="round" stroke-linejoin="round"`;
-  // The sash's lower edge, read off the reference (the darkest pixel of each column below the sash): sagging toward the middle, then across it.
-  const half: [number, number][] = [[0.4, 1.345], [0.318, 1.372], [0.233, 1.403], [0.148, 1.418], [0.05, 1.423], [0, 1.424]];
-  const pts: Pt[] = [...half.map(([v, dd]) => [cx - w(dd, v), y(dd)] as Pt), ...half.slice(0, -1).reverse().map(([v, dd]) => [cx + w(dd, v), y(dd)] as Pt)];
-  const sash = `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" ${lineAttrs} />`;
-  const clip = `<clipPath id="adult-apron-clip"><path d="${d}" /></clipPath>`;
-  return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.apron_color))} />${clip}<g clip-path="url(#adult-apron-clip)">${sash}</g>`;
+  // The sash: a band over the waist from the apron's top to its lower edge, as wide as the blouse at that depth (the owner: it has to reach the blouse's outline on both sides), so it
+  // covers the blouse's side where the apron, narrower there, would leave a strip of it. Its sides follow the blouse's half-width (0.368 H at the top, 0.365 at 1.30, 0.378 at 1.345,
+  // measured on the traced blouse); its top is the apron's own (a little lower at the middle); its lower edge is read off the reference (the darkest pixel of each column below the
+  // sash), sagging toward the middle.
+  const side: [number, number][] = [[0.368, 1.276], [0.365, 1.3], [0.378, 1.345]];
+  const lower: [number, number][] = [[0.378, 1.345], [0.318, 1.372], [0.233, 1.403], [0.148, 1.418], [0.05, 1.423], [0, 1.424]];
+  const P = (sign: number, [v, dd]: [number, number]): Pt => [cx + sign * w(dd, v), y(dd)];
+  const topL = P(-1, side[0] as [number, number]);
+  const topR = P(1, side[0] as [number, number]);
+  const sashPath =
+    `M ${fmt1(topL[0])} ${fmt1(topL[1])} ` +
+    `Q ${fmt1(cx)} ${fmt1(topL[1] + 2 * (y(1.2983) - topL[1]))} ${fmt1(topR[0])} ${fmt1(topR[1])} ` +
+    smooth(side.map((q) => P(1, q))) +
+    smooth([...lower.map((q) => P(1, q)), ...lower.slice(0, -1).reverse().map((q) => P(-1, q))]) +
+    smooth([...side].reverse().map((q) => P(-1, q))) +
+    "Z";
+  // The bow: two tails, two loops and the knot over them, in the apron's own colour, told apart by their outlines (the shapes are body-adult-bow-data.ts's, read off ref 00).
+  const fill = colorStr(p.outfit.apron_color);
+  const mapPt = (q: readonly [number, number]): Pt => [cx + w(q[1], q[0]), y(q[1])];
+  const bow = Object.values(ADULT_BOW)
+    .map((runs) => {
+      const first = mapPt(runs[0]![0]!);
+      const path = `M ${fmt1(first[0])} ${fmt1(first[1])} ` + runs.map((run) => smooth(run.map(mapPt))).join("") + "Z";
+      return `<path d="${path}" fill="${fill}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)) * 0.8)}" stroke-linejoin="round" />`;
+    })
+    .join("");
+  return `<path d="${d}" ${inkAttrs(sk, fill)} /><path id="adult-apron-sash" d="${sashPath}" ${inkAttrs(sk, fill)} />${bow}`;
 }
 
 /** The legs' slot on an adult body: the briefs (always worn), then what is worn over them. */
@@ -179,10 +200,18 @@ export function adultLegsAndGarments(sk: Skeleton, p: CharacterParams): string {
 /** The chibi's underskirt is drawn from its own anchors and has no adult version yet, so it is not drawn on an adult body. */
 const none = (): string => "";
 
+/**
+ * Worn with a skirt, the blouse is tucked in, so it is drawn with the skirt, in the skirt's own layer and before it, and not in the chest layers, which come after the skirt and would
+ * lay the blouse's hem over it (it showed as white strips along the apron's edge, the owner). The skirt then covers the blouse from the waist down. Without a skirt the blouse is in the
+ * chest layers as usual, over the shorts.
+ */
+const tuckedBlouse = (sk: Skeleton, p: CharacterParams): string => (p.outfit.skirt_color === null ? "" : adultBlouse(sk, p));
+const looseBlouse = (sk: Skeleton, p: CharacterParams): string => (p.outfit.skirt_color === null ? adultBlouse(sk, p) : "");
+
 export const ADULT_GARMENT_PARTS = {
   _legs_and_boots: adultLegsAndGarments,
-  _tunic: adultBlouse,
-  _skirt: adultSkirt,
+  _tunic: looseBlouse,
+  _skirt: (sk: Skeleton, p: CharacterParams): string => tuckedBlouse(sk, p) + adultSkirt(sk, p),
   _underskirt: none,
   _apron: adultApron,
 };

@@ -167,7 +167,7 @@ test("the adult skirt and apron: drawn on skirt_color and apron_color, the arms 
   assert.ok(skirt.indexOf('id="adult-arm-strip"') > skirt.indexOf('fill="#2b5a37"'), "the arms are drawn after the skirt");
   const both = renderCharacter(wearing({ skirt_color: "#2b5a37", apron_color: "#7d1f27" }), null, null, false);
   assert.ok(both.indexOf('fill="#7d1f27"') > both.indexOf('fill="#2b5a37"'), "the apron is over the skirt");
-  assert.ok(both.includes('id="adult-apron-clip"'));
+  assert.ok(both.includes('id="adult-apron-sash"'));
   // the chibi underskirt is not drawn on her
   assert.equal(renderCharacter(wearing({ skirt_color: "#2b5a37", underskirt_color: "#ffffff" }), null, null, false), skirt);
 });
@@ -182,3 +182,16 @@ for (const finish of ["flat", "soft"] as const) {
     assert.ok(svg.length < 400_000, `${svg.length} bytes`);
   });
 }
+
+test("worn with a skirt the blouse is tucked in: drawn before the skirt, so it does not lie over it; the apron and its bow come after both", () => {
+  const svg = renderCharacter(wearing({ tunic_color: "#faf8f4", skirt_color: "#2b5a37", apron_color: "#7d1f27" }), null, null, false);
+  const blouse = svg.indexOf('fill="#faf8f4"');
+  const skirt = svg.indexOf('fill="#2b5a37"');
+  const apron = svg.indexOf('fill="#7d1f27"');
+  assert.ok(blouse >= 0 && skirt > blouse && apron > skirt, `blouse ${blouse}, skirt ${skirt}, apron ${apron}`);
+  // the bow: its shapes are drawn in the apron's colour with outlines, after the apron itself
+  assert.ok((svg.match(/fill="#7d1f27" stroke="#0d0d0d"/g) ?? []).length >= 6, "two tails, two loops, the knot and the apron");
+  // without a skirt the blouse stays in the chest layers, over the shorts
+  const loose = renderCharacter(wearing({ tunic_color: "#faf8f4", trouser_color: "#efe9dc" }), null, null, false);
+  assert.ok(loose.indexOf('fill="#faf8f4"') > loose.indexOf('fill="#efe9dc"'));
+});
