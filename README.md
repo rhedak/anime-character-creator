@@ -66,6 +66,14 @@ are Krista and Chiyo, whose references lean hardest on a head accessory.
 | --- | --- | --- | --- |
 | <img src="ref-out/on-white/linnea.png" width="140" alt="Linnea"> | <img src="ref-out/on-white/dritan.png" width="140" alt="Dritan"> | <img src="ref-out/on-white/lindita.png" width="140" alt="Lindita"> | <img src="ref-out/on-white/risa.png" width="140" alt="Risa"> |
 
+| Franzi |
+| --- |
+| <img src="ref-out/on-white/franzi.png" width="140" alt="Franzi"> |
+
+Franzi is the first character on the adult woman's body (`adult_female`, about 6.4 heads tall, a figure traced from reference
+images rather than the tall chibi), drawn here in her underwear; her blouse, shorts, skirt and apron, and the dirndl's bodice,
+are options on the same controls (`docs/franzi-outfits-plan.md`).
+
 There are two finishes. **Flat** is the house style, the default, and what every preset, cover and
 sheet uses: flat colour, hard edges, one black line. **Soft** is an opt-in for a figure that has to
 sit beside painted art: gradients in the iris and blush, tinted lines, and tone clumps in the hair on

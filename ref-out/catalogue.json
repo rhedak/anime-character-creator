@@ -18,6 +18,10 @@
         "label": "Elara Sturm"
       },
       {
+        "id": "franzi",
+        "label": "Franzi"
+      },
+      {
         "id": "gero",
         "label": "Gero"
       },
@@ -94,6 +98,10 @@
     ]
   },
   "bodies": [
+    {
+      "id": "adult_female",
+      "label": "Adult woman (about 6.4 heads)"
+    },
     {
       "id": "tall_chibi",
       "label": "Tall chibi (Katherina's)"
@@ -215,6 +223,10 @@
     {
       "id": "short_tousled",
       "label": "Short, tousled"
+    },
+    {
+      "id": "swept_ponytail",
+      "label": "Swept ponytail"
     }
   ],
   "finishes": [
@@ -603,6 +615,15 @@
         "optional": true
       },
       "requires": "belt"
+    },
+    {
+      "id": "bodice",
+      "label": "Bodice (adult woman only)",
+      "color": {
+        "field": "bodice_color",
+        "label": "Bodice",
+        "optional": true
+      }
     },
     {
       "id": "collar",

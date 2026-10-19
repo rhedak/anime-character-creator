@@ -240,7 +240,7 @@ export function tousleFallEdges(tip: number): Chain[] {
 }
 
 /** The cuts by name. A null-prototype object, so that a name like `constructor` is a missing cut, not an inherited one. */
-export const HAIRSTYLES: Readonly<Record<string, Hairstyle>> = Object.assign(Object.create(null) as Record<string, Hairstyle>, {
+export const HAIRSTYLES: Record<string, Hairstyle> = Object.assign(Object.create(null) as Record<string, Hairstyle>, {
   long_blunt: makeHairstyle(hairMassShape, hairlineShape, longFallEdges, hairTipEdge, {
     strands: longStrands,
     covers_ears: true,
@@ -306,18 +306,12 @@ export const HAIRSTYLES: Readonly<Record<string, Hairstyle>> = Object.assign(Obj
 });
 
 /**
- * Cuts with no Python counterpart (the adult body's, `body-adult-hair.ts`). Kept apart from `HAIRSTYLES`, which mirrors the
- * frozen Python and is enumerated by the catalogue and its tests; `hairstyleFor` reads both.
- */
-export const EXTRA_HAIRSTYLES: Record<string, Hairstyle> = Object.create(null) as Record<string, Hairstyle>;
-
-/**
  * `HAIRSTYLES[name]`: a name that is not a cut raises `KeyError` with the repr of the key, and a list or dict raises
  * `TypeError` (unhashable), as the dictionary does.
  */
 export function hairstyleFor(name: unknown): Hairstyle {
   if (typeof name === "string") {
-    const style = HAIRSTYLES[name] ?? EXTRA_HAIRSTYLES[name];
+    const style = HAIRSTYLES[name];
     if (style !== undefined) return style;
   } else if (Array.isArray(name) || name instanceof Map || (typeof name === "object" && name !== null && !(name instanceof PyInt) && !(name instanceof PyFloat))) {
     throw new PyError("TypeError", `unhashable type: '${pyTypeName(name)}'`);

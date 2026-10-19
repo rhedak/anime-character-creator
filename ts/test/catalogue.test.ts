@@ -121,12 +121,9 @@ test("a label table is read like a dict: a missing key is a KeyError with the ke
   assert.throws(() => lookup(BODY_LABELS, "toString"), (e: unknown) => e instanceof PyError && e.pyType === "KeyError");
 });
 
-
-test("the adult preview catalogue adds Franzi, her body and her cut, and the default one is unchanged", () => {
-  assert.equal(toJson(false), committed);
-  const adult = buildCatalogue(true) as { starting_points: { cast: { id: string }[] }; bodies: { id: string }[]; hairstyles: { id: string }[] };
-  assert.ok(adult.starting_points.cast.some((s) => s.id === "franzi"));
-  assert.ok(adult.bodies.some((b) => b.id === "adult_female"));
-  assert.ok(adult.hairstyles.some((h) => h.id === "swept_ponytail"));
-  assert.ok(!(buildCatalogue() as { bodies: { id: string }[] }).bodies.some((b) => b.id === "adult_female"));
+test("the catalogue offers Franzi, her body and her cut", () => {
+  const cat = buildCatalogue() as { starting_points: { cast: { id: string; label: string }[] }; bodies: { id: string }[]; hairstyles: { id: string }[] };
+  assert.deepEqual(cat.starting_points.cast.find((s) => s.id === "franzi"), { id: "franzi", label: "Franzi" });
+  assert.ok(cat.bodies.some((b) => b.id === "adult_female"));
+  assert.ok(cat.hairstyles.some((h) => h.id === "swept_ponytail"));
 });

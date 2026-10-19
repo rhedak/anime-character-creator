@@ -4,7 +4,9 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import { characterParams, replace } from "../src/model.ts";
+import type { CharacterParams } from "../src/params.ts";
 import { NEUTRAL_BASES, PRESETS } from "../src/presets.ts";
 import { renderCharacter } from "../src/render.ts";
 import { PRESET_NAMES, assertRaises, soft } from "./rules-util.ts";
@@ -38,6 +40,7 @@ for (const name of PRESET_NAMES) {
     fromstring(svg);
     // cairosvg writes the PNGs and has no gaussian blur: the finish is gradients only.
     assert.ok(!svg.includes("feGaussianBlur"));
-    assert.ok(svg.includes("linearGradient") && svg.includes("radialGradient"));
+    // The adult woman's parts draw the one finish: the soft finish's gradients are the chibi head's and hair's, and she has her own head, hair and body.
+    if (!Object.hasOwn(ADULT_BODY_TYPES, (PRESETS[name] as CharacterParams).body)) assert.ok(svg.includes("linearGradient") && svg.includes("radialGradient"));
   });
 }

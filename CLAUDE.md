@@ -185,7 +185,8 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
   when a change moves the SVG text and no visible pixel). A stale `ref-out/` after a deliberate shape change means running `./refresh-ref-out.sh`, not
   editing the expectation.
 - **The oracle is the recorded Python output.** The corpus manifest, the recorded calls and `ref-out/` say what the
-  Python drew, so a change that moves a byte of an existing character's output makes the TypeScript tests fail on purpose.
+  Python drew (they were brought up to date once, on 2026-10-19, for Franzi and the `bodice_color` field, by mechanical rules checked against the
+  old output: `harness/ts_port/golden-updates-stage7/README.md`), so a change that moves a byte of an existing character's output makes the TypeScript tests fail on purpose.
   Do not edit the manifest, the recorded fixtures or `ref-out/` to make a failure pass without the owner's say. A new
   part, option or character should default to nothing (a `null` field, a part that returns `""`), so every existing
   document stays byte-identical. New realism work stays behind `finish = "soft"` (flat is the house style and does

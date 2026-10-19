@@ -5,7 +5,7 @@
 //   node ts/bin/render.ts --out out/x --preset risa --finish soft --highlight-strength 0.7 --background white --no-metadata
 //   node ts/bin/render.ts --list            the names --preset takes, one line (--list-presets, --list-bases: one kind)
 //
-// What it has: --preset (a name from PRESETS or NEUTRAL_BASES, or an ADULT_PRESETS name, which --list does not show), --out (a path prefix, no extension; directories are
+// What it has: --preset (a name from PRESETS or NEUTRAL_BASES), --out (a path prefix, no extension; directories are
 // created), --background (any SVG paint), --metadata / --no-metadata, --finish, --highlight-strength and --id-prefix.
 // `generate.py` has no --id-prefix, --params-json or --link; the first is added here because `render_character` takes it
 // and a page of several figures needs it, the other two do not exist in the Python and are not invented.
@@ -20,7 +20,7 @@ import { dirname, extname } from "node:path";
 import { parseArgs } from "node:util";
 import { FINISHES, characterParams, replace, validateFinish } from "../src/model.ts";
 import type { CharacterParams } from "../src/params.ts";
-import { ADULT_PRESETS, NEUTRAL_BASES, PRESETS } from "../src/presets.ts";
+import { NEUTRAL_BASES, PRESETS } from "../src/presets.ts";
 import { PyError, pyFloat } from "../src/pynum.ts";
 import { renderCharacter } from "../src/render.ts";
 
@@ -68,7 +68,7 @@ function main(): void {
 
   let base: CharacterParams | undefined;
   if (values.preset !== undefined) {
-    base = starts[values.preset] ?? ADULT_PRESETS[values.preset]; // an adult preset is taken by name but not listed (stage 7 lists it)
+    base = starts[values.preset];
     if (base === undefined) fail(`argument --preset: invalid choice: '${values.preset}' (choose from ${Object.keys(starts).sort().map((n) => `'${n}'`).join(", ")})`);
   }
   if (values.finish !== undefined && !FINISHES.some((f) => f === values.finish)) {

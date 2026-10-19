@@ -14,6 +14,7 @@ import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
 import { DEFAULT_TAPER, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
 import { shade, tint } from "./colorutil.ts";
+import { strap } from "./garments.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2, truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
@@ -197,11 +198,10 @@ export function adultApron(sk: Skeleton, p: CharacterParams): string {
  * with a notch at the front, with the lacing (a ribbon from each button to the next row's button on the other side, and one across the top) and the sixteen gold buttons, two columns
  * of eight. One flat colour; the laces are a darker tone of it, the buttons gold with a small lighter highlight (small elements, so a second tone is allowed).
  *
- * Not wired to a field yet: a new outfit field would change every pinned fixture, so `bodice_color` waits for the Python removal (docs/python-removal-audit.md). Until then this is drawn
- * by the harness (harness/franzi/franzi.ts, BODICE=#hex) and has no slot. `hem` is the depth, in head heights below the chin, where the bodice is cut off when something lies over its
- * lower part (the sash at 1.34, a skirt's top at 1.315); null draws the whole bodice, down to the hips as in the reference.
+ * `hem` is the depth, in head heights below the chin, where the bodice is cut off when something lies over its lower part (the sash at 1.34, a skirt's top at 1.315); null draws the
+ * whole bodice, down to the hips as in the reference. `adultBodice` draws it from `Outfit.bodice_color`.
  */
-export function adultBodice(sk: Skeleton, color: string, hem: number | null = null): string {
+export function adultBodiceCloth(sk: Skeleton, color: string, hem: number | null = null): string {
   const { cx, y, w } = place(sk);
   const ink = outlineW(strokeW(sk));
   const d = chainPath(sk, ADULT_BODICE);
@@ -236,11 +236,18 @@ export function adultBodice(sk: Skeleton, color: string, hem: number | null = nu
 }
 
 /**
- * A blouse is tucked in when the outfit says so (`tunic_tucked`) or a skirt is worn (the skirt is drawn before the chest layers, so an untucked blouse would lay its hem over it and show as
+ * A blouse is tucked in when the outfit says so (`tunic_tucked`), or a skirt or a bodice is worn (a bodice ends above the blouse's hem) (the skirt is drawn before the chest layers, so an untucked blouse would lay its hem over it and show as
  * white strips along the apron's edge, the owner). A tucked blouse is drawn in the legs' layer, after the briefs and before the shorts or the skirt, which then cover its lower part; an untucked
  * one is in the chest layers, over everything below the waist (as in ref 02, the blouse over the shorts).
  */
-const tucked = (p: CharacterParams): boolean => p.outfit.tunic_color !== null && (truthy(p.outfit.tunic_tucked) || p.outfit.skirt_color !== null);
+const tucked = (p: CharacterParams): boolean => p.outfit.tunic_color !== null && (truthy(p.outfit.tunic_tucked) || p.outfit.skirt_color !== null || p.outfit.bodice_color !== null);
+
+/** The bodice on `bodice_color`, cut at the sash or the skirt's top when one is worn. */
+export function adultBodice(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.bodice_color === null) return "";
+  const hem = p.outfit.apron_color !== null ? 1.34 : p.outfit.skirt_color !== null ? 1.315 : null;
+  return adultBodiceCloth(sk, p.outfit.bodice_color, hem);
+}
 
 /** The legs' slot on an adult body: the briefs (always worn), a tucked blouse, then what is worn over them. */
 export function adultLegsAndGarments(sk: Skeleton, p: CharacterParams): string {
@@ -256,5 +263,7 @@ export const ADULT_GARMENT_PARTS = {
   _tunic: (sk: Skeleton, p: CharacterParams): string => (tucked(p) ? "" : adultBlouse(sk, p)),
   _skirt: adultSkirt,
   _underskirt: none,
+  // the strap's slot, which comes before the apron's in the chest layers: the bodice, then the cross-body strap of the shared garments
+  _strap: (sk: Skeleton, p: CharacterParams): string => adultBodice(sk, p) + strap(sk, p),
   _apron: adultApron,
 };

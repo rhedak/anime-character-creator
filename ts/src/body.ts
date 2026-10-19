@@ -38,6 +38,7 @@ const tallChibi: BodyProfile = profile(3.47, {
 
 /** Body profiles by name. `tall_chibi` is measured; the other two are laid out in character.py's comments. */
 export const BODY_TYPES: Readonly<Record<string, BodyProfile>> = {
+  ...ADULT_BODY_TYPES,
   tall_chibi: tallChibi,
   tall_chibi_long_torso: headScaled(
     { ...tallChibi, waist_y: (tallChibi.waist_y as number) + 0.5, hip_y: (tallChibi.hip_y as number) + 0.5 },
@@ -86,7 +87,7 @@ export function hatHairMargin(p: CharacterParams): number {
 function skeletonAt(p: CharacterParams): Skeleton {
   const heads = BUILDS.chibi as number;
   let margin = hatHairMargin(p);
-  const bodyProfile = BODY_TYPES[p.body] ?? ADULT_BODY_TYPES[p.body];
+  const bodyProfile = BODY_TYPES[p.body];
   if (bodyProfile === undefined) throw new PyError("KeyError", pyValueRepr(p.body));
   // The hair always draws at the chibi build under a profile, so it needs the chibi build's own headroom.
   margin = pyMax(margin, defaultHairMargin(heads));

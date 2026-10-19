@@ -6,6 +6,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import { HAIRSTYLES, type Lock } from "../src/core-head.ts";
 import { replace } from "../src/model.ts";
 import type { CharacterParams } from "../src/params.ts";
@@ -21,6 +22,8 @@ const AUTHORED = Object.keys(HAIRSTYLES)
 // Per soft document, in bytes. A guard against runaway output, not a design limit (the Python's own note: raise it on
 // purpose, with the frame-time check re-run, not to silence a failure).
 const BYTE_BUDGET = 150_000;
+/** The adult woman's drawing is a 46 KB body outline, traced hands and feet and traced hair, and weighs 184 KB (docs/adult-body-status.md); her own limit is 400 KB (ts/test/adult-body.test.ts). */
+const ADULT_BYTE_BUDGET = 400_000;
 const bytes = (s: string): number => Buffer.byteLength(s, "utf8");
 const FRONT_GROUP = '<g clip-path="url(#hair-front)">';
 
@@ -41,7 +44,8 @@ test("test_a_cut_without_locks_draws_exactly_as_it_did", () => {
 for (const name of PRESET_NAMES) {
   test(`test_every_preset_stays_within_the_byte_budget_soft[${name}]`, () => {
     const n = bytes(soft(name));
-    assert.ok(n <= BYTE_BUDGET, `${name} is ${n} bytes`);
+    const budget = Object.hasOwn(ADULT_BODY_TYPES, (PRESETS[name] as CharacterParams).body) ? ADULT_BYTE_BUDGET : BYTE_BUDGET;
+    assert.ok(n <= budget, `${name} is ${n} bytes`);
   });
 }
 

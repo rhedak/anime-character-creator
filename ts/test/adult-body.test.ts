@@ -7,8 +7,8 @@ import { test } from "node:test";
 import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import { BODY_TYPES, skeletonFor } from "../src/body.ts";
 import { ADULT_FACE_AGE, characterParams, outfit, replace } from "../src/model.ts";
-import { ADULT_PRESETS, FRANZI, PRESETS } from "../src/presets.ts";
-import { ADULT_GARMENT_PARTS, adultBodice } from "../src/body-adult-garments.ts";
+import { FRANZI, PRESETS } from "../src/presets.ts";
+import { adultBodiceCloth } from "../src/body-adult-garments.ts";
 import { renderCharacter } from "../src/render.ts";
 
 const adult = (o: Parameters<typeof outfit>[0] = {}) =>
@@ -16,10 +16,10 @@ const adult = (o: Parameters<typeof outfit>[0] = {}) =>
 
 const paths = (svg: string, fill: string): number => (svg.match(new RegExp(`<path [^>]*fill="${fill}"`, "g")) ?? []).length;
 
-test("the adult body types stay out of the Python-mirrored BODY_TYPES and the presets", () => {
+test("the adult body types are in BODY_TYPES, and only characters at or above the age floor use them", () => {
   for (const name of Object.keys(ADULT_BODY_TYPES)) {
-    assert.ok(!(name in BODY_TYPES), `${name} must not join BODY_TYPES`);
-    for (const [preset, p] of Object.entries(PRESETS)) assert.notEqual(p.body, name, `${preset} must not use ${name}: the characters on adult bodies are in ADULT_PRESETS until the owner decides at stage 7`);
+    assert.ok(name in BODY_TYPES, `${name} is a body type like the others since stage 7`);
+    for (const [preset, p] of Object.entries(PRESETS)) if (p.body === name) assert.ok(p.face_age >= ADULT_FACE_AGE, `${preset} is on ${name} and under the age floor`);
   }
 });
 
@@ -44,10 +44,9 @@ test("the adult skeleton stands about 6.4 heads tall with its anchors in order",
   assert.ok(Math.abs((sk.foot_y - (sk.head_cy - sk.head_r)) / (2 * sk.head_r) - 6.4) < 0.05);
 });
 
-test("the adult cuts are reachable by name but stay out of HAIRSTYLES, the Python-mirrored table", async () => {
+test("the adult cut is in HAIRSTYLES and reachable by name", async () => {
   const { HAIRSTYLES, hairstyleFor } = await import("../src/core-head.ts");
-  await import("../src/body-adult-hair.ts");
-  assert.ok(!("swept_ponytail" in HAIRSTYLES));
+  assert.ok("swept_ponytail" in HAIRSTYLES);
   assert.equal(typeof hairstyleFor("swept_ponytail").mass, "function");
 });
 
@@ -56,15 +55,11 @@ test("Franzi's hair draws: the cut closes, and its mass and front piece come out
   assert.ok((svg.match(/<path [^>]*fill="#e8b84b"/g) ?? []).length >= 2);
 });
 
-test("Franzi is an adult preset on the adult body, apart from PRESETS, and at or above the age floor", () => {
-  assert.equal(ADULT_PRESETS.franzi, FRANZI);
-  assert.ok(!("franzi" in PRESETS), "she joins the catalogue, the command line and ref-out only at stage 7, the owner's call");
+test("Franzi is a preset on the adult body, at or above the age floor", () => {
+  assert.equal(PRESETS.franzi, FRANZI);
   assert.equal(FRANZI.body, "adult_female");
   assert.ok(Object.hasOwn(ADULT_BODY_TYPES, FRANZI.body));
-  for (const [name, p] of Object.entries(ADULT_PRESETS)) {
-    assert.ok(p.face_age >= ADULT_FACE_AGE, `${name} is under the age floor`);
-    assert.ok(Object.hasOwn(ADULT_BODY_TYPES, p.body), `${name} is in ADULT_PRESETS, so it needs an adult body`);
-  }
+  assert.ok(FRANZI.face_age >= ADULT_FACE_AGE);
 });
 
 test("Franzi draws, in the white she is given, with her top and her briefs", () => {
@@ -197,31 +192,32 @@ test("worn with a skirt the blouse is tucked in: drawn before the skirt, so it d
   assert.ok(loose.indexOf('fill="#faf8f4"') > loose.indexOf('fill="#efe9dc"'));
 });
 
-test("the dirndl bodice: sixteen buttons, a lacing of crossing ribbons, cut at the hem it is given, and nothing on the chibi", () => {
+test("the dirndl bodice: sixteen buttons, a lacing of crossing ribbons, cut at the hem it is given", () => {
   const sk = skeletonFor(FRANZI);
-  const whole = adultBodice(sk, "#245c33");
+  const whole = adultBodiceCloth(sk, "#245c33");
   assert.equal((whole.match(/<circle [^>]*fill="#dfae45"/g) ?? []).length, 16);
   assert.ok(!whole.includes("adult-bodice-cut"), "whole: not cut");
   assert.ok((whole.match(/stroke-linecap="round"/g) ?? []).length >= 2 * 15, "two layers (outline and band) for each of the 15 ribbons, plus the top one");
-  const cut = adultBodice(sk, "#245c33", 1.34);
+  const cut = adultBodiceCloth(sk, "#245c33", 1.34);
   assert.ok(cut.includes('id="adult-bodice-cut"'));
-  assert.equal(adultBodice(sk, "#245c33", 1.34), cut, "deterministic");
-  // it has no field yet, so a character cannot ask for it: the registry of outfit fields is unchanged
-  assert.ok(!("bodice_color" in FRANZI.outfit));
-  // drawn in a slot, it ends up in the document once and its ids are unique with the rest
-  const parts = ADULT_GARMENT_PARTS as Record<string, unknown>;
-  const saved = parts._strap;
-  try {
-    parts._strap = (s: typeof sk) => adultBodice(s, "#245c33", 1.34);
-    const svg = renderCharacter(wearing({ tunic_color: "#faf8f4", skirt_color: "#2b5a37", apron_color: "#7d1f27" }));
-    const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
-    assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), [], "an id is defined twice");
-    assert.ok(svg.indexOf('id="adult-bodice-clip"') > svg.indexOf('fill="#faf8f4"'), "the bodice is over the blouse");
-    assert.ok(svg.indexOf('id="adult-apron-sash"') > svg.indexOf('id="adult-bodice-clip"'), "and under the apron's sash");
-  } finally {
-    if (saved === undefined) delete parts._strap;
-    else parts._strap = saved;
-  }
+  assert.equal(adultBodiceCloth(sk, "#245c33", 1.34), cut, "deterministic");
+});
+
+test("bodice_color: drawn over the blouse and under the apron's sash, cut there, and nothing on a chibi", () => {
+  const dirndl = wearing({ tunic_color: "#faf8f4", bodice_color: "#245c33", skirt_color: "#2b5a37", apron_color: "#7d1f27" });
+  const svg = renderCharacter(dirndl);
+  const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+  assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), [], "an id is defined twice");
+  assert.ok(svg.indexOf('id="adult-bodice-clip"') > svg.indexOf('fill="#faf8f4"'), "the bodice is over the blouse");
+  assert.ok(svg.indexOf('id="adult-apron-sash"') > svg.indexOf('id="adult-bodice-clip"'), "and under the apron's sash");
+  assert.ok(svg.includes('id="adult-bodice-cut"'), "cut where the sash covers it");
+  // worn alone it is whole, down to the hips
+  assert.ok(!renderCharacter(wearing({ tunic_color: "#faf8f4", bodice_color: "#245c33" })).includes("adult-bodice-cut"));
+  // a chibi with a bodice colour draws nothing of it
+  const chibi = characterParams({ ...PRESETS.satoko!, outfit: outfit({ ...PRESETS.satoko!.outfit, bodice_color: "#245c33" }) });
+  assert.equal(renderCharacter(chibi), renderCharacter(PRESETS.satoko!));
+  // without the field the document has no bodice
+  assert.ok(!renderCharacter(wearing({ tunic_color: "#faf8f4" })).includes("adult-bodice"));
 });
 
 test("a blouse is tucked into the shorts when the outfit says so, and lies over them otherwise", () => {

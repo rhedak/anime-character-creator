@@ -7,8 +7,6 @@
 //
 //   node web-stage.mjs            stage into out/web-stage/
 //   node web-stage.mjs --serve    stage, then serve it on http://127.0.0.1:8000
-//   node web-stage.mjs --adult    also offer the adult woman (Franzi, her body and cut) in the staged copy only: a local preview.
-//                                 ref-out/ and the deployed site do not change.
 //
 // The package is compiled with `tsc` (ts/tsconfig.web.json): it rewrites the `.ts` import specifiers to `.js`, which a browser
 // needs and Node's type stripper does not do. Set TSC to a tsc binary if ts/node_modules/.bin/tsc is not there. Nothing is deleted:
@@ -30,11 +28,6 @@ for (const f of readdirSync(join(root, "web"))) {
   if (/\.(html|css|js)$/.test(f)) cpSync(join(root, "web", f), join(stage, f));
 }
 cpSync(join(root, "ref-out"), join(stage, "ref-out"), { recursive: true });
-if (process.argv.includes("--adult")) {
-  // The staged copy's catalogue gains Franzi, the adult body and her cut, and her gallery picture is drawn beside the others.
-  execFileSync(process.execPath, [join(root, "ts", "bin", "catalogue.ts"), "--adult", join(stage, "ref-out", "catalogue.json")], { stdio: "inherit" });
-  execFileSync(process.execPath, [join(root, "ts", "bin", "render.ts"), "--out", join(stage, "ref-out", "franzi"), "--preset", "franzi", "--no-metadata"], { stdio: "inherit" });
-}
 console.log("staged at", stage);
 
 if (process.argv.includes("--serve")) {

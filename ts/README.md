@@ -81,7 +81,7 @@ the drawing compiles to about 570 KB of JavaScript, against about 5.5 MB of Pyod
 before the port.
 
 **After a deliberate change to the look the oracle stops applying to what changed.** The manifests, the recorded
-calls and `ref-out/` say what the Python drew. A part that draws nothing for every character in the corpus
+calls and `ref-out/` say what the Python drew (updated once, for the adult woman and the `bodice_color` field, by rule: `../harness/ts_port/golden-updates-stage7/README.md`). A part that draws nothing for every character in the corpus
 leaves every comparison green; a change that moves a drawn byte turns the document and stage tests red on purpose,
 and that is the signal to decide, case by case, which baseline to refresh (see `CLAUDE.md` for the rule).
 The manifest can only be rebuilt from the Python (the tag `python-final`), so after a look change it describes the old look.

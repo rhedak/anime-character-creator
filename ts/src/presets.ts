@@ -1322,6 +1322,27 @@ export const RISA = characterParams({
   }),
 });
 
+/**
+ * Franzi, the first character on the adult woman's body (`adult_female`, docs/adult-body-plan.md): an original, adult character, traced from the references in
+ * `ref/franzi/`. Her head, hair, hands and feet are drawn from the reference by the adult body's own parts (`body-adult-*.ts`), not by the shared face code, so she
+ * states only what differs from the defaults: the body, the age (the floor, `ADULT_FACE_AGE`, is 0.9 and she is drawn at 1.0), her colours and her hair. The shared face
+ * settings (eye size, mouth, blush and the rest) are not read for her, and are left at their defaults; she wears the briefs and the top (the adult body's underwear is always
+ * drawn) in the white of the reference, which the shared default, `#e8e4dc`, reads as grey against. Her outfits (blouse, shorts, the dirndl) are options on the same fields
+ * the other characters use (docs/franzi-outfits-plan.md).
+ *
+ * She joined `PRESETS` on 2026-10-19, once the Python the other presets were proved against was gone (docs/python-removal-audit.md, stage 7).
+ */
+export const FRANZI: CharacterParams = characterParams({
+  body: "adult_female",
+  face_age: 1.0,
+  skin_tone: "#ffd0b5",
+  hair_color: "#1b1c22",
+  eye_color: "#c4922c",
+  hairstyle: "swept_ponytail",
+  hair_length: 0.5,
+  outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null, underwear_top: true, underwear_color: "#faf5f4" }),
+});
+
 export const PRESETS: Record<string, CharacterParams> = {
   "katherina": KATHERINA,
   "gero": GERO,
@@ -1343,41 +1364,11 @@ export const PRESETS: Record<string, CharacterParams> = {
   "tenno": TENNO,
   "viktor": VIKTOR,
   "risa": RISA,
+  "franzi": FRANZI,
 };
 
 if (!Object.values(PRESETS).every((p) => p.face_age >= ADULT_FACE_AGE)) {
   throw new PyError("AssertionError", "a preset is under twenty-one");
-}
-
-/**
- * Franzi, the first character on the adult woman's body (`ADULT_BODY_TYPES`, docs/adult-body-plan.md): an original, adult character, traced from the references in
- * `ref/franzi/`. Her head, hair, hands and feet are drawn from the reference by the adult body's own parts (`body-adult-*.ts`), not by the shared face code, so she
- * states only what differs from the defaults: the body, the age (the floor, `ADULT_FACE_AGE`, is 0.9 and she is drawn at 1.0), her colours and her hair. The shared face
- * settings (eye size, mouth, blush and the rest) are not read for her, and are left at their defaults; she wears the briefs and the top (the adult body's underwear is always
- * drawn) in the white of the reference, which the shared default, `#e8e4dc`, reads as grey against.
- *
- * Kept out of `PRESETS` for now, the way the adult body types are kept out of `BODY_TYPES`: `PRESETS` is what the command line lists, what the catalogue offers the web tool,
- * what `ref-out/` renders and what the README's table names, all pinned by tests and checked-in files that mirror the frozen Python. Whether and how she joins them is
- * the owner's call at stage 7 (docs/adult-body-plan.md). Until then she is drawn from here: `node harness/franzi/franzi.ts out.svg`.
- */
-export const FRANZI: CharacterParams = characterParams({
-  body: "adult_female",
-  face_age: 1.0,
-  skin_tone: "#ffd0b5",
-  hair_color: "#1b1c22",
-  eye_color: "#c4922c",
-  hairstyle: "swept_ponytail",
-  hair_length: 0.5,
-  outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null, underwear_top: true, underwear_color: "#faf5f4" }),
-});
-
-/** The characters on adult bodies, apart from `PRESETS` (see `FRANZI`). Every one of them is at or above `ADULT_FACE_AGE`. */
-export const ADULT_PRESETS: Record<string, CharacterParams> = {
-  "franzi": FRANZI,
-};
-
-if (!Object.values(ADULT_PRESETS).every((p) => p.face_age >= ADULT_FACE_AGE)) {
-  throw new PyError("AssertionError", "an adult preset is under twenty-one");
 }
 
 // What a character is called on a sheet, where the preset key is not it: the
@@ -1411,6 +1402,7 @@ export const DISPLAY_NAMES: Record<string, string> = {
   // checked-in reference to match would be the more disruptive half of the fix.
   "viktor": "Viktor Grau",
   "risa": "Risa",
+  "franzi": "Franzi",
 };
 
 // Who appears on a sheet, in the order they appear.
@@ -1455,6 +1447,7 @@ ROSTERS["everglow"] = ["gero", "linnea"];
 ROSTERS["bureaucracy"] = ["dritan", "lindita"];
 // Risa is a guest in a school uniform (`docs/risa-plan.md`): her own roster.
 ROSTERS["risa"] = ["risa"];
+ROSTERS["franzi"] = ["franzi"];
 
 // ---------------------------------------------------------------------------
 // Neutral bases, for the web tool rather than the novel.
