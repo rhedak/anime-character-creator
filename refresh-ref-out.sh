@@ -62,7 +62,7 @@ fi
 render_ts="$root/ts/bin/render.ts"
 
 # cairosvg finds libcairo through dlopen, which on macOS does not look in Homebrew's prefix,
-# so the fallback path is set before any Python starts, as render.sh does. Both prefixes,
+# so the fallback path is set before any Python starts. Both prefixes,
 # Apple Silicon and Intel.
 export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-}:/opt/homebrew/lib:/usr/local/lib"
 

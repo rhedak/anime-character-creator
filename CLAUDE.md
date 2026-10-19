@@ -14,9 +14,10 @@ layers.
 
 **The drawing code is TypeScript** (`ts/src/`, version in `ts/package.json`). The Python package in `src/` was the
 original and is **frozen** at the tag `python-final`: it is the reference the TypeScript was proved byte-identical
-against, it stays in the tree for one more release, and it is not developed. `generate.py` (the full command line),
-`cover.py`, `sheet.py`, `sheet_satoshi` and the `comic/` package are still Python and stay out of the port until the
-owner raises them. Do not change `src/` or `tests/` except to keep them passing; new work goes in `ts/`.
+against. It is still in the tree (`src/`, `tests/`, `pyproject.toml`) only until it is deleted in the next release
+(`docs/python-removal-audit.md`); it is not developed, not run in CI and not to be edited. The cover and the sheets
+are TypeScript now (`ts/bin/cover.ts`, `ts/bin/sheet.ts`), the comic is dropped, and the shell scripts that wrapped the
+Python are gone. New work goes in `ts/`.
 
 Fourteen named characters plus a few guests from
 other projects (`presets.py`), each a first draft, all
@@ -46,10 +47,11 @@ mitten stays the default, `hand_style`/`grip_style` are the options) and the
 chin off a reference whose body is not ours; `harness/hair_audit/gate.py`
 checks that first.
 
-Since 2026-08-10 a sibling project consumes this repo's output directly
-(`render.sh`/`cover.sh`/`sheet.sh`). This repo has no knowledge of that
-consumer; `sheet.py --members` is the one generic hook it added, and it stays a
-plain preset-name list. Details of the consumers are kept in `local/`.
+Since 2026-08-10 a sibling project has consumed this repo's output through the shell scripts
+(`render.sh`, `cover.sh`, `sheet.sh`), which were removed on 2026-10-19 with the Python; the tag `python-final` still
+has them, and the owner checks the consumers in their own sessions. This repo has no knowledge of that consumer;
+`ts/bin/sheet.ts --members` keeps the one generic hook it added, a plain preset-name list. Details of the
+consumers are kept in `local/`.
 
 ## Hard constraints
 
@@ -123,8 +125,9 @@ The drawing is a TypeScript package under `ts/` (Node 22.18 or newer runs the `.
 `@types/node` are dev dependencies for the typecheck and the web build). `ts/package.json` holds the version and the
 scripts, `docs/` holds the architecture notes and the API reference, and `harness/` holds the one-off scripts that
 measured `ref/` (promoted there out of the ignored `out/` so a cleanup cannot take them; run a Python one with
-`./harness/run.sh harness/<pass>/<script>.py`; excluded from ruff on purpose, since several are records of readings
-that were wrong). `ts/README.md` is the map; the roles:
+`./harness/run.sh harness/<pass>/<script>.py`, which uses the small Python project in `tools/` (cairosvg, pillow, numpy
+and scipy, no package of ours; `uv sync --project tools` once). A script that imports the original package needs the
+`python-final` tag. They are records, several of readings that were wrong, and are not linted). `ts/README.md` is the map; the roles:
 
 - `ts/src/skeleton.ts`, `body.ts`: proportion anchors (`Skeleton`, `buildSkeleton`) and a character's skeleton
   (`BODY_TYPES`, `skeletonFor`; `height` stretches it). Change here to adjust overall proportions. A part that needs a
@@ -151,13 +154,14 @@ that were wrong). `ts/README.md` is the map; the roles:
 - `ts/src/urlstate.ts`, `attribution.ts`, `catalogue*.ts`, `web-bridge.ts`: character links, the `<metadata>` block,
   what the web tool offers, and its four calls.
 - `ts/bin/render.ts`: the SVG command line (`--preset`, `--out`, `--background`, `--no-metadata`, `--finish`,
-  `--highlight-strength`, `--id-prefix`); `ts/bin/catalogue.ts` writes the catalogue. PNG export is Python:
-  `harness/svg2png.py` rasterises an SVG with cairosvg, and the refresh scripts use it.
-- `ts/test/`: the tests (`node:test`). Most compare the port with the frozen Python's recorded output (the corpus and
-  manifest under `harness/ts_port/`, the committed `ref-out/`), the rest hold the rules the Python suite held.
-- `src/anime_character_creator/` (frozen Python): the reference. `generate.py` is still the full command line,
-  `cover.py`, `sheet.py` and `comic/` are still how a cover, a sheet and a comic are made, and `./render.sh`,
-  `./cover.sh`, `./sheet.sh` run them from the project's `.venv`.
+  `--highlight-strength`, `--id-prefix`); `ts/bin/catalogue.ts` writes the catalogue; `ts/bin/cover.ts` and `ts/bin/sheet.ts` write the cover and the cast sheets.
+  PNG export is Python in `tools/`: `harness/svg2png.py` rasterises an SVG with cairosvg, and the refresh scripts use it.
+- `ts/test/`: the tests (`node:test`). Most compare the drawing with golden files recorded from the Python
+  before it was frozen (the corpus and manifest under `harness/ts_port/` and `ts/fixtures/`, the committed `ref-out/`),
+  the rest hold the rules the Python suite held. Nothing runs the Python to compare: the golden files are plain files,
+  and a deliberate change to them is the owner's call.
+- `src/anime_character_creator/` (frozen Python, deleted in the next release): the reference the golden files were
+  recorded from. Nothing wraps or runs it any more.
 
 ## Working conventions
 
@@ -169,41 +173,39 @@ that were wrong). `ts/README.md` is the map; the roles:
   A new field gets a neutral default in `params.ts` and, if the web tool should offer it, an entry in `catalogue*.ts`.
   `ts/README.md`, "How a part is added", has the steps.
 - After changing shape geometry, actually render it (`node ts/bin/render.ts --out out/tmp --preset satoko`, then a PNG
-  with `.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png`) and view it before calling it done, coordinates
+  with `tools/.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png`) and view it before calling it done, coordinates
   that look right in the math are routinely wrong visually; this is an iterate-by-looking project.
 - The `gap-analysis` skill is retired with the realistic build it measured (moved to `harness/gap_analysis_skill/` as a
   record on 2026-09-26; its standing result is `docs/gap-analysis.md`). Chibi work and new characters are judged by eye
   against the design intent.
 - Keep the tooling green in the same change. In `ts/`: `npm run typecheck` and `npm test`. At the root:
   `./refresh-ref-out.sh --check`, `./refresh-catalogue.sh --check` and `./refresh-bases.sh --check` (and `--pixels`
-  when a change moves the SVG text and no visible pixel). While the frozen Python is in the tree, also
-  `uv run ruff check .` and `uv run pytest`, which must keep passing (do not edit `src/` or `tests/` to make a new
-  TypeScript behaviour pass). A stale `ref-out/` after a deliberate shape change means running `./refresh-ref-out.sh`,
-  not editing the expectation.
-- **The oracle is the frozen Python.** The corpus manifest, the recorded calls and `ref-out/` say what the Python
-  drew, so a change that moves a byte of an existing character's output makes the TypeScript tests fail on purpose.
+  when a change moves the SVG text and no visible pixel). The Python in the tree is frozen and not run: do not edit
+  `src/` or `tests/`. A stale `ref-out/` after a deliberate shape change means running `./refresh-ref-out.sh`, not
+  editing the expectation.
+- **The oracle is the recorded Python output.** The corpus manifest, the recorded calls and `ref-out/` say what the
+  Python drew, so a change that moves a byte of an existing character's output makes the TypeScript tests fail on purpose.
   Do not edit the manifest, the recorded fixtures or `ref-out/` to make a failure pass without the owner's say. A new
   part, option or character should default to nothing (a `null` field, a part that returns `""`), so every existing
   document stays byte-identical. New realism work stays behind `finish = "soft"` (flat is the house style and does
-  not move), and is judged by blind pairs as `docs/soft-hair-plan.md` describes. The Python tests that guard the
-  soft finish's consumers (`tests/test_consumers_stay_flat.py`) have TypeScript counterparts in `ts/test/rules-*.test.ts`.
+  not move), and is judged by blind pairs as `docs/soft-hair-plan.md` describes. The soft finish's consumers
+  (the presets, the covers, the sheets, `ref-out/`) are pinned flat by `ts/test/rules-*.test.ts`.
 - Test color parametrization by rendering at least one palette very different from the defaults, confirms `shade()`
   derivations still look right outside the default hue range, not just coincidentally right for blonde/green.
 - Branches and releases: `main` is released code and `dev` is where work happens. Commit to `dev`, and merge into
-  `main` only when the owner says to release and the typecheck, the TypeScript tests and the refresh checks pass (and
-  `ruff` and `pytest` while the Python is in the tree). Never push `main` or a tag unasked. Every push to `main` is a
+  `main` only when the owner says to release and the typecheck, the TypeScript tests and the refresh checks pass. Never push `main` or a tag unasked. Every push to `main` is a
   release with a new version: the last commit on `dev` raises `version` in `ts/package.json` (minor for a feature or a
-  new look, patch for a fix; the project is 0.x; `pyproject.toml` is frozen with the Python), then the merged commit on
+  new look, patch for a fix; the project is 0.x; the root `pyproject.toml` is frozen with the Python and goes with it), then the merged commit on
   `main` gets an annotated `vX.Y.Z` tag, pushed together with `main`. The companion app pins these tags, so a tag must
   never be moved or deleted once pushed. The tag `python-final` marks the last Python-only commit and is likewise
   never moved.
 - Pushes to any branch but `main`, and pull requests, run `.github/workflows/ts-check.yml` (typecheck and the
-  TypeScript tests, no deploy). A push to `main` runs `pages.yml`, which also runs the frozen Python's tests and the
-  refresh checks and then deploys the web tool to GitHub Pages.
+  TypeScript tests, no deploy). A push to `main` runs `pages.yml`, which also runs the refresh checks (they need cairo and
+  `uv sync --project tools`) and then deploys the web tool to GitHub Pages.
 - The owner's app imports this checkout by path (`../anime-character-creator`), so leave that checkout on `main`.
-  Work on `dev` in a second worktree (`git worktree add ../anime-character-creator-dev dev`, then `uv sync` and
-  `cd ts && npm ci` in it) and point the companion at it to see a change run. (The companion reads the Python until its
-  own port to the TypeScript; its docs say which.)
+  Work on `dev` in a second worktree (`git worktree add ../anime-character-creator-dev dev`, then
+  `uv sync --project tools` and `cd ts && npm ci` in it) and point the companion at it to see a change run. (The
+  companion draws with this repo's TypeScript; its docs say which tag it pins.)
 - do NOT commit unless asked
 - even if you commit do not write a "co-authored" trailer
 - no em dashes "—" (U+2014), double hyphens "--", or similar pause-substitutes in prose / comments;

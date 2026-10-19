@@ -11,7 +11,7 @@ in the render code.
 
 - Full plan, gates and stages: [docs/adult-body-plan.md](docs/adult-body-plan.md)
 - Status, findings and decisions, newest first (start at its RESUME section): [docs/adult-body-status.md](docs/adult-body-status.md)
-- Work happens on `dev` in `../anime-character-creator-dev`, in `ts/` (TypeScript; the Python in `src/` is frozen). Nothing is on
+- Work happens on `dev` in `../anime-character-creator-dev`, in `ts/` (TypeScript; the Python in `src/` is frozen and goes in the next release). Nothing is on
   `main`, nothing is released, and `ref/franzi/` is still untracked.
 
 ### Where it stands (end of the 2026-10-17 session)
@@ -54,7 +54,7 @@ in the render code.
 - Trace, do not draw by eye; measure each layer before blaming the last one drawn. A contrast-stretched view separates black hair
   from dark detail. The eye is traced on the left eye; the right is its mirror unless something has to differ.
 - Gates after every change: `cd ts && npm run typecheck && npm test`; `./refresh-ref-out.sh --check`, `./refresh-catalogue.sh --check`,
-  `./refresh-bases.sh --check`; `uv run ruff check .`; `uv run pytest`; and the body gate `./harness/run.sh harness/franzi/gate.py adult_female`
-  (IoU at least 0.93). Existing characters must stay byte-identical; no fixture is edited.
+  `./refresh-bases.sh --check`; and the body gate `./harness/run.sh harness/franzi/gate.py adult_female`
+  (IoU at least 0.93). Existing characters must stay byte-identical; no fixture is edited without the owner's say.
 - Agent reviews (read-only, `sonnet`) check renders against the references before the owner is called; the owner confirms at checkpoints.
 - Commit to `dev` periodically (owner's permission, 2026-10-17): one line, no trailer, no em dashes or double hyphens.

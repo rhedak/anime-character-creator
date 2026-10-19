@@ -215,7 +215,7 @@ tempCodeRunnerFile.py
 # JetBrains
 .idea/
 
-# Project-specific: generated renders (regenerate with ./render.sh)
+# Project-specific: generated renders (regenerate with node ts/bin/render.ts)
 out/
 
 # Claude Code scratch state. The skills under .claude/skills/ are checked in on

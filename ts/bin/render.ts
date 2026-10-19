@@ -11,7 +11,7 @@
 // and a page of several figures needs it, the other two do not exist in the Python and are not invented.
 //
 // What it does not have, on purpose: PNG (scripts make it from this SVG with `harness/svg2png.py`), the colour, garment,
-// face and shape flags, --expression and --flat (use a preset, or the TypeScript API), cover, sheet and comic.
+// face and shape flags, --expression and --flat (use a preset, or the TypeScript API); the cover and the sheets are `ts/bin/cover.ts` and `ts/bin/sheet.ts`.
 //
 // Exit codes follow the Python CLI's argparse: 2 for a bad argument (a message on stderr), 0 on success.
 

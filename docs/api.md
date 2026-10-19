@@ -2,7 +2,7 @@
 
 What the TypeScript package exposes, what each value means, and the shape of a typical call. The package is
 `ts/src/` (version 0.4.0, the source of truth since the port; `ts/README.md` is the map). The frozen Python
-package in `src/` has the same surface under snake_case names, given in parentheses below. For how the drawing
+package in `src/` (deleted in the next release; the tag `python-final` keeps it) has the same surface under snake_case names, given in parentheses below. For how the drawing
 itself is put together, see [architecture.md](architecture.md); for how to run the command lines, see the README.
 
 There is no index file. Each name is imported from the module that defines it, with the `.ts` extension
@@ -367,11 +367,10 @@ colours, ranges, garments and starting points); `toJson()` is `ref-out/catalogue
 
 `ts/bin/render.ts` is the SVG command line: `--out BASE`, `--preset NAME` (a preset or a neutral base),
 `--finish`, `--highlight-strength`, `--background`, `--id-prefix`, `--metadata` and `--no-metadata`, `--list`.
-Its SVG equals the Python CLI's for the same arguments. `ts/bin/catalogue.ts [PATH]` writes the catalogue.
-See the README for examples.
+Its SVG equals what the Python CLI wrote for the same arguments. `ts/bin/catalogue.ts [PATH]` writes the catalogue,
+`ts/bin/cover.ts` the book cover and `ts/bin/sheet.ts` the cast sheets (`--members`, `--roster`). See the README for examples.
 
-The full command line, with a flag for every colour, garment and face knob, `--expression`, `--flat` and the
-PNG, is the frozen Python's `anime_character_creator.generate.main()` (the `anime-character-creator`
-console script, `./render.sh`). Its flags are generated from three tables in that module (`COLOR_ARGS`,
-`OUTFIT_ARGS`, `FACE_ARGS`). The TypeScript has no such flags: build the variant with `replace` and call
-`renderCharacter`. PNG is `harness/svg2png.py`, which rasterises an SVG file with cairosvg.
+The Python's full command line (a flag for every colour, garment and face knob, `--expression`, `--flat` and the
+PNG) is gone with it; its flags were generated from three tables in `generate.py` (`COLOR_ARGS`, `OUTFIT_ARGS`,
+`FACE_ARGS`, in the tag `python-final`). The TypeScript has no such flags: build the variant with `replace` and
+call `renderCharacter`. PNG is `harness/svg2png.py`, which rasterises an SVG file with cairosvg.

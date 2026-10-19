@@ -95,25 +95,24 @@ realistic build, which never worked as well, was retired with its
 `ref-out/real/` renders (`docs/tall-chibi-plan.md`).
 
 `ref-out/cover.svg` is there too: a book cover composed around one of
-them by `cover.py`, which is the same drawing code with a backdrop, mist
+them by `ts/bin/cover.ts`, which is the same drawing code with a backdrop, mist
 and a title stacked over it. That one is opaque, being a page rather than
-a figure. Render it with `./cover.sh`.
+a figure. Render it with `node ts/bin/cover.ts --out out/cover`.
 
-`ref-out/sheet.svg` is the whole cast on one page, from `sheet.py`. That
+`ref-out/sheet.svg` is the whole cast on one page, from `ts/bin/sheet.ts`. That
 is where a cast gets judged rather than a character: whether these people
 look like they come from one world is a question about the set. Render it
-with `./sheet.sh`.
+with `node ts/bin/sheet.ts --out out/sheet`.
 
 `ref-out/sheet_satoshi.svg` is the same page with the other of the two
 reference rosters: Satoshi's persona rather than Satoko's, so Tomohiro
 stays and Satoko and Kyoko drop. Ten of the twelve are the same
-characters as `sheet.svg`; `presets.ROSTERS["satoshi"]` is the one place
-that says which two swap. Render it with `./sheet_satoshi.sh`.
+characters as `sheet.svg`; `ROSTERS["satoshi"]` in `ts/src/presets.ts` is the one place
+that says which two swap. Render it with `node ts/bin/sheet.ts --roster satoshi --out out/sheet_satoshi`.
 
-`sheet.py` also takes `--members name1,name2,...`, an arbitrary subset
+`ts/bin/sheet.ts` also takes `--members name1,name2,...`, an arbitrary subset
 overriding `--roster`, a hook for a consumer that generates one character
-sheet per chapter, restricted to whoever that chapter names (`render.sh`,
-`cover.sh`). This repo stays the generic drawing tool; the consumer owns the chapter-scanning and
+sheet per chapter, restricted to whoever that chapter names. This repo stays the generic drawing tool; the consumer owns the chapter-scanning and
 publication-specific detail.
 
 The tables above link `ref-out/on-white/`, which is the same characters
@@ -134,8 +133,8 @@ the code no longer produces:
 
 It renders every character in `PRESETS` and both pages, so adding a character means adding it to
 `ts/src/presets.ts` and nothing else. The characters' SVG comes from the TypeScript (`ts/bin/render.ts`), each
-PNG is made from that SVG by cairosvg in Python (`harness/svg2png.py`), and the cover and the two sheets are
-still drawn by the frozen Python (`cover.sh`, `sheet.sh`). `./refresh-catalogue.sh` and `./refresh-bases.sh`
+PNG is made from that SVG by cairosvg in Python (`harness/svg2png.py`, from the small project in `tools/`: `uv sync --project tools`
+once, and cairo), and the cover and the two sheets are `ts/bin/cover.ts` and `ts/bin/sheet.ts`. `./refresh-catalogue.sh` and `./refresh-bases.sh`
 do the same for `ref-out/catalogue.json` and `ref-out/bases/`, and `./refresh-ref-out.sh --pixels` compares
 decoded PNG pixels when a change moves the SVG's text and no visible pixel.
 Everything else generated goes to `out/`, which is not checked in.
@@ -192,14 +191,14 @@ draws the soft finish and `--highlight-strength` (0 to 2, default 1, soft only) 
 clumps are. `--background` is any SVG paint; the default is transparent. `--id-prefix` namespaces every id
 in the drawing, for a page that holds several figures. Every render embeds a link that reproduces the exact
 character in an SVG `<metadata>` block by default (`--no-metadata` for a plain, minimal file); the file is
-byte for byte the one the Python CLI writes for the same arguments. It has no colour, garment or face
+byte for byte the one the Python CLI wrote for the same arguments. It has no colour, garment or face
 flags: take a preset and use the library below, or the web tool, for a variant. `node ts/bin/catalogue.ts`
 writes the web tool's catalogue JSON.
 
 For a PNG, rasterise the SVG with the same call the Python CLI makes:
 
 ```bash
-.venv/bin/python harness/svg2png.py out/satoko.svg out/satoko.png    # scale 2, as the CLI does
+tools/.venv/bin/python harness/svg2png.py out/satoko.svg out/satoko.png    # scale 2, as the CLI did
 ```
 
 As a library, from TypeScript (Node 22.18 or newer; there is no index file, so import from the module that
@@ -232,82 +231,22 @@ cd ts && npm ci && cd ..    # once, for tsc
 `web-stage.mjs` compiles `ts/src` with `tsc` (`ts/tsconfig.web.json`) and copies the page and `ref-out/` beside
 it into `out/web-stage/`, the layout the GitHub Pages workflow deploys. Set `TSC` to use another tsc binary.
 
-### The full command line (frozen Python)
+### Variants
 
-The Python CLI has every flag below, and writes the PNG as well. It is frozen, so use it for the options the
-TypeScript CLI does not have; for the options both have, the SVG is the same.
+The Python's full command line, with a flag for every colour, garment and face knob, `--expression` and `--flat`, went with
+the Python (the tag `python-final` has it). In TypeScript a variant is built with `replace` and drawn with `renderCharacter`, as in
+the library example above. The knobs it had are fields of `CharacterParams`, `Outfit` and `FaceStyle` (`ts/src/params.ts`): the
+garment colours (`tunic_color`, `skirt_color`, `apron_color`, `trouser_color`, `boot_color` and the rest, a layer is worn when it
+has a colour), `hairstyle` and `hair_length`, and the face (`eye_size`, `eye_width`, `eye_openness`, `eye_tilt`, `brow_tilt`,
+`brow_weight`, `mouth_curve`, `mouth_width`, `blush`, `scar_side`, each neutral at its default). A named mood (`hollow`, `stern`,
+`grim`, `sorrow`, `resolute`) laid over a character's resting face is `Expression` in `ts/src/model.ts`; it changes what the face
+is doing and leaves what it is alone. `node ts/bin/render.ts --finish soft --highlight-strength 0.7` draws the soft finish.
 
-`render.sh` is the way in. It runs the CLI from the project's own venv
-with the one environment variable PNG export needs, since `cairosvg`
-loads `libcairo` through `dlopen`, which on macOS doesn't look in
-Homebrew's prefix.
-
-```bash
-./render.sh --out out/demo \
-  --hair-color "#e8b84b" --eye-color "#4a9c6d" \
-  --outfit-color "#4f7a52" --skin-tone "#f2c9a1" --boot-color "#5b4632"
-
-./render.sh --out out/satoko --preset satoko
-./render.sh --out out/satoshi --preset satoshi
-```
-
-The same CLI is installed as `anime-character-creator` and as
-`python -m anime_character_creator`; both skip the cairo environment
-`render.sh` sets, so on macOS they write the SVG and report that PNG
-export is unavailable.
-
-`--preset` starts from a named character in `presets.py`; any flag given
-alongside it overrides that one value.
-
-Garment flags, one per layer: `--tunic-color` (also spelled
-`--outfit-color`), `--undersleeve-color`, `--belt-color`,
-`--apron-color`, `--skirt-color`, `--underskirt-color`,
-`--trouser-color`, `--pouch-color`, `--boot-color`, plus `--skirt-length` (hip 0 to ankle
-1). A layer is worn when it has a color, so these add layers; to take one
-away, drop it from the preset, since the command line has no way to say
-"none".
-
-Shape flags: `--hairstyle` (`long_blunt`, `long_center_part`, `long_parted`,
-`long_traced`, `long_fringed`, `short_crop`, `short_layered` or `short_tousled`),
-`--hair-length`, `--frame` (shoulder against hip, -1 to 1, only bites at
-taller builds).
-
-Expression flags, each neutral at its default: eye shape
-(`--eye-size`, `--eye-width`, `--eye-openness`, `--eye-lower-lid`,
-`--eye-tilt`, `--eye-corner`, `--iris-size`), plus `--brow-tilt`, `--brow-weight`,
-`--mouth-curve`, `--mouth-width`, `--blush`, `--scar-side`.
-
-```bash
-./render.sh --out out/grumpy --mouth-curve -0.6 --blush 0 --brow-tilt 0.5
-```
-
-`--expression` lays a named mood (`hollow`, `stern`, `grim`, `sorrow`,
-`resolute`) over the character's resting face, changing only what the
-face is *doing* and leaving what it *is* alone, so the same mood works on
-any character. Individual knobs still win over it.
-
-`--finish soft` draws the soft finish (gradients, tinted lines and tone clumps in the
-hair) instead of the flat house style, and `--highlight-strength` (0 to 2, default 1,
-soft only) sets how strong the hair clumps are:
-
-```bash
-./render.sh --out out/risa-soft --preset risa --finish soft --highlight-strength 0.7
-```
-
-Add `--flat` to disable the cel-shading shadow shapes and see the flat
-silhouette only. Output is written as both `.svg` (inspect/edit
-directly in a browser or Inkscape) and `.png` (if cairosvg works).
-
-Every render embeds a link that reproduces the exact character back into
-both files, by default: an SVG `<metadata>` block, and a PNG `tEXt` chunk
-(keyword `Source`, readable with any tool that reads PNG text, e.g.
-Pillow's `Image.open(...).text`) carrying the same link, so a file that
-leaves this repo, downloaded, shared, dropped into another project, stays
-reconstructable. `sheet.sh` does the same with one link per member and
-`cover.sh` with the featured character. Pass `--no-metadata` to skip it and
-get a plain, minimal file. (This is a CLI-only default: `render_character()`
-and friends default to *off* as a library, which is what keeps `ref-out/`
-byte-for-byte comparable; see `attribution.py`.)
+Every render embeds a link that reproduces the exact character in an SVG `<metadata>` block by default, so a file that leaves
+this repo stays reconstructable (the cover and the sheets carry one link per member). Pass `--no-metadata` to skip it and get a
+plain, minimal file. The PNG `tEXt` chunk the Python CLI also wrote is not written by `harness/svg2png.py`. (This is a
+command-line default: `renderCharacter()` defaults to *off* as a library, which is what keeps `ref-out/` byte-for-byte
+comparable; see `ts/src/attribution.ts`.)
 
 **The background is transparent**, so a render drops onto a scene as it
 is. Pass `--background white` (or any SVG paint) if you want it filled.
@@ -317,7 +256,7 @@ is. Pass `--background white` (or any SVG paint) if you want it filled.
 The drawing package is `ts/src/`. Longer notes on the machinery are in
 [docs/architecture.md](docs/architecture.md), the public surface is written up in [docs/api.md](docs/api.md),
 and how to work in the TypeScript (layout, commands, the oracle, adding a part) is in [ts/README.md](ts/README.md).
-The names below are the TypeScript files, with the frozen Python module in parentheses.
+The names below are the TypeScript files, with the frozen Python module (deleted in the next release) in parentheses.
 
 - `skeleton.ts` (`skeleton.py`): the `Skeleton` interface: head center/radius, the
   neck/shoulder/waist/hip/hem/limb widths, and the y-coordinates (neck,
@@ -349,7 +288,7 @@ The names below are the TypeScript files, with the frozen Python module in paren
   `SATOKO` and `SATOSHI` among twenty. Reachable from the CLI via `--preset`. The two
   share a palette through module constants, since they are meant to read
   as related.
-- `bin/render.ts` and `bin/catalogue.ts`: the command lines. (`generate.py` is the frozen Python CLI.)
+- `bin/render.ts`, `bin/catalogue.ts`, `bin/cover.ts` and `bin/sheet.ts`: the command lines.
 
 ## Development
 
@@ -358,13 +297,12 @@ cd ts && npm ci          # once
 npm run typecheck        # tsc, strict
 npm test                 # the TypeScript tests (node:test, several hundred)
 npm run build:web        # compile the package and stage the web tool into ../out/web-stage
-cd .. && ./refresh-ref-out.sh --check && ./refresh-catalogue.sh --check && ./refresh-bases.sh --check
-uv run pytest            # the frozen Python's suite, which must keep passing until it is removed
-uv run ruff check .      # lint the frozen Python (the TypeScript is checked by tsc)
+cd .. && uv sync --project tools     # once, for the PNGs (and cairo on the system)
+./refresh-ref-out.sh --check && ./refresh-catalogue.sh --check && ./refresh-bases.sh --check
 ```
 
-The TypeScript tests compare the port with the frozen Python (a corpus of 7,662 characters recorded
-from it, the committed `ref-out/`, and a fresh run of the Python CLI where a `.venv` exists), and hold
+The TypeScript tests compare the drawing with what the Python drew before it was frozen (a corpus of 7,662
+characters recorded from it, the committed `ref-out/`; nothing runs the Python), and hold
 the rules the Python suite held (ids unique, the silhouette's ceiling, flat stays flat, validation).
 They are a guard against a change that moves a byte, not a judge of whether a shape looks right: that
 is decided by eye, against the design intent.

@@ -1539,7 +1539,7 @@ export const EXPRESSIONS: Record<string, Expression> = {
   // kept because that is worth knowing before anyone tries the combination
   // again.
   "resolute": expression({ brow_tilt: 0.50, mouth_curve: 0.0, eye_openness: 1.0, mouth_width: 0.80 }),
-  // The comic's first additions, 2026-10-09 (`docs/comic/plan.md`, K7), all deltas like the
+  // The comic's first additions, 2026-10-09 (the comic's plan, K7, in the git history at `python-final`), all deltas like the
   // rest. Startled is the one that needed new shape code: the mouth hangs open, and
   // the lid rides high with the brow raised, so it reads as surprise and not as fear.
   "startled": expression({

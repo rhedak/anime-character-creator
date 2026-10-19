@@ -7,6 +7,11 @@ not user documentation: see `README.md` for how to run it,
 measured comparison of the current renders against the canon, and
 `CLAUDE.md` for the rules that govern changes.
 
+**2026-10-19.** The Python side is being removed (`docs/python-removal-audit.md`). The entries below were written while it existed:
+where they name `render.sh`, `cover.sh`, `sheet.sh`, `uv run pytest` or `ruff`, those were the commands then; they are gone (the tag
+`python-final` has them), and what replaces them is in `README.md` and `CLAUDE.md`. The cover and the sheets are `ts/bin/cover.ts` and
+`ts/bin/sheet.ts`, the PNG toolchain is `tools/`, and the comic is dropped.
+
 Last updated: 2026-08-08, at `0652e73` "focus on chibis", plus two
 uncommitted canon passes: the first for language (stroke scaling, canon
 eyes, long-cut locks, pouches and buckle, boot toes and laces, mitten
