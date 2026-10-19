@@ -23,7 +23,8 @@ import { HAND_CAVITY, HAND_FINGERS, HAND_GAPS, HAND_LINES, HAND_LINE_WIDTHS, HAN
 import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
-import type { CharacterParams } from "./params.ts";
+import type { CharacterParams, FaceStyle } from "./params.ts";
+import { MOUTH_INSIDE, mouthDepthShare } from "./face.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade, tint } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
@@ -645,6 +646,28 @@ function adultBrows(h: Skeleton): string {
     .join("");
 }
 
+/** The traced mouth line, in reference pixels (ref 04, the face's calibration), left to right, and its width at each point. */
+const MOUTH_POINTS: readonly Pt[] = [[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [665, 403.4], [668, 403.3], [671, 403], [674, 402.4], [677, 401.4], [680, 400.2], [683, 398.8], [685.5, 397.4], [687.5, 395.8]];
+const MOUTH_WIDTHS: readonly number[] = [1.5, 1.8, 1.9, 1.9, 1.7, 1.5, 1.4, 1.5, 1.7, 1.9, 2.0, 1.9, 1.5, 1.1, 0.7];
+/** The open mouth's greatest drop below the line, in widths of the mouth, at `mouth_open` 1 (the chibi's is 1.0, which on this narrow mouth read as a gape). */
+const ADULT_MOUTH_DEPTH = 0.5;
+
+/**
+ * The mouth line as `mouth_curve` and `mouth_width` ask (their defaults, 1, are the traced line, returned as it is so that her default drawing stays byte for byte what it was):
+ * the curve scales how far each point sits from the straight line between the two ends (so 0 is straight and below 0 turns the corners down), then the width scales the whole
+ * line about its middle.
+ */
+function adultMouthPoints(f: FaceStyle): readonly Pt[] {
+  if (f.mouth_curve === 1 && f.mouth_width === 1) return MOUTH_POINTS;
+  const a = MOUTH_POINTS[0] as Pt;
+  const z = MOUTH_POINTS[MOUTH_POINTS.length - 1] as Pt;
+  const mid = (a[0] + z[0]) / 2;
+  return MOUTH_POINTS.map(([x, y]): Pt => {
+    const chord = a[1] + ((z[1] - a[1]) * (x - a[0])) / (z[0] - a[0]);
+    return [mid + (x - mid) * f.mouth_width, chord + (y - chord) * f.mouth_curve];
+  });
+}
+
 /**
  * The adult face: brows from the shared code, eyes from the traced shape (body-adult-eyes.ts), the nose dot and the mouth. The
  * shared face code is not used because its eye is the chibi's round one.
@@ -671,12 +694,21 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
   parts.push(stroke([[660.6, 366.2], [661.8, 368.8], [663, 372.2]], [1.8, 2.4, 1.2]));
   // the mouth: one continuous line. The reference draws it as two strokes with a small gap at the low point (x about 665), which the owner called a flaw of the reference, so the
   // two are joined there along the curve (the low point is flat for a few px) with the line a little thinner across the join; thickest toward the outer ends, thin at both tips.
-  parts.push(
-    stroke(
-      [[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [665, 403.4], [668, 403.3], [671, 403], [674, 402.4], [677, 401.4], [680, 400.2], [683, 398.8], [685.5, 397.4], [687.5, 395.8]],
-      [1.5, 1.8, 1.9, 1.9, 1.7, 1.5, 1.4, 1.5, 1.7, 1.9, 2.0, 1.9, 1.5, 1.1, 0.7],
-    ),
-  );
+  // `mouth_curve`, `mouth_width` and `mouth_open` move it (adultMouthPoints); at their defaults the points are the traced ones, untouched.
+  const upper = adultMouthPoints(p.face);
+  const open = p.face.mouth_open;
+  if (open > 0) {
+    // Open: the traced line is the upper lip and a second curve below it closes the shape, filled with the one flat dark red the chibi's open mouth uses, no teeth or tongue.
+    const first = upper[0] as Pt;
+    const last = upper[upper.length - 1] as Pt;
+    const across = last[0] - first[0];
+    const drop = across * ADULT_MOUTH_DEPTH * mouthDepthShare(open);
+    const lower = upper.map(([x, y]): Pt => [x, y + drop * Math.max(0, Math.sin((Math.PI * (x - first[0])) / across)) ** 0.65]);
+    const px = (q: Pt): string => `${fmt1(ref(q)[0])} ${fmt1(ref(q)[1])}`;
+    parts.push(`<path d="M ${px(upper[0] as Pt)} ${upper.slice(1).map((q) => `L ${px(q)} `).join("")}${[...lower].reverse().map((q) => `L ${px(q)} `).join("")}Z" fill="${MOUTH_INSIDE}" />`);
+    parts.push(stroke(lower, lower.map((_, i) => (i === 0 || i === lower.length - 1 ? 0.6 : 1.3))));
+  }
+  parts.push(stroke(upper, MOUTH_WIDTHS));
   return parts.join("");
 }
 

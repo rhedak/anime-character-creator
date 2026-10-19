@@ -10,7 +10,7 @@ import { OUTLINE, outlineW, soft, strokeW } from "./character.ts";
 import { LID_L } from "./body-adult-lid-data.ts";
 import { shade, tint } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
-import { fmt1, fmt2 } from "./pynum.ts";
+import { fmt1, fmt2, truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
 
 type Pt = readonly [number, number];
@@ -295,8 +295,29 @@ function placer(h: Skeleton, side: number): (q: Pt) => Pt {
   return ([x, y]) => toCanvas(h, [ix + side * x, iy + y]);
 }
 
+/**
+ * The shut eye (`FaceStyle.eyes_closed`, a blink): the upper lid has come down over the aperture, so what is drawn is the lid's edge, one black line along where the
+ * aperture's lower outline ran, from the inner corner to the wing's tip. It follows the open eye's own points (the base, `CYAN_OUT`, `WING`), so the wing stays where it was and
+ * the eye does not jump when it opens. The crease, the white, the iris and the highlights are gone with it; the thick lash flick stays, moved down so that it starts from
+ * the line's inner end as it starts from the open lid's (the two thin ones and the lid's tail made a scribble at that scale).
+ */
+const CLOSED_LINE: Pt[] = [[-21, 9], [-15, 16], [-6, 20], [4, 21.5], BASE[1] as Pt, BASE[0] as Pt, CYAN_OUT, [36, 1.5], WING];
+/** How far the lash flicks move down when the eye is shut: from the open lid's inner end to the closed line's. */
+const CLOSED_LASH_DROP = 34;
+
+function closedEye(h: Skeleton, side: number): string {
+  const k = h.head_r / PX_PER_R;
+  const at = placer(h, side);
+  const flick = LASHES[0] as { pts: readonly Pt[]; w: number };
+  return [
+    leafStroke(sampleSmooth(CLOSED_LINE).map(at), 8.5 * k, OUTLINE),
+    taperedStroke(sampleSmooth(flick.pts.map(([x, y]): Pt => [x, y + CLOSED_LASH_DROP])).map(at), flick.w * k, OUTLINE),
+  ].join("");
+}
+
 /** One eye. `side` is +1 for the viewer's right. `h` is the skeleton with the head where it hangs. */
 function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): string {
+  if (truthy(p.face.eyes_closed)) return closedEye(h, side);
   const k = h.head_r / PX_PER_R;
   const at = placer(h, side);
   const poly = (pts: readonly Pt[], close: boolean): string => {
