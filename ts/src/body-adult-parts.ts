@@ -629,9 +629,14 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
   const c = ref([657, 360.5]);
   parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(3.1 * k)}" ry="${fmt1(5.8 * k)}" transform="rotate(4 ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint(p.skin_tone, 0.62)}" />`);
   parts.push(stroke([[660.6, 366.2], [661.8, 368.8], [663, 372.2]], [1.8, 2.4, 1.2]));
-  // the mouth: two strokes, the left one thickest toward its outer end and thinning to the gap, the right one thick toward its outer end and thin at both
-  parts.push(stroke([[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [664.5, 403.2]], [1.5, 1.8, 1.9, 1.9, 1.7, 1.3, 0.8]));
-  parts.push(stroke([[670, 403.2], [673, 402.6], [676, 401.6], [679, 400.4], [682, 399], [684.5, 397.6], [687.5, 395.8]], [0.9, 1.5, 1.9, 2.0, 1.9, 1.4, 0.8]));
+  // the mouth: one continuous line. The reference draws it as two strokes with a small gap at the low point (x about 665), which the owner called a flaw of the reference, so the
+  // two are joined there along the curve (the low point is flat for a few px) with the line a little thinner across the join; thickest toward the outer ends, thin at both tips.
+  parts.push(
+    stroke(
+      [[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [665, 403.4], [668, 403.3], [671, 403], [674, 402.4], [677, 401.4], [680, 400.2], [683, 398.8], [685.5, 397.4], [687.5, 395.8]],
+      [1.5, 1.8, 1.9, 1.9, 1.7, 1.5, 1.4, 1.5, 1.7, 1.9, 2.0, 1.9, 1.5, 1.1, 0.7],
+    ),
+  );
   return parts.join("");
 }
 

@@ -193,6 +193,11 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-19, the mouth is one continuous line (owner: the gap in the reference is a flaw of the reference)
+
+The two mouth strokes are joined into one: the points of both along the curve through the low point (x about 665, y 403.4, flat for a few px), 15 points in all, with the line slightly thinner across the join (1.4 px) than at its thickest (2.0 px toward the right end), thin at both tips. Same position, width and
+slant as before. Gates green.
+
 ### 2026-10-19, the nose and the mouth traced (owner: the smile looks a bit off; match the reference's positions)
 
 The shared face drew a dot for the nose and one symmetric arc for the mouth, placed by the chibi's proportions. Pixel maps of ref 04 show something else. Mouth: two thin strokes with a small gap between them, not an arc. The left runs from
