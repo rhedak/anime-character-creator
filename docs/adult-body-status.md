@@ -193,6 +193,15 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-19, back to one eye set: the left eye's lid, crease and lashes mirrored (owner: the right eye looks broken because its components do not align; treat the left eye as the reference set)
+
+The per-eye version above (c2e1915) fitted the right eye's lid, crease and lashes to the reference's right eye, while its aperture, iris, pupil and highlights are the left eye's, mirrored, in the iris frame the owner approved. The pieces of
+two different eyes then did not line up with each other (the right eye looked broken). Reverted to one set drawn for the viewer's-left eye and mirrored for the right: the measured left lid (`LID_L`, which keeps the thin inner end, the
+better height and the taper), the left crease (`CREASE`), the left eye's three flicks (`LASHES`). The right eye's own measurements (`LID_R`, the long tail, the crease 5 to 6 px above its lid, the two small flicks on top of the lid) are left in
+`body-adult-lid-data.ts` (the lid table) and noted in `LASHES`' comment but not used. Cost, visible in `eye_outline.py`'s overlay: against the reference's own right eye our lid sits about 4 px lower at the middle and its inner end has three
+flicks where the reference has one long tail; the right eye is coherent, not a copy of the reference's. If it should match more closely, the way to do it without breaking the set is one rigid offset of the right eye's whole lid group
+(lid, crease, lashes) together, not separate fits. Gates green.
+
 ### 2026-10-19, per-eye lids, creases and lashes (owner: draw our lid, secondary line and lashes on the reference; the right eye's lashes do not attach, the left's are hidden)
 
 `harness/franzi/eye_outline.py` now draws the aperture (red), the lid (blue), the crease (orange) and the lashes' centre lines (green, a ring at each base) on the plain reference at 12x, for both eyes. It showed what the owner
