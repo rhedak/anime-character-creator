@@ -16,8 +16,8 @@ possible later addition (they'd slot in as extra SVG layers).
 **The drawing code is TypeScript** (`ts/src/`, version 0.4.0). It draws the same bytes the Python
 package drew, proved on a corpus of 7,662 characters (see "The TypeScript port" in `STATUS.md`),
 and it is what the web tool, the SVG command line and the committed `ref-out/` art come from. The
-Python package in `src/` is **frozen** at the tag `python-final`, as the reference the port was
-measured against; it stays in the tree for one more release and is not developed. Work on the
+Python package is gone from the tree (2026-10-19); the tag `python-final` has it, as the reference the port was
+measured against. Work on the
 drawing happens in `ts/`: see `ts/README.md`.
 
 ## Status

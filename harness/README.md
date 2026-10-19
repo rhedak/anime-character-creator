@@ -33,11 +33,12 @@ deliberate non-fix: they measured what they measured, the results are written up
 in `STATUS.md` and `docs/gap-analysis.md`, and adding a dependency to the
 shipped package so that a scratch script runs is the wrong trade.
 
-Nothing here is linted or formatted. `pyproject.toml` excludes the directory,
-for the reason the ruff config already gives about the markdown examples: the
-code that ships is what those tools police. Several of these scripts are kept
+Nothing here is linted or formatted. The Python lint config went with the package; the
+code that ships is what those tools policed. Several of these scripts are kept
 precisely because they are records of readings that did **not** work, and
 tidying them would be editing the evidence.
+
+**2026-10-19.** The scripts that import the original Python package (163 of them, with the two that put `src/` on the path and the generators under `ts_port/`) were deleted with the package; `docs/python-removal-files.txt` lists them, and the tag `python-final` has them and the code they ran against. The table below says what each pass measured, and for a pass whose directory is thin or gone the readings are in the docs it names. What is left needs only `tools/` (cairosvg, pillow, numpy, scipy), run with `./harness/run.sh`.
 
 ## The passes
 

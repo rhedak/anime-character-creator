@@ -4,8 +4,8 @@ How the generator is put together, for someone changing it. The public
 surface is in [api.md](api.md), the current state of the art and what is
 weak in `../STATUS.md`, and the rules a change has to respect in
 `../CLAUDE.md`. The drawing code is TypeScript (`../ts/src/`, how to work in it is
-`../ts/README.md`); the Python in `../src/` is frozen as the reference it was ported from, byte for
-byte, and is deleted in the next release (the tag `python-final` keeps it). Names below are the TypeScript ones, camelCase, with the Python name where it helps a reader
+`../ts/README.md`); the Python it was ported from, byte for
+byte, is deleted from the tree (the tag `python-final` keeps it). Names below are the TypeScript ones, camelCase, with the Python name where it helps a reader
 who knows the old code (`_hair_mass` is `hairMass`); the parts registry keeps the Python names, since
 that is how `render.ts` calls them.
 

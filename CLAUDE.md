@@ -12,12 +12,13 @@ for free, since every character is built from the same shape code. No
 animation. Backgrounds/text overlays may be added later as more SVG
 layers.
 
-**The drawing code is TypeScript** (`ts/src/`, version in `ts/package.json`). The Python package in `src/` was the
-original and is **frozen** at the tag `python-final`: it is the reference the TypeScript was proved byte-identical
-against. It is still in the tree (`src/`, `tests/`, `pyproject.toml`) only until it is deleted in the next release
-(`docs/python-removal-audit.md`); it is not developed, not run in CI and not to be edited. The cover and the sheets
-are TypeScript now (`ts/bin/cover.ts`, `ts/bin/sheet.ts`), the comic is dropped, and the shell scripts that wrapped the
-Python are gone. New work goes in `ts/`.
+**The drawing code is TypeScript** (`ts/src/`, version in `ts/package.json`). The Python package that was the
+original is **gone from the tree** (stage 6 of `docs/python-removal-audit.md`, 2026-10-19): it was frozen at the tag
+`python-final`, the reference the TypeScript was proved byte-identical against, and `git checkout python-final`
+brings it back (`docs/python-removal-files.txt` lists the 237 files removed). The cover and the sheets are TypeScript
+(`ts/bin/cover.ts`, `ts/bin/sheet.ts`), the comic is dropped, and the shell scripts that wrapped the Python are gone.
+The only Python left is the small PNG and tracing toolchain in `tools/` and the scripts under `harness/` that need only
+it. New work goes in `ts/`.
 
 Fourteen named characters plus a few guests from
 other projects (`presets.py`), each a first draft, all
@@ -44,8 +45,9 @@ owner's, one part at a time: Katherina's hands (D4d, closed 2026-10-08: the
 mitten stays the default, `hand_style`/`grip_style` are the options) and the
 `long_parted` hair (D5, a reference regenerated on the tall-chibi body for it,
 `docs/detail-status.md`). The lesson of the second: trace nothing below the
-chin off a reference whose body is not ours; `harness/hair_audit/gate.py`
-checks that first.
+chin off a reference whose body is not ours; the gate for it, `harness/hair_audit/gate.py`,
+needed the removed package and is in the tag `python-final`; check it by eye and with the aligned
+comparison.
 
 Since 2026-08-10 a sibling project has consumed this repo's output through the shell scripts
 (`render.sh`, `cover.sh`, `sheet.sh`), which were removed on 2026-10-19 with the Python; the tag `python-final` still
@@ -70,8 +72,8 @@ consumers are kept in `local/`.
 - **The body is drawn bare only in a base layer.** With the tunic off a
   figure wears underwear (`Outfit.underwear_color`, always worn; the top
   always drawn with a bust), and no anatomical detail is drawn. A fully bare
-  figure exists only as a harness view for proportion work
-  (`harness/bare/mannequin.py`), adults only, never a web tool option; no
+  figure existed only as a harness view for proportion work
+  (`harness/bare/mannequin.py`, in the tag `python-final`; it needed the removed package), adults only, never a web tool option; no
   bare render of a preset whose age is not an adult's
   (the owner's decision, `docs/bare-body-plan.md`).
 - **Every preset is an adult, twenty-one or older** (`ADULT_FACE_AGE`). This
@@ -112,7 +114,7 @@ consumers are kept in `local/`.
   hair's own silhouette: shadow and lit steps with one faint highlight each,
   scaled by `highlight_strength`. It is for a caller that sets the figure
   beside painted art. It is off by default, never used by the presets, the
-  covers, the sheets or `ref-out/` (`tests/test_consumers_stay_flat.py` pins
+  covers, the sheets or `ref-out/` (`ts/test/rules-finish.test.ts` pins
   that), offered in the web tool as a "Finish" choice that starts on flat, and
   it moves no shape. `"flat"` stays the house style and every rule above still
   holds for it. Gradients only, no blur: cairosvg has none. Anything further in
@@ -160,8 +162,8 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
   before it was frozen (the corpus and manifest under `harness/ts_port/` and `ts/fixtures/`, the committed `ref-out/`),
   the rest hold the rules the Python suite held. Nothing runs the Python to compare: the golden files are plain files,
   and a deliberate change to them is the owner's call.
-- `src/anime_character_creator/` (frozen Python, deleted in the next release): the reference the golden files were
-  recorded from. Nothing wraps or runs it any more.
+- The original Python package is not in the tree: the golden files were recorded from it, and the tag `python-final`
+  has it.
 
 ## Working conventions
 
@@ -180,8 +182,7 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
   against the design intent.
 - Keep the tooling green in the same change. In `ts/`: `npm run typecheck` and `npm test`. At the root:
   `./refresh-ref-out.sh --check`, `./refresh-catalogue.sh --check` and `./refresh-bases.sh --check` (and `--pixels`
-  when a change moves the SVG text and no visible pixel). The Python in the tree is frozen and not run: do not edit
-  `src/` or `tests/`. A stale `ref-out/` after a deliberate shape change means running `./refresh-ref-out.sh`, not
+  when a change moves the SVG text and no visible pixel). A stale `ref-out/` after a deliberate shape change means running `./refresh-ref-out.sh`, not
   editing the expectation.
 - **The oracle is the recorded Python output.** The corpus manifest, the recorded calls and `ref-out/` say what the
   Python drew, so a change that moves a byte of an existing character's output makes the TypeScript tests fail on purpose.
@@ -195,7 +196,7 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
 - Branches and releases: `main` is released code and `dev` is where work happens. Commit to `dev`, and merge into
   `main` only when the owner says to release and the typecheck, the TypeScript tests and the refresh checks pass. Never push `main` or a tag unasked. Every push to `main` is a
   release with a new version: the last commit on `dev` raises `version` in `ts/package.json` (minor for a feature or a
-  new look, patch for a fix; the project is 0.x; the root `pyproject.toml` is frozen with the Python and goes with it), then the merged commit on
+  new look, patch for a fix; the project is 0.x), then the merged commit on
   `main` gets an annotated `vX.Y.Z` tag, pushed together with `main`. The companion app pins these tags, so a tag must
   never be moved or deleted once pushed. The tag `python-final` marks the last Python-only commit and is likewise
   never moved.

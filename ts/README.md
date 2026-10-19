@@ -1,8 +1,8 @@
 # The TypeScript drawing code
 
 This is the package that draws the characters: version 0.4.0, source of truth since the port from Python
-(`docs/ts-port-plan.md` is the plan, `docs/ts-port-spike.md` the first measurements). The Python in `../src/` is
-frozen at the tag `python-final` and goes in the next release (`../docs/python-removal-audit.md`); it is only the
+(`docs/ts-port-plan.md` is the plan, `docs/ts-port-spike.md` the first measurements). The Python package is
+gone from the tree (`../docs/python-removal-audit.md`; the tag `python-final` has it); it was the
 reference the golden files were recorded from, and nothing runs it. Output is **byte-identical** to what it drew,
 which is the contract; a deliberate change to the look has its own rules (see "The oracle" below).
 

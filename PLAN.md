@@ -11,7 +11,7 @@ in the render code.
 
 - Full plan, gates and stages: [docs/adult-body-plan.md](docs/adult-body-plan.md)
 - Status, findings and decisions, newest first (start at its RESUME section): [docs/adult-body-status.md](docs/adult-body-status.md)
-- Work happens on `dev` in `../anime-character-creator-dev`, in `ts/` (TypeScript; the Python in `src/` is frozen and goes in the next release). Nothing is on
+- Work happens on `dev` in `../anime-character-creator-dev`, in `ts/` (TypeScript; the Python package is gone from the tree, the tag `python-final` has it). Nothing is on
   `main`, nothing is released, and `ref/franzi/` is still untracked.
 
 ### Where it stands (end of the 2026-10-17 session)
