@@ -23,7 +23,7 @@ in the render code.
 | 5a to 5c: head, hair, hands and feet | built; the head and hair are traced and approved (5e, committed to `dev`); the hands and feet are placeholders from the full-body reference |
 | 5e: head and face polish | done: eyes, brows, hairline, strands, outlines, ears, strips, ponytail and shoulder junction all traced and approved by eye; small leftovers in `docs/adult-body-status.md` |
 | 5f: hands and feet from the close-ups | feet done; relaxed hand done (traced, gate green); open palm, fist and pointing hands later as options |
-| 5d: Franzi preset in `presets.ts` | not started |
+| 5d: Franzi preset in `presets.ts` | done 2026-10-19: `FRANZI` and `ADULT_PRESETS` (kept out of `PRESETS` until stage 7); open: her SVG is 2.3 MB (the body path is copied into about 40 clips and strokes), see the status file |
 | 6: garments (dirndl, blouse, shorts) | not started |
 | 7: age guard, rules tests, catalogue, web, CLAUDE.md amendment | not started |
 

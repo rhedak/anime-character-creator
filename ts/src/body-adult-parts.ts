@@ -231,7 +231,7 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
  * as a full-weight stroke, which hid the thumb's edge and the finger tips. The stroke is the same path drawn in clipped pieces: full weight
  * everywhere but the hand columns below the wrist, a taper over twenty bands to the hand weight, from `HAND_D_CUT` down. The hand's own chain is inset by the hand weight's half stroke (harness/franzi_hands/outline.py).
  */
-export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all"): string {
+export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all", idPrefix = "adult-stroke"): string {
   const { cx, y, w } = place(sk);
   const path = adultBodyPath(sk);
   const full = outlineW(strokeW(sk));
@@ -267,7 +267,7 @@ export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all"): st
   // the rest: everything but the hand zones. Above the wrist and below the hands, the whole width; between, the outside of each arm and the middle.
   const dsAll = dAt(HAND_D_CUT, 2.9);
   const middle = poly([...dsAll.map((d) => px(-1, d, vIn(d))), ...[...dsAll].reverse().map((d) => px(1, d, vIn(d)))]);
-  const rest = `<clipPath id="adult-stroke-rest">${rect(0, 0, big, top)}${rect(0, top, xl, bottom)}${rect(xr, top, big, bottom)}${middle}${rect(0, bottom, big, bigH)}</clipPath>`;
+  const rest = `<clipPath id="${idPrefix}-rest">${rect(0, 0, big, top)}${rect(0, top, xl, bottom)}${rect(xr, top, big, bottom)}${middle}${rect(0, bottom, big, bigH)}</clipPath>`;
   // The stroke tapers from the full weight to the hand weight over N bands from the wrist down (a single step showed as a jump at the wrist's outer
   // edge), each band reaching a little up into the one above, which is thicker, so no hairline of the page shows where they meet.
   const taperEnd = HAND_D_CUT + 0.32;
@@ -280,12 +280,12 @@ export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all"): st
     const d0 = HAND_D_CUT + ((taperEnd - HAND_D_CUT) * i) / N;
     const d1 = HAND_D_CUT + ((taperEnd - HAND_D_CUT) * (i + 1)) / N;
     const k = 1 - (1 - HAND_STROKE_K) * ((i + 1) / N);
-    hands += band(`adult-stroke-t${i}`, i === 0 ? d0 : d0 - lap, d1);
-    strokes += stroke(full * k, `adult-stroke-t${i}`);
+    hands += band(`${idPrefix}-t${i}`, i === 0 ? d0 : d0 - lap, d1);
+    strokes += stroke(full * k, `${idPrefix}-t${i}`);
   }
-  hands += band("adult-stroke-hand", taperEnd - lap, 2.9);
-  strokes += stroke(full * HAND_STROKE_K, "adult-stroke-hand");
-  return (only === "all" ? rest + stroke(full, "adult-stroke-rest") : "") + hands + strokes;
+  hands += band(`${idPrefix}-hand`, taperEnd - lap, 2.9);
+  strokes += stroke(full * HAND_STROKE_K, `${idPrefix}-hand`);
+  return (only === "all" ? rest + stroke(full, `${idPrefix}-rest`) : "") + hands + strokes;
 }
 
 /** One point on a breast's edge: canvas position and where it lies in head heights (|x| from the centre line, d below the chin). */
@@ -671,7 +671,7 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
     HAND_LINES.forEach((c, i) => parts.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (HAND_LINE_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
   }
   // the outline's stroke over the fills, in each hand's columns and rows, at the hands' weight (their edge is the skin's edge, so they covered half of it)
-  const stroke = adultBodyStroke(sk, "hands");
+  const stroke = adultBodyStroke(sk, "hands", "adult-hand-stroke");
   const clip = `<clipPath id="adult-hand-body"><path d="${adultBodyPath(sk)}" /></clipPath>`;
   return clip + parts.join("") + stroke;
 }
