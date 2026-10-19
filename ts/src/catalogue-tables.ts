@@ -411,7 +411,7 @@ export const BODY_LABELS: Readonly<Record<string, string>> = {
   "tall_chibi": "Tall chibi (Katherina's)",
   "tall_chibi_long_torso": "Tall chibi (long torso)",
   "tall_slender": "Tall and slender (about 4.4 heads)",
-  "adult_female": "Adult woman (about 6.4 heads)",
+  "adult_female": "Adult woman (about 6.4 heads; always Franzi's head, face and hands)",
 };
 assertKeysEqual(BODY_LABELS, BODY_TYPES, "BODY_LABELS and BODY_TYPES have drifted apart; a body type was added or removed on one side without the other");
 // How the hands are drawn (`docs/hands-plan.md`): the chibi's mitten, three small
@@ -493,12 +493,17 @@ export const BODY_HIDDEN_EXTRA: Readonly<Record<string, readonly string[]>> = {
 export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
   adult_female: sorted([
     ...BODY_HIDDEN_EXTRA["adult_female"]!,
+    "belt_cut",
+    "belt_keeper_pair",
+    "belt_reach",
     "brow_length",
     "bust",
     "chest",
     "chin_shadow",
     "coat_button_color",
+    "coat_cut",
     "coat_sleeves",
+    "collar_cut",
     "eye_corner",
     "eye_gap",
     "eye_size",

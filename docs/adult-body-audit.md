@@ -29,7 +29,7 @@ Sizes: small = an hour or less, medium = a few hours, large = a campaign.
 | # | what | recommendation |
 |---|---|---|
 | B1 | **Fixed 2026-10-19.** On a body that is not an adult one her cut is drawn as `long_center_part` (`hairstyleOf` in `core-head.ts`); the character still says `swept_ponytail`, so switching back gives her own hair again. Was: **Franzi on a chibi body has no hair.** Her cut (`swept_ponytail`) is drawn only by the adult head's parts; the shared hair code gets an empty cut for it. The head is a bald disc. Her blouse, skirt and apron come out chibi-shaped, which is right; the bodice draws nothing. | **Fix**, small: give the cut a fallback for a chibi body (draw as the nearest chibi cut), or switch to one when the body changes. Or hide the cut for chibi bodies in the page. |
-| B2 | **Another character on the adult body gets Franzi's head.** Their hairstyle, hair length, hair tail and every face setting (eyes, brows, mouth) are ignored: the adult head always draws her traced hair (in their colour) and face. Their garments follow. The chibi collar piece (`collar_mock`) draws as a rectangle at the chin, the belt, pouches, crystals, strap, robe, hakama and coat are the chibi's shapes on her, and the staff and the katana float beside her, held by nobody (the adult hands do not take a grip). | **Decide.** The honest options: (1) keep it, it is a "put this person on the adult body" button and the result reads fine; (2) offer the adult body only to characters that have an adult head (a catalogue note, and the page hides it elsewhere); (3) give the adult body heads of its own, a campaign. I'd take (1) now and record the limits in the page's text. |
+| B2 | **Decided 2026-10-19: option (1), kept.** The body's label in the page now says it brings Franzi's head, face and hands (`BODY_LABELS`). Was: **Another character on the adult body gets Franzi's head.** Their hairstyle, hair length, hair tail and every face setting (eyes, brows, mouth) are ignored: the adult head always draws her traced hair (in their colour) and face. Their garments follow. The chibi collar piece (`collar_mock`) draws as a rectangle at the chin, the belt, pouches, crystals, strap, robe, hakama and coat are the chibi's shapes on her, and the staff and the katana float beside her, held by nobody (the adult hands do not take a grip). | **Decide.** The honest options: (1) keep it, it is a "put this person on the adult body" button and the result reads fine; (2) offer the adult body only to characters that have an adult head (a catalogue note, and the page hides it elsewhere); (3) give the adult body heads of its own, a campaign. I'd take (1) now and record the limits in the page's text. |
 
 ### C. Controls that do nothing on her (silent no-ops)
 
@@ -55,7 +55,7 @@ The mechanism for all of this is one thing: **the catalogue has no way to say "t
 | D1 | **`hair_tail` above 0 draws a stray dark shape** on top of her head (the chibi's ponytail root, over a head that has its own). | Fix with C: hide `hair_tail` on the adult body, or draw nothing for it there. Small. |
 | D2 | **`hair_knot` draws a chibi bun** on top of her traced hair. | Same, small. |
 | D3 | **`waist_shift` and `height` move the body and the garments, not the traced head and hands in step.** A waist shift of 1.5 breaks the blouse's neckline against the bodice; at 0.8 or 1.3 height the figure holds. | Limit `waist_shift` for her (hide, or a narrow range); leave height. Small. |
-| D4 | **The chibi belt, pouch, crystals, strap, robe, hakama and coat** are drawn from the chibi's anchors on her torso: a belt at her navel, a robe that is a parallelogram, a coat that is a long vest. | Leave until each is wanted as an adult garment (plan step 6: coat, robe, belt). Not breakage, unfinished. |
+| D4 | **Fixed 2026-10-19** (belt, pouches, crystals, coat, robe with hanging sleeves, hakama and collar are adult garments now, `docs/franzi-outfits-plan.md` step 6; the strap and shoulder bars are still the chibi's shapes). Was: **The chibi belt, pouch, crystals, strap, robe, hakama and coat** are drawn from the chibi's anchors on her torso: a belt at her navel, a robe that is a parallelogram, a coat that is a long vest. | Leave until each is wanted as an adult garment (plan step 6: coat, robe, belt). Not breakage, unfinished. |
 | D5 | **The staff and the katana hang in the air** (no hand holds them). | Leave; goes with the adult hand poses. |
 
 ### E. Not an issue
@@ -66,6 +66,7 @@ The page's list of hand styles shows chibi names ("Mitten (chibi)") for her. Tha
 
 - A1 and B1 (above).
 - **Knee socks and boots** (the missing garments of C): drawn for the adult body from the legs' tables and the traced foot (`adultKneeSocks`, `adultBoots`), on `knee_sock_color`, `boot_color`, `boot_shaft` and `boot_cut`; the toes and nails are not drawn under a boot. They left the ignore list.
+- **D4 and B2:** see their rows above. The garments are by eye, with no reference to compare, so they are a first pass the owner should judge on the figure.
 - **C and D1 to D3:** the catalogue has a new key, `body_ignores`: for each body, the fields the page hides. For the adult woman it lists the 49 fields that drawing her showed to change nothing visible (found by `ts/test/ignored-fields.ts`, printed by `node harness/franzi/ignored_fields.ts`) and the three that draw something wrong on her (`hair_tail`, `hair_knot`, `waist_shift`). The page (`applyBodyIgnores` in `web/app.js`) hides those rows, a garment whose fields are all ignored, and a section left empty, and shows them again when the body is changed back: on Franzi the page shows 66 of the 121 fields and no Hair section. The list is pinned by a test against what is drawn, so it cannot drift. Not hidden, by the drawing's own answer: the finish (it thins her strokes), glasses, `brows_over_hair`, and the chibi garments of D4 and D5.
 
 ## Suggested order, if the owner wants fixes
@@ -73,7 +74,7 @@ The page's list of hand styles shows chibi names ("Mitten (chibi)") for her. Tha
 1. A1 (the coat's double ids): small, a real fault.
 2. B1 (her hair on a chibi body): small, and what the owner met first.
 3. The `bodies` field in the catalogue and the page reading it (C, D1 to D3): medium, and it removes most of the "options that break her" in one stroke.
-4. Boots and knee socks for the adult body (plan step 5), then the coat, robe and belt as adult garments (step 6).
+4. Boots and knee socks for the adult body (plan step 5), then the coat, robe and belt as adult garments (step 6): both done.
 5. B2 (heads for other characters on the adult body) and the soft finish for her: large, only if wanted.
 
 ## Reproducing

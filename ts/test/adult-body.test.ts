@@ -301,3 +301,65 @@ test("adult knee socks and boots: drawn on their colours, the foot's toes and na
   assert.ok(new Set([boots, full, loafer]).size === 3);
   assert.equal(renderCharacter(wearing({ boot_color: "#5b4632" }), null, null, false), boots);
 });
+
+const uniqueIds = (svg: string) => {
+  const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+  return ids.filter((v, i) => ids.indexOf(v) !== i);
+};
+
+test("the adult belt, pouches and crystals: drawn on their colours at the waist, the pouches and crystals only with a belt, and the belt's chibi cuts and keepers do nothing", () => {
+  const draw = (f: Record<string, unknown>) => renderCharacter(wearing(f), null, null, false);
+  const bare = draw({});
+  const belt = draw({ belt_color: "#6b4a2a" });
+  const full = draw({ belt_color: "#6b4a2a", pouch_color: "#8a5a2a", crystal_color_1: "#4aa0e0", crystal_color_4: "#e0c84a", crystal_tongs: true });
+  assert.ok(belt.includes('fill="#6b4a2a"') && !bare.includes("#6b4a2a"));
+  assert.ok(full.includes('fill="#8a5a2a"') && full.includes('fill="#4aa0e0"') && full.includes('fill="#e0c84a"'));
+  // without a belt there is nothing to hang them from
+  assert.equal(draw({ pouch_color: "#8a5a2a", crystal_color_1: "#4aa0e0" }), bare);
+  // the chibi's cut, keeper pair and reach are not read; the height is
+  assert.equal(draw({ belt_color: "#6b4a2a", belt_cut: "buckled", belt_keeper_pair: true, belt_reach: 1.4 }), belt);
+  assert.notEqual(draw({ belt_color: "#6b4a2a", belt_scale: 3 }), belt);
+  assert.deepEqual(uniqueIds(full), []);
+});
+
+test("the adult coat: two panels on coat_color from the shoulders, the hem set by coat_length, the belt drawn over it, the traced cuts not read", () => {
+  const draw = (f: Record<string, unknown>) => renderCharacter(wearing(f), null, null, false);
+  const bare = draw({});
+  const vest = draw({ coat_color: "#8a2a2a", coat_length: 0.3 });
+  const long = draw({ coat_color: "#8a2a2a", coat_length: 0.85 });
+  assert.equal(paths(vest, "#8a2a2a"), 2);
+  assert.ok(!bare.includes("#8a2a2a"));
+  assert.notEqual(vest, long);
+  assert.equal(draw({ coat_color: "#8a2a2a", coat_length: 0.3, coat_cut: "lab_coat" }), vest, "a traced cut is the chibi's shape and is not drawn");
+  const belted = draw({ coat_color: "#8a2a2a", belt_color: "#6b4a2a" });
+  assert.ok(belted.indexOf('fill="#6b4a2a"') > belted.indexOf('fill="#8a2a2a"'), "the belt is over the coat");
+  assert.deepEqual(uniqueIds(belted), []);
+});
+
+test("the adult robe and hakama: a V-necked front with hanging sleeves on sleeve_drop, wide trousers to hakama_length drawn under the belt, the arms redrawn below the sleeves", () => {
+  const draw = (f: Record<string, unknown>) => renderCharacter(wearing(f), null, null, false);
+  const bare = draw({});
+  const robe = draw({ robe_color: "#3a3a8a" });
+  const sleeved = draw({ robe_color: "#3a3a8a", sleeve_drop: 0.5 });
+  assert.equal(paths(robe, "#3a3a8a"), 1);
+  assert.equal(paths(sleeved, "#3a3a8a"), 3, "the front and a sleeve on each side");
+  assert.ok(!bare.includes("#3a3a8a"));
+  const hakama = draw({ hakama_color: "#2a2a5a", hakama_length: 0.9 });
+  assert.ok(hakama.includes('fill="#2a2a5a"') && !bare.includes("#2a2a5a"));
+  assert.notEqual(draw({ hakama_color: "#2a2a5a", hakama_length: 0.5 }), hakama);
+  const belted = draw({ hakama_color: "#2a2a5a", belt_color: "#c8b040" });
+  assert.ok(belted.indexOf('fill="#c8b040"') > belted.indexOf('fill="#2a2a5a"'), "the belt is over the hakama");
+  // a hakama is worn with the blouse tucked in, so the blouse is drawn before it
+  const tucked = draw({ hakama_color: "#2a2a5a", tunic_color: "#faf6f5" });
+  assert.ok(tucked.indexOf('fill="#faf6f5"') < tucked.indexOf('fill="#2a2a5a"'));
+  for (const svg of [robe, sleeved, hakama, belted, tucked, draw({ robe_color: "#3a3a8a", sleeve_drop: 1, hakama_color: "#2a2a5a", skirt_color: "#285032" })]) assert.deepEqual(uniqueIds(svg), []);
+});
+
+test("the adult collar: a band on collar_color at the neck, standing or mock, and a chibi's traced cut is not read", () => {
+  const draw = (f: Record<string, unknown>) => renderCharacter(wearing(f), null, null, false);
+  const bare = draw({});
+  const standing = draw({ collar_color: "#2a2a5a" });
+  assert.ok(standing.includes('fill="#2a2a5a"') && !bare.includes("#2a2a5a"));
+  assert.notEqual(draw({ collar_color: "#2a2a5a", collar_mock: true }), standing);
+  assert.equal(draw({ collar_color: "#2a2a5a", collar_cut: "pointed" }), standing);
+});

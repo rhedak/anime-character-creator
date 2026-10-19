@@ -746,15 +746,17 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
 
 /**
  * The arms from below the sleeve to the wrist, drawn again over what hangs in front of the legs: a skirt that flares past the arm's inner edge would otherwise cover it (the
- * body is one outline drawn first, and garments over it), where in the reference the arms hang in front of the skirt. Only when a skirt or an apron is worn; without one nothing
+ * body is one outline drawn first, and garments over it), where in the reference the arms hang in front of the skirt. Only when a skirt, an apron or a hakama is worn; without one nothing
  * lies over the arms there and the arms are not drawn twice. The strip runs from the outside of the arm in to just past its inner edge, from 1.1 H below the chin (under the
  * blouse's cuff) to the wrist, where the hands' own layer takes over.
  */
 function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
-  if (p.outfit.skirt_color === null && p.outfit.apron_color === null) return "";
+  if (p.outfit.skirt_color === null && p.outfit.apron_color === null && p.outfit.hakama_color === null) return "";
   const { cx, y, w } = place(sk);
   const hs = outlineW(strokeW(sk)) / 2;
-  const tab = ARM_INNER.filter(([d]) => d <= HAND_D_CUT + 0.02);
+  // a robe's hanging sleeves cover the arm down to their hem, so the strip begins below it
+  const from = p.outfit.robe_color !== null && Number(p.outfit.sleeve_drop) > 0 ? 0.9 + 1.8 * Math.min(1, Number(p.outfit.sleeve_drop)) : 0;
+  const tab = ARM_INNER.filter(([d]) => d <= HAND_D_CUT + 0.02 && d >= from);
   const strip = (sign: number): string => {
     const inner = tab.map(([d, v]) => `${fmt1(cx + sign * (w(d, v) - hs * 1.5))},${fmt1(y(d))}`);
     const outer = [...tab].reverse().map(([d]) => `${fmt1(cx + sign * w(d, 1.0))},${fmt1(y(d))}`);

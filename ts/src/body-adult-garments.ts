@@ -6,7 +6,7 @@
 
 import { OUTLINE, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
-import { LEG_INNER, LEG_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
+import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BLOUSE, ADULT_BLOUSE_LINES } from "./body-adult-blouse-data.ts";
 import { ADULT_BODICE, BODICE_BUTTONS, BODICE_BUTTON_R } from "./body-adult-bodice-data.ts";
 import { ADULT_BOW } from "./body-adult-bow-data.ts";
@@ -236,11 +236,11 @@ export function adultBodiceCloth(sk: Skeleton, color: string, hem: number | null
 }
 
 /**
- * A blouse is tucked in when the outfit says so (`tunic_tucked`), or a skirt or a bodice is worn (a bodice ends above the blouse's hem) (the skirt is drawn before the chest layers, so an untucked blouse would lay its hem over it and show as
+ * A blouse is tucked in when the outfit says so (`tunic_tucked`), or a skirt, hakama or a bodice is worn (a bodice ends above the blouse's hem) (the skirt is drawn before the chest layers, so an untucked blouse would lay its hem over it and show as
  * white strips along the apron's edge, the owner). A tucked blouse is drawn in the legs' layer, after the briefs and before the shorts or the skirt, which then cover its lower part; an untucked
  * one is in the chest layers, over everything below the waist (as in ref 02, the blouse over the shorts).
  */
-const tucked = (p: CharacterParams): boolean => p.outfit.tunic_color !== null && (truthy(p.outfit.tunic_tucked) || p.outfit.skirt_color !== null || p.outfit.bodice_color !== null);
+const tucked = (p: CharacterParams): boolean => p.outfit.tunic_color !== null && (truthy(p.outfit.tunic_tucked) || p.outfit.skirt_color !== null || p.outfit.bodice_color !== null || p.outfit.hakama_color !== null);
 
 // ---- socks and boots, cut from the leg's and the foot's own tables
 
@@ -387,6 +387,326 @@ export function adultBoots(sk: Skeleton, p: CharacterParams): string {
   return boot(-1) + boot(1);
 }
 
+// ---- belt, pouches, crystals, coat and robe, cut from the torso's tables
+
+/** Where the belt sits: the top of the band, in head heights below the chin (her waist is the narrowest part of the torso, 1.3), and the height of one unit of `belt_scale`. */
+const BELT = { top: 1.26, unit: 0.075 } as const;
+
+/** A closed path through `pts`, smooth, as the garments' tables give them. */
+const closed = (pts: readonly Pt[]): string => `M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}Z`;
+
+/** The band's depths from `d0` to `d1`, every `step`, and `d1`. */
+const dsBand = (d0: number, d1: number, step = 0.03): number[] => depths(d0, d1, step);
+
+/** The belt's top and bottom depths at its height `scale` (1 is a belt, 3 an obi). */
+const beltBand = (scale: number): [number, number] => [BELT.top, BELT.top + BELT.unit * Math.max(0.5, scale)];
+
+/**
+ * A belt on `belt_color`: a band round the waist cut from the torso's side table, a shade outside the skin, its top and bottom edges dipping a little toward the front, with a
+ * buckle (a frame and a plate). `belt_scale` is its height. Over a coat it is drawn after the coat (`adultCoat`), so the coat is cinched by it.
+ */
+export function adultBeltBand(sk: Skeleton, p: CharacterParams): string {
+  const color = p.outfit.belt_color;
+  if (color === null) return "";
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const [d0, d1] = beltBand(Number(p.outfit.belt_scale));
+  const out = (s: number, d: number): Pt => [cx + s * w(d, at(SIDE, d) + 0.014), y(d)];
+  const dip = 0.012 * 2 * sk.head_r;
+  const ds = dsBand(d0, d1);
+  const left = ds.map((d) => out(-1, d));
+  const right = ds.map((d) => out(1, d));
+  const path =
+    `M ${fmt1((left[0] as Pt)[0])} ${fmt1((left[0] as Pt)[1])} ` +
+    quad([cx, (left[0] as Pt)[1] + 2 * dip], right[0] as Pt) +
+    smooth(right) +
+    quad([cx, (right[right.length - 1] as Pt)[1] + 2 * dip], left[left.length - 1] as Pt) +
+    smooth([...left].reverse()) +
+    "Z";
+  const mid = y((d0 + d1) / 2) + dip;
+  const h = y(d1) - y(d0);
+  const bw = Math.max(h * 1.5, 0.075 * 2 * sk.head_r);
+  const bh = h * 0.78;
+  const plate = `<rect x="${fmt1(cx - bw / 2)}" y="${fmt1(mid - bh / 2)}" width="${fmt1(bw)}" height="${fmt1(bh)}" rx="${fmt1(bh * 0.18)}" fill="#8a8578" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.67)}" />`;
+  const inner = `<rect x="${fmt1(cx - bw * 0.3)}" y="${fmt1(mid - bh * 0.28)}" width="${fmt1(bw * 0.6)}" height="${fmt1(bh * 0.56)}" rx="${fmt1(bh * 0.1)}" fill="${shade(colorStr(color), 0.6, 1.0)}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.45)}" />`;
+  return `<path d="${path}" ${inkAttrs(sk, colorStr(color))} />${plate}${inner}`;
+}
+
+/** A pouch on each hip on `pouch_color`, hanging from the belt: body, flap and button, as the chibi's, sized off the head and set on the hip's side. Needs a belt. */
+export function adultPouches(sk: Skeleton, p: CharacterParams): string {
+  const color = p.outfit.pouch_color;
+  if (color === null || p.outfit.belt_color === null) return "";
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const [, d1] = beltBand(Number(p.outfit.belt_scale));
+  const U = 2 * sk.head_r;
+  const pw = 0.085 * U;
+  const ph = 0.12 * U;
+  const top = y(d1) - 0.01 * U;
+  const r = pw * 0.18;
+  const fill = colorStr(color);
+  let out = "";
+  for (const side of [-1, 1]) {
+    const x = cx + side * w(d1, 0.31) - pw / 2;
+    const flap = ph * 0.44;
+    out +=
+      `<rect x="${fmt1(x)}" y="${fmt1(top)}" width="${fmt1(pw)}" height="${fmt1(ph)}" rx="${fmt1(r)}" fill="${fill}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.85)}" />` +
+      `<rect x="${fmt1(x)}" y="${fmt1(top)}" width="${fmt1(pw)}" height="${fmt1(flap)}" rx="${fmt1(r)}" fill="${shade(fill, 0.82, 1.0)}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.85)}" />` +
+      `<circle cx="${fmt1(x + pw / 2)}" cy="${fmt1(top + flap)}" r="${fmt1(pw * 0.1)}" fill="${shade(fill, 0.5, 1.0)}" />`;
+  }
+  return out;
+}
+
+/** The four crystals' distances from the centre line, outer to inner, in head heights: two a side with the buckle between the middle pair. */
+const CRYSTAL_V: readonly [number, number, number, number] = [-0.215, -0.115, 0.115, 0.215];
+
+/** Up to four faceted gems clipped along the belt, two a side, with the tongs hanging from the outer right one: the chibi's rig on the adult belt. Needs a belt. */
+export function adultCrystals(sk: Skeleton, p: CharacterParams): string {
+  const colors = [p.outfit.crystal_color_1, p.outfit.crystal_color_2, p.outfit.crystal_color_3, p.outfit.crystal_color_4];
+  const beltColor = p.outfit.belt_color;
+  if (beltColor === null || colors.every((c) => c === null)) return "";
+  const { cx, y } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const U = 2 * sk.head_r;
+  const [d0, d1] = beltBand(Number(p.outfit.belt_scale));
+  const bandCy = (y(d0) + y(d1)) / 2;
+  const h = 0.12 * U;
+  const gw = h * 0.58;
+  let out = "";
+  CRYSTAL_V.forEach((v, i) => {
+    const color = colors[i] as string | null;
+    if (color === null) return;
+    const gx = cx + v * U;
+    const top: Pt = [gx, bandCy - h / 2];
+    const right: Pt = [gx + gw / 2, bandCy - h * 0.08];
+    const bottom: Pt = [gx, bandCy + h / 2];
+    const left: Pt = [gx - gw / 2, bandCy - h * 0.08];
+    const fill = colorStr(color);
+    out += `<path d="M ${fmt1(top[0])} ${fmt1(top[1])} L ${fmt1(right[0])} ${fmt1(right[1])} L ${fmt1(bottom[0])} ${fmt1(bottom[1])} L ${fmt1(left[0])} ${fmt1(left[1])} Z" fill="${fill}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.8)}" stroke-linejoin="round" />`;
+    out += `<line x1="${fmt1(top[0])}" y1="${fmt1(top[1])}" x2="${fmt1(bottom[0])}" y2="${fmt1(bottom[1])}" stroke="${shade(fill, 0.6, 1.0)}" stroke-width="${fmt2(ink * 0.5)}" />`;
+    const strapH = h * 0.24;
+    const strapW = gw * 1.22;
+    out += `<rect x="${fmt1(gx - strapW / 2)}" y="${fmt1(bandCy - h * 0.08 - strapH / 2)}" width="${fmt1(strapW)}" height="${fmt1(strapH)}" fill="${colorStr(beltColor)}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.6)}" />`;
+  });
+  if (truthy(p.outfit.crystal_tongs)) {
+    const tx = cx + (CRYSTAL_V[3] as number) * U;
+    const ty = bandCy + h * 1.05;
+    const arm = h * 0.75;
+    out +=
+      `<line x1="${fmt1(tx - arm * 0.22)}" y1="${fmt1(ty - arm * 0.55)}" x2="${fmt1(tx + arm * 0.28)}" y2="${fmt1(ty + arm * 0.55)}" stroke="#8a8578" stroke-width="${fmt2(ink * 0.7)}" stroke-linecap="round" />` +
+      `<line x1="${fmt1(tx + arm * 0.22)}" y1="${fmt1(ty - arm * 0.55)}" x2="${fmt1(tx - arm * 0.28)}" y2="${fmt1(ty + arm * 0.55)}" stroke="#8a8578" stroke-width="${fmt2(ink * 0.7)}" stroke-linecap="round" />` +
+      `<circle cx="${fmt1(tx)}" cy="${fmt1(ty)}" r="${fmt1(ink * 0.6)}" fill="#6b665c" />`;
+  }
+  return out;
+}
+
+/** The coat's hem, in head heights below the chin, for `coat_length` (0.2 a vest to just under the bust, 0.85 to the shin). */
+const coatHem = (length: number): number => 0.4 + 4.3 * Math.min(0.85, Math.max(0.2, Number(length)));
+
+/** The front edge's distance from the centre line at a depth: close at the throat, pushed aside by the bust, closing toward the hem, widening again as the coat hangs. Each [d, v]. */
+const COAT_FRONT: Knots = [[0.5, 0.09], [0.8, 0.14], [1.0, 0.19], [1.2, 0.205], [1.45, 0.16], [1.9, 0.13], [3.0, 0.15], [4.5, 0.17]];
+
+/**
+ * An open coat on `coat_color`: two panels cut from the torso's tables, hanging from the shoulders (the armhole follows the blouse's sleeve seam, so the arms stay bare or
+ * keep their sleeves), the outer edges following her waist and hip and flaring a little toward the hem, the front edges parting round the bust with the breasts' lines
+ * showing on the cloth. `coat_length` sets the hem. A flat garment in one colour. The belt is drawn over it.
+ */
+export function adultCoat(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.coat_color === null) return "";
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const hem = coatHem(p.outfit.coat_length);
+  const color = colorStr(p.outfit.coat_color);
+  // the seam's top is the blouse's strap beside the neck; the coat's shoulder starts where the seam meets the shoulder's slope
+  const seam = [[0.424, 0.26] as const, ...ADULT_BLOUSE_LINES.seam.filter(([, d]) => d > 0.3 && d <= 1.096)];
+  const flare = (d: number): number => 0.014 + 0.06 * ease((d - 1.3) / Math.max(0.5, hem - 1.3));
+  const panel = (s: number): string => {
+    const P = (v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+    const dsSide: number[] = [];
+    for (let d = 1.15; d < hem - 1e-9; d += 0.06) dsSide.push(d);
+    dsSide.push(hem);
+    const shoulder = seam.map(([v, d]) => P(v, d));
+    const side = dsSide.map((d) => P(at(SIDE, d) + flare(d), d));
+    const dsFront: number[] = [];
+    for (let d = hem; d > 0.5 + 1e-9; d -= 0.08) dsFront.push(d);
+    dsFront.push(0.5);
+    const front = dsFront.map((d) => P(at(COAT_FRONT, d), d));
+    const collar = [P(0.125, 0.32), P(0.165, 0.18), P(0.3, 0.205)];
+    const top = shoulder[0] as Pt;
+    return (
+      `M ${fmt1(top[0])} ${fmt1(top[1])} ` +
+      smooth(shoulder) +
+      smooth(side) +
+      `L ${fmt1((front[0] as Pt)[0])} ${fmt1((front[0] as Pt)[1])} ` +
+      smooth(front) +
+      collar.map((q) => `L ${fmt1(q[0])} ${fmt1(q[1])} `).join("") +
+      "Z"
+    );
+  };
+  const left = panel(-1);
+  const right = panel(1);
+  const clip = `<clipPath id="adult-coat-clip"><path d="${left}" /><path d="${right}" /></clipPath>`;
+  const bust = adultBustLine(sk, DEFAULT_TAPER, shade(color, 0.8, 1.0), 0.7);
+  return (
+    `<path d="${left}" ${inkAttrs(sk, color)} /><path d="${right}" ${inkAttrs(sk, color)} />${clip}<g clip-path="url(#adult-coat-clip)">${bust}</g>` +
+    adultBeltBand(sk, p)
+  );
+}
+
+/** Where the robe's front ends (just under the belt's band), the depth of the V's tip, and the shoulder's slope from the seam out to the arm. Head heights below the chin. */
+const ROBE = { hem: 1.56, tip: 0.82, tipV: 0.04 } as const;
+const SHOULDER_SLOPE: Knots = [[0.424, 0.26], [0.5, 0.26], [0.571, 0.27], [0.615, 0.35], [0.634, 0.46]];
+
+/**
+ * A robe on `robe_color`, kimono style: the torso's cloth from the shoulders to just under the belt, cut from the side and seam tables, with a V-necked front (the two collars meet at a
+ * point a little right of centre) and the fold of the lapel running from that point down to her right hip. With `sleeve_drop` above 0 each arm gets a hanging sleeve: a bag of cloth
+ * from the shoulder, the outer edge standing off the arm, the arm coming out of its hem. One flat colour.
+ */
+export function adultRobe(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.robe_color === null) return "";
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const color = colorStr(p.outfit.robe_color);
+  const P = (s: number) => (v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+  const seam = ADULT_BLOUSE_LINES.seam.filter(([, d]) => d > 0.3 && d <= 1.096);
+  const sideDs: number[] = [];
+  for (let d = 1.15; d < ROBE.hem - 1e-9; d += 0.06) sideDs.push(d);
+  sideDs.push(ROBE.hem);
+  const sideV = (d: number): number => at(SIDE, d) + 0.016;
+  const dip = 0.012 * 2 * sk.head_r;
+  const pl = P(-1);
+  const pr = P(1);
+  // the torso panel, clockwise from the left shoulder: along the shoulders, down the right side, across the hem, up the left side, and the V
+  const rightSide = [pr(0.424, 0.26), ...seam.map(([v, d]) => pr(v, d)), ...sideDs.map((d) => pr(sideV(d), d))];
+  const leftSide = [...sideDs.map((d) => pl(sideV(d), d)).reverse(), ...seam.map(([v, d]) => pl(v, d)).reverse(), pl(0.424, 0.26)];
+  const tip: Pt = [cx + w(ROBE.tip, ROBE.tipV), y(ROBE.tip)];
+  const collarR = pr(0.16, 0.17);
+  const collarL = pl(0.16, 0.17);
+  const hemR = rightSide[rightSide.length - 1] as Pt;
+  const hemL = leftSide[0] as Pt;
+  const d =
+    `M ${fmt1(collarL[0])} ${fmt1(collarL[1])} L ${fmt1(tip[0])} ${fmt1(tip[1])} L ${fmt1(collarR[0])} ${fmt1(collarR[1])} ` +
+    `L ${fmt1((rightSide[0] as Pt)[0])} ${fmt1((rightSide[0] as Pt)[1])} ` +
+    smooth(rightSide) +
+    quad([cx, hemR[1] + 2 * dip], hemL) +
+    smooth(leftSide) +
+    "Z";
+  // the lapel's fold: from the V's tip to the hem at her right hip, lighter than the outline
+  const foldEnd = pr(0.3, ROBE.hem - 0.04);
+  const fold = `<path d="M ${fmt1(tip[0])} ${fmt1(tip[1])} L ${fmt1(foldEnd[0])} ${fmt1(foldEnd[1])}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.67)}" stroke-linecap="round" />`;
+  // hanging sleeves
+  const drop = Math.max(0, Math.min(1, Number(p.outfit.sleeve_drop)));
+  let sleeves = "";
+  if (drop > 0) {
+    const hemD = 0.9 + 1.8 * drop;
+    const r = 0.05;
+    for (const s of [-1, 1]) {
+      const Q = P(s);
+      const top = SHOULDER_SLOPE.map(([v, dd]) => Q(v, dd));
+      // wide enough to cover a blouse's puffs (0.75 out at 0.9 below the chin), then standing off the arm
+      const outerV = (dd: number): number => (dd < 0.95 ? 0.634 + 0.15 * ease((dd - 0.4) / 0.55) : Math.max(0.78, at(ARM_OUTER, dd) + 0.09));
+      const outerDs: number[] = [];
+      for (let dd = 0.55; dd < hemD - r; dd += 0.08) outerDs.push(dd);
+      const out = outerDs.map((dd) => Q(outerV(dd), dd));
+      const corner = Q(outerV(hemD), hemD);
+      const cornerEnd = Q(outerV(hemD) - r, hemD);
+      const inner = [...ADULT_BLOUSE_LINES.seam.filter(([, dd]) => dd > 0.5 && dd <= 1.096).map(([v, dd]) => Q(v, dd)), ...outerDs.filter((dd) => dd >= 1.15).map((dd) => Q(at(ARM_INNER, dd) - 0.01, dd))];
+      const hemI = Q(at(ARM_INNER, hemD) - 0.01, hemD);
+      const path =
+        `M ${fmt1((top[0] as Pt)[0])} ${fmt1((top[0] as Pt)[1])} ` +
+        smooth(top) +
+        smooth(out) +
+        quad(corner, cornerEnd) +
+        `L ${fmt1(hemI[0])} ${fmt1(hemI[1])} ` +
+        smooth([...inner, hemI].reverse()) +
+        "Z";
+      sleeves += `<path d="${path}" ${inkAttrs(sk, color)} />`;
+    }
+  }
+  return `<path d="${d}" ${inkAttrs(sk, color)} />${fold}${sleeves}`;
+}
+
+/**
+ * Hakama on `hakama_color`: wide trousers from under the belt to `hakama_length` (0 at the hip, 1 at the ankle): the waist's width, flaring over the hips and out to a wide hem, with
+ * the pleats' lines fanning from the waist to where the panel turns under. One flat colour. The arms are drawn over it, as over a skirt.
+ */
+export function adultHakama(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.hakama_color === null) return "";
+  const { cx, y, w } = place(sk);
+  const color = colorStr(p.outfit.hakama_color);
+  const top = 1.4;
+  const len = p.outfit.hakama_length;
+  const hem = len === null ? 3.0 : 2.2 + (FOOT_D_CUT - 2.2) * Math.min(1, Math.max(0, Number(len)));
+  const vTop = at(SIDE, top) + 0.008;
+  const vHem = Math.max(at(SIDE, hem) + 0.14, 0.72);
+  // the cloth clears the hip, and the curve over it is smoothed so it does not follow every wobble of the body's edge
+  const raw = (d: number): number => Math.max(at(SIDE, d) + 0.035, vTop + (vHem - vTop) * Math.pow((d - top) / (hem - top), 0.85));
+  const grid: number[] = [];
+  for (let d = top; d < hem + 1e-9; d += 0.04) grid.push(d);
+  let vs = grid.map(raw);
+  for (let pass = 0; pass < 3; pass++) {
+    const prev = vs;
+    vs = prev.map((_, i) => {
+      const near = prev.slice(Math.max(0, i - 4), i + 5);
+      return near.reduce((a, b) => a + b, 0) / near.length;
+    });
+  }
+  const edge = (d: number): number => Math.max(at(SIDE, d) + 0.025, at(grid.map((g, i) => [g, vs[i] as number] as const), d));
+  const ds: number[] = [];
+  for (let d = top; d < hem - 0.08; d += 0.08) ds.push(d);
+  const P = (s: number) => (v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+  const right = ds.map((d) => P(1)(edge(d), d));
+  const left = ds.map((d) => P(-1)(edge(d), d)).reverse();
+  const r = 0.07 * 2 * sk.head_r;
+  const sag = 0.012 * 2 * sk.head_r;
+  const topL = P(-1)(edge(top), top);
+  const hl = P(-1)(edge(hem - 0.08), hem - 0.08);
+  const cr = P(1)(edge(hem) + 0.01, hem);
+  const cl = P(-1)(edge(hem) + 0.01, hem);
+  const path =
+    `M ${fmt1(topL[0])} ${fmt1(topL[1])} ` +
+    quad([cx, topL[1] + 2 * sag], right[0] as Pt) +
+    smooth(right) +
+    quad(cr, [cr[0] - r, cr[1]]) +
+    quad([cx, cr[1] + 2 * sag], [cl[0] + r, cl[1]]) +
+    quad(cl, hl) +
+    smooth(left) +
+    "Z";
+  const pleats = truthy(p.shaded)
+    ? [-3, -2, -1, 0, 1, 2, 3]
+        .map((i) => {
+          const f = i / 3.5;
+          const a: Pt = [cx + w(top, vTop) * f, y(top)];
+          const bPt: Pt = [cx + w(hem - 0.1, edge(hem - 0.1)) * f, y(hem - 0.1)];
+          return `<line x1="${fmt1(a[0])}" y1="${fmt1(a[1])}" x2="${fmt1(bPt[0])}" y2="${fmt1(bPt[1])}" stroke="${shade(color, 0.8, 1.08)}" stroke-width="${fmt2(outlineW(strokeW(sk)) * 0.4)}" opacity="0.75" />`;
+        })
+        .join("")
+    : "";
+  return `<path d="${path}" ${inkAttrs(sk, color)} />${pleats}`;
+}
+
+/**
+ * A collar on `collar_color`: a band round her neck from under the jaw to just below the base of the throat, a little wider at the bottom where the neck meets the shoulders, its top
+ * sagging under the chin; a standing collar has a notch at the front where the two halves meet. The traced cuts are the chibi's shapes and are not used.
+ */
+export function adultCollar(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.collar_color === null) return "";
+  const { cx, y } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const nw = sk.neck_half_w;
+  const top = y(0.0) + 0.01 * 2 * sk.head_r;
+  const sag = y(0.0) + 0.045 * 2 * sk.head_r;
+  const bottom = y(0.2);
+  const hi = nw * 1.12;
+  const lo = nw * 1.3;
+  const fill = colorStr(p.outfit.collar_color);
+  const d =
+    `M ${fmt1(cx - hi)} ${fmt1(top)} Q ${fmt1(cx)} ${fmt1(top + 2 * (sag - top))} ${fmt1(cx + hi)} ${fmt1(top)} ` +
+    `L ${fmt1(cx + lo)} ${fmt1(bottom)} L ${fmt1(cx - lo)} ${fmt1(bottom)} Z`;
+  const notch = truthy(p.outfit.collar_mock) ? "" : `<path d="M ${fmt1(cx)} ${fmt1(sag)} L ${fmt1(cx)} ${fmt1(bottom)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.67)}" stroke-linecap="round" />`;
+  return `<path d="${d}" ${inkAttrs(sk, fill)} />${notch}`;
+}
+
 /** The bodice on `bodice_color`, cut at the sash or the skirt's top when one is worn. */
 export function adultBodice(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.bodice_color === null) return "";
@@ -411,4 +731,14 @@ export const ADULT_GARMENT_PARTS = {
   // the strap's slot, which comes before the apron's in the chest layers: the bodice, then the cross-body strap of the shared garments
   _strap: (sk: Skeleton, p: CharacterParams): string => adultBodice(sk, p) + strap(sk, p),
   _apron: adultApron,
+  _coat: adultCoat,
+  _robe_front: adultRobe,
+  _collar: adultCollar,
+  _hakama: adultHakama,
+  _hanging_sleeves: none,
+  // the traced coat cuts are the chibi's shapes: on this body the coat is the one above, whatever `coat_cut` says
+  _traced_coat_and_belt: none,
+  _belt: (sk: Skeleton, p: CharacterParams): string => (p.outfit.coat_color !== null ? "" : adultBeltBand(sk, p)),
+  _pouches: adultPouches,
+  _crystal_harness: adultCrystals,
 };

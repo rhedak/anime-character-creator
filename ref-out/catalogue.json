@@ -100,7 +100,7 @@
   "bodies": [
     {
       "id": "adult_female",
-      "label": "Adult woman (about 6.4 heads)"
+      "label": "Adult woman (about 6.4 heads; always Franzi's head, face and hands)"
     },
     {
       "id": "tall_chibi",
@@ -117,12 +117,17 @@
   ],
   "body_ignores": {
     "adult_female": [
+      "belt_cut",
+      "belt_keeper_pair",
+      "belt_reach",
       "brow_length",
       "bust",
       "chest",
       "chin_shadow",
       "coat_button_color",
+      "coat_cut",
       "coat_sleeves",
+      "collar_cut",
       "eye_corner",
       "eye_gap",
       "eye_size",
