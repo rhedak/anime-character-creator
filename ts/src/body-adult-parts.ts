@@ -782,13 +782,22 @@ export function adultNeck(sk: Skeleton, p: CharacterParams): string {
   return `<rect x="${fmt1(cx - nw)}" y="${fmt1(top)}" width="${fmt1(2 * nw)}" height="${fmt1(bottom - top + 3 * hs)}" fill="${colorStr(p.skin_tone)}" />` + side(cx - nw) + side(cx + nw);
 }
 
+/**
+ * `_arms` is called twice when a coat is worn (render.ts, layers 15 and 18): first with `false` for the arms and then with `true` for the hands, so the hands come out over the coat's sleeves.
+ * The adult arms are part of the body outline and only their hands' and feet's detail is drawn here, so the first pass draws nothing and the second all of it. Called with `null` (no coat) it
+ * draws all of it once. Drawing it in both passes defined its ids twice.
+ */
+export function adultArms(sk: Skeleton, p: CharacterParams, only: boolean | null = null): string {
+  return only === false ? "" : adultDetail(sk, p);
+}
+
 const none = (): string => "";
 
 /** The parts an adult body replaces. Everything else (head, hair, face, garments) is the shared code. */
 export const ADULT_PARTS = {
   _torso: adultTorso,
   _legs_and_boots: adultBriefs,
-  _arms: adultDetail,
+  _arms: adultArms,
   _underwear_top: none,
   _navel: none,
   _chest_lines: none,

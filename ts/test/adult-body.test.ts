@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import { BODY_TYPES, skeletonFor } from "../src/body.ts";
 import { ADULT_FACE_AGE, characterParams, outfit, replace } from "../src/model.ts";
+import { ADULT_CUT_ON_CHIBI, hairstyleFor, hairstyleOf } from "../src/core-head.ts";
 import { FRANZI, PRESETS } from "../src/presets.ts";
 import { adultBodiceCloth } from "../src/body-adult-garments.ts";
 import { renderCharacter } from "../src/render.ts";
@@ -228,4 +229,27 @@ test("a blouse is tucked into the shorts when the outfit says so, and lies over 
   const looseSvg = renderCharacter(wearing({ tunic_color: "#faf8f4", trouser_color: "#efe9dc" }), null, null, false);
   assert.ok(tuckedSvg.indexOf('fill="#faf8f4"') < tuckedSvg.indexOf('fill="#efe9dc"'), "tucked: the shorts are over the blouse");
   assert.ok(looseSvg.indexOf('fill="#faf8f4"') > looseSvg.indexOf('fill="#efe9dc"'), "loose: the blouse is over the shorts");
+});
+
+for (const cut of ["blazer", "lab_coat", "open_jacket"]) {
+  test(`a coat on the adult woman defines every id once and draws her hands after it [${cut}]`, () => {
+    const svg = renderCharacter(wearing({ coat_color: "#3a6ea5", coat_cut: cut }));
+    const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+    assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), [], "an id is defined twice");
+    const refs = [...svg.matchAll(/url\(#([^)]+)\)/g)].map((m) => m[1] as string);
+    assert.deepEqual(refs.filter((r) => !ids.includes(r)), []);
+    assert.ok(svg.indexOf('id="adult-hand-body"') > svg.indexOf('fill="#3a6ea5"'), "the hands are drawn over the coat");
+  });
+}
+
+test("her cut on a chibi body falls back to a chibi cut, so the head has hair, and is hers again on the adult body", () => {
+  for (const body of ["tall_chibi", "tall_chibi_long_torso", "tall_slender"]) {
+    const hers = characterParams({ ...FRANZI, body });
+    const fallback = characterParams({ ...FRANZI, body, hairstyle: "long_center_part" });
+    assert.equal(renderCharacter(hers), renderCharacter(fallback), `${body}: the cut is the nearest chibi one`);
+    assert.ok((renderCharacter(hers).match(/fill="#1b1c22"/g) ?? []).length >= 2, `${body}: the hair is drawn in her colour`);
+  }
+  assert.equal(hairstyleOf(FRANZI), hairstyleFor("swept_ponytail"));
+  assert.equal(hairstyleOf(characterParams({ ...FRANZI, body: "tall_chibi" })), hairstyleFor(ADULT_CUT_ON_CHIBI));
+  assert.equal(FRANZI.hairstyle, "swept_ponytail", "the character still says swept_ponytail");
 });
