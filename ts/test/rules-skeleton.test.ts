@@ -6,6 +6,7 @@
 // around in ts/src): `LONG_TORSO_HEAD_SCALE` (body.ts, 1.1) and `WIDTH_FOLLOW` (skeleton.ts, 0.6). They appear here as
 // the literals the Python source gives, which is also what pins them.
 
+import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { BODY_TYPES, limbTaperAt, skeletonFor } from "../src/body.ts";
@@ -160,7 +161,7 @@ test("test_a_body_profile_that_measures_the_wrist_moves_the_hand_and_the_rest_do
   assert.ok(Object.keys(BODY_TYPES).length >= 3);
   for (const [name, profile] of Object.entries(BODY_TYPES)) {
     const sk = skeletonFor(characterParams({ body: name }));
-    const measured = name === "tall_slender";
+    const measured = name === "tall_slender" || Object.hasOwn(ADULT_BODY_TYPES, name); // the adult woman's profile measures the wrist too
     assert.equal(profile.wrist_y !== null, measured, name);
     assert.equal(sk.wrist_y !== null, measured, name);
     const [, , centreWrist, wristY] = armLine(sk);
@@ -175,7 +176,8 @@ test("test_only_a_profile_that_measured_the_neck_narrows_it", () => {
   const chibi = plain.neck_half_w / plain.head_r;
   for (const [name, profile] of Object.entries(BODY_TYPES)) {
     const sk = skeletonFor(characterParams({ body: name }));
-    assert.equal(profile.neck_half_w !== null, name === "tall_slender", name);
+    const narrow = name === "tall_slender" || Object.hasOwn(ADULT_BODY_TYPES, name); // and her neck
+    assert.equal(profile.neck_half_w !== null, narrow, name);
     if (name === "tall_slender") assert.ok(sk.neck_half_w / sk.head_r < chibi * 0.75, `${name}: ${sk.neck_half_w / sk.head_r} against ${chibi}`);
   }
 });

@@ -15,7 +15,7 @@ import {
   eyePlacement,
   headEdgeX,
   headPaths,
-  hairstyleFor,
+  hairstyleOf,
   brow,
   mirror,
 } from "./core-head.ts";
@@ -182,7 +182,7 @@ export function earOuter(build: number): Chain {
  * it.
  */
 export function ears(sk: Skeleton, p: CharacterParams): string {
-  if (truthy(hairstyleFor(p.hairstyle).covers_ears)) return "";
+  if (truthy(hairstyleOf(p).covers_ears)) return "";
   const cx = sk.head_cx;
   const cy = sk.head_cy;
   const r = sk.head_r;

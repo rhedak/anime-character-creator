@@ -18,6 +18,10 @@
         "label": "Elara Sturm"
       },
       {
+        "id": "franzi",
+        "label": "Franzi"
+      },
+      {
         "id": "gero",
         "label": "Gero"
       },
@@ -95,6 +99,10 @@
   },
   "bodies": [
     {
+      "id": "adult_female",
+      "label": "Adult woman (about 6.4 heads; always Franzi's head, face and hands)"
+    },
+    {
       "id": "tall_chibi",
       "label": "Tall chibi (Katherina's)"
     },
@@ -107,6 +115,62 @@
       "label": "Tall and slender (about 4.4 heads)"
     }
   ],
+  "body_ignores": {
+    "adult_female": [
+      "belt_cut",
+      "belt_keeper_pair",
+      "belt_reach",
+      "brow_length",
+      "bust",
+      "chest",
+      "chin_shadow",
+      "coat_button_color",
+      "coat_cut",
+      "coat_sleeves",
+      "collar_cut",
+      "eye_corner",
+      "eye_gap",
+      "eye_size",
+      "eye_tilt",
+      "eye_width",
+      "face_age",
+      "grip_style",
+      "hair_knot",
+      "hair_length",
+      "hair_tail",
+      "hair_tip_color",
+      "hairstyle",
+      "hakama_length_chibi",
+      "hand_style",
+      "hip_pocket_color",
+      "iris_aspect",
+      "iris_inset",
+      "iris_size",
+      "lash",
+      "lid_shadow",
+      "mouth_drop",
+      "mouth_width",
+      "neckline_notch",
+      "neckline_round",
+      "neckline_stand",
+      "neckline_trim",
+      "nose_dot",
+      "scar_side",
+      "skirt_cut",
+      "skirt_length",
+      "skirt_length_chibi",
+      "sleeve_cut",
+      "sleeve_long",
+      "sleeve_under_cap",
+      "underskirt_color",
+      "undersleeve_color",
+      "underwear_top",
+      "waist_shift",
+      "wristband_color",
+      "wristband_side",
+      "wristband_text"
+    ]
+  },
   "hand_styles": [
     {
       "id": "mitten",
@@ -215,6 +279,10 @@
     {
       "id": "short_tousled",
       "label": "Short, tousled"
+    },
+    {
+      "id": "swept_ponytail",
+      "label": "Swept ponytail"
     }
   ],
   "finishes": [
@@ -601,8 +669,16 @@
         "field": "apron_color",
         "label": "Apron",
         "optional": true
-      },
-      "requires": "belt"
+      }
+    },
+    {
+      "id": "bodice",
+      "label": "Bodice (adult woman only)",
+      "color": {
+        "field": "bodice_color",
+        "label": "Bodice",
+        "optional": true
+      }
     },
     {
       "id": "collar",

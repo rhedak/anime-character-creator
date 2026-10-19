@@ -3,16 +3,16 @@
 
 The drawing is TypeScript now (`ts/bin/render.ts` writes the SVG); PNG export stays
 here because cairosvg is Python and the committed PNGs under `ref-out/` are what it
-makes. This is the same call `generate.py` makes, `svg2png(bytestring=svg.encode(),
+makes. This is the same call the Python CLI's `generate.py` made (in the tag `python-final`), `svg2png(bytestring=svg.encode(),
 scale=2)`, so a PNG made from an SVG file is pixel-identical to the one the Python CLI
 wrote beside it. Nothing is added to the PNG (the CLI's `--metadata` text chunk is not
 written here; the refresh scripts never use it).
 
     harness/svg2png.py IN.svg OUT.png [IN2.svg OUT2.png ...] [--scale N]
 
-Run it through the project's venv with the cairo environment variable that `render.sh`
+Run it through the project's venv with the cairo environment variable that the old `render.sh`
 sets (cairosvg finds libcairo through dlopen, which on macOS does not look in
-Homebrew's prefix); `refresh-ref-out.sh` and `refresh-bases.sh` do, as `render.sh` does.
+Homebrew's prefix); `refresh-ref-out.sh` and `refresh-bases.sh` do.
 Exit status 1 if cairo is missing or a file cannot be read.
 """
 

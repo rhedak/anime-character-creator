@@ -32,4 +32,4 @@ mkdir -p out/trace out/ear out/ear2 out/trousers out/variants out/head out/scar
 # The same two places `render.sh` looks: Homebrew on Apple silicon, then on
 # Intel, where cairo lives under /usr/local and the first alone finds nothing.
 export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-}:/opt/homebrew/lib:/usr/local/lib"
-exec uv run python "$@"
+exec uv run --project tools python "$@"

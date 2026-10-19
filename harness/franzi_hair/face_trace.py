@@ -1,0 +1,185 @@
+"""Trace Franzi's head and ears from the composite (trace-reference skill) into chains in head radii.
+
+    ./harness/run.sh harness/franzi_hair/face_trace.py
+
+The head is the skin of the face (closed over the eyes and brows) joined above the jaw with everything inside the hair, so
+the hair drawn over it never lets the page show; below that its edge is the visible jaw and chin. It is made symmetric from
+its right half (the left is more hidden by hair). The right ear is traced from its skin component and mirrored. Same
+calibration as trace.py; grown by 3 px so the line lands on the centre of our stroke. Writes out/franzi_hair/face.json
+(head, ear_r, ear_l: closed chains in head radii).
+"""
+
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+from scipy import ndimage
+
+sys.path.insert(0, "/Users/henrik/git/anime-character-creator/.claude/skills/trace-reference")
+import trace_lib as tl  # noqa: E402
+
+OUT = Path("out/franzi_hair")
+OX, OY, S = 660.0, 270.5, 175.7
+JAW_R = 0.55  # below this many radii (below the head centre) the head's edge is the visible jaw, above it the hair's inside
+
+im = np.array(Image.open("ref/franzi/04-bikini-fullbody.png").convert("RGBA"))
+rgb = im[..., :3].astype(int)
+skin = (np.abs(rgb - [0xFF, 0xD0, 0xB5]).sum(2) < 70) & (im[..., 3] > 128)
+skin[560:] = False
+lab, _ = ndimage.label(ndimage.binary_closing(skin, iterations=1))
+
+
+def component(x, y):
+    ys, xs = np.nonzero(lab)
+    i = int(np.argmin((xs - x) ** 2 + (ys - y) ** 2))
+    return lab == lab[ys[i], xs[i]]
+
+
+def to_r(pts):
+    return [((x - OX) / S, (y - OY) / S) for x, y in pts]
+
+
+yy, xx = np.mgrid[0 : im.shape[0], 0 : im.shape[1]]
+yr = (yy - OY) / S
+hair = ndimage.binary_fill_holes(np.array(Image.open("ref/franzi/segments/04-bikini-fullbody/black-hair.png"))[..., 3] > 128)
+face = ndimage.binary_fill_holes(ndimage.binary_closing(component(660, 330), iterations=10))
+# Only as wide as the face (0.62 radii): the hair beside it is the hair's, drawn by the cut's mass and its free pieces.
+inside_hair = ndimage.binary_fill_holes(hair | face) & (yr < JAW_R) & (np.abs((xx - OX) / S) < 0.62)
+head = ndimage.binary_dilation(face | inside_hair, iterations=3)
+np.save(OUT / "face_mask.npy", face)
+np.save(OUT / "head_mask.npy", head)
+pts = to_r(tl.boundary(head))
+# Symmetric: walk the boundary from its topmost point to its lowest, keep that half's x as |x|, mirror it back up.
+k0 = min(range(len(pts)), key=lambda i: (pts[i][1], abs(pts[i][0])))
+loop = pts[k0:] + pts[:k0]
+kc = max(range(len(loop)), key=lambda i: loop[i][1])
+sides = [loop[: kc + 1], loop[kc:]]
+right = [s for s in sides if np.mean([p[0] for p in s]) > 0][0]
+right = right if right[0][1] < right[-1][1] else right[::-1]  # top to chin
+half = [(abs(x), y) for x, y in right]
+full = half + [(-x, y) for x, y in reversed(half[1:-1])]
+xs = [p[0] for p in full]; ys = [p[1] for p in full]
+print("head extent x", round(min(xs), 3), round(max(xs), 3), "y", round(min(ys), 3), round(max(ys), 3))
+out = {"head": tl.fit_closed(full, 0.012)}
+
+
+def symmetric_chain(mask, tol):
+    pts_ = to_r(tl.boundary(ndimage.binary_dilation(mask, iterations=3)))
+    k0_ = min(range(len(pts_)), key=lambda i: (pts_[i][1], abs(pts_[i][0])))
+    lp = pts_[k0_:] + pts_[:k0_]
+    kc_ = max(range(len(lp)), key=lambda i: lp[i][1])
+    sd = [lp[: kc_ + 1], lp[kc_:]]
+    rt = [q for q in sd if np.mean([p_[0] for p_ in q]) > 0][0]
+    rt = rt if rt[0][1] < rt[-1][1] else rt[::-1]
+    hf = [(abs(x), y) for x, y in rt]
+    return tl.fit_closed(hf + [(-x, y) for x, y in reversed(hf[1:-1])], tol)
+
+
+# The face's own skin, with no hair interior: its top edge is the hairline, its sides the face's edge, its foot the jaw.
+# The eyes are dark, so the face skin has deep notches round them, and the outline stroke ran along each lid, doubling it. Fill the
+# face across each row between its outermost pixels (rows 240 to 400 of the reference: brow to below the eyes), so the outline
+# follows the face's real edge; the eyes, brows and lids are drawn over the skin.
+closed = ndimage.binary_closing(face, iterations=3)
+filled = closed.copy()
+# The extent over the rows around, not the row's own: where the black wing line cuts a row the skin starts further in, and the
+# fill left a thin horizontal slit that the outline stroked (found with the face outline drawn over the reference).
+ext = {}
+for yy_ in range(225, 415):
+    xs_ = np.nonzero(closed[yy_])[0]
+    if len(xs_):
+        ext[yy_] = (xs_.min(), xs_.max())
+for yy_ in range(240, 400):
+    win = [ext[k] for k in range(yy_ - 5, yy_ + 6) if k in ext]
+    filled[yy_, min(w[0] for w in win) : max(w[1] for w in win) + 1] = True
+# Hairline pass: above the brows the face is traced as it is, not mirrored from the right half, and smoothed. Mirroring drew the
+# left forehead about 0.05 radii wider than the reference's (its left curtain falls over the forehead), and the AI image's ragged
+# segmentation left stair-steps along the whole hairline. Below HAIR_ROW (the eye band the owner signed off) the symmetric trace is
+# kept; the two are blended over BLEND_ROWS so the edge has no seam.
+HAIR_ROW, BLEND_ROWS, HAIR_SIGMA = 253, 25, 2.5
+cols = np.arange(filled.shape[1])
+mirror = 2 * int(OX) - cols
+ok = (mirror >= 0) & (mirror < filled.shape[1])
+left_half = np.zeros_like(filled)
+left_half[:, cols[ok]] = filled[:, mirror[ok]]
+sym = np.where(cols[None, :] < int(OX), left_half, filled)
+# The skin test above (distance from the lit skin colour under 70) leaves out the shadow the hair casts on the forehead, a strip
+# about 8 px wide along the hairline ((214,154,123) against the lit (252,208,181)), so the hairline sat on its inner edge. It is
+# skin: warm (red minus blue about 85, hair is 0) and light. Take warm pixels that touch the face, in the hairline rows only.
+warm = ((rgb[..., 0] - rgb[..., 2]) > 50) & (rgb.mean(2) > 110) & (im[..., 3] > 128)
+warm[HAIR_ROW + BLEND_ROWS :] = False
+lab_w, _ = ndimage.label(warm | filled, structure=np.ones((3, 3)))
+touching = np.unique(lab_w[filled & (lab_w > 0)])
+shadowed = np.isin(lab_w, touching[touching > 0])
+smooth = ndimage.gaussian_filter(shadowed.astype(float), HAIR_SIGMA) > 0.5
+hairline = smooth.copy()
+hairline[HAIR_ROW + BLEND_ROWS :] = sym[HAIR_ROW + BLEND_ROWS :]
+# Through the blend rows the two edges are interpolated row by row. Blending the masks themselves flips the whole gap between the
+# two edges at once and leaves a horizontal ledge.
+for r in range(HAIR_ROW, HAIR_ROW + BLEND_ROWS):
+    t = (r - HAIR_ROW + 1) / (BLEND_ROWS + 1)
+    a, b = np.nonzero(smooth[r])[0], np.nonzero(sym[r])[0]
+    if len(a) and len(b):
+        lo, hi = round((1 - t) * a.min() + t * b.min()), round((1 - t) * a.max() + t * b.max())
+        hairline[r] = False
+        hairline[r, lo : hi + 1] = True
+hairline_mask = ndimage.binary_dilation(hairline, iterations=3)
+
+
+def reverse_chain(start, segs):
+    """The same quadratic chain walked the other way: each segment's control stays, its end becomes the previous end."""
+    starts = [start] + [e for _, e in segs[:-1]]
+    return segs[-1][1], [(c, s) for (c, _), s in zip(reversed(segs), reversed(starts))]
+
+
+def mirror_chain(start, segs):
+    return (-start[0], start[1]), [((-c[0], c[1]), (-e[0], e[1])) for c, e in segs]
+
+
+def symmetric_below(mask, y_join, tol):
+    """One closed chain, mirrored below `y_join` and free above it.
+
+    Fitting the whole loop at once picks different marks on the two sides and kinks the chin, so the lower part (cheeks, jaw, chin)
+    is fitted on the right side and mirrored, as the symmetric trace did, and only the forehead is fitted as it is.
+    """
+    pts = to_r(tl.boundary(mask))
+    # The chin's foot is a jagged few pixels wide, so its lowest pixel is not on the centre line: take the one nearest it.
+    low = max(p[1] for p in pts) - 0.1
+    k = min((i for i, p in enumerate(pts) if p[1] >= low), key=lambda i: abs(pts[i][0]))
+    loop = pts[k:] + pts[:k]
+    if loop[12][0] < 0:  # walk up the right side first
+        loop = [loop[0]] + loop[:0:-1]
+    j = next(i for i, p in enumerate(loop) if p[1] <= y_join)
+    m = max(i for i, p in enumerate(loop) if p[1] <= y_join)
+    # The lower arc is the one the owner signed off, so it is taken from the symmetric trace's own curve (which has no pixel
+    # sawtooth) rather than from the mask: fitting the mask's chin gave a bumpy one.
+    old = symmetric_chain(filled, tol)
+    op = tl.sample_chain(tuple(old[0]), [(tuple(c), tuple(e)) for c, e in old[1]], 8)
+    ko = min((i for i, p in enumerate(op) if p[1] >= max(q[1] for q in op) - 0.1), key=lambda i: abs(op[i][0]))
+    ol = op[ko:] + op[:ko]
+    if ol[12][0] < 0:
+        ol = [ol[0]] + ol[:0:-1]
+    jo = next(i for i, p in enumerate(ol) if p[1] <= y_join)
+    right = ol[: jo + 1][::-1]  # from the join down to the chin
+    right[-1] = (0.0, right[-1][1])
+    a_start, a_segs = tl.fit_chain(right, tl.simplify(right, tol))
+    upper = [right[0]] + loop[j + 1 : m] + [(-right[0][0], right[0][1])]
+    u_start, u_segs = tl.fit_chain(upper, tl.simplify(upper, tol))
+    l_start, l_segs = mirror_chain(a_start, a_segs)
+    b_start, b_segs = reverse_chain(a_start, a_segs)
+    return u_start, [*u_segs, *l_segs, *b_segs]
+
+
+out["face"] = symmetric_below(hairline_mask, (HAIR_ROW + BLEND_ROWS + 3 - OY) / S, 0.01)
+print("face segments", len(out["face"][1]))
+print("head segments", len(out["head"][1]))
+
+ear = ndimage.binary_dilation(ndimage.binary_fill_holes(ndimage.binary_closing(component(790, 335), iterations=4)), iterations=3)
+epts = to_r(tl.boundary(ear))
+exs = [p[0] for p in epts]; eys = [p[1] for p in epts]
+print("ear_r extent x", round(min(exs), 3), round(max(exs), 3), "y", round(min(eys), 3), round(max(eys), 3), "pixels", int(ear.sum()))
+out["ear_r"] = tl.fit_closed(epts, 0.01)
+start, segs = out["ear_r"]
+out["ear_l"] = ([-start[0], start[1]], [[[-c[0], c[1]], [-e[0], e[1]]] for c, e in segs])
+json.dump(out, open(OUT / "face.json", "w"), default=lambda o: list(o), indent=1)

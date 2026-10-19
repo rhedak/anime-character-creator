@@ -41,18 +41,18 @@
 #
 # Who draws what: the characters (SVG) come from the TypeScript package, `ts/bin/render.ts`,
 # which is the source of truth for the drawing. Each PNG, and the on-white PNG, is then made
-# from that SVG by cairosvg in Python (`harness/svg2png.py`, through the project's .venv), so
+# from that SVG by cairosvg in Python (`harness/svg2png.py`, through tools/.venv), so
 # the PNGs are what the Python CLI made from the same SVG, pixel for pixel. The three pages
-# (cover, sheet, sheet_satoshi) stay on the frozen Python, through `cover.sh` and `sheet.sh`.
+# (cover, sheet, sheet_satoshi) are TypeScript too, `ts/bin/cover.ts` and `ts/bin/sheet.ts`.
 #
 # Characters come from `PRESETS` in `ts/src/presets.ts`, read through `render.ts --list-presets`, so adding a character here is adding it
 # there. Nothing about the names below is baked in.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-py="$root/.venv/bin/python"
+py="$root/tools/.venv/bin/python"
 if [ ! -x "$py" ]; then
-    echo "no .venv here; create one with:  uv sync" >&2
+    echo "no tools/.venv here; create one with:  uv sync --project tools" >&2
     exit 1
 fi
 if ! command -v node >/dev/null 2>&1; then
@@ -62,7 +62,7 @@ fi
 render_ts="$root/ts/bin/render.ts"
 
 # cairosvg finds libcairo through dlopen, which on macOS does not look in Homebrew's prefix,
-# so the fallback path is set before any Python starts, as render.sh does. Both prefixes,
+# so the fallback path is set before any Python starts. Both prefixes,
 # Apple Silicon and Intel.
 export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-}:/opt/homebrew/lib:/usr/local/lib"
 
@@ -96,7 +96,7 @@ displayed() {
     [ "$1" = chibi ]
 }
 
-# The whole-page compositions, each with a `<name>.sh` that renders it. They are
+# The whole-page compositions, each rendered by a TypeScript command (see the loop below). They are
 # not characters, so they sit outside the loops below, but they *contain*
 # characters, which means they go stale on any shape change rather than only on
 # their own, and the sheet goes stale on a new character too. That is why they
@@ -205,6 +205,23 @@ while [ "$i" -lt "$characters" ]; do
     fi
     i=$((i + 1))
 done
+# The pages. Neither gets an on-white copy, because each paints its own opaque
+# ground over the whole canvas and there is no transparency for a card to sit
+# behind. Drawn by the TypeScript like the characters (`ts/bin/cover.ts`, `ts/bin/sheet.ts`),
+# so their PNGs come from the same svg2png call below.
+for page in $pages; do
+    case "$page" in
+        cover) node "$root/ts/bin/cover.ts" --out "$stage/$page" --no-metadata >/dev/null ;;
+        sheet) node "$root/ts/bin/sheet.ts" --out "$stage/$page" --no-metadata >/dev/null ;;
+        sheet_satoshi) node "$root/ts/bin/sheet.ts" --roster satoshi --out "$stage/$page" --no-metadata >/dev/null ;;
+        *) echo "page '$page' has no TypeScript command in $(basename "$0"); add one" >&2; exit 1 ;;
+    esac
+    if [ ! -s "$stage/$page.svg" ]; then
+        echo "render produced no $page.svg, leaving ref-out/ alone" >&2
+        exit 1
+    fi
+    png_args+=("$stage/$page.svg" "$stage/$page.png")
+done
 "$py" "$root/harness/svg2png.py" "${png_args[@]}" || {
     echo "PNG export failed, leaving ref-out/ alone" >&2
     echo "  PNG export needs the system cairo library: brew install cairo" >&2
@@ -219,19 +236,6 @@ for png in "${png_args[@]}"; do
             fi
             ;;
     esac
-done
-
-# The pages. Neither gets an on-white copy, because each paints its own opaque
-# ground over the whole canvas and there is no transparency for a card to sit
-# behind.
-for page in $pages; do
-    "$root/$page.sh" --out "$stage/$page" --no-metadata >/dev/null
-    for ext in svg png; do
-        if [ ! -s "$stage/$page.$ext" ]; then
-            echo "render produced no $page.$ext, leaving ref-out/ alone" >&2
-            exit 1
-        fi
-    done
 done
 
 # Every PNG path --pixels will compare, relative to both the stage dir and

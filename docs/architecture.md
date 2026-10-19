@@ -4,8 +4,8 @@ How the generator is put together, for someone changing it. The public
 surface is in [api.md](api.md), the current state of the art and what is
 weak in `../STATUS.md`, and the rules a change has to respect in
 `../CLAUDE.md`. The drawing code is TypeScript (`../ts/src/`, how to work in it is
-`../ts/README.md`); the Python in `../src/` is frozen as the reference it was ported from, byte for
-byte. Names below are the TypeScript ones, camelCase, with the Python name where it helps a reader
+`../ts/README.md`); the Python it was ported from, byte for
+byte, is deleted from the tree (the tag `python-final` keeps it). Names below are the TypeScript ones, camelCase, with the Python name where it helps a reader
 who knows the old code (`_hair_mass` is `hairMass`); the parts registry keeps the Python names, since
 that is how `render.ts` calls them.
 
@@ -63,7 +63,7 @@ The package is `ts/src/`, by role (the same table is in `../ts/README.md`):
 | `presets.ts`, `supporting.ts` | Named characters as `CharacterParams` values, the neutral bases, the moods, the rosters. |
 | `urlstate.ts`, `attribution.ts`, `catalogue*.ts`, `web-bridge.ts` | Links, the `<metadata>` block, what the web tool offers, and the web tool's four calls. |
 | `pynum.ts`, `pyjson*.ts`, `pycodecs.ts`, `pyre.ts`, `pyvalue.ts`, `sha1.ts` | The kernel: every Python behaviour JavaScript lacks, which keeps the bytes equal. |
-| `../ts/bin/render.ts`, `../ts/bin/catalogue.ts` | The command lines. (`generate.py` is the frozen Python CLI.) |
+| `../ts/bin/render.ts`, `../ts/bin/catalogue.ts` | The command lines, with `../ts/bin/cover.ts` and `../ts/bin/sheet.ts` for the cover and the cast sheets. |
 
 The parts share a large vocabulary (`curve`, `arc`, `mirror`, `strokeW`, the hair constants). The
 Python kept it in one 14,000-line `character.py` on purpose; the port split it by role into files of roughly
@@ -229,8 +229,8 @@ value hardcoded into a part function for one character is the one thing
 that turns the generator into that character's renderer.
 
 **A command line option.** `ts/bin/render.ts` takes its options from the `parseArgs` call in `main()`; add the
-flag there and a case to `ts/test/cli.test.ts`. The Python CLI's flags came from three tables in `generate.py`;
-the TypeScript one is deliberately small.
+flag there and a case to `ts/test/cli.test.ts`. The Python CLI's flags came from three tables in `generate.py`
+(gone with it); the TypeScript one is deliberately small.
 
 ## Working loop
 
@@ -240,7 +240,7 @@ repo came from looking rather than from reasoning.
 
 ```bash
 node ts/bin/render.ts --out out/tmp --preset satoko   # then view out/tmp.svg, or make a PNG:
-.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png
+tools/.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png
 ./refresh-ref-out.sh                                  # same change as any shape edit
 (cd ts && npm run typecheck && npm test)              # types, then the oracle and the rules
 ```

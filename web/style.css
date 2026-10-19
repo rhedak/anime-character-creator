@@ -325,3 +325,8 @@ button:disabled {
 .licensing a {
   color: var(--accent);
 }
+
+/* A row, a garment or a section hidden by the page (body_ignores, requires) must stay hidden whatever display its class sets. */
+[hidden] {
+  display: none !important;
+}

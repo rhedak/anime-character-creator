@@ -1,6 +1,7 @@
 // The body profiles and the skeleton a character is drawn on: the part of character.py (BODY_TYPES, skeleton_for,
 // hat_hair_margin, _limb_taper_at) that builds a Skeleton for a CharacterParams.
 
+import { ADULT_BODY_TYPES } from "./body-adult.ts";
 import type { CharacterParams } from "./params.ts";
 import { plainParams } from "./plain.ts";
 import { PyError, pyMax, pyMin, truthy } from "./pynum.ts";
@@ -37,6 +38,7 @@ const tallChibi: BodyProfile = profile(3.47, {
 
 /** Body profiles by name. `tall_chibi` is measured; the other two are laid out in character.py's comments. */
 export const BODY_TYPES: Readonly<Record<string, BodyProfile>> = {
+  ...ADULT_BODY_TYPES,
   tall_chibi: tallChibi,
   tall_chibi_long_torso: headScaled(
     { ...tallChibi, waist_y: (tallChibi.waist_y as number) + 0.5, hip_y: (tallChibi.hip_y as number) + 0.5 },

@@ -6,6 +6,7 @@
 
 import { curve, headPt, headShape, outlineW, strokeW } from "./character.ts";
 import { shade } from "./colorutil.ts";
+import { ADULT_BODY_TYPES } from "./body-adult.ts";
 import { agedFace, replace } from "./model.ts";
 import type { CharacterParams, FaceStyle } from "./params.ts";
 import { plainParams } from "./plain.ts";
@@ -240,7 +241,7 @@ export function tousleFallEdges(tip: number): Chain[] {
 }
 
 /** The cuts by name. A null-prototype object, so that a name like `constructor` is a missing cut, not an inherited one. */
-export const HAIRSTYLES: Readonly<Record<string, Hairstyle>> = Object.assign(Object.create(null) as Record<string, Hairstyle>, {
+export const HAIRSTYLES: Record<string, Hairstyle> = Object.assign(Object.create(null) as Record<string, Hairstyle>, {
   long_blunt: makeHairstyle(hairMassShape, hairlineShape, longFallEdges, hairTipEdge, {
     strands: longStrands,
     covers_ears: true,
@@ -320,6 +321,17 @@ export function hairstyleFor(name: unknown): Hairstyle {
 }
 
 /**
+ * The cut a character is drawn with. The adult woman's `swept_ponytail` is drawn by the adult body's own head parts (body-adult-parts.ts), so on any other body the shared hair code
+ * would get an empty cut and the head would be bald (the audit, docs/adult-body-audit.md, B1). On such a body the cut falls back to the nearest chibi one, a long cut with a centre parting;
+ * the choice stays `swept_ponytail` in the character, so the body can be switched back and she has her hair again.
+ */
+export const ADULT_CUT_ON_CHIBI = "long_center_part";
+export function hairstyleOf(p: CharacterParams): Hairstyle {
+  if (p.hairstyle === "swept_ponytail" && !Object.hasOwn(ADULT_BODY_TYPES, p.body as string)) return hairstyleFor(ADULT_CUT_ON_CHIBI);
+  return hairstyleFor(p.hairstyle);
+}
+
+/**
  * How far below the head center the hair ends, in head radii, which is the
  * unit the hair shapes are built in.
  *
@@ -332,7 +344,7 @@ export function hairFall(sk: Skeleton, typed: CharacterParams): number {
   // The drawing reads plain numbers; `renderCharacter` has already made them (idempotent), and a direct caller (a link's
   // `hair_length` may be a string) gets Python's `TypeError` at the multiplication below, not `NaN`.
   const p = plainParams(typed);
-  const style = hairstyleFor(p.hairstyle);
+  const style = hairstyleOf(p);
   if (style.tip_range !== null) {
     const [lo, hi] = style.tip_range;
     let fall = lo + p.hair_length * (hi - lo);
@@ -396,7 +408,7 @@ export function headEdgeX(y: number, build: number): number {
  * drawing until somebody retunes one of them.
  */
 export function hairEdgeX(y: number, sk: Skeleton, p: CharacterParams): number {
-  const [start, segments] = hairstyleFor(p.hairstyle).mass(hairFall(sk, p));
+  const [start, segments] = hairstyleOf(p).mass(hairFall(sk, p));
   let widest = headEdgeX(y, faceBuild(sk));
   let prev = start;
   for (const [ctrl, end] of segments) {

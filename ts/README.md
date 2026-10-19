@@ -1,9 +1,10 @@
 # The TypeScript drawing code
 
-This is the package that draws the characters: version 0.4.0, source of truth since the port from Python
-(`docs/ts-port-plan.md` is the plan, `docs/ts-port-spike.md` the first measurements). The Python in `../src/` is
-frozen at the tag `python-final` and is only the reference. Output is **byte-identical** to it, which is the
-contract; a deliberate change to the look comes after the port and has its own rules (see "The oracle" below).
+This is the package that draws the characters: version 0.5.0, source of truth since the port from Python
+(`docs/ts-port-plan.md` is the plan, `docs/ts-port-spike.md` the first measurements). The Python package is
+gone from the tree (`../docs/python-removal-audit.md`; the tag `python-final` has it); it was the
+reference the golden files were recorded from, and nothing runs it. Output is **byte-identical** to what it drew,
+which is the contract; a deliberate change to the look has its own rules (see "The oracle" below).
 
 Erasable TypeScript only (no enums, namespaces or parameter properties), so Node 22.18 or newer runs the `.ts`
 files directly. There are no runtime dependencies. `typescript` and `@types/node` are dev dependencies, for the
@@ -20,12 +21,15 @@ npm test                    # node --test "test/*.test.ts", with a larger heap
 npm run build:web           # node ../web-stage.mjs: compile with tsc and stage the web tool into ../out/web-stage
 node bin/render.ts --out ../out/satoko --preset satoko      # the SVG command line
 node bin/catalogue.ts > ../out/catalogue.json               # the web tool's catalogue
+node bin/cover.ts --out ../out/cover --no-metadata           # the book cover (SVG; PNG is harness/svg2png.py)
+node bin/sheet.ts --out ../out/sheet --roster satoshi        # a cast sheet (--members a,b,c for your own)
 ```
 
 The test command is a glob, not a directory (`node --test test/` does not work on Node 22). One file:
 `node --test test/cli.test.ts`. From the repository root, the checks that prove nothing moved are
 `./refresh-ref-out.sh --check`, `./refresh-catalogue.sh --check`, `./refresh-bases.sh --check` and
-`./refresh-ref-out.sh --pixels`; they need the `.venv` (`uv sync`) for the PNGs and the cover and sheet pages.
+`./refresh-ref-out.sh --pixels`; they need the PNG toolchain (`uv sync --project tools`, and cairo) for the PNGs. The cover and the sheets are
+`bin/cover.ts` and `bin/sheet.ts`.
 
 ## Layout
 
@@ -51,9 +55,10 @@ read), `out/` (ignored scratch).
 
 ## The oracle
 
-The port was proved against the Python, and the tests keep that proof running. The Python side is in
-`../harness/ts_port/` (it runs the frozen package, never the TypeScript); the corpus and manifests are
-committed there, so the tests need no Python:
+The port was proved against the Python, and the tests keep that proof running from recordings. The generators that
+made them are in `../harness/ts_port/` (they ran the frozen package, never the TypeScript, and need the
+`python-final` tag now); the corpus and manifests are committed there and under `fixtures/`, so the tests need no
+Python and nothing regenerates them:
 
 * **The corpus**: `corpus/full.json`, 7,662 documents (444,396 stages) built from the dataclass fields, every
   preset, base and roster member in both finishes, every field value, random combinations including out of range,
@@ -76,10 +81,10 @@ the drawing compiles to about 570 KB of JavaScript, against about 5.5 MB of Pyod
 before the port.
 
 **After a deliberate change to the look the oracle stops applying to what changed.** The manifests, the recorded
-calls and `ref-out/` say what the frozen Python drew. A part that draws nothing for every character in the corpus
+calls and `ref-out/` say what the Python drew (updated once, for the adult woman and the `bodice_color` field, by rule: `../harness/ts_port/golden-updates-stage7/README.md`). A part that draws nothing for every character in the corpus
 leaves every comparison green; a change that moves a drawn byte turns the document and stage tests red on purpose,
 and that is the signal to decide, case by case, which baseline to refresh (see `CLAUDE.md` for the rule).
-Python's manifest can only be rebuilt from the Python, so after a look change it describes the old look.
+The manifest can only be rebuilt from the Python (the tag `python-final`), so after a look change it describes the old look.
 
 ## The kernel
 

@@ -2,8 +2,8 @@ name: TypeScript check
 
 # The typecheck and the TypeScript tests, on every pull request and on every push to a
 # branch other than main. It deploys nothing: pages.yml is the only workflow that
-# publishes, and it runs on main alone. This one needs no Python, so the tests that
-# compare with the Python CLI skip themselves here; pages.yml runs them.
+# publishes, and it runs on main alone. The TypeScript tests need no Python; pages.yml also
+# runs the refresh checks, which make PNGs with cairosvg.
 
 on:
   pull_request:

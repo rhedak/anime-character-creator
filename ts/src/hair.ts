@@ -6,7 +6,7 @@
 
 import { OUTLINE, curve, interiorW, outlineW, soft, strokeW } from "./character.ts";
 import { highlightRise, hexToRgb01, litTone, rgbToHsv, shade, softShadowTone } from "./colorutil.ts";
-import { type Hairstyle, type Lock, brow, eyePlacement, hairEdgeX, hairFall, hairstyleFor, headPaths } from "./core-head.ts";
+import { type Hairstyle, type Lock, brow, eyePlacement, hairEdgeX, hairFall, hairstyleOf, headPaths } from "./core-head.ts";
 import type { CharacterParams } from "./params.ts";
 import { PyInt } from "./pyjson.ts";
 import { PyError, deepEqual, fmt1, fmt2, pyCos, pyDiv, pyHypot, pyMax, pyMin, pyPow, pyReplace, pyRepr, pyRound, pySin, pySqrt, pySum, radians, roundTo, sorted, truthy } from "./pynum.ts";
@@ -77,7 +77,7 @@ export function hairLines(svg: string, p: CharacterParams): string {
 }
 
 export function hairDefs(sk: Skeleton, p: CharacterParams): string {
-  const style = hairstyleFor(p.hairstyle);
+  const style = hairstyleOf(p);
   const fall = hairFall(sk, p);
   const clips: string[] = [];
   if (hairTipTone(p) !== null) {
@@ -126,7 +126,7 @@ export function twoToneHair(d: string, p: CharacterParams): string[] {
 }
 
 export function hairMass(sk: Skeleton, p: CharacterParams): string {
-  const style = hairstyleFor(p.hairstyle);
+  const style = hairstyleOf(p);
   const fall = hairFall(sk, p);
   const [start, segments] = style.mass(fall);
   const d = curve(sk.head_cx, sk.head_cy, sk.head_r, start, segments);
@@ -720,7 +720,7 @@ export function hairFront(sk: Skeleton, p: CharacterParams): string {
   // Fringe and side locks are one shape in the same flat tone as the mass,
   // drawn without a stroke of its own. The only line added is the hairline,
   // so nothing divides the hair into separate pieces.
-  const style = hairstyleFor(p.hairstyle);
+  const style = hairstyleOf(p);
   const fall = hairFall(sk, p);
   const [start, line, back] = style.hairline(fall);
   const fillD = curve(cx, cy, r, start, [...line, ...back]);

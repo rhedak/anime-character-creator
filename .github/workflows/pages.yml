@@ -7,13 +7,10 @@ name: Deploy the web tool to GitHub Pages
 # the compiled js/, which the page loads as plain relative paths) and hand it to
 # Pages. No server-side rendering.
 #
-# Gated on the TypeScript typecheck and tests, and on the frozen Python's own
-# suite and refresh checks. The Python is the reference the TypeScript was proved
-# against (docs/ts-port-plan.md), and ref-out/ is made by the TypeScript with PNGs
-# from cairosvg, so the refresh checks are what show nothing moved. A push that
-# forgot to run refresh-ref-out.sh, refresh-catalogue.sh or refresh-bases.sh
-# fails here rather than publishing a page whose gallery or controls disagree
-# with the code that draws them.
+# Gated on the TypeScript typecheck and tests and on the refresh checks. The drawing is TypeScript only; the PNGs under ref-out/ are made from its SVGs by cairosvg, which
+# lives in the small Python project under tools/ (cairosvg, pillow, numpy, scipy: no package of ours), so the refresh checks are what show that nothing moved. A push that forgot
+# to run refresh-ref-out.sh, refresh-catalogue.sh or refresh-bases.sh fails here rather than publishing a page whose gallery or controls disagree with the code that draws them.
+# The original Python package is gone from the tree (the tag python-final holds it).
 #
 # One manual step this workflow cannot do for you: Settings -> Pages ->
 # Build and deployment -> Source must be set to "GitHub Actions" once, by
@@ -58,21 +55,15 @@ jobs:
           enable-cache: true
 
       - name: Install cairo
-        # For cairosvg, which the refresh scripts' PNGs, the frozen Python's
-        # tests and the TypeScript tests that compare with the Python CLI need.
-        # The web tool itself never touches cairo: its PNG export runs in the
-        # visitor's browser off a <canvas>.
+        # For cairosvg, which makes the refresh scripts' PNGs. The web tool itself never touches cairo: its PNG export runs in the visitor's browser off a <canvas>.
         run: sudo apt-get update && sudo apt-get install -y libcairo2
 
-      - run: uv sync
+      - name: Install the PNG toolchain
+        run: uv sync --project tools
 
       - name: Run the TypeScript tests
-        # After uv sync, so the tests that compare with the Python CLI run too.
         working-directory: ts
         run: npm test
-
-      - name: Run the frozen Python's test suite
-        run: uv run pytest -q
 
       - name: Check ref-out/, catalogue.json and bases/ are current
         run: |
