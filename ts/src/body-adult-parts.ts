@@ -111,6 +111,18 @@ const line = (pt: Pt): string => `L ${fmt1(pt[0])} ${fmt1(pt[1])} `;
 /** A quadratic from the pen to `end` through the control point `ctrl`. */
 const quad = (ctrl: Pt, end: Pt): string => `Q ${fmt1(ctrl[0])} ${fmt1(ctrl[1])} ${fmt1(end[0])} ${fmt1(end[1])} `;
 
+/**
+ * The body outline is defined once per drawing, in `<defs>`, and everything else refers to it with `<use>`: its fill, the clip paths of the toenails, the hands and the foot, and the stroke bands
+ * of `adultBodyStroke`. It is a 46 KB path, and when each of those carried its own copy there were 48 of them in the file (2.3 MB for one figure; 180 KB with one). `adultSkin` writes the
+ * definition, before anything refers to it, so a part that uses `adultBodyRef` or `adultBodyClip` needs `adultSkin` (the torso) drawn in the same document.
+ */
+export const BODY_OUTLINE_ID = "adult-body-outline";
+export const adultBodyDef = (sk: Skeleton): string => `<defs><path id="${BODY_OUTLINE_ID}" d="${adultBodyPath(sk)}" /></defs>`;
+/** A reference to the body outline with the given presentation attributes (fill, stroke, clip-path). */
+export const adultBodyRef = (attrs: string): string => `<use href="#${BODY_OUTLINE_ID}" ${attrs} />`;
+/** A clip path of the body outline, by id. */
+export const adultBodyClip = (id: string): string => `<clipPath id="${id}"><use href="#${BODY_OUTLINE_ID}" /></clipPath>`;
+
 /** The body's one outline, neck to soles with the arms, as a closed path. */
 export function adultBodyPath(sk: Skeleton): string {
   const { cx, y, w } = place(sk);
@@ -196,7 +208,7 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // the sides it lay just beyond the top's own outer edge and drew a second line beside it (the owner's double outline).
   const { cx, w } = place(sk);
   const mid = `<clipPath id="adult-bust-mid"><rect x="${fmt1(cx - w(0.6, 0.33))}" y="0" width="${fmt1(2 * w(0.6, 0.33))}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
-  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk, DEFAULT_TAPER, shade(p.skin_tone, 0.78, 1.6), 0.8)}</g>` + `<clipPath id="adult-body-clip"><path d="${adultBodyPath(sk)}" /></clipPath><g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
+  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk, DEFAULT_TAPER, shade(p.skin_tone, 0.78, 1.6), 0.8)}</g>` + `${adultBodyClip("adult-body-clip")}<g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
 }
 
 /**
@@ -223,7 +235,7 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
     })
     .join("");
-  return `<path d="${adultBodyPath(sk)}" fill="${colorStr(p.skin_tone)}" />` + adultBodyStroke(sk) + crease;
+  return adultBodyDef(sk) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
 }
 
 /**
@@ -233,9 +245,8 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
  */
 export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all", idPrefix = "adult-stroke"): string {
   const { cx, y, w } = place(sk);
-  const path = adultBodyPath(sk);
   const full = outlineW(strokeW(sk));
-  const stroke = (width: number, clip: string): string => `<path d="${path}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(width)}" stroke-linejoin="round" clip-path="url(#${clip})" />`;
+  const stroke = (width: number, clip: string): string => adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(width)}" stroke-linejoin="round" clip-path="url(#${clip})"`);
   const top = y(HAND_D_CUT);
   const bottom = y(2.9);
   const big = sk.canvas_w;
@@ -672,7 +683,7 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
   }
   // the outline's stroke over the fills, in each hand's columns and rows, at the hands' weight (their edge is the skin's edge, so they covered half of it)
   const stroke = adultBodyStroke(sk, "hands", "adult-hand-stroke");
-  const clip = `<clipPath id="adult-hand-body"><path d="${adultBodyPath(sk)}" /></clipPath>`;
+  const clip = adultBodyClip("adult-hand-body");
   return clip + parts.join("") + stroke;
 }
 
@@ -706,9 +717,9 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
       const top = y(FOOT_D_CUT);
       const frame = `<rect x="0" y="${fmt1(top)}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h - top)}" />`;
       footClip =
-        `<clipPath id="adult-foot-body"><path d="${adultBodyPath(sk)}" /></clipPath><clipPath id="adult-foot-rows">${frame}</clipPath>` +
+        `${adultBodyClip("adult-foot-body")}<clipPath id="adult-foot-rows">${frame}</clipPath>` +
         `<g clip-path="url(#adult-foot-body)">NAILS</g>` +
-        `<path d="${adultBodyPath(sk)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-foot-rows)" />`;
+        adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#adult-foot-rows)"`);
     }
     nailsHere.push(nailPaths);
   }

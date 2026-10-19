@@ -193,6 +193,13 @@ than the body reference's rough feet, so the foot is stretched 6% horizontally a
 limit). All other gates green. Left: the right foot is the left mirrored, so the two are exact twins (the close-up's are not quite); the nails of
 the little toes are largely hidden by the outline at this size, as the stroke is thick against a 4 px toe; the tick-mark placeholder code is gone.
 
+### 2026-10-19, Franzi's SVG from 2.3 MB to 184 KB (the body outline defined once)
+
+Counted: the 46 KB body outline was in the file 48 times (the fill, the clip paths of the toenails, the hands and the foot, the foot's stroke, and the 20 stroke bands of `adultBodyStroke`, each a clip and a stroke, in two calls). `adultSkin` now writes it once in `<defs>`
+(`adultBodyDef`, id `adult-body-outline`) and everything else refers to it with `<use>`: `adultBodyRef(attrs)` for fills and strokes, `adultBodyClip(id)` for clip paths. The size is 183,808 bytes. Proved the picture did not change: rasterised at 2x with cairosvg before and after, 0 of 800,000
+pixels differ, not even by one level; and opened in the in-app browser, where the whole figure, the outline strokes, the toe dividers and the toenails (the parts that depend on `<use>` inside a `<clipPath>`) draw. A part that uses `adultBodyRef` or `adultBodyClip` needs the torso (`adultSkin`) drawn in the same
+document, which writes the definition (noted in their comment). A test pins it: the outline is defined once, at least 20 `<use>`, and her SVG is under 400 KB. Gates green.
+
 ### 2026-10-19, stage 5d: the Franzi preset (`FRANZI` and `ADULT_PRESETS` in `ts/src/presets.ts`)
 
 Franzi is now defined in `presets.ts` (the harness's `franzi.ts` re-exports it, so the scripts that import her from there are unchanged). It renders byte for byte the same SVG as the harness version did (2,342,895 bytes before and after). She states only what differs from the
@@ -206,7 +213,7 @@ Tests (`ts/test/adult-body.test.ts`, 4 new, 827 pass): she is an adult preset on
 
 **A defect that the id test found in my own work:** `adultBodyStroke` is called twice (the body, then again to redraw over the hand fills) and each call defined the same 21 clip ids, so every id was defined twice. Each call has its own id prefix now (`adult-stroke`, `adult-hand-stroke`); the geometry is unchanged.
 
-**Open: the SVG is 2.3 MB** (Risa's is 50 KB, Katherina's 63 KB). 170 paths and 54 clip paths, and the largest elements are all the same 46 KB path, the body outline: the wrist-taper bands of `adultBodyStroke` (20 bands, each a clip and a stroke carrying a full copy of the path, in two calls) put about 40 copies of it in the file. The fix is one copy in `<defs>` and `<use href>` for the clips and the strokes (cairosvg support to be checked against the PNG), which should bring her under a few hundred KB. Not done yet.
+**The SVG was 2.3 MB, fixed the same day** (next entry): the body outline is now defined once and referred to with `<use>`, 184 KB.
 
 ### 2026-10-19, the mouth is one continuous line (owner: the gap in the reference is a flaw of the reference)
 

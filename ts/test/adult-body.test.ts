@@ -82,3 +82,11 @@ for (const finish of ["flat", "soft"] as const) {
     assert.deepEqual(refs.filter((r) => !ids.includes(r)), []);
   });
 }
+
+test("Franzi's drawing defines the 46 KB body outline once and stays small", () => {
+  const svg = renderCharacter(FRANZI, null, null, false);
+  assert.equal((svg.match(/id="adult-body-outline"/g) ?? []).length, 1, "defined once, referred to with <use>");
+  assert.ok((svg.match(/<use /g) ?? []).length >= 20, "the clips and strokes refer to it");
+  // 2.3 MB when each clip and stroke carried its own copy of the outline; 184 KB with one. The limit leaves room for the detail still to come.
+  assert.ok(svg.length < 400_000, `${svg.length} bytes`);
+});
