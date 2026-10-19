@@ -739,8 +739,33 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
     }
     nailsHere.push(nailPaths);
   }
-  return out.join("") + footClip.replace("NAILS", nailsHere.join("")) + adultHandsDetail(sk, p);
+  return out.join("") + footClip.replace("NAILS", nailsHere.join("")) + adultArmsOver(sk, p) + adultHandsDetail(sk, p);
 }
+
+/**
+ * The arms from below the sleeve to the wrist, drawn again over what hangs in front of the legs: a skirt that flares past the arm's inner edge would otherwise cover it (the
+ * body is one outline drawn first, and garments over it), where in the reference the arms hang in front of the skirt. Only when a skirt or an apron is worn; without one nothing
+ * lies over the arms there and the arms are not drawn twice. The strip runs from the outside of the arm in to just past its inner edge, from 1.1 H below the chin (under the
+ * blouse's cuff) to the wrist, where the hands' own layer takes over.
+ */
+function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.skirt_color === null && p.outfit.apron_color === null) return "";
+  const { cx, y, w } = place(sk);
+  const hs = outlineW(strokeW(sk)) / 2;
+  const tab = ARM_INNER.filter(([d]) => d <= HAND_D_CUT + 0.02);
+  const strip = (sign: number): string => {
+    const inner = tab.map(([d, v]) => `${fmt1(cx + sign * (w(d, v) - hs * 1.5))},${fmt1(y(d))}`);
+    const outer = [...tab].reverse().map(([d]) => `${fmt1(cx + sign * w(d, 1.0))},${fmt1(y(d))}`);
+    return `<polygon points="${[...inner, ...outer].join(" ")}" />`;
+  };
+  const id = "adult-arm-strip";
+  return (
+    `<clipPath id="${id}">${strip(-1)}${strip(1)}</clipPath>` +
+    adultBodyRef(`fill="${colorStr(p.skin_tone)}" clip-path="url(#${id})"`) +
+    adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#${id})"`)
+  );
+}
+
 
 /**
  * The neck: skin from inside the head down to where the body outline begins, with a line down each side that runs into

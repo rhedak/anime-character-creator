@@ -8,12 +8,14 @@ import { OUTLINE, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { LEG_INNER, LEG_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BLOUSE, ADULT_BLOUSE_LINES } from "./body-adult-blouse-data.ts";
+import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
 import { DEFAULT_TAPER, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
 import { shade } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
+import type { Chain } from "./tables.ts";
 
 /** The body's outer edge from the waist to the foot: the torso side, then the leg's outer edge (the tables meet at 2.2 and 2.3). */
 const SIDE: Knots = [...TORSO_SIDE, ...LEG_OUTER.filter(([d]) => d <= FOOT_D_CUT)];
@@ -133,13 +135,54 @@ export function adultBlouse(sk: Skeleton, p: CharacterParams): string {
   return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.tunic_color))} />${clip}<g clip-path="url(#adult-blouse-clip)">${lines}</g>`;
 }
 
+/** A closed traced chain in [x, d] about the garment's centre line, as a path mapped onto the skeleton. */
+function chainPath(sk: Skeleton, [start, segs]: Chain): string {
+  const { cx, y, w } = place(sk);
+  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1])];
+  const s0 = map(start);
+  return `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
+}
+
+/**
+ * The dirndl's skirt on `skirt_color`: the green flare from the waist to a hem 2.97 H below the chin, traced from ref 00 (body-adult-skirt-data.ts), one flat colour. It
+ * hangs from under the apron's sash (or the bodice) and covers the briefs and the shorts. Drawn where the chibi skirt is, behind the chest layers; the arms are drawn
+ * again over it (`adultArmsOver`), as in the reference they hang in front of it.
+ */
+export function adultSkirt(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.skirt_color === null) return "";
+  return `<path d="${chainPath(sk, ADULT_SKIRT)}" ${inkAttrs(sk, colorStr(p.outfit.skirt_color))} />`;
+}
+
+/**
+ * The apron on `apron_color`: the red apron of ref 00, narrower and shorter than the skirt so a band of it shows round the hem, with its sash at the waist. One flat
+ * colour; the sash's lower edge is a line. The bow of the reference is not drawn yet.
+ */
+export function adultApron(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.apron_color === null) return "";
+  const { cx, y, w } = place(sk);
+  const d = chainPath(sk, ADULT_APRON);
+  const lineAttrs = `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)) * 0.67)}" stroke-linecap="round" stroke-linejoin="round"`;
+  // The sash's lower edge, read off the reference (the darkest pixel of each column below the sash): sagging toward the middle, then across it.
+  const half: [number, number][] = [[0.4, 1.345], [0.318, 1.372], [0.233, 1.403], [0.148, 1.418], [0.05, 1.423], [0, 1.424]];
+  const pts: Pt[] = [...half.map(([v, dd]) => [cx - w(dd, v), y(dd)] as Pt), ...half.slice(0, -1).reverse().map(([v, dd]) => [cx + w(dd, v), y(dd)] as Pt)];
+  const sash = `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" ${lineAttrs} />`;
+  const clip = `<clipPath id="adult-apron-clip"><path d="${d}" /></clipPath>`;
+  return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.apron_color))} />${clip}<g clip-path="url(#adult-apron-clip)">${sash}</g>`;
+}
+
 /** The legs' slot on an adult body: the briefs (always worn), then what is worn over them. */
 export function adultLegsAndGarments(sk: Skeleton, p: CharacterParams): string {
   return adultBriefs(sk, p) + adultShorts(sk, p);
 }
 
 /** The adult body's garment parts, laid over `ADULT_PARTS` by render.ts. */
+/** The chibi's underskirt is drawn from its own anchors and has no adult version yet, so it is not drawn on an adult body. */
+const none = (): string => "";
+
 export const ADULT_GARMENT_PARTS = {
   _legs_and_boots: adultLegsAndGarments,
   _tunic: adultBlouse,
+  _skirt: adultSkirt,
+  _underskirt: none,
+  _apron: adultApron,
 };

@@ -157,3 +157,28 @@ test("the blouse is drawn over the body and under the hands' layer, and over the
   assert.ok(shorts >= 0 && blouse > shorts, "the blouse comes after the shorts, so its hem lies over their waist");
   assert.ok(hands > blouse, "the hands' layer comes after the blouse");
 });
+
+test("the adult skirt and apron: drawn on skirt_color and apron_color, the arms redrawn over them, nothing extra without them", () => {
+  const without = renderCharacter(FRANZI, null, null, false);
+  assert.ok(!without.includes("adult-arm-strip"), "no arm redraw when nothing hangs in front of the legs");
+  const skirt = renderCharacter(wearing({ skirt_color: "#2b5a37" }), null, null, false);
+  assert.ok(skirt.includes('fill="#2b5a37"'));
+  assert.ok(skirt.includes('id="adult-arm-strip"'));
+  assert.ok(skirt.indexOf('id="adult-arm-strip"') > skirt.indexOf('fill="#2b5a37"'), "the arms are drawn after the skirt");
+  const both = renderCharacter(wearing({ skirt_color: "#2b5a37", apron_color: "#7d1f27" }), null, null, false);
+  assert.ok(both.indexOf('fill="#7d1f27"') > both.indexOf('fill="#2b5a37"'), "the apron is over the skirt");
+  assert.ok(both.includes('id="adult-apron-clip"'));
+  // the chibi underskirt is not drawn on her
+  assert.equal(renderCharacter(wearing({ skirt_color: "#2b5a37", underskirt_color: "#ffffff" }), null, null, false), skirt);
+});
+
+for (const finish of ["flat", "soft"] as const) {
+  test(`blouse, skirt, apron and shorts together: ids defined once, references resolve, small [${finish}]`, () => {
+    const svg = renderCharacter(wearing({ tunic_color: "#faf8f4", skirt_color: "#2b5a37", apron_color: "#7d1f27", trouser_color: "#efe9dc" }, finish));
+    const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+    assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), [], "an id is defined twice");
+    const refs = [...svg.matchAll(/url\(#([^)]+)\)/g)].map((m) => m[1] as string);
+    assert.deepEqual(refs.filter((r) => !ids.includes(r)), []);
+    assert.ok(svg.length < 400_000, `${svg.length} bytes`);
+  });
+}
