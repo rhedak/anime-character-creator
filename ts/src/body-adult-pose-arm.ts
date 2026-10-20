@@ -156,7 +156,7 @@ export function adultPosedArmDetail(sk: Skeleton, p: CharacterParams): string {
 }
 
 /** How far round the shoulder joint the sleeve head's cloth reaches, in head heights: enough to cover the shoulder's top and the upper armpit, which the sleeve's own cloth leaves when it turns away. */
-const SLEEVE_HEAD_R = 0.15;
+const SLEEVE_HEAD_R = 0.2;
 
 /**
  * The sleeve head: where the blouse's sleeve turns away with the arm, the cloth that covered the shoulder goes with it and leaves bare skin beside the strap, and the sleeve's inner end is a

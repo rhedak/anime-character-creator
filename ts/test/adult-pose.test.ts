@@ -175,3 +175,16 @@ test("with a blouse a raised arm gets a sleeve head over the shoulder, so the sl
   assert.ok(!draw(pose({ right_arm_out: 110 })).includes("-head-clip"));
   assert.ok(!draw(FRANZI).includes("-head-clip"));
 });
+
+test("a raised sleeve's outline leaves out its cap edge, so the cloth runs into the bodice instead of ending in a hard cut", () => {
+  const up = draw(pose({ right_arm_out: 110, left_arm_out: 110 }, FRANZI));
+  for (const tag of ["l", "r"]) {
+    assert.ok(up.includes(`id="adult-blouse-sleeve-${tag}"`) && up.includes(`id="adult-blouse-sleeve-edge-${tag}"`), `${tag}: a fill region and a narrower outline region`);
+    // the outline is its own element, clipped to the narrower region, with no fill; the fill has no stroke
+    assert.ok(up.includes(`<g clip-path="url(#adult-blouse-sleeve-edge-${tag})"><use href="#adult-blouse-shape" fill="none" stroke="#0d0d0d"`), `${tag}: the outline alone`);
+    assert.ok(up.includes(`<g clip-path="url(#adult-blouse-sleeve-${tag})"><use href="#adult-blouse-shape" fill="#faf6f5" stroke="none" />`), `${tag}: the fill alone`);
+  }
+  // the body piece keeps its outline whole, and hanging sleeves are the unsplit blouse
+  assert.ok(up.includes('<g clip-path="url(#adult-blouse-body)"><use href="#adult-blouse-shape" fill="#faf6f5" stroke="#0d0d0d"'));
+  assert.ok(!draw(FRANZI).includes("adult-blouse-sleeve-edge"));
+});

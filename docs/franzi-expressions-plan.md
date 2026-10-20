@@ -269,7 +269,12 @@ frame, where the AI pack is framed from the head to about the apron with the hea
   piece, the bodice and the turned sleeve) lays the blouse's colour over the shoulder first: a disc of 0.15 H about the shoulder joint (a turn about the joint leaves it where it is, so it fits at every angle),
   clipped to the skin there (the body without its arm and the arm itself, so it cannot reach past the silhouette), with the shoulder's outline and the arm's drawn again over it at full weight. With the arms
   down nothing changes (the blouse is not split then, and her default drawing is still v0.5.0's byte for byte); with no blouse there is no head. Looked at at 40, 90 and 130 degrees on the left shoulder, and on
-  the whole figure for the wave (135, 152), the cheer (125, 150) and 60 degrees. 946 tests pass (14 in `adult-pose.test.ts`, including one for the head), typecheck and the three refresh checks green.
+  the whole figure for the wave (135, 152), the cheer (125, 150) and 60 degrees.
+  **Sleeve cap outline** (the owner circled the end of the sleeve by the shoulder in a screenshot: it read as a hard cut, not connected fabric). Cause, seen in a zoomed render: when the arm is raised the
+  sleeve's cap (its top, at the shoulder) ends up as the end beside the bodice, and the outline along the cap's edge, which was the shoulder's edge, was still stroked there. The sleeve piece is now its fill, clipped
+  to the sleeve's region, and its outline as a separate element clipped to the same region less the cap's corner (depth above 0.42 H, half-width inside 0.58 H; `CAP_D`, `CAP_V` in `body-adult-garments.ts`), so the
+  outline stays along the outer edge, the cuff and the underside and the cloth runs into the bodice. The sleeve head's disc is 0.2 H (it was 0.15) to cover the last bare tick under the sleeve's end. Checked
+  at 125, 90 and 60 degrees (zoomed) and on the whole figure; one tiny hook remains at the very end of the underside edge. 947 tests pass (15 in `adult-pose.test.ts`), typecheck and the three refresh checks green.
 - **Seen, not fixed**: the open hand is large against the arm in some poses (it keeps the relaxed hand's scale); the open palm's lines are faint at this size; there is no soft-finish shading on the hands.
 
 ## Later: polish the emotions again
