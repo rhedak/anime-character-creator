@@ -20,6 +20,13 @@ export interface ArmPose {
 /** The furthest an arm is turned: straight up. */
 export const ARM_POSE_MAX = 180;
 
+/**
+ * The least an arm is turned to be drawn on its own: below it the arm hangs, in the body's one outline. A separate arm turned a degree or two leaves a sliver of page between it and the
+ * ribs, where the one outline has no gap above the gap's tip, so the hanging drawing carries the arm up to here (6 degrees moves the arm's inner edge about 0.06 H at the gap's tip, which is a
+ * gap and no longer a sliver).
+ */
+export const ARM_POSE_MIN = 6;
+
 /** The depth below the chin, in head heights, where a raised arm begins and turns: the shoulder's tip. The body outline on that side stops its shoulder here too. */
 export const RAISED_SHOULDER_D = 0.36;
 
@@ -32,14 +39,17 @@ export const armsUnderSleeves = (p: CharacterParams): boolean => p.outfit.coat_c
 /** The raised arms, left then right. None when both hang (the default: her drawing is then exactly what it was) or a sleeve is in the way. */
 export function adultArmPoses(p: CharacterParams): ArmPose[] {
   if (armsUnderSleeves(p)) return [];
-  const hand: PoseHand = p.grip_style === "fist" ? "fist" : "open";
+  const hand: PoseHand = gripIsFist(p) ? "fist" : "open";
   const out: ArmPose[] = [];
   for (const sign of [-1, 1]) {
     const angle = Math.max(0, Math.min(ARM_POSE_MAX, Number(sign === -1 ? p.right_arm_out : p.left_arm_out)));
-    if (angle >= 1) out.push({ sign, angle, hand });
+    if (angle >= ARM_POSE_MIN) out.push({ sign, angle, hand });
   }
   return out;
 }
+
+/** Whether the hands are fists (`grip_style` "fist"): a raised arm's hand, and a hanging arm's too, which is then the traced fist where it was the relaxed hand. */
+export const gripIsFist = (p: CharacterParams): boolean => p.grip_style === "fist";
 
 /** The sides whose arm is raised, for the body outline to leave out. */
 export const raisedSides = (p: CharacterParams): number[] => adultArmPoses(p).map((a) => a.sign);

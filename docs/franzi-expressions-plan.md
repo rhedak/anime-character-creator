@@ -239,7 +239,7 @@ frame, where the AI pack is framed from the head to about the apron with the hea
   closes it with a straight chord across the shoulder, not stroked (a half-disc cap was tried first and swung out of the torso at the armpit, leaving a nub of skin with no outline). Her default drawing is
   byte for byte v0.5.0's (the baseline test).
 - **The hand a pose draws**: the open palm, or the fist when `grip_style` is "fist" (the chibi's word for a closed hand; `hand_style` is a free string and `grip_style` was ignored on her, so no field is added).
-  The companion's cheer must therefore add `grip_style: "fist"` to its pose override (it already lets a pose override any top-level field); its wave needs nothing.
+  The companion's cheer must therefore add `grip_style: "fist"` to its pose override (it already lets a pose override any top-level field); its wave needs nothing. A hanging arm is a fist too with that field (see the fixes below).
 - **The blouse's sleeve** (`adultBlouse`): the blouse is one traced piece, so with an arm raised it is split along its seam (the line where the sleeve meets the bodice, carried up above the shoulder and
   down through the gap to depth 1.25, below the cuff and above the hem's flare) into a body piece and one sleeve piece per raised arm, each the whole blouse clipped to its region; the sleeve is turned by the
   arm's own transform, so the puff, the frilled cuff and the bare forearm come out as in the AI pack's dirndl. The dirndl's wave and cheer work. A blouse tucked into a skirt, or worn loose, splits the same
@@ -250,6 +250,26 @@ frame, where the AI pack is framed from the head to about the apron with the hea
   snapshot it will not let me inspect), and it relies on `use`, clip paths and nested transforms, so that is worth doing.
 - **Against the bikini pack**: the straight arm is the cheer-2 V and reads right at 125 and 150 degrees (with fists where the pack has open hands). It is **not** the pack's wave (an elbow bend, the forearm
   near vertical) or cheer-1 (both fists pumped at shoulder height). The straight swing is what decision 1 recommended; the pack's wave and cheer-1 are the case for reopening it (elbow fields, C option 2).
+- **Fixes after the owner's report (2026-10-20)**: a raised fist showed a dark line across the wrist that made the hand look detached. **Cause:** the viewer's-right arm's path was wound backwards. The path runs down the
+  outer edge, round the hand and up the inner edge on both sides, and the traced hand chain runs outer to inner, but for the mirrored side I had copied the body outline's walk, which goes the other way round
+  (its right-hand path goes down the inner edge), so the path jumped across the wrist and drew the hand backwards. The viewer's-left arm was right, which is why renders of the left arm looked fine. Fixed
+  (`armGeometry` walks the chain forward on both sides), and a test now pins the viewer's-right arm to the exact mirror of the left, point for point (it fails on the old code, checked by putting the old walk
+  back). Checked after the fix: both sides, the open palm and the fist, raised and not, on a light background.
+  **Hanging arms:** a hanging arm with `grip_style` "fist" used to keep the relaxed hand (the fist only showed when the arm was raised). It is now the traced fist: the fist's outline replaces the relaxed hand's in
+  the body outline (`adultBodyPath`'s `handChain`, the same frame) and its cavity, finger separations and nails are drawn in `adultHandsDetail`. **An arm under six degrees now hangs** (`ARM_POSE_MIN`):
+  drawn on its own at 1 to 5 degrees it left a sliver of page between the arm and the ribs, where the one outline has no gap above the gap's tip. Because `grip_style` now draws on her it is hidden in the web
+  tool with the other fields that do (`BODY_HIDDEN_EXTRA`), so the catalogue fixture did not move.
+  **Hands in front** (second report: with the arm down the fist was partly hidden behind the apron). The hand zone that redraws a hand over garments stops at an inner limit that follows the thigh, which the
+  relaxed hand fits inside; the fist's curled fingers reach 0.60 to 0.62 H from the centre line at depths 2.2 to 2.35, past the limit (0.618 to 0.628), so the skirt and apron covered them and cut them off flat
+  (on bare legs the thigh's outline ran across them). A hanging fist is now also drawn as its own overlay in `adultHandsDetail` (the traced outline filled with skin, closed across the wrist, edged at the
+  hand's weight) after the garments, and a raised arm's hand, below the wrist, is drawn again in the detail layer (`adultPosedArmDetail`), so a hand held low over the skirt is in front of it too. The
+  relaxed hand keeps the zone redraw it had.
+  **Sleeve head** (third report: with the blouse the raised arms looked cut off, a cutout, with bare shoulder showing). Seen in a zoomed render: the sleeve piece ended in a flat cut where it met the bodice,
+  and the cloth that covered the shoulder had turned away with the arm, leaving a patch of skin beside the strap. `adultPosedSleeveHead` (`body-adult-pose-arm.ts`, in the torso layer, so under the blouse's body
+  piece, the bodice and the turned sleeve) lays the blouse's colour over the shoulder first: a disc of 0.15 H about the shoulder joint (a turn about the joint leaves it where it is, so it fits at every angle),
+  clipped to the skin there (the body without its arm and the arm itself, so it cannot reach past the silhouette), with the shoulder's outline and the arm's drawn again over it at full weight. With the arms
+  down nothing changes (the blouse is not split then, and her default drawing is still v0.5.0's byte for byte); with no blouse there is no head. Looked at at 40, 90 and 130 degrees on the left shoulder, and on
+  the whole figure for the wave (135, 152), the cheer (125, 150) and 60 degrees. 946 tests pass (14 in `adult-pose.test.ts`, including one for the head), typecheck and the three refresh checks green.
 - **Seen, not fixed**: the open hand is large against the arm in some poses (it keeps the relaxed hand's scale); the open palm's lines are faint at this size; there is no soft-finish shading on the hands.
 
 ## Later: polish the emotions again

@@ -14,7 +14,7 @@ import { ARM_INNER, ARM_OUTER, SHOULDER_OUTER } from "./body-adult-data.ts";
 import { HAND_D_CUT, HAND_STROKE_K } from "./body-adult-hand-data.ts";
 import { HAND_FIST_OUTLINE, HAND_OPEN_OUTLINE } from "./body-adult-hand-poses-data.ts";
 import { HAND_FIST_CAVITY, HAND_FIST_FINGERS, HAND_FIST_NAILS, HAND_OPEN_LINES, HAND_OPEN_LINE_WIDTHS } from "./body-adult-hand-poses-lines-data.ts";
-import { adultArms, adultTorso, at, place, quad, smooth, taperedStrand, type Knots, type Pt } from "./body-adult-parts.ts";
+import { BODY_OUTLINE_ID, adultArms, adultTorso, at, place, quad, smooth, taperedStrand, type Knots, type Pt } from "./body-adult-parts.ts";
 import { RAISED_SHOULDER_D, adultArmPoses, type ArmPose } from "./body-adult-pose.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { tint } from "./colorutil.ts";
@@ -54,6 +54,8 @@ interface ArmGeometry {
   readonly turn: string;
   /** Maps a [v, d] knot point to the hanging arm's canvas position. */
   readonly px: (q: Pt) => Pt;
+  /** The shoulder joint, in canvas units: the middle of the arm's top chord, which the turn leaves where it is. */
+  readonly pivot: Pt;
   readonly id: string;
 }
 
@@ -67,12 +69,10 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const inner = INNER.map(([d, v]): Pt => [cx + sign * (w(d, v) + hs), y(d)]);
   const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
   const chain = pose.hand === "fist" ? HAND_FIST_OUTLINE : HAND_OPEN_OUTLINE;
-  const [start, segs] = chain;
-  const walk = (): string => {
-    if (sign < 0) return segs.map(([c, e]) => quad(px(c), px(e))).join("");
-    const ends: Pt[] = [start, ...segs.map(([, e]) => e)];
-    return segs.map(([c], i) => quad(px(c), px(ends[i] as Pt))).reverse().join("");
-  };
+  const [, segs] = chain;
+  // The path runs down the outer edge, round the hand and up the inner edge on both sides, and the chain runs outer edge to inner edge, so both sides walk it forward and only `px` mirrors it.
+  // (The body outline walks the viewer's-right hand backwards because its path goes down the inner edge there; copying that here drew a jump across the wrist and the hand backwards.)
+  const walk = (): string => segs.map(([c, e]) => quad(px(c), px(e))).join("");
   const o0 = outer[0] as Pt;
   const i0 = inner[0] as Pt;
   const edge = `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smooth(outer) + walk() + smooth(rev(inner));
@@ -81,7 +81,7 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const pivot: Pt = [(o0[0] + i0[0]) / 2, (o0[1] + i0[1]) / 2];
   // the viewer's-left arm turns clockwise on the page (outward, then up), the viewer's-right one the other way
   const turn = `rotate(${fmt2(-sign * pose.angle)} ${fmt1(pivot[0])} ${fmt1(pivot[1])})`;
-  return { edge, turn, px, id: `adult-pose-${sign < 0 ? "l" : "r"}` };
+  return { edge, turn, px, pivot, id: `adult-pose-${sign < 0 ? "l" : "r"}` };
 }
 
 /** Clip paths by band across the wrist: above it, the taper's bands, and the hand below. Rectangles in the hanging arm's frame, which the group's turn carries with it. */
@@ -145,7 +145,9 @@ export function adultPosedArmDetail(sk: Skeleton, p: CharacterParams): string {
         for (const c of HAND_FIST_NAILS) parts.push(closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${inkW(0.3)}" stroke-linejoin="round"`));
       }
       return (
-        `<g transform="${g.turn}"><clipPath id="${g.id}-in"><use href="#${g.id}-edge" /></clipPath><g clip-path="url(#${g.id}-in)">${parts.join("")}</g>` +
+        // the hand in front of what hangs over it (a skirt, an apron): its skin again, below the wrist, before its interior
+        `<g transform="${g.turn}"><use href="#${g.id}-edge" fill="${colorStr(p.skin_tone)}" stroke="none" clip-path="url(#${g.id}-hand)" />` +
+        `<clipPath id="${g.id}-in"><use href="#${g.id}-edge" /></clipPath><g clip-path="url(#${g.id}-in)">${parts.join("")}</g>` +
         // the skin's edge is the hand's edge, so the details covered half of its stroke: drawn again over them at the hand's weight
         `${bands.hand}</g>`
       );
@@ -153,8 +155,43 @@ export function adultPosedArmDetail(sk: Skeleton, p: CharacterParams): string {
     .join("");
 }
 
-/** The adult torso layer with the raised arms' skin after it. */
-export const adultTorsoPosed = (sk: Skeleton, p: CharacterParams): string => adultTorso(sk, p) + adultPosedArmSkin(sk, p);
+/** How far round the shoulder joint the sleeve head's cloth reaches, in head heights: enough to cover the shoulder's top and the upper armpit, which the sleeve's own cloth leaves when it turns away. */
+const SLEEVE_HEAD_R = 0.15;
+
+/**
+ * The sleeve head: where the blouse's sleeve turns away with the arm, the cloth that covered the shoulder goes with it and leaves bare skin beside the strap, and the sleeve's inner end is a
+ * flat cut. So the blouse's colour is laid over the shoulder first: a disc about the joint (which a turn about the joint leaves where it is, so it fits at every angle), clipped to what is
+ * skin there, the body without its arm and the arm, so it cannot reach past the silhouette. It goes in the torso layer, under the blouse's body piece, the bodice and the turned sleeve, which
+ * hide its inner part, and the outline of the shoulder and of the arm's root is drawn again over it at full weight (the cloth would otherwise cover the inner half of the stroke).
+ * Only with a blouse; with none the arm's skin is the shoulder.
+ */
+export function adultPosedSleeveHead(sk: Skeleton, p: CharacterParams): string {
+  if (p.outfit.tunic_color === null) return "";
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  return adultArmPoses(p)
+    .map((pose) => {
+      const g = armGeometry(sk, pose);
+      const id = `${g.id}-head`;
+      const r = SLEEVE_HEAD_R * 2 * sk.head_r;
+      // the shoulder's outline over the head: the body outline's stroke in a box about the shoulder, on this side
+      const box = [0.3, 0.8].map((v) => cx + pose.sign * w(0.2, v));
+      const [bx0, bx1] = [Math.min(...box), Math.max(...box)];
+      const bounds = `<clipPath id="${id}-box"><rect x="${fmt1(bx0)}" y="${fmt1(y(0.15))}" width="${fmt1(bx1 - bx0)}" height="${fmt1(y(0.75) - y(0.15))}" /></clipPath>`;
+      const bands = strokeBands(sk, g.id);
+      return (
+        `<clipPath id="${id}-clip"><use href="#${BODY_OUTLINE_ID}" /><use href="#${g.id}-edge" transform="${g.turn}" /></clipPath>` +
+        `<g clip-path="url(#${id}-clip)"><circle cx="${fmt1(g.pivot[0])}" cy="${fmt1(g.pivot[1])}" r="${fmt1(r)}" fill="${colorStr(p.outfit.tunic_color as string)}" /></g>` +
+        bounds +
+        `<use href="#${BODY_OUTLINE_ID}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" clip-path="url(#${id}-box)" />` +
+        `<g transform="${g.turn}">${bands.strokes(ink).join("")}</g>`
+      );
+    })
+    .join("");
+}
+
+/** The adult torso layer with the raised arms' skin after it, and the blouse's sleeve head over the shoulder. */
+export const adultTorsoPosed = (sk: Skeleton, p: CharacterParams): string => adultTorso(sk, p) + adultPosedArmSkin(sk, p) + adultPosedSleeveHead(sk, p);
 
 /** The adult hands' layer with the raised arms' hand interior after it (called with `false` for the arms' first pass under a coat, it draws nothing, as `adultArms` does). */
 export const adultArmsPosed = (sk: Skeleton, p: CharacterParams, only: boolean | null = null): string => adultArms(sk, p, only) + (only === false ? "" : adultPosedArmDetail(sk, p));

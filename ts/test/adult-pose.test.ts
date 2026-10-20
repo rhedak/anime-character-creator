@@ -19,10 +19,12 @@ const sha = (s: string): string => createHash("sha256").update(s).digest("hex");
 const turns = (svg: string): number[] => [...svg.matchAll(/<g transform="rotate\((-?\d+(?:\.\d+)?) /g)].map((m) => Number(m[1]));
 const ids = (svg: string): string[] => [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
 
-test("an arm at 0, or below a degree, hangs: the drawing is the default one", () => {
+test("an arm at 0, or below six degrees, hangs: the drawing is the default one", () => {
   const rest = draw(BARE);
   assert.equal(draw(pose({ right_arm_out: 0 })), rest);
   assert.equal(draw(pose({ right_arm_out: 0.4, left_arm_out: -30 })), rest);
+  assert.equal(draw(pose({ right_arm_out: 5.9, left_arm_out: 3 })), rest, "a separate arm turned a few degrees left a sliver of page beside the ribs");
+  assert.notEqual(draw(pose({ right_arm_out: 6 })), rest);
   assert.deepEqual(adultArmPoses(BARE), []);
 });
 
@@ -53,8 +55,31 @@ test("the hand is the open palm, or the fist with grip_style fist, and each is i
   assert.equal(adultArmPoses(pose({ right_arm_out: 130 }))[0]!.hand, "open");
   assert.equal(adultArmPoses(pose({ right_arm_out: 130, grip_style: "fist" }))[0]!.hand, "fist");
   assert.equal(adultArmPoses(pose({ left_arm_out: 130, grip_style: "mitten" }))[0]!.hand, "open");
-  // a hanging arm's hand does not change with it: the fist grip is for a raised arm
-  assert.equal(draw(pose({ grip_style: "fist" })), draw(BARE));
+});
+
+test("a hanging arm is a fist too when grip_style says so: the traced fist is in the body outline, with its nails and finger separations drawn over it, and a hanging arm is the same below six degrees", () => {
+  const relaxed = draw(BARE);
+  const fist = draw(pose({ grip_style: "fist" }));
+  assert.notEqual(fist, relaxed);
+  assert.equal(draw(pose({ grip_style: "fist", right_arm_out: 4, left_arm_out: 5 })), fist);
+  const outline = (svg: string): string => (svg.match(/<path id="adult-body-outline" d="([^"]+)"/) ?? [])[1]!;
+  assert.notEqual(outline(fist), outline(relaxed), "the fist's outline replaces the relaxed hand's in the body's path");
+  // the same default as the relaxed hand: grip_style at its default, or anything but "fist", leaves the relaxed hand
+  assert.equal(draw(pose({ grip_style: "mitten" })), relaxed);
+  assert.equal(draw(pose({ grip_style: "fist" }, FRANZI)).includes('id="adult-hand-body"'), true);
+});
+
+test("the viewer's-right arm is the mirror image of the viewer's-left one, point for point: the hand is walked the same way on both sides (it was once walked backwards, which drew a jump across the wrist)", () => {
+  const edge = (svg: string, tag: string): number[] => [...((svg.match(new RegExp(`<path id="adult-pose-${tag}-edge" d="([^"]+)"`)) ?? [])[1] ?? "").matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
+  for (const grip of ["mitten", "fist"]) {
+    const svg = draw(pose({ right_arm_out: 110, left_arm_out: 110, grip_style: grip }));
+    const l = edge(svg, "l");
+    const r = edge(svg, "r");
+    assert.ok(l.length > 200 && l.length === r.length, `${grip}: both arms have the same path (${l.length} and ${r.length} numbers)`);
+    for (let i = 0; i + 1 < l.length; i += 2) {
+      assert.ok(Math.abs((r[i] as number) - (400 - (l[i] as number))) < 0.25 && Math.abs((r[i + 1] as number) - (l[i + 1] as number)) < 0.25, `${grip}: point ${i / 2} is not the mirror of the other side's`);
+    }
+  }
 });
 
 test("ids stay unique and every reference resolves with raised arms, both hands, one or both arms, in both finishes", () => {
@@ -119,4 +144,34 @@ test("while a coat or a robe is worn the arms stay down, whatever the angle (the
     assert.deepEqual(adultArmPoses(dressed), [], JSON.stringify(o));
     assert.equal(draw(dressed), draw(characterParams({ ...dressed, right_arm_out: 0 })));
   }
+});
+
+test("the hands go in front of the skirt and the apron: a hanging fist is drawn again after them, and so is a raised arm's hand", () => {
+  const skin = "#ffd0b5";
+  const after = (svg: string, from: string): string => svg.slice(svg.indexOf(from));
+  // a hanging fist: the traced outline filled with skin, once for each hand, after the apron's sash (the last of the dirndl's skirt layers)
+  const fist = draw(pose({ grip_style: "fist" }, FRANZI));
+  const overlays = (svg: string): number => (svg.match(new RegExp(`<path d="M [^"]+Z" fill="${skin}" />`, "g")) ?? []).length;
+  assert.ok(fist.includes('id="adult-apron-sash"'));
+  assert.equal(overlays(after(fist, 'id="adult-apron-sash"')), 2, "both fists are drawn after the apron");
+  assert.equal(overlays(after(draw(FRANZI), 'id="adult-apron-sash"')), 0, "the relaxed hand keeps its zone redraw and adds no overlay");
+  // a raised arm's hand, below the wrist, is drawn again after the apron too (a hand at 15 degrees hangs over the skirt)
+  const raised = draw(pose({ right_arm_out: 15, grip_style: "fist" }, FRANZI));
+  assert.ok(after(raised, 'id="adult-apron-sash"').includes(`<use href="#adult-pose-l-edge" fill="${skin}" stroke="none" clip-path="url(#adult-pose-l-hand)"`));
+});
+
+test("with a blouse a raised arm gets a sleeve head over the shoulder, so the sleeve does not read as a cutout; without a blouse it does not", () => {
+  const dressed = draw(pose({ right_arm_out: 110, left_arm_out: 110 }, FRANZI));
+  for (const tag of ["l", "r"]) {
+    assert.ok(dressed.includes(`id="adult-pose-${tag}-head-clip"`), `${tag}: a clip to the body and the arm`);
+    assert.ok(dressed.includes(`<clipPath id="adult-pose-${tag}-head-clip"><use href="#adult-body-outline" /><use href="#adult-pose-${tag}-edge"`), `${tag}: the clip is the body without its arm and the arm`);
+  }
+  // the head's cloth is the blouse's colour, and it is drawn in the torso layer, before the blouse's own pieces
+  assert.ok(dressed.indexOf('id="adult-pose-l-head-clip"') < dressed.indexOf('id="adult-blouse-body"'));
+  assert.ok(dressed.includes(`fill="#faf6f5" /></g>`), "the head is filled with the blouse's colour");
+  // one raised arm, one head
+  assert.ok(draw(pose({ right_arm_out: 110 }, FRANZI)).includes('id="adult-pose-l-head-clip"') && !draw(pose({ right_arm_out: 110 }, FRANZI)).includes('id="adult-pose-r-head-clip"'));
+  // bare arms (no blouse) have none; neither does a hanging arm
+  assert.ok(!draw(pose({ right_arm_out: 110 })).includes("-head-clip"));
+  assert.ok(!draw(FRANZI).includes("-head-clip"));
 });

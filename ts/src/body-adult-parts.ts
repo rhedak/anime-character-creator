@@ -28,7 +28,9 @@ import { MOUTH_INSIDE, blush, mouthDepthShare } from "./face.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade, tint } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
-import { RAISED_SHOULDER_D, raisedSides } from "./body-adult-pose.ts";
+import { RAISED_SHOULDER_D, gripIsFist, raisedSides } from "./body-adult-pose.ts";
+import { HAND_FIST_OUTLINE } from "./body-adult-hand-poses-data.ts";
+import { HAND_FIST_CAVITY, HAND_FIST_FINGERS, HAND_FIST_NAILS } from "./body-adult-hand-poses-lines-data.ts";
 import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
@@ -121,7 +123,7 @@ export const quad = (ctrl: Pt, end: Pt): string => `Q ${fmt1(ctrl[0])} ${fmt1(ct
  * definition, before anything refers to it, so a part that uses `adultBodyRef` or `adultBodyClip` needs `adultSkin` (the torso) drawn in the same document.
  */
 export const BODY_OUTLINE_ID = "adult-body-outline";
-export const adultBodyDef = (sk: Skeleton, without: readonly number[] = []): string => `<defs><path id="${BODY_OUTLINE_ID}" d="${adultBodyPath(sk, without)}" /></defs>`;
+export const adultBodyDef = (sk: Skeleton, without: readonly number[] = [], hand: Chain = HAND_OUTLINE): string => `<defs><path id="${BODY_OUTLINE_ID}" d="${adultBodyPath(sk, without, hand)}" /></defs>`;
 /** A reference to the body outline with the given presentation attributes (fill, stroke, clip-path). */
 export const adultBodyRef = (attrs: string): string => `<use href="#${BODY_OUTLINE_ID}" ${attrs} />`;
 /** A clip path of the body outline, by id. */
@@ -132,7 +134,7 @@ export const adultBodyClip = (id: string): string => `<clipPath id="${id}"><use 
  * on its own (body-adult-pose-arm.ts): on such a side the outline runs from the top of the shoulder in to the armpit and down the torso, under the cap of the raised arm. The default, no
  * side left out, is the same path as always.
  */
-export function adultBodyPath(sk: Skeleton, without: readonly number[] = []): string {
+export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], handChain: Chain = HAND_OUTLINE): string {
   const { cx, y, w } = place(sk);
   // The knots are the ink's outer edge, stroke included, so the path sits half a stroke inside it: an outer edge moves
   // toward the centre line, an inner edge (the arm's inside, the legs' gap) away from it.
@@ -174,7 +176,7 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = []): st
     return segs.map(([c], i) => quad(chainPt(sign, c), chainPt(sign, ends[i] as Pt))).reverse().join("");
   };
   const foot = (sign: number): string => walk(sign, FOOT_OUTLINE);
-  const hand = (sign: number): string => walk(sign, HAND_OUTLINE);
+  const hand = (sign: number): string => walk(sign, handChain);
   const a = out(L);
   const start = a[0] as Pt;
   // Left side down, round the left hand, up the arm's inside, over the armpit, down the torso and leg to the sole.
@@ -259,7 +261,7 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
     })
     .join("");
-  return adultBodyDef(sk, raised) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
+  return adultBodyDef(sk, raised, gripIsFist(p) ? HAND_FIST_OUTLINE : HAND_OUTLINE) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
 }
 
 /** The hand zones' geometry: each hand's piece between two depths, from the arm's outer side to an inner edge that follows the thigh. */
@@ -786,6 +788,20 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
       const [start, segs] = inPx(ch);
       return `<path d="M ${fmt1(start[0])} ${fmt1(start[1])} ` + segs.map(([c, e]) => quad(c, e)).join("") + `Z" ${attrs} />`;
     };
+    if (gripIsFist(p)) {
+      // The fist, where `grip_style` asks for one: the traced fist's outline is in the body outline (adultBodyPath) and its cavity, finger separations and nails are drawn here, in the same frame.
+      // The fist goes in front of what hangs over it, the skirt and the apron: its curled fingers reach farther in than the hand zone (which follows the thigh, and which the relaxed hand fits
+      // inside), so the garments covered them and cut them off flat. It is drawn again here, its traced outline filled with skin (closed with a straight chord across the wrist, where the arm's
+      // own skin carries on) and edged at the hand's weight, on top of the body's fill and of the thigh's outline where the fingers overlap it.
+      const [fistStart, fistSegs] = inPx(HAND_FIST_OUTLINE);
+      const fistPath = `M ${fmt1(fistStart[0])} ${fmt1(fistStart[1])} ` + fistSegs.map(([c, e]) => quad(c, e)).join("");
+      parts.push(`<path d="${fistPath}Z" fill="${colorStr(p.skin_tone)}" />`);
+      parts.push(`<path d="${fistPath}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)) * HAND_STROKE_K)}" stroke-linejoin="round" />`);
+      const fistInk = HAND_FIST_CAVITY.map((c) => closed(c, `fill="${OUTLINE}"`)).join("") + HAND_FIST_FINGERS.map((c) => closed(c, `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.4))}" stroke-linejoin="round"`)).join("");
+      parts.push(`<g clip-path="url(#adult-hand-body)">${fistInk}</g>`);
+      parts.push(...HAND_FIST_NAILS.map((c) => closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round"`)));
+      continue;
+    }
     const fills =
       HAND_SHADE.map((c) => closed(c, `fill="${shade(p.skin_tone, 0.83, 1.6)}"`)).join("") +
       HAND_FINGERS.map((c) => closed(c, `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.4))}" stroke-linejoin="round"`)).join("") +
