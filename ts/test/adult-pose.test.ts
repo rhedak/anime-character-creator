@@ -287,6 +287,19 @@ test("an arm held close to the body strokes its inner edge from where the body's
   assert.ok(new RegExp(` ${turn[0]!.toFixed(1)} ${turn[1]!.toFixed(1)}`).test((svg.match(/<path id="adult-body-outline" d="([^"]+)"/) ?? [])[1] ?? ""));
 });
 
+test("the raised arm's edges are inked from where the body's line comes out from under the arm: the upper edge runs on from the shoulder line, and a lower edge that misses the line is rounded into it", () => {
+  const d = (svg: string, id: string): string => (svg.match(new RegExp(`<path id="adult-pose-l-${id}" d="([^"]+)"`)) ?? [])[1] ?? "";
+  const high = draw(pose({ right_arm_out: 150, left_arm_out: 150 }));
+  // at 150 degrees the lower (inner) edge meets the line beyond its top: the last span is a quadratic through the top
+  assert.ok(/ Q [\d. -]+$/.test(d(high, "arm-b")), "the lower edge ends in a round join");
+  // the upper (outer) edge starts below the arm's top, at the crossing with the shoulder line (a dense start, not the tip's)
+  const tip = d(high, "arm-a").match(/^M ([\d.]+) ([\d.]+)/)!.slice(1).map(Number);
+  const fillTop = d(high, "fill").match(/^M ([\d.]+) ([\d.]+)/)!.slice(1).map(Number);
+  assert.ok(Math.hypot(tip[0]! - fillTop[0]!, tip[1]! - fillTop[1]!) > 3, "the outer edge's ink does not start at the tip");
+  // an arm out 45 degrees meets the line with its inner edge, so it is stroked straight from the crossing: no round join
+  assert.ok(!/ Q [\d. -]+$/.test(d(draw(pose({ right_arm_out: 45, left_arm_out: 45 })), "arm-b")));
+});
+
 test("a folded arm carries the forearm's edge on over the upper arm as its fold line, fading out; a straight arm has none", () => {
   for (const [arm, bend] of [[6, 148], [16, 148], [6, 155]] as const) {
     const svg = draw(pose({ right_arm_out: arm, right_elbow: bend }));
