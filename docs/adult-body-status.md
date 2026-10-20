@@ -4,27 +4,27 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 
 ## RESUME (for a fresh context)
 
-- Campaign: a separate adult-female body type, about 6.4 heads, SFW. Plan in `adult-body-plan.md`. References in
-  `ref/franzi/` (untracked on `dev` so far). Work in the `dev` worktree (`../anime-character-creator-dev`), in `ts/`.
-- Rules that bind: no sensitive parts, bare view in `harness/` only, age floor 21 in the render code, every existing
-  render byte-identical, no commit unless the owner asks, no trailer, no em dashes or double hyphens in prose.
-- Owner agreed (2026-10-17) to the CLAUDE.md amendment at stage 7 (adult build as its own decision: SFW rules, bare
-  view in the harness only, age guard in the render code), and that the proper head, hands and feet for Franzi come
-  after the body is done (stage 5, traced from the new references).
-- Owner signed off (2026-10-17): the body, the chest, the bikini top and the briefs, the eye shape and lid. Head and hair still
-  being polished (5e). The hairline pass is done but uncommitted and not yet seen by the owner (see the first finding below).
-  Next action: the owner's look at the hairline, then the steps where the lock pieces meet the dome, then 5d (preset) and
-  stage 6 (garments). `PLAN.md` at the repo root points here with the order of work.
-- Last commit on `dev`: "PLAN.md: pointer to the Franzi and adult-body campaign, where it stands and what is next". Uncommitted:
-  `harness/franzi_hair/face_trace.py` and `ts/src/body-adult-head-data.ts` (the hairline pass). Gates green on it (823 TS tests
-  with 7 skipped, typecheck, refresh checks, ruff, 1051 Python tests, body gate IoU 0.957). `ref/franzi/` is tracked on `dev`
-  now; nothing is on `main`.
-- Running the harness in a fresh worktree: `cd ts && npm ci` first (typecheck needs `typescript`); `./harness/run.sh` goes through
-  `uv`, which in a sandbox needs `UV_CACHE_DIR` pointed at a writable directory; the hair scripts hard-code a
-  `/Users/henrik/...` path to `trace_lib`, so run them with `PYTHONPATH=.claude/skills/trace-reference`; `out/` is ignored, so
-  make `out/franzi` and `out/franzi_hair` and run `harness/franzi/measure.py` once (it writes `target.png` that the body gate
-  reads). The hair chain is rebuilt with `face_trace.py`, `trace.py`, `pieces.py`, `slivers.py`, `contrast.py` then `strands3.py emit`, `emit.py`,
-  in that order; from a clean tree that reproduces the committed data byte for byte.
+- **Done and released (2026-10-19): v0.5.0**, `main` at `eb1d505`, `dev` at `ad401d2`. The adult-female body, Franzi and her garments, the
+  age guard, the catalogue and web entries and the Python removal are all in it. `ref/franzi/` is tracked. Both branches were clean when
+  checked on 2026-10-20, before the edits to these docs, which were committed with the later steps. `PLAN.md` at the repo root says what is current.
+- **Current campaign: Franzi's emotions and gestures for the companion**, `franzi-expressions-plan.md`. Steps 0 and 1 are done and committed (2026-10-20, `44fbc97`): the byte-identity
+  baseline, the blink and the mouth. Step 2 (brows, lids, gaze, blush, eye size, iris size, eye tilt) is done and committed. A later polish of the emotions is noted in the plan. Found before that: none of the expression
+  fields (`mouth_curve`, `mouth_open`, `blush`, `eye_openness`, `brow_tilt`, `gaze`, `eyes_closed`) and neither arm field (`right_arm_out`,
+  `left_arm_out`) changes her drawing. Rendered at several values each: byte-identical to her default. The 5d entry below says the same about
+  the face ("the adult head replaces the shared face").
+- Rules that bind: no sensitive parts, bare view in `harness/` only, age floor 21 in the render code, every existing render byte-identical,
+  no commit unless the owner asks, no trailer, no em dashes or double hyphens in prose.
+- The owner agreed (2026-10-17) to a `CLAUDE.md` amendment (the adult build as its own decision: SFW rules, bare view in the harness only, age
+  guard in the render code). Checked 2026-10-20: it is not in `CLAUDE.md` yet, which still says every figure is the tall chibi.
+- Gates on 2026-10-20 (after steps 3 to 5): 942 TypeScript tests pass (7 skipped), typecheck, `refresh-ref-out.sh`, `refresh-bases.sh` and `refresh-catalogue.sh`
+  `--check` all green. The body gate was not rerun (last recorded IoU 0.957).
+- Running the harness: `cd ts && npm ci` first (typecheck needs `typescript`; only the `dev` worktree has `node_modules`); `./harness/run.sh`
+  goes through `uv`, which in a sandbox needs `UV_CACHE_DIR` pointed at a writable directory, and sets `DYLD_FALLBACK_LIBRARY_PATH` for cairo
+  (a bare `harness/svg2png.py` needs it set by hand: `/opt/homebrew/lib`); the hair scripts hard-code a `/Users/henrik/...` path to
+  `trace_lib`, so run them with `PYTHONPATH=.claude/skills/trace-reference`; `out/` is ignored, so make `out/franzi` and `out/franzi_hair` and run
+  `harness/franzi/measure.py` once (it writes `target.png` that the body gate reads). The hair chain is rebuilt with `face_trace.py`,
+  `trace.py`, `pieces.py`, `slivers.py`, `contrast.py` then `strands3.py emit`, `emit.py`, in that order; from a clean tree that reproduces the
+  committed data byte for byte (recorded 2026-10-18, not rerun).
 
 ## Scoreboard
 
@@ -33,17 +33,34 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 0 plan, target, measurements | done 2026-10-17 | target seam leg ratio 1.174 | n/a |
 | 1 gate harness | done 2026-10-17 | self 1.000 pass; tall_chibi IoU 0.489 fail | n/a |
 | 2 profile | done 2026-10-17, G1 green, G2 passed | G0 IoU 0.741 (predicted 0.80 to 0.88: wrong, the hip is not honored); landmark error waist 0.006, hip 0.082, crotch 0.247 H | n/a |
-| 3 torso and limbs | G0 pass, G1 green, G2 passed after one fix round (2026-10-17); waiting for checkpoint 1 | IoU 0.940, widths within 3.2%, landmarks within 0.026 H | checkpoint 1 pending |
-| 4 bust, underwear | done 2026-10-17: G1 green, G2 round 1 found the bust too weak and a crotch tick, both reworked | G0 unchanged (IoU 0.940); 820 TS tests | none planned |
+| 3 torso and limbs | done 2026-10-17: G0 pass, G1 green, G2 passed after one fix round | IoU 0.940, widths within 3.2%, landmarks within 0.026 H | signed off 2026-10-17 |
+| 4 bust, underwear | done 2026-10-17: G1 green, G2 round 1 found the bust too weak and a crotch tick, both reworked | G0 unchanged (IoU 0.940); 820 TS tests | signed off 2026-10-17 |
 | 5a head and face | done 2026-10-17: traced head and ears, face tuned | eyes 0.746 r apart (ref 0.75) | |
 | 5b hair | done 2026-10-17: `swept_ponytail` traced | silhouette matches the reference's by eye | |
-| 5c hands and feet | done 2026-10-17: G2 round 1 fixed (neck gap) | G0 IoU 0.942 | checkpoint 2 pending |
-| 5e head and face polish (before the garments) | eyes, brows, lid, crease done 2026-10-17; hairline pass done (uncommitted, owner has not seen it); lock-to-dome steps next | | checkpoint 2b |
-| 5d Franzi preset | | | |
-| 6 garments | | | checkpoint 3 |
-| 7 guard, tests, catalogue, web | | | checkpoint 4 |
+| 5c hands and feet | done 2026-10-17 as placeholders (G2 round 1 fixed, neck gap); 2026-10-18 feet and the relaxed hand traced from the close-ups; open palm, fist and pointing not done | G0 IoU 0.942 | |
+| 5e head and face polish (before the garments) | done 2026-10-17 to 2026-10-19: eyes, brows, lids, lashes, hairline, outlines rebuilt from the visible regions, ears, ponytail behind the shoulder, nose, mouth | | owner reviewed by eye through 2026-10-19 |
+| 5d Franzi preset | done 2026-10-19: `FRANZI` in `ts/src/presets.ts`, starts in the dirndl; SVG 184 KB | | |
+| 6 garments | done 2026-10-19: shorts, blouse, skirt, apron, sash and bow, bodice with lacing and buttons, boots, knee socks; first pass for belt, pouches, crystals, coat, robe, hakama, collar (`franzi-outfits-plan.md`) | | |
+| 7 guard, tests, catalogue, web | done 2026-10-19 (`python-removal-audit.md` stage 7); released as 0.5.0 (merge `eb1d505`). The `CLAUDE.md` amendment is still to do | 915 TS tests pass, 7 skipped (2026-10-20) | released |
+| 8 expressions and gestures for the companion | steps 0 and 1 done and committed 2026-10-20 (`44fbc97`); step 2 done and committed (brows, lids, gaze, blush, eye size, iris size, eye tilt); steps 3 to 5 (open palm and fist traced, raised arms, the blouse's sleeve) done and committed: `franzi-expressions-plan.md` | 942 TS tests pass, 7 skipped | decisions 6, 8 open |
 
 ## Findings
+
+### 2026-10-20, expressions steps 3 to 5: the open palm, the fist and raised arms (`franzi-expressions-plan.md`)
+
+The open palm and the fist were traced from `ref/franzi/hands/` in the relaxed hand's frame (`harness/franzi_hands/poses.py`, `poses_lines.py`), and a raised arm is the hanging arm, built from the same knot tables,
+turned about the shoulder's tip by a `rotate` on a group (`ts/src/body-adult-pose.ts`, `body-adult-pose-arm.ts`); the body outline leaves that arm out (`adultBodyPath`'s `without`) and the hanging case is the path it
+always was. The hand is the open palm, or the fist when `grip_style` is "fist". The dirndl blouse is split along its seam so its sleeve goes up with the arm; a coat or a robe keeps the arms down. Measured: the
+second frames of the companion's wave (152 degrees) and cheer (150) reach y -22 and -15, above the 400 by 500 canvas. Not opened in a browser. Details and what is left are in the plan's Progress section.
+
+### 2026-10-20, expressions step 1: the blink and the mouth (`franzi-expressions-plan.md`)
+
+Her expression fields did nothing (every value of `mouth_curve`, `mouth_open`, `blush`, `eye_openness`, `brow_tilt`, `gaze`, `eyes_closed` and both arm fields rendered byte for byte her default),
+because the adult face is traced geometry that reads only the skin tone and the eye colour. `ignoredFields` had seemed to say otherwise; it only tests fields the web page has controls for, so
+those seven were absent from its lists, not live. Now `eyes_closed` draws a lid line (`closedEye`, `body-adult-eyes.ts`) and `mouth_curve`, `mouth_width` and `mouth_open` move the traced
+mouth (`adultMouthPoints`, `body-adult-parts.ts`), the open mouth being the chibi's dark red inside under the traced line. Her default drawing is pinned to v0.5.0's bytes
+(`ts/test/adult-face-baseline.test.ts`). One thing deliberately not done: `mouth_width` is drawn but hidden in the web tool (`BODY_HIDDEN_EXTRA`), because showing it moves the catalogue's recorded fixture.
+Details, the gaps (the surprised mouth is a lopsided crescent) and what was rejected (the thin lash flicks on a shut eye) are in the plan's Progress section.
 
 ### 2026-10-18, outlines rebuilt from the visible regions (`outline_masks.py`, `outline_trace.py`, `outline_view.py`)
 

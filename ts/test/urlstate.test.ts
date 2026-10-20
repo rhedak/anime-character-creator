@@ -85,7 +85,7 @@ test("a face under the adult floor is lifted to it, and nothing else about it ch
 test("paramsToDict is the dict of the fields, nested, and a round trip through a link is the identity", () => {
   const p = PRESETS.katherina!;
   const d = paramsToDict(p);
-  assert.equal(Object.keys(d).length, 29);
+  assert.equal(Object.keys(d).length, 31); // the registry: 29 fields until right_elbow and left_elbow
   assert.deepEqual(d.outfit, { ...p.outfit });
   assert.equal(paramsJsonText(decodeParams(encodeParams(p))), paramsJsonText(p));
   assert.ok(!encodeParams(p).includes("="));

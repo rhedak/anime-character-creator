@@ -1,7 +1,7 @@
 # API reference
 
 What the TypeScript package exposes, what each value means, and the shape of a typical call. The package is
-`ts/src/` (version 0.5.0, the source of truth since the port; `ts/README.md` is the map). The frozen Python
+`ts/src/` (version 0.5.1, the source of truth since the port; `ts/README.md` is the map). The frozen Python
 package (deleted from the tree on 2026-10-19; the tag `python-final` keeps it) had the same surface under snake_case names, given in parentheses below. For how the drawing
 itself is put together, see [architecture.md](architecture.md); for how to run the command lines, see the README.
 
@@ -160,7 +160,8 @@ The three tables below are unchanged by the port: the same fields, the same name
 | `shaded` | `True` | `False` drops every shadow shape, leaving flat silhouettes. |
 | `finish` | `"flat"` | `"flat"` or `"soft"`, see "The soft finish" above. |
 | `highlight_strength` | `1.0` | How strong the soft finish's hair clumps are, 0 to 2. Soft only. |
-| `right_arm_out`, `left_arm_out` | `0.0` | Swings that whole arm out from the body about the shoulder, in degrees, positive away from the body. `right_arm_out` is the character's own right arm, which is the viewer's left. Past 90 degrees the arm rises above the shoulder: about 115 to 140 reads as hands raised. The elbow does not bend. |
+| `right_arm_out`, `left_arm_out` | `0.0` | Swings that whole arm out from the body about the shoulder, in degrees, positive away from the body. `right_arm_out` is the character's own right arm, which is the viewer's left. Past 90 degrees the arm rises above the shoulder: about 115 to 140 reads as hands raised. On the chibi the elbow does not bend. |
+| `right_elbow`, `left_elbow` | `0.0` | The adult woman's raised arms only (the chibi ignores them): how far the forearm folds at the elbow, in degrees, further in the direction the arm was raised, 0 to 155 (90 is square, 155 folds it back along the upper arm with a 20 degree crease; more is clamped). With `right_arm_out` 6 and `right_elbow` 148 to 155 the hand is beside the head, a wave; with 16 and 148 and `grip_style` "fist" the fists are at the shoulders, a cheer. A bent arm is drawn on its own even when it hangs, held out at least six degrees. Named from the viewer's side like `right_arm_out`. |
 | `hand_style` | `"mitten"` | The relaxed hand, one of `HAND_STYLES`: `mitten` (the default), `notched`, `stroked`, `curled`, `traced`. Every preset wears the mitten. See `docs/hands-status.md`. |
 | `grip_style` | `"mitten"` | The hand that holds a staff, one of `GRIP_STYLES`: `mitten` (the default) or `fist`, the canon's rounded fist kept level against the arm's swing. |
 

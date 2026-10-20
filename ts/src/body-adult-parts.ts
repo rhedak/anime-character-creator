@@ -23,10 +23,14 @@ import { HAND_CAVITY, HAND_FINGERS, HAND_GAPS, HAND_LINES, HAND_LINE_WIDTHS, HAN
 import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
-import type { CharacterParams } from "./params.ts";
+import type { CharacterParams, FaceStyle } from "./params.ts";
+import { MOUTH_INSIDE, blush, mouthDepthShare } from "./face.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade, tint } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
+import { RAISED_SHOULDER_D, gripIsFist, raisedSides } from "./body-adult-pose.ts";
+import { HAND_FIST_OUTLINE } from "./body-adult-hand-poses-data.ts";
+import { HAND_FIST_CAVITY, HAND_FIST_FINGERS, HAND_FIST_NAILS } from "./body-adult-hand-poses-lines-data.ts";
 import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
@@ -93,6 +97,12 @@ const GAP_TOP = 2.2;
 /** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
 const GAP_TIP: Pt = [0.4, 0.955];
 
+/**
+ * The ribs, [v, d] in head heights: where the outline of a side without its arm runs from the armpit down to the gap's tip. Below the armpit it follows the bikini top's outer edge, a little outside
+ * it (the cup bulges to 0.452 at 0.78), so the breast's side is skin and is not cut off where the hanging arm used to be (the top is clipped to this outline).
+ */
+export const RIB_KNOTS: readonly Pt[] = [[0.455, 0.5], [0.45, 0.62], [0.462, 0.74], [0.458, 0.82], [0.432, 0.9]];
+
 /** A Catmull-Rom curve through `pts`, as cubic segments continuing from the first point (the pen is already there). */
 export function smooth(pts: readonly Pt[]): string {
   let s = "";
@@ -108,6 +118,10 @@ export function smooth(pts: readonly Pt[]): string {
   return s;
 }
 
+/** A `smooth` path less its last or its first span: what is left is the curve as if the span were there, which a raised arm's edge and the shoulder it leaves share the direction of. */
+export const withoutLastSpan = (s: string): string => s.slice(0, s.lastIndexOf("C "));
+export const withoutFirstSpan = (s: string): string => s.slice(s.indexOf("C ", 1));
+
 const line = (pt: Pt): string => `L ${fmt1(pt[0])} ${fmt1(pt[1])} `;
 
 /** A quadratic from the pen to `end` through the control point `ctrl`. */
@@ -119,14 +133,18 @@ export const quad = (ctrl: Pt, end: Pt): string => `Q ${fmt1(ctrl[0])} ${fmt1(ct
  * definition, before anything refers to it, so a part that uses `adultBodyRef` or `adultBodyClip` needs `adultSkin` (the torso) drawn in the same document.
  */
 export const BODY_OUTLINE_ID = "adult-body-outline";
-export const adultBodyDef = (sk: Skeleton): string => `<defs><path id="${BODY_OUTLINE_ID}" d="${adultBodyPath(sk)}" /></defs>`;
+export const adultBodyDef = (sk: Skeleton, without: readonly number[] = [], hand: Chain = HAND_OUTLINE): string => `<defs><path id="${BODY_OUTLINE_ID}" d="${adultBodyPath(sk, without, hand)}" /></defs>`;
 /** A reference to the body outline with the given presentation attributes (fill, stroke, clip-path). */
 export const adultBodyRef = (attrs: string): string => `<use href="#${BODY_OUTLINE_ID}" ${attrs} />`;
 /** A clip path of the body outline, by id. */
 export const adultBodyClip = (id: string): string => `<clipPath id="${id}"><use href="#${BODY_OUTLINE_ID}" /></clipPath>`;
 
-/** The body's one outline, neck to soles with the arms, as a closed path. */
-export function adultBodyPath(sk: Skeleton): string {
+/**
+ * The body's one outline, neck to soles with the arms, as a closed path. `without` lists the sides (-1 the viewer's left, +1 the right) whose arm is left out, because it is raised and drawn
+ * on its own (body-adult-pose-arm.ts): on such a side the outline runs from the top of the shoulder in to the armpit and down the torso, under the cap of the raised arm. The default, no
+ * side left out, is the same path as always.
+ */
+export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], handChain: Chain = HAND_OUTLINE): string {
   const { cx, y, w } = place(sk);
   // The knots are the ink's outer edge, stroke included, so the path sits half a stroke inside it: an outer edge moves
   // toward the centre line, an inner edge (the arm's inside, the legs' gap) away from it.
@@ -141,13 +159,16 @@ export function adultBodyPath(sk: Skeleton): string {
   const side = (sign: number, tab: Knots): Pt[] =>
     tab.map(([d, v]) => [cx + sign * (w(d, v) + (inner(tab) ? hs : -hs)), y(d)]);
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
+  // A side without its arm: the shoulder stops at the shoulder's tip, where the raised arm's cap begins (`RAISED_SHOULDER_D`), and the outline goes in to the armpit and down the ribs to the gap's tip.
+  const shoulderAbove: Knots = [...SHOULDER_OUTER.filter(([dd]) => dd < RAISED_SHOULDER_D), [RAISED_SHOULDER_D, at(SHOULDER_OUTER, RAISED_SHOULDER_D)]];
+  const shoulderNext = (sign: number): Pt => side(sign, [SHOULDER_OUTER.find(([dd]) => dd > RAISED_SHOULDER_D + 1e-6) as readonly [number, number]])[0] as Pt;
   const out = (sign: number): Pt[] => [
     [cx + sign * sk.neck_half_w, y(0.12)],
     [cx + sign * (w(0.2, 0.2) - hs), y(0.2)],
     [cx + sign * (w(0.25, 0.4) - hs), y(0.25)],
-    ...side(sign, SHOULDER_OUTER),
-    ...side(sign, armOuterAbove),
+    ...(without.includes(sign) ? side(sign, shoulderAbove) : [...side(sign, SHOULDER_OUTER), ...side(sign, armOuterAbove)]),
   ];
+  const ribs = (sign: number): Pt[] => RIB_KNOTS.map(([v, dd]): Pt => [cx + sign * (w(dd, v) - hs), y(dd)]);
   const tip = (sign: number): Pt => [cx + sign * w(GAP_TIP[1], GAP_TIP[0]), y(GAP_TIP[1])];
   // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
   const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0)];
@@ -165,16 +186,22 @@ export function adultBodyPath(sk: Skeleton): string {
     return segs.map(([c], i) => quad(chainPt(sign, c), chainPt(sign, ends[i] as Pt))).reverse().join("");
   };
   const foot = (sign: number): string => walk(sign, FOOT_OUTLINE);
-  const hand = (sign: number): string => walk(sign, HAND_OUTLINE);
+  const hand = (sign: number): string => walk(sign, handChain);
   const a = out(L);
   const start = a[0] as Pt;
   // Left side down, round the left hand, up the arm's inside, over the armpit, down the torso and leg to the sole.
   let d = `M ${fmt1(start[0])} ${fmt1(start[1])} `;
-  d += smooth(a);
-  d += hand(L);
-  d += smooth(rev(side(L, armInnerAbove)));
+  // on a side without its arm the shoulder's last span is given the knot beyond the tip, then dropped, so the line leaves the tip in the direction the raised arm's edge takes up there
+  d += without.includes(L) ? withoutLastSpan(smooth([...a, shoulderNext(L)])) : smooth(a);
   const leg = legLine(L);
-  d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+  if (without.includes(L)) {
+    d += smooth([a[a.length - 1] as Pt, ...ribs(L), tip(L)]);
+    d += quad(capTor(L), leg[0] as Pt);
+  } else {
+    d += hand(L);
+    d += smooth(rev(side(L, armInnerAbove)));
+    d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+  }
   d += smooth(leg);
   d += foot(L);
   // The inside of the left leg up to the crotch, across, and the same down the right leg.
@@ -189,10 +216,16 @@ export function adultBodyPath(sk: Skeleton): string {
   d += smooth(side(R, legInnerAbove));
   d += foot(R);
   d += smooth(rev(legLine(R)));
-  d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
-  d += smooth(side(R, armInnerAbove));
-  d += hand(R);
-  d += smooth(rev(out(R)));
+  if (without.includes(R)) {
+    const shoulder = out(R);
+    d += quad(capTor(R), tip(R));
+    d += smooth([tip(R), ...rev(ribs(R)), shoulder[shoulder.length - 1] as Pt]);
+  } else {
+    d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
+    d += smooth(side(R, armInnerAbove));
+    d += hand(R);
+  }
+  d += without.includes(R) ? withoutFirstSpan(smooth([shoulderNext(R), ...rev(out(R))])) : smooth(rev(out(R)));
   return d + "Z";
 }
 
@@ -224,7 +257,9 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
   // The same weight as the arm's own outline: it is that outline carried up to the armpit, not a lighter interior line.
   const sw = fmt2(outlineW(strokeW(sk)));
+  const raised = raisedSides(p);
   const crease = [1, -1]
+    .filter((sign) => !raised.includes(sign))
     .map((sign) => {
       const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
       // The arm's inner edge from the top of the armpit down: along the bust's outer side (widest about 0.455 H out at 0.8 H),
@@ -237,7 +272,7 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
     })
     .join("");
-  return adultBodyDef(sk) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
+  return adultBodyDef(sk, raised, gripIsFist(p) ? HAND_FIST_OUTLINE : HAND_OUTLINE) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
 }
 
 /** The hand zones' geometry: each hand's piece between two depths, from the arm's outer side to an inner edge that follows the thigh. */
@@ -527,7 +562,7 @@ export function adultHead(sk: Skeleton, p: CharacterParams): string {
  * One strand line as a single filled shape that swells from a point, holds its weight and thins to a point again, so a strand
  * starts and ends inside the hair like a pen stroke and never stops abruptly. A flat black shape, hard-edged.
  */
-function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string, widths?: readonly number[]): string {
+export function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string, widths?: readonly number[]): string {
   const pts: Pt[] = [];
   let p0: Pt = start;
   for (const [c, e] of segs) {
@@ -632,17 +667,64 @@ export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
 /** What is drawn over the face: the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */
 export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
-  return adultBrows(h) + adultEyes(h, p);
+  return adultBrows(h, p) + adultEyes(h, p);
+}
+
+/** How far `brow_tilt` 1 turns a brow, in degrees (the chibi's drops the inner end by 0.28 of an eye radius per unit; this is the same idea on a traced brow). */
+const BROW_TILT_DEGREES = 9;
+
+/**
+ * A traced brow turned about its middle for `FaceStyle.brow_tilt`: positive drops the inner end (stern) and raises the outer, negative the reverse. 0 returns the traced points
+ * untouched, so her default drawing keeps its bytes.
+ */
+function tiltBrow(poly: readonly (readonly [number, number])[], tilt: number): readonly (readonly [number, number])[] {
+  if (tilt === 0) return poly;
+  const n = poly.length;
+  const mx = poly.reduce((a, q) => a + q[0], 0) / n;
+  const my = poly.reduce((a, q) => a + q[1], 0) / n;
+  const outward = mx < 0 ? -1 : 1; // the left brow's outer end is at negative x
+  const phi = (-outward * tilt * BROW_TILT_DEGREES * Math.PI) / 180;
+  const [c, sn] = [Math.cos(phi), Math.sin(phi)];
+  return poly.map(([x, y]): [number, number] => [mx + (x - mx) * c - (y - my) * sn, my + (x - mx) * sn + (y - my) * c]);
 }
 
 /** The brows: two filled, tapering shapes traced from the reference, thick at the outer end and thin toward the nose. */
-function adultBrows(h: Skeleton): string {
+function adultBrows(h: Skeleton, p: CharacterParams): string {
   return [ADULT_BROW_L, ADULT_BROW_R]
-    .map((poly) => {
+    .map((traced) => {
+      const poly = tiltBrow(traced, p.face.brow_tilt);
       const pts = poly.map(([x, y]): Pt => [h.head_cx + x * h.head_r, h.head_cy + y * h.head_r]);
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${pts.slice(1).map(line).join("")}Z" fill="${OUTLINE}" stroke="${OUTLINE}" stroke-width="0.3" stroke-linejoin="round" />`;
     })
     .join("");
+}
+
+/** The cheeks' flush, in reference pixels (ref 04, the face's calibration): centre, radii and a turn in degrees, below and outside each eye. Judged by eye against the AI pack's shy picture. */
+const ADULT_CHEEKS: readonly { c: Pt; rx: number; ry: number; turn: number }[] = [
+  { c: [608, 361], rx: 25, ry: 10, turn: -8 },
+  { c: [715, 358], rx: 25, ry: 10, turn: 8 },
+];
+
+/** The traced mouth line, in reference pixels (ref 04, the face's calibration), left to right, and its width at each point. */
+const MOUTH_POINTS: readonly Pt[] = [[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [665, 403.4], [668, 403.3], [671, 403], [674, 402.4], [677, 401.4], [680, 400.2], [683, 398.8], [685.5, 397.4], [687.5, 395.8]];
+const MOUTH_WIDTHS: readonly number[] = [1.5, 1.8, 1.9, 1.9, 1.7, 1.5, 1.4, 1.5, 1.7, 1.9, 2.0, 1.9, 1.5, 1.1, 0.7];
+/** The open mouth's greatest drop below the line, in widths of the mouth, at `mouth_open` 1 (the chibi's is 1.0, which on this narrow mouth read as a gape). */
+const ADULT_MOUTH_DEPTH = 0.5;
+
+/**
+ * The mouth line as `mouth_curve` and `mouth_width` ask (their defaults, 1, are the traced line, returned as it is so that her default drawing stays byte for byte what it was):
+ * the curve scales how far each point sits from the straight line between the two ends (so 0 is straight and below 0 turns the corners down), then the width scales the whole
+ * line about its middle.
+ */
+function adultMouthPoints(f: FaceStyle): readonly Pt[] {
+  if (f.mouth_curve === 1 && f.mouth_width === 1) return MOUTH_POINTS;
+  const a = MOUTH_POINTS[0] as Pt;
+  const z = MOUTH_POINTS[MOUTH_POINTS.length - 1] as Pt;
+  const mid = (a[0] + z[0]) / 2;
+  return MOUTH_POINTS.map(([x, y]): Pt => {
+    const chord = a[1] + ((z[1] - a[1]) * (x - a[0])) / (z[0] - a[0]);
+    return [mid + (x - mid) * f.mouth_width, chord + (y - chord) * f.mouth_curve];
+  });
 }
 
 /**
@@ -665,18 +747,37 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
     return taperedStrand(h, [r[0] as Pt, segs], 0, line, widths.map((v) => v / 175.7));
   };
   const parts: string[] = [];
+  // the flush: `blush` above its default of 1 (her neutral face carries 1 and draws none, as the reference does; the chibi's mild blush at 1 is not hers). Two flat tint ellipses on the
+  // cheeks, in the chibi's blush colour for this skin, their opacity growing with how far above 1 the value is (1.5 is the chibi's own opacity, 2 twice it, never past solid).
+  if (p.face.blush > 1) {
+    const [tint0, opacity] = blush(p.skin_tone);
+    const alpha = Math.min(1, opacity * 2 * (p.face.blush - 1));
+    for (const cheek of ADULT_CHEEKS) {
+      const c = ref(cheek.c);
+      parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(cheek.rx * k)}" ry="${fmt1(cheek.ry * k)}" transform="rotate(${cheek.turn} ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint0}" opacity="${fmt2(alpha)}" />`);
+    }
+  }
   // the nose: the pale oval highlight, a lighter tone of the skin, then the dark tick
   const c = ref([657, 360.5]);
   parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(3.1 * k)}" ry="${fmt1(5.8 * k)}" transform="rotate(4 ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint(p.skin_tone, 0.62)}" />`);
   parts.push(stroke([[660.6, 366.2], [661.8, 368.8], [663, 372.2]], [1.8, 2.4, 1.2]));
   // the mouth: one continuous line. The reference draws it as two strokes with a small gap at the low point (x about 665), which the owner called a flaw of the reference, so the
   // two are joined there along the curve (the low point is flat for a few px) with the line a little thinner across the join; thickest toward the outer ends, thin at both tips.
-  parts.push(
-    stroke(
-      [[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [665, 403.4], [668, 403.3], [671, 403], [674, 402.4], [677, 401.4], [680, 400.2], [683, 398.8], [685.5, 397.4], [687.5, 395.8]],
-      [1.5, 1.8, 1.9, 1.9, 1.7, 1.5, 1.4, 1.5, 1.7, 1.9, 2.0, 1.9, 1.5, 1.1, 0.7],
-    ),
-  );
+  // `mouth_curve`, `mouth_width` and `mouth_open` move it (adultMouthPoints); at their defaults the points are the traced ones, untouched.
+  const upper = adultMouthPoints(p.face);
+  const open = p.face.mouth_open;
+  if (open > 0) {
+    // Open: the traced line is the upper lip and a second curve below it closes the shape, filled with the one flat dark red the chibi's open mouth uses, no teeth or tongue.
+    const first = upper[0] as Pt;
+    const last = upper[upper.length - 1] as Pt;
+    const across = last[0] - first[0];
+    const drop = across * ADULT_MOUTH_DEPTH * mouthDepthShare(open);
+    const lower = upper.map(([x, y]): Pt => [x, y + drop * Math.max(0, Math.sin((Math.PI * (x - first[0])) / across)) ** 0.65]);
+    const px = (q: Pt): string => `${fmt1(ref(q)[0])} ${fmt1(ref(q)[1])}`;
+    parts.push(`<path d="M ${px(upper[0] as Pt)} ${upper.slice(1).map((q) => `L ${px(q)} `).join("")}${[...lower].reverse().map((q) => `L ${px(q)} `).join("")}Z" fill="${MOUTH_INSIDE}" />`);
+    parts.push(stroke(lower, lower.map((_, i) => (i === 0 || i === lower.length - 1 ? 0.6 : 1.3))));
+  }
+  parts.push(stroke(upper, MOUTH_WIDTHS));
   return parts.join("");
 }
 
@@ -690,13 +791,28 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
   const pixelFrame = { head_cx: 0, head_cy: 0, head_r: 1 } as Skeleton; // taperedStrand reads a chain in head radii; this frame makes it read pixels
   const parts: string[] = [];
-  for (const sign of [-1, 1]) {
+  const raised = raisedSides(p);
+  for (const sign of [-1, 1].filter((s) => !raised.includes(s))) {
     const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
     const inPx = ([start, segs]: Chain): Chain => [px(start), segs.map(([c, e]) => [px(c), px(e)] as [Pt, Pt])];
     const closed = (ch: Chain, attrs: string): string => {
       const [start, segs] = inPx(ch);
       return `<path d="M ${fmt1(start[0])} ${fmt1(start[1])} ` + segs.map(([c, e]) => quad(c, e)).join("") + `Z" ${attrs} />`;
     };
+    if (gripIsFist(p)) {
+      // The fist, where `grip_style` asks for one: the traced fist's outline is in the body outline (adultBodyPath) and its cavity, finger separations and nails are drawn here, in the same frame.
+      // The fist goes in front of what hangs over it, the skirt and the apron: its curled fingers reach farther in than the hand zone (which follows the thigh, and which the relaxed hand fits
+      // inside), so the garments covered them and cut them off flat. It is drawn again here, its traced outline filled with skin (closed with a straight chord across the wrist, where the arm's
+      // own skin carries on) and edged at the hand's weight, on top of the body's fill and of the thigh's outline where the fingers overlap it.
+      const [fistStart, fistSegs] = inPx(HAND_FIST_OUTLINE);
+      const fistPath = `M ${fmt1(fistStart[0])} ${fmt1(fistStart[1])} ` + fistSegs.map(([c, e]) => quad(c, e)).join("");
+      parts.push(`<path d="${fistPath}Z" fill="${colorStr(p.skin_tone)}" />`);
+      parts.push(`<path d="${fistPath}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)) * HAND_STROKE_K)}" stroke-linejoin="round" />`);
+      const fistInk = HAND_FIST_CAVITY.map((c) => closed(c, `fill="${OUTLINE}"`)).join("") + HAND_FIST_FINGERS.map((c) => closed(c, `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.4))}" stroke-linejoin="round"`)).join("");
+      parts.push(`<g clip-path="url(#adult-hand-body)">${fistInk}</g>`);
+      parts.push(...HAND_FIST_NAILS.map((c) => closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round"`)));
+      continue;
+    }
     const fills =
       HAND_SHADE.map((c) => closed(c, `fill="${shade(p.skin_tone, 0.83, 1.6)}"`)).join("") +
       HAND_FINGERS.map((c) => closed(c, `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.4))}" stroke-linejoin="round"`)).join("") +
@@ -779,8 +895,10 @@ function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
     return `<polygon points="${[...inner, ...outer].join(" ")}" />`;
   };
   const id = "adult-arm-strip";
+  const hanging = [-1, 1].filter((s) => !raisedSides(p).includes(s));
+  if (hanging.length === 0) return "";
   return (
-    `<clipPath id="${id}">${strip(-1)}${strip(1)}</clipPath>` +
+    `<clipPath id="${id}">${hanging.map(strip).join("")}</clipPath>` +
     adultBodyRef(`fill="${colorStr(p.skin_tone)}" clip-path="url(#${id})"`) +
     adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#${id})"`)
   );

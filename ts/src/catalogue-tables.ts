@@ -487,8 +487,11 @@ export const FACE_SELECTS: readonly SelectField[] = [FACE_SCAR];
 // the chibi's settings, so a control that changes nothing in her drawing is a control that only misleads. `BODY_IGNORES` is what drawing her showed (ts/test/ignored-fields.ts finds
 // it again and ts/test/catalogue.test.ts pins it: `node harness/franzi/ignored_fields.ts` prints it), and `BODY_HIDDEN_EXTRA` is what draws something wrong on her (docs/adult-body-audit.md, D1 to
 // D3: a chibi ponytail root and a chibi bun on her traced hair, and a waist shift the traced head and hands do not follow), hidden on purpose.
+// `mouth_width`, `eye_size`, `iris_size`, `eye_tilt` and `grip_style` are also hidden here, for a different reason: the adult face and hands now draw them (docs/franzi-expressions-plan.md, steps 1
+// to 5; the companion sends them), but offering the controls in the web tool moves the catalogue's recorded fixture (`ts/fixtures/`, `ref-out/catalogue.json`), which is the owner's call, so they stay
+// hidden until then.
 export const BODY_HIDDEN_EXTRA: Readonly<Record<string, readonly string[]>> = {
-  adult_female: ["hair_knot", "hair_tail", "waist_shift"],
+  adult_female: ["hair_knot", "hair_tail", "waist_shift", "mouth_width", "eye_size", "iris_size", "eye_tilt", "grip_style"],
 };
 export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
   adult_female: sorted([
@@ -506,11 +509,8 @@ export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
     "collar_cut",
     "eye_corner",
     "eye_gap",
-    "eye_size",
-    "eye_tilt",
     "eye_width",
     "face_age",
-    "grip_style",
     "hair_length",
     "hair_tip_color",
     "hairstyle",
@@ -519,11 +519,9 @@ export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
     "hip_pocket_color",
     "iris_aspect",
     "iris_inset",
-    "iris_size",
     "lash",
     "lid_shadow",
     "mouth_drop",
-    "mouth_width",
     "neckline_notch",
     "neckline_round",
     "neckline_stand",
