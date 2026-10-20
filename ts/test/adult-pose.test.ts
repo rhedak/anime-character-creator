@@ -4,7 +4,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "node:test";
-import { adultArmPoses } from "../src/body-adult-pose.ts";
+import { RAISED_SHOULDER_D, adultArmPoses } from "../src/body-adult-pose.ts";
+import { SHOULDER_OUTER } from "../src/body-adult-data.ts";
 import { HAND_FIST_OUTLINE, HAND_OPEN_OUTLINE } from "../src/body-adult-hand-poses-data.ts";
 import { HAND_D_CUT } from "../src/body-adult-hand-data.ts";
 import { characterParams, outfit } from "../src/model.ts";
@@ -260,6 +261,20 @@ test("bent arms keep ids unique and every reference resolved, in both finishes, 
       }
     }
   }
+});
+
+test("the raised arm starts at a knot of the shoulder table, so the body's shoulder line and the arm's edge lie on the hanging outline's own curve and join without a step", () => {
+  assert.ok(SHOULDER_OUTER.some(([d]) => Math.abs(d - RAISED_SHOULDER_D) < 1e-9));
+});
+
+test("an arm held close to the body strokes its inner edge from where the body's line comes out from under it, and the arm turns about its outer tip there", () => {
+  const svg = draw(pose({ right_arm_out: 6, right_elbow: 148 }));
+  const body = (svg.match(/<path id="adult-body-outline" d="M ([\d.]+) ([\d.]+)/) ?? []).slice(1).map(Number);
+  assert.equal(body.length, 2);
+  const turn = (svg.match(/<g transform="rotate\(6\.00 ([\d.]+) ([\d.]+)\)/) ?? []).slice(1).map(Number);
+  assert.equal(turn.length, 2, "the pivot is a point");
+  // at 6 degrees the pivot is the shoulder's outer tip, which is where the body's line ends: it is on the body's path
+  assert.ok(new RegExp(` ${turn[0]!.toFixed(1)} ${turn[1]!.toFixed(1)}`).test((svg.match(/<path id="adult-body-outline" d="([^"]+)"/) ?? [])[1] ?? ""));
 });
 
 test("a folded arm carries the forearm's edge on over the upper arm as its fold line, fading out; a straight arm has none", () => {

@@ -38,8 +38,8 @@ export const ARM_POSE_MIN = 6;
 export const ARM_ELBOW_MIN = 1;
 export const ARM_ELBOW_MAX = 155;
 
-/** The depth below the chin, in head heights, where a raised arm begins and turns: the shoulder's tip. The body outline on that side stops its shoulder here too. */
-export const RAISED_SHOULDER_D = 0.36;
+/** The depth below the chin, in head heights, where a raised arm begins and turns: the shoulder's tip. The body outline on that side stops its shoulder here too. It is a knot of the shoulder table (0.4), so the line and the arm's edge both lie on the hanging outline's own curve there; at 0.36, between knots, a point on the straight interpolation made the curve wobble and the outline step at the tip. */
+export const RAISED_SHOULDER_D = 0.4;
 
 /**
  * Whether a garment that would stay on the hanging arm is worn: a coat or a robe. Their sleeves are cut for the hanging arm, so until they follow a raised one the arms stay down under

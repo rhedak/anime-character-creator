@@ -14,7 +14,7 @@ import { ARM_INNER, ARM_OUTER, SHOULDER_OUTER } from "./body-adult-data.ts";
 import { HAND_D_CUT, HAND_STROKE_K } from "./body-adult-hand-data.ts";
 import { HAND_FIST_OUTLINE, HAND_OPEN_OUTLINE } from "./body-adult-hand-poses-data.ts";
 import { HAND_FIST_CAVITY, HAND_FIST_FINGERS, HAND_FIST_NAILS, HAND_OPEN_LINES, HAND_OPEN_LINE_WIDTHS } from "./body-adult-hand-poses-lines-data.ts";
-import { BODY_OUTLINE_ID, adultArms, adultTorso, at, place, quad, smooth, taperedStrand, type Knots, type Pt } from "./body-adult-parts.ts";
+import { BODY_OUTLINE_ID, RIB_KNOTS, adultArms, adultTorso, at, place, quad, smooth, taperedStrand, withoutFirstSpan, type Knots, type Pt } from "./body-adult-parts.ts";
 import { ARM_ELBOW_MIN, RAISED_SHOULDER_D, adultArmPoses, type ArmPose } from "./body-adult-pose.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { tint } from "./colorutil.ts";
@@ -31,6 +31,8 @@ const D_TOP = RAISED_SHOULDER_D;
  */
 const D_ARMPIT = 0.5;
 const TRIM_BELOW = 30;
+/** Over how many degrees past `TRIM_BELOW` the pivot moves from the outer tip back to the middle of the top chord. */
+const PIVOT_BLEND = 20;
 /** The arm's width there and where the knot tables take over (1.1), in head heights: the arm above the tables' range thickens linearly between them. */
 const WIDTH_TOP = 0.15;
 const D_TABLES = 1.1;
@@ -74,6 +76,9 @@ interface ArmGeometry {
 
 /** The depth, in head heights below the chin, of the elbow joint: the middle of the arm between the shoulder's tip and the wrist, at a knot of both edge tables. */
 const ELBOW_D = 1.3;
+
+/** Points sampled to each span of an arm edge when one is cut or crossed. */
+const N = 3;
 
 /** Points along the Catmull-Rom curve through `pts`, `n` to each span, the knots included (the curve `smooth` draws). */
 function catmull(pts: readonly Pt[], n: number): Pt[] {
@@ -143,6 +148,10 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
   // the outer edge is the ink's edge less half a stroke toward the centre line, the inner edge half a stroke away from it, as in the body outline
   const outer = OUTER.map(([d, v]): Pt => [cx + sign * (w(d, v) - hs), y(d)]);
+  // the knot above the tip, which the body's shoulder line runs through: the outer edge leaves the tip in the direction that line arrives in (see `withoutLastSpan`)
+  const above = SHOULDER_OUTER.filter(([d]) => d < D_TOP - 1e-6).at(-1) as readonly [number, number];
+  const outerFrom: Pt[] = [[cx + sign * (w(above[0], above[1]) - hs), y(above[0])], ...outer];
+  const smoothOuter = withoutFirstSpan(smooth(outerFrom));
   const inner = INNER.map(([d, v]): Pt => [cx + sign * (w(d, v) + hs), y(d)]);
   const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
   const chain = pose.hand === "fist" ? HAND_FIST_OUTLINE : HAND_OPEN_OUTLINE;
@@ -154,35 +163,51 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const i0 = inner[0] as Pt;
   // the top is the straight chord a fill closes the path with, from the inner end back to the outer end: filled, not stroked, and the pivot is its middle, so it turns in place and stays in
   // the shoulder (a half circle over the top, tried first, swung out of the torso at the armpit for some angles and left a nub of skin with no outline)
-  const pivot: Pt = [(o0[0] + i0[0]) / 2, (o0[1] + i0[1]) / 2];
+  // An arm held close to the body turns about the outer tip instead, so its edge stays joined to the body's shoulder line there (turned about the middle the tip moves a pixel or so and the line
+  // steps); by `TRIM_BELOW` + `PIVOT_BLEND` degrees it is the middle again.
+  const toTip = Math.max(0, Math.min(1, 1 - (pose.angle - TRIM_BELOW) / PIVOT_BLEND));
+  const pivot: Pt = [(o0[0] + i0[0]) / 2 + ((o0[0] - i0[0]) / 2) * toTip, (o0[1] + i0[1]) / 2 + ((o0[1] - i0[1]) / 2) * toTip];
   const id = `adult-pose-${sign < 0 ? "l" : "r"}`;
-  // an arm held close to the body strokes its inner edge only from the armpit down
+  // An arm held close to the body strokes its inner edge only from the armpit down, from where the body's own line (shoulder tip, in to the armpit and down the ribs) comes out from under the
+  // arm's fill, so the arm's inner line and the body's meet there and the gap between arm and ribs closes at the top. With none found it starts at the armpit's knot.
   const kArmpit = INNER.findIndex(([d]) => Math.abs(d - D_ARMPIT) < 1e-9);
   const trim = pose.angle < TRIM_BELOW;
+  const denseIh = catmull(inner, N);
+  const armpit = (() => {
+    if (!trim) return null;
+    const torso = catmull([o0, ...RIB_KNOTS.map(([v, d]): Pt => [cx + sign * (w(d, v) - hs), y(d)])], N);
+    const edge = denseIh.map((q) => turned(q, pivot, -sign * pose.angle));
+    for (let t = 0; t < torso.length - 1; t++) {
+      for (let j = 0; j < edge.length - 1; j++) {
+        const x = crossing(torso[t] as Pt, torso[t + 1] as Pt, edge[j] as Pt, edge[j + 1] as Pt);
+        if (x !== null) return { j, x: turned(x, pivot, sign * pose.angle) };
+      }
+    }
+    return null;
+  })();
   // the viewer's-left arm turns clockwise on the page (outward, then up), the viewer's-right one the other way
   const upperTurn = `rotate(${fmt2(-sign * pose.angle)} ${fmt1(pivot[0])} ${fmt1(pivot[1])})`;
   if (pose.bend < ARM_ELBOW_MIN) {
     const wrist = outer[outer.length - 1] as Pt;
     const last = px((segs[segs.length - 1] as readonly [unknown, Pt])[1]);
-    const innerStroke = smooth(rev(trim ? inner.slice(kArmpit) : inner));
+    const innerStroke = armpit !== null ? smooth(rev([armpit.x, ...denseIh.slice(armpit.j + 1)])) : smooth(rev(trim ? inner.slice(kArmpit) : inner));
     const pieces = {
-      armA: `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smooth(outer),
+      armA: `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smoothOuter,
       hand: `M ${fmt1(wrist[0])} ${fmt1(wrist[1])} ` + walk(),
       armB: `M ${fmt1(last[0])} ${fmt1(last[1])} ` + innerStroke,
       fold: [],
     };
-    const fill = `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smooth(outer) + `L ${fmt1(last[0])} ${fmt1(last[1])} ` + smooth(rev(inner));
+    const fill = `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smoothOuter + `L ${fmt1(last[0])} ${fmt1(last[1])} ` + smooth(rev(inner));
     return { fill, turn: upperTurn, upperTurn, px, pivot, id, pieces };
   }
 
   // A bent arm. It is drawn in the forearm's own frame, where the forearm hangs straight and the hand is traced, and the group's transform is the turn about the shoulder after the bend about the
   // elbow, so the forearm, the hand, their details and the stroke bands need nothing else. The upper arm is then the hanging upper arm turned back by the bend about the elbow, and the two are
   // joined into one outline: where the bend closes (the outer edge) the edges cross and are cut at the crossing; where it opens (the inner edge) they are joined by a round elbow.
-  const N = 3;
   const knot = (tab: Knots): number => tab.findIndex(([d]) => Math.abs(d - ELBOW_D) < 1e-9);
   const [ko, ki] = [knot(OUTER), knot(INNER)];
   if (ko < 0 || ki < 0) throw new Error("the arm tables have no knot at the elbow");
-  const denseO = catmull(outer, N);
+  const denseO = catmull(outerFrom, N).slice(N);
   const denseI = catmull(inner, N);
   const elbow: Pt = [((outer[ko] as Pt)[0] + (inner[ki] as Pt)[0]) / 2, ((outer[ko] as Pt)[1] + (inner[ki] as Pt)[1]) / 2];
   const half = Math.hypot((outer[ko] as Pt)[0] - (inner[ki] as Pt)[0], (outer[ko] as Pt)[1] - (inner[ki] as Pt)[1]) / 2;
@@ -212,7 +237,8 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const join = upperI[upperI.length - 1] as Pt;
   const arc = `A ${fmt1(half)} ${fmt1(half)} 0 0 ${-bb > 0 ? 1 : 0} ${fmt1(join[0])} ${fmt1(join[1])} `;
   const innerCut = smooth(rev(lowerI)) + arc + smooth(rev(upperI));
-  const innerStroke = smooth(rev(lowerI)) + arc + smooth(rev(trim ? upperI.slice(kArmpit * N) : upperI));
+  const upperStroke = armpit !== null && armpit.j < upperI.length - 1 ? [turned(armpit.x, elbow, -bb), ...upperI.slice(armpit.j + 1)] : trim ? upperI.slice(kArmpit * N) : upperI;
+  const innerStroke = smooth(rev(lowerI)) + arc + smooth(rev(upperStroke));
   const top = upperO[0] as Pt;
   const fill = `M ${fmt1(top[0])} ${fmt1(top[1])} ` + outerCut + `L ${fmt1(endPt[0])} ${fmt1(endPt[1])} ` + innerCut;
   const pieces = {
@@ -249,7 +275,7 @@ function strokeBands(sk: Skeleton, g: ArmGeometry): { clips: string; strokes: (w
   clips += `<clipPath id="${id}-hand">${rect(end - lap, big)}</clipPath>`;
   const strokes = (width: number): string[] => {
     const attrs = (wid: number, clip: string | null): string => `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(wid)}" stroke-linejoin="round"${clip === null ? "" : ` clip-path="url(#${clip})"`}`;
-    const out = [`<use href="#${id}-arm-a" ${attrs(width, null)} />`, `<use href="#${id}-arm-b" ${attrs(width, null)} />`];
+    const out = [`<use href="#${id}-arm-a" ${attrs(width, null)} stroke-linecap="round" />`, `<use href="#${id}-arm-b" ${attrs(width, null)} stroke-linecap="round" />`];
     g.pieces.fold.forEach((_, i) => out.push(`<use href="#${id}-fold-${i}" ${attrs(width * (FOLD_K[i] as number), null)} stroke-linecap="round" />`));
     for (let i = 0; i < BANDS; i++) out.push(`<use href="#${handId}" ${attrs(width * (1 - (1 - HAND_STROKE_K) * ((i + 1) / BANDS)), `${id}-t${i}`)} />`);
     out.push(`<use href="#${handId}" ${attrs(width * HAND_STROKE_K, `${id}-hand`)} />`);

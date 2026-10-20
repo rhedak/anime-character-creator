@@ -97,6 +97,9 @@ const GAP_TOP = 2.2;
 /** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
 const GAP_TIP: Pt = [0.4, 0.955];
 
+/** The ribs, [v, d] in head heights: where the outline of a side without its arm runs from the armpit down to the gap's tip. */
+export const RIB_KNOTS: readonly Pt[] = [[0.455, 0.5], [0.44, 0.62], [0.42, 0.78], [0.405, 0.9]];
+
 /** A Catmull-Rom curve through `pts`, as cubic segments continuing from the first point (the pen is already there). */
 export function smooth(pts: readonly Pt[]): string {
   let s = "";
@@ -111,6 +114,10 @@ export function smooth(pts: readonly Pt[]): string {
   }
   return s;
 }
+
+/** A `smooth` path less its last or its first span: what is left is the curve as if the span were there, which a raised arm's edge and the shoulder it leaves share the direction of. */
+export const withoutLastSpan = (s: string): string => s.slice(0, s.lastIndexOf("C "));
+export const withoutFirstSpan = (s: string): string => s.slice(s.indexOf("C ", 1));
 
 const line = (pt: Pt): string => `L ${fmt1(pt[0])} ${fmt1(pt[1])} `;
 
@@ -151,14 +158,14 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
   // A side without its arm: the shoulder stops at the shoulder's tip, where the raised arm's cap begins (`RAISED_SHOULDER_D`), and the outline goes in to the armpit and down the ribs to the gap's tip.
   const shoulderAbove: Knots = [...SHOULDER_OUTER.filter(([dd]) => dd < RAISED_SHOULDER_D), [RAISED_SHOULDER_D, at(SHOULDER_OUTER, RAISED_SHOULDER_D)]];
+  const shoulderNext = (sign: number): Pt => side(sign, [SHOULDER_OUTER.find(([dd]) => dd > RAISED_SHOULDER_D + 1e-6) as readonly [number, number]])[0] as Pt;
   const out = (sign: number): Pt[] => [
     [cx + sign * sk.neck_half_w, y(0.12)],
     [cx + sign * (w(0.2, 0.2) - hs), y(0.2)],
     [cx + sign * (w(0.25, 0.4) - hs), y(0.25)],
     ...(without.includes(sign) ? side(sign, shoulderAbove) : [...side(sign, SHOULDER_OUTER), ...side(sign, armOuterAbove)]),
   ];
-  const ribs = (sign: number): Pt[] =>
-    ([[0.455, 0.5], [0.44, 0.62], [0.42, 0.78], [0.405, 0.9]] as Pt[]).map(([v, dd]): Pt => [cx + sign * (w(dd, v) - hs), y(dd)]);
+  const ribs = (sign: number): Pt[] => RIB_KNOTS.map(([v, dd]): Pt => [cx + sign * (w(dd, v) - hs), y(dd)]);
   const tip = (sign: number): Pt => [cx + sign * w(GAP_TIP[1], GAP_TIP[0]), y(GAP_TIP[1])];
   // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
   const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0)];
@@ -181,7 +188,8 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
   const start = a[0] as Pt;
   // Left side down, round the left hand, up the arm's inside, over the armpit, down the torso and leg to the sole.
   let d = `M ${fmt1(start[0])} ${fmt1(start[1])} `;
-  d += smooth(a);
+  // on a side without its arm the shoulder's last span is given the knot beyond the tip, then dropped, so the line leaves the tip in the direction the raised arm's edge takes up there
+  d += without.includes(L) ? withoutLastSpan(smooth([...a, shoulderNext(L)])) : smooth(a);
   const leg = legLine(L);
   if (without.includes(L)) {
     d += smooth([a[a.length - 1] as Pt, ...ribs(L), tip(L)]);
@@ -214,7 +222,7 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
     d += smooth(side(R, armInnerAbove));
     d += hand(R);
   }
-  d += smooth(rev(out(R)));
+  d += without.includes(R) ? withoutFirstSpan(smooth([shoulderNext(R), ...rev(out(R))])) : smooth(rev(out(R)));
   return d + "Z";
 }
 
