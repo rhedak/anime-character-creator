@@ -866,8 +866,8 @@ export interface CharacterParams {
   readonly left_arm_out: number;
   /**
    * How far the forearm is bent at the elbow, in degrees, on the adult woman's raised arms (the chibi's arms do not bend, and ignore it). 0, the default, is a straight arm; the forearm folds
-   * further in the direction the arm was raised, so 90 turns it square to the upper arm and about 140 folds it nearly back along it. With the arm raised by `right_arm_out` of 25 and an elbow of
-   * 140 the hand ends up beside the head, the wave; with 50 and 130 the fist is at the shoulder, a cheer. Named from the viewer's side like `right_arm_out`. An arm that is bent is drawn on
+   * further in the direction the arm was raised, so 90 turns it square to the upper arm and 155 (the most) folds it back along it with a 20 degree crease between them. With `right_arm_out` of 6 and an elbow of
+   * 148 to 155 the hand is beside the head, the wave; with 16 and 148 and `grip_style` "fist" the fists are at the shoulders, a cheer. Named from the viewer's side like `right_arm_out`. An arm that is bent is drawn on
    * its own even when it hangs (at least `ARM_POSE_MIN` degrees out), because the fused outline of a hanging arm cannot bend.
    */
   readonly right_elbow: number;

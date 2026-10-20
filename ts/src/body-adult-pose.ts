@@ -29,9 +29,14 @@ export const ARM_POSE_MAX = 180;
  */
 export const ARM_POSE_MIN = 6;
 
-/** The least elbow bend, in degrees, that is drawn (a bent arm is drawn on its own), and the most the elbow folds: nearly back along the upper arm. */
+/**
+ * The least elbow bend, in degrees, that is drawn (a bent arm is drawn on its own), and the most the elbow folds. The traced arm's upper arm and forearm lean outward by about 7 and 12 degrees
+ * when it hangs, so the angle between them when folded is |175 - bend|, and the two outer edges, which form the crease inside the fold, cross only if the forearm is long enough to reach the
+ * crossing, at half the arm's width over the tangent of half that angle. 155 leaves a crease of 20 degrees that crosses inside the forearm; a folded arm cannot reach the angle of the fold
+ * the packs draw (about 15 degrees) with arms as wide as these, and is clamped here instead of drawn as a tangle.
+ */
 export const ARM_ELBOW_MIN = 1;
-export const ARM_ELBOW_MAX = 150;
+export const ARM_ELBOW_MAX = 155;
 
 /** The depth below the chin, in head heights, where a raised arm begins and turns: the shoulder's tip. The body outline on that side stops its shoulder here too. */
 export const RAISED_SHOULDER_D = 0.36;

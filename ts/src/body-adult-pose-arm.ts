@@ -25,12 +25,21 @@ import type { Chain } from "./tables.ts";
 
 /** Where the raised arm begins, in head heights below the chin: the shoulder's tip, from where it turns. */
 const D_TOP = RAISED_SHOULDER_D;
+/**
+ * Where the armpit begins, in head heights below the chin: the hanging arm's armpit crease starts here. An arm held close to the body (under `TRIM_BELOW` degrees) strokes its inner edge only from
+ * here down, because above it that edge is inside the shoulder and read as a seam through it; a raised arm strokes all of it, being its visible underside.
+ */
+const D_ARMPIT = 0.5;
+const TRIM_BELOW = 30;
 /** The arm's width there and where the knot tables take over (1.1), in head heights: the arm above the tables' range thickens linearly between them. */
 const WIDTH_TOP = 0.15;
 const D_TABLES = 1.1;
 /** The taper of the stroke from the arm's weight to the hand's, as in `adultBodyStroke`: over this many head heights below the wrist, in this many bands. */
 const TAPER = 0.32;
 const BANDS = 8;
+/** How far the forearm's edge goes on over the upper arm past the crease of a bent arm, in head heights, and the weight of each of its bands as a fraction of the outline's. */
+const FOLD_LEN = 0.35;
+const FOLD_K = [1, 1, 0.7];
 
 const OUTER: Knots = [[D_TOP, at(SHOULDER_OUTER, D_TOP)], ...SHOULDER_OUTER.filter(([d]) => d > D_TOP + 1e-6), ...ARM_OUTER.filter(([d]) => d <= HAND_D_CUT + 1e-6)];
 const INNER_BELOW: Knots = ARM_INNER.filter(([d]) => d <= HAND_D_CUT + 1e-6);
@@ -38,7 +47,7 @@ const INNER_BELOW: Knots = ARM_INNER.filter(([d]) => d <= HAND_D_CUT + 1e-6);
 const INNER_ABOVE: Knots = (() => {
   const first = INNER_BELOW[0] as readonly [number, number];
   const widthAt = at(OUTER, first[0]) - first[1];
-  return [D_TOP, 0.6, 0.8, 0.95, first[0]].map((d): readonly [number, number] => [d, at(OUTER, d) - (WIDTH_TOP + ((widthAt - WIDTH_TOP) * (d - D_TOP)) / (first[0] - D_TOP))]);
+  return [D_TOP, D_ARMPIT, 0.6, 0.8, 0.95, first[0]].map((d): readonly [number, number] => [d, at(OUTER, d) - (WIDTH_TOP + ((widthAt - WIDTH_TOP) * (d - D_TOP)) / (first[0] - D_TOP))]);
 })();
 const INNER: Knots = [...INNER_ABOVE.filter(([d]) => d < D_TABLES - 1e-6), ...INNER_BELOW];
 
@@ -46,10 +55,10 @@ const pixelFrame = { head_cx: 0, head_cy: 0, head_r: 1 } as Skeleton; // tapered
 
 interface ArmGeometry {
   /**
-   * The arm's own edges (outer edge, hand, inner edge) as an open path. It is filled as it is: a fill closes an open path with a straight line from its end to its start, which is the arm's top
-   * chord, so the arm's long outline is written once. A straight arm is stroked as this path too; a bent one is stroked in pieces (`bent`).
+   * The arm without its hand, closed: the outer edge, across the wrist, the whole inner edge and, by the fill's closing chord, the shoulder's top. The skin is this and the hand's own path filled (a
+   * fill closes an open path with a straight line from its end to its start, which for the hand is the wrist), so the hand's long outline is written once.
    */
-  readonly edge: string;
+  readonly fill: string;
   /** The `transform` of the group the arm is drawn in: the turn of the arm about the shoulder (and, when it is bent, of the forearm about the elbow). */
   readonly turn: string;
   /** The turn of the upper arm alone, about the shoulder: what a sleeve on the upper arm is carried by. */
@@ -59,8 +68,8 @@ interface ArmGeometry {
   /** The shoulder joint, in canvas units: the middle of the arm's top chord, which the turn leaves where it is. */
   readonly pivot: Pt;
   readonly id: string;
-  /** For a bent arm, the three open paths it is stroked by: the outer edge down to the wrist, the hand, and the inner edge back up. */
-  readonly bent: { readonly armA: string; readonly hand: string; readonly armB: string } | null;
+  /** The three open paths the arm is stroked by: the outer edge down to the wrist, the hand, and the inner edge back up (from the armpit, for an arm held close to the body). */
+  readonly pieces: { readonly armA: string; readonly hand: string; readonly armB: string; readonly fold: readonly string[] };
 }
 
 /** The depth, in head heights below the chin, of the elbow joint: the middle of the arm between the shoulder's tip and the wrist, at a knot of both edge tables. */
@@ -101,6 +110,32 @@ function crossing(a: Pt, b: Pt, c: Pt, d: Pt): Pt | null {
   return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [a[0] + t * r0, a[1] + t * r1] : null;
 }
 
+/**
+ * Where the forearm's edge, cut at the crease of a bent arm, goes on: it lies over the upper arm as the fold between the two (the reference draws it). The edge past the crease, `FOLD_LEN` head
+ * heights of it (`rest` runs from the crease back toward the elbow), as one open path per band, each band stroked thinner than the last (`FOLD_K`), so the line fades out into the skin.
+ */
+function foldLines(x: Pt, rest: readonly Pt[], length: number): string[] {
+  const pts: Pt[] = [x, ...rest];
+  const cut: Pt[] = [x];
+  let run = 0;
+  for (let i = 1; i < pts.length && run < length; i++) {
+    const a = pts[i - 1] as Pt;
+    const b = pts[i] as Pt;
+    const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const t = d > 0 ? Math.min(1, (length - run) / d) : 1;
+    cut.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+    run += d;
+  }
+  if (cut.length < 2) return [];
+  const per = Math.ceil((cut.length - 1) / FOLD_K.length);
+  const out: string[] = [];
+  for (let i = 0; i < FOLD_K.length; i++) {
+    const part = cut.slice(i * per, Math.min(cut.length, (i + 1) * per + 1));
+    if (part.length >= 2) out.push(`M ${fmt1((part[0] as Pt)[0])} ${fmt1((part[0] as Pt)[1])} ` + smooth(part));
+  }
+  return out;
+}
+
 function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const { cx, y, w } = place(sk);
   const hs = outlineW(strokeW(sk)) / 2;
@@ -121,10 +156,23 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   // the shoulder (a half circle over the top, tried first, swung out of the torso at the armpit for some angles and left a nub of skin with no outline)
   const pivot: Pt = [(o0[0] + i0[0]) / 2, (o0[1] + i0[1]) / 2];
   const id = `adult-pose-${sign < 0 ? "l" : "r"}`;
+  // an arm held close to the body strokes its inner edge only from the armpit down
+  const kArmpit = INNER.findIndex(([d]) => Math.abs(d - D_ARMPIT) < 1e-9);
+  const trim = pose.angle < TRIM_BELOW;
   // the viewer's-left arm turns clockwise on the page (outward, then up), the viewer's-right one the other way
   const upperTurn = `rotate(${fmt2(-sign * pose.angle)} ${fmt1(pivot[0])} ${fmt1(pivot[1])})`;
   if (pose.bend < ARM_ELBOW_MIN) {
-    return { edge: `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smooth(outer) + walk() + smooth(rev(inner)), turn: upperTurn, upperTurn, px, pivot, id, bent: null };
+    const wrist = outer[outer.length - 1] as Pt;
+    const last = px((segs[segs.length - 1] as readonly [unknown, Pt])[1]);
+    const innerStroke = smooth(rev(trim ? inner.slice(kArmpit) : inner));
+    const pieces = {
+      armA: `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smooth(outer),
+      hand: `M ${fmt1(wrist[0])} ${fmt1(wrist[1])} ` + walk(),
+      armB: `M ${fmt1(last[0])} ${fmt1(last[1])} ` + innerStroke,
+      fold: [],
+    };
+    const fill = `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smooth(outer) + `L ${fmt1(last[0])} ${fmt1(last[1])} ` + smooth(rev(inner));
+    return { fill, turn: upperTurn, upperTurn, px, pivot, id, pieces };
   }
 
   // A bent arm. It is drawn in the forearm's own frame, where the forearm hangs straight and the hand is traced, and the group's transform is the turn about the shoulder after the bend about the
@@ -144,7 +192,7 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const lowerO = denseO.slice(ko * N);
   const lowerI = denseI.slice(ki * N);
   // the outer edge: cut both where they cross, near the elbow
-  const K = 24;
+  const K = 48;
   let hit: { x: Pt; a: number; b: number } | null = null;
   const a0 = Math.max(0, upperO.length - 1 - K);
   for (let a = upperO.length - 2; a >= a0 && !hit; a--) {
@@ -162,40 +210,47 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const endPt = px(chainEnd as Pt);
   // the inner edge: down the forearm's inside to the elbow, round it, up the upper arm's inside
   const join = upperI[upperI.length - 1] as Pt;
-  const innerCut = smooth(rev(lowerI)) + `A ${fmt1(half)} ${fmt1(half)} 0 0 ${-bb > 0 ? 1 : 0} ${fmt1(join[0])} ${fmt1(join[1])} ` + smooth(rev(upperI));
+  const arc = `A ${fmt1(half)} ${fmt1(half)} 0 0 ${-bb > 0 ? 1 : 0} ${fmt1(join[0])} ${fmt1(join[1])} `;
+  const innerCut = smooth(rev(lowerI)) + arc + smooth(rev(upperI));
+  const innerStroke = smooth(rev(lowerI)) + arc + smooth(rev(trim ? upperI.slice(kArmpit * N) : upperI));
   const top = upperO[0] as Pt;
-  const edge = `M ${fmt1(top[0])} ${fmt1(top[1])} ` + outerCut + walk() + innerCut;
-  const bent = {
+  const fill = `M ${fmt1(top[0])} ${fmt1(top[1])} ` + outerCut + `L ${fmt1(endPt[0])} ${fmt1(endPt[1])} ` + innerCut;
+  const pieces = {
     armA: `M ${fmt1(top[0])} ${fmt1(top[1])} ` + outerCut,
     hand: `M ${fmt1(wristOuter[0])} ${fmt1(wristOuter[1])} ` + walk(),
-    armB: `M ${fmt1(endPt[0])} ${fmt1(endPt[1])} ` + innerCut,
+    armB: `M ${fmt1(endPt[0])} ${fmt1(endPt[1])} ` + innerStroke,
+    fold: hit === null ? [] : foldLines(hit.x, lowerO.slice(0, hit.b + 1).reverse(), FOLD_LEN * 2 * sk.head_r),
   };
   const turn = `${upperTurn} rotate(${fmt2(bb)} ${fmt1(elbow[0])} ${fmt1(elbow[1])})`;
-  return { edge, turn, upperTurn, px, pivot, id, bent };
+  return { fill, turn, upperTurn, px, pivot, id, pieces };
 }
 
-/** The extra path definitions a bent arm is stroked by, for the `<defs>` of its group (none for a straight one). */
-const strokeDefs = (g: ArmGeometry): string => (g.bent === null ? "" : `<path id="${g.id}-arm-a" d="${g.bent.armA}" /><path id="${g.id}-arm-b" d="${g.bent.armB}" /><path id="${g.id}-hand-edge" d="${g.bent.hand}" />`);
+/** The path definitions of an arm, for the `<defs>` of its group: its fill and the pieces it is stroked by. */
+const armDefs = (g: ArmGeometry): string => `<path id="${g.id}-fill" d="${g.fill}" /><path id="${g.id}-arm-a" d="${g.pieces.armA}" /><path id="${g.id}-arm-b" d="${g.pieces.armB}" /><path id="${g.id}-hand-edge" d="${g.pieces.hand}" />${g.pieces.fold.map((d, i) => `<path id="${g.id}-fold-${i}" d="${d}" />`).join("")}`;
+
+/** The skin: the arm without its hand and the hand, each filled (the hand's closing chord is the wrist). `attrs` are the presentation attributes of both. */
+const skinUses = (g: ArmGeometry, attrs: string, transform = ""): string => `<use href="#${g.id}-fill" ${attrs}${transform} /><use href="#${g.id}-hand-edge" ${attrs}${transform} />`;
 
 /**
- * Clip paths by band across the wrist, and the strokes: a straight arm's one path is stroked in the arm's weight above the wrist, tapering over `TAPER` below it and at the hand's weight beyond (the
- * clips are rectangles in the arm's frame, which the group's transform carries with it); a bent arm's two arm pieces are stroked whole and only its hand path is banded.
+ * Clip paths by band across the wrist, and the strokes: the two arm pieces are stroked whole in the arm's weight and the hand path is banded, tapering over `TAPER` below the wrist to the hand's weight
+ * (the clips are rectangles in the arm's frame, which the group's transform carries with it).
  */
 function strokeBands(sk: Skeleton, g: ArmGeometry): { clips: string; strokes: (width: number) => string[]; hand: string } {
   const id = g.id;
-  const handId = g.bent === null ? `${id}-edge` : `${id}-hand-edge`;
+  const handId = `${id}-hand-edge`;
   const { y } = place(sk);
   const big = Math.max(sk.canvas_w, sk.canvas_h) * 2;
   const rect = (y0: number, y1: number): string => `<rect x="${fmt1(-big)}" y="${fmt1(y0)}" width="${fmt1(3 * big)}" height="${fmt1(y1 - y0)}" />`;
   const top = y(HAND_D_CUT);
   const end = y(HAND_D_CUT + TAPER);
   const lap = 0.4;
-  let clips = g.bent === null ? `<clipPath id="${id}-arm">${rect(-big, top)}</clipPath>` : "";
+  let clips = "";
   for (let i = 0; i < BANDS; i++) clips += `<clipPath id="${id}-t${i}">${rect(top + ((end - top) * i) / BANDS - lap, top + ((end - top) * (i + 1)) / BANDS)}</clipPath>`;
   clips += `<clipPath id="${id}-hand">${rect(end - lap, big)}</clipPath>`;
   const strokes = (width: number): string[] => {
     const attrs = (wid: number, clip: string | null): string => `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(wid)}" stroke-linejoin="round"${clip === null ? "" : ` clip-path="url(#${clip})"`}`;
-    const out = g.bent === null ? [`<use href="#${id}-edge" ${attrs(width, `${id}-arm`)} />`] : [`<use href="#${id}-arm-a" ${attrs(width, null)} />`, `<use href="#${id}-arm-b" ${attrs(width, null)} />`];
+    const out = [`<use href="#${id}-arm-a" ${attrs(width, null)} />`, `<use href="#${id}-arm-b" ${attrs(width, null)} />`];
+    g.pieces.fold.forEach((_, i) => out.push(`<use href="#${id}-fold-${i}" ${attrs(width * (FOLD_K[i] as number), null)} stroke-linecap="round" />`));
     for (let i = 0; i < BANDS; i++) out.push(`<use href="#${handId}" ${attrs(width * (1 - (1 - HAND_STROKE_K) * ((i + 1) / BANDS)), `${id}-t${i}`)} />`);
     out.push(`<use href="#${handId}" ${attrs(width * HAND_STROKE_K, `${id}-hand`)} />`);
     return out;
@@ -215,8 +270,8 @@ export function adultPosedArmSkin(sk: Skeleton, p: CharacterParams): string {
       const g = armGeometry(sk, pose);
       const bands = strokeBands(sk, g);
       return (
-        `<g transform="${g.turn}"><defs><path id="${g.id}-edge" d="${g.edge}" />${strokeDefs(g)}</defs>` +
-        `<use href="#${g.id}-edge" fill="${colorStr(p.skin_tone)}" stroke="none" />${bands.clips}${bands.strokes(width0(sk)).join("")}</g>`
+        `<g transform="${g.turn}"><defs>${armDefs(g)}</defs>` +
+        `${skinUses(g, `fill="${colorStr(p.skin_tone)}" stroke="none"`)}${bands.clips}${bands.strokes(width0(sk)).join("")}</g>`
       );
     })
     .join("");
@@ -244,8 +299,8 @@ export function adultPosedArmDetail(sk: Skeleton, p: CharacterParams): string {
       }
       return (
         // the hand in front of what hangs over it (a skirt, an apron): its skin again, below the wrist, before its interior
-        `<g transform="${g.turn}"><use href="#${g.id}-edge" fill="${colorStr(p.skin_tone)}" stroke="none" clip-path="url(#${g.id}-hand)" />` +
-        `<clipPath id="${g.id}-in"><use href="#${g.id}-edge" /></clipPath><g clip-path="url(#${g.id}-in)">${parts.join("")}</g>` +
+        `<g transform="${g.turn}"><use href="#${g.id}-hand-edge" fill="${colorStr(p.skin_tone)}" stroke="none" clip-path="url(#${g.id}-hand)" />` +
+        `<clipPath id="${g.id}-in"><use href="#${g.id}-fill" /><use href="#${g.id}-hand-edge" /></clipPath><g clip-path="url(#${g.id}-in)">${parts.join("")}</g>` +
         // the skin's edge is the hand's edge, so the details covered half of its stroke: drawn again over them at the hand's weight
         `${bands.hand}</g>`
       );
@@ -278,7 +333,7 @@ export function adultPosedSleeveHead(sk: Skeleton, p: CharacterParams): string {
       const bounds = `<clipPath id="${id}-box"><rect x="${fmt1(bx0)}" y="${fmt1(y(0.15))}" width="${fmt1(bx1 - bx0)}" height="${fmt1(y(0.75) - y(0.15))}" /></clipPath>`;
       const bands = strokeBands(sk, g);
       return (
-        `<clipPath id="${id}-clip"><use href="#${BODY_OUTLINE_ID}" /><use href="#${g.id}-edge" transform="${g.turn}" /></clipPath>` +
+        `<clipPath id="${id}-clip"><use href="#${BODY_OUTLINE_ID}" /><use href="#${g.id}-fill" transform="${g.turn}" /><use href="#${g.id}-hand-edge" transform="${g.turn}" /></clipPath>` +
         `<g clip-path="url(#${id}-clip)"><circle cx="${fmt1(g.pivot[0])}" cy="${fmt1(g.pivot[1])}" r="${fmt1(r)}" fill="${colorStr(p.outfit.tunic_color as string)}" /></g>` +
         bounds +
         `<use href="#${BODY_OUTLINE_ID}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" clip-path="url(#${id}-box)" />` +

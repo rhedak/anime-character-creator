@@ -70,7 +70,7 @@ test("a hanging arm is a fist too when grip_style says so: the traced fist is in
 });
 
 test("the viewer's-right arm is the mirror image of the viewer's-left one, point for point: the hand is walked the same way on both sides (it was once walked backwards, which drew a jump across the wrist)", () => {
-  const edge = (svg: string, tag: string): number[] => [...((svg.match(new RegExp(`<path id="adult-pose-${tag}-edge" d="([^"]+)"`)) ?? [])[1] ?? "").matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
+  const edge = (svg: string, tag: string): number[] => [...(["fill", "hand-edge"].map((id) => (svg.match(new RegExp(`<path id="adult-pose-${tag}-${id}" d="([^"]+)"`)) ?? [])[1] ?? "").join(" ")).matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
   for (const grip of ["mitten", "fist"]) {
     const svg = draw(pose({ right_arm_out: 110, left_arm_out: 110, grip_style: grip }));
     const l = edge(svg, "l");
@@ -157,14 +157,14 @@ test("the hands go in front of the skirt and the apron: a hanging fist is drawn 
   assert.equal(overlays(after(draw(FRANZI), 'id="adult-apron-sash"')), 0, "the relaxed hand keeps its zone redraw and adds no overlay");
   // a raised arm's hand, below the wrist, is drawn again after the apron too (a hand at 15 degrees hangs over the skirt)
   const raised = draw(pose({ right_arm_out: 15, grip_style: "fist" }, FRANZI));
-  assert.ok(after(raised, 'id="adult-apron-sash"').includes(`<use href="#adult-pose-l-edge" fill="${skin}" stroke="none" clip-path="url(#adult-pose-l-hand)"`));
+  assert.ok(after(raised, 'id="adult-apron-sash"').includes(`<use href="#adult-pose-l-hand-edge" fill="${skin}" stroke="none" clip-path="url(#adult-pose-l-hand)"`));
 });
 
 test("with a blouse a raised arm gets a sleeve head over the shoulder, so the sleeve does not read as a cutout; without a blouse it does not", () => {
   const dressed = draw(pose({ right_arm_out: 110, left_arm_out: 110 }, FRANZI));
   for (const tag of ["l", "r"]) {
     assert.ok(dressed.includes(`id="adult-pose-${tag}-head-clip"`), `${tag}: a clip to the body and the arm`);
-    assert.ok(dressed.includes(`<clipPath id="adult-pose-${tag}-head-clip"><use href="#adult-body-outline" /><use href="#adult-pose-${tag}-edge"`), `${tag}: the clip is the body without its arm and the arm`);
+    assert.ok(dressed.includes(`<clipPath id="adult-pose-${tag}-head-clip"><use href="#adult-body-outline" /><use href="#adult-pose-${tag}-fill"`), `${tag}: the clip is the body without its arm and the arm`);
   }
   // the head's cloth is the blouse's colour, and it is drawn in the torso layer, before the blouse's own pieces
   assert.ok(dressed.indexOf('id="adult-pose-l-head-clip"') < dressed.indexOf('id="adult-blouse-body"'));
@@ -199,10 +199,10 @@ test("the elbow fields are in the registry with a neutral default, and a bend un
   assert.equal(draw(pose({ right_elbow: 0, left_elbow: 0 })), draw(BARE));
 });
 
-test("a bend is clamped to 0 to 150 degrees, turns the forearm further the way the arm was raised, and a bent arm hangs out at least six degrees", () => {
+test("a bend is clamped to 0 to 155 degrees, turns the forearm further the way the arm was raised, and a bent arm hangs out at least six degrees", () => {
   const a = (o: Record<string, unknown>) => adultArmPoses(pose(o))[0]!;
   assert.equal(a({ right_arm_out: 40, right_elbow: 100 }).bend, 100);
-  assert.equal(a({ right_arm_out: 40, right_elbow: 400 }).bend, 150);
+  assert.equal(a({ right_arm_out: 40, right_elbow: 400 }).bend, 155, "the most the fold keeps a crease that crosses inside the forearm");
   assert.deepEqual(adultArmPoses(pose({ right_arm_out: 40, right_elbow: -20 })).map((x) => x.bend), [0]);
   // an arm that hangs but is bent is drawn on its own, held out the least that leaves a gap beside the ribs
   assert.equal(a({ right_elbow: 120 }).angle, 6);
@@ -227,7 +227,7 @@ test("a bent arm is drawn in the forearm's frame under the turn about the should
 });
 
 test("the viewer's-right bent arm is the mirror image of the left, command for command (the elbow's round join sweeps the other way)", () => {
-  const edge = (svg: string, tag: string): string => (svg.match(new RegExp(`<path id="adult-pose-${tag}-edge" d="([^"]+)"`)) ?? [])[1] ?? "";
+  const edge = (svg: string, tag: string): string => ["fill", "hand-edge"].map((id) => (svg.match(new RegExp(`<path id="adult-pose-${tag}-${id}" d="([^"]+)"`)) ?? [])[1] ?? "").join(" ");
   const cmds = (d: string): { c: string; n: number[] }[] => [...d.matchAll(/([MLCQAZ])([^MLCQAZ]*)/g)].map((m) => ({ c: m[1]!, n: [...m[2]!.matchAll(/-?\d+(?:\.\d+)?/g)].map((x) => Number(x[0])) }));
   for (const grip of ["mitten", "fist"]) {
     const svg = draw(pose({ right_arm_out: 40, left_arm_out: 40, right_elbow: 120, left_elbow: 120, grip_style: grip }));
@@ -251,7 +251,7 @@ test("the viewer's-right bent arm is the mirror image of the left, command for c
 test("bent arms keep ids unique and every reference resolved, in both finishes, with the blouse and without, and the SVG small", () => {
   for (const finish of ["flat", "soft"] as const) {
     for (const base of [BARE, FRANZI]) {
-      for (const o of [{ right_arm_out: 28, right_elbow: 150 }, { right_arm_out: 55, left_arm_out: 55, right_elbow: 125, left_elbow: 125, grip_style: "fist" }, { right_arm_out: 90, right_elbow: 60 }]) {
+      for (const o of [{ right_arm_out: 6, right_elbow: 155 }, { right_arm_out: 16, left_arm_out: 16, right_elbow: 148, left_elbow: 148, grip_style: "fist" }, { right_arm_out: 90, right_elbow: 60 }]) {
         const svg = draw(pose({ ...o, finish }, base));
         const defined = ids(svg);
         assert.equal(new Set(defined).size, defined.length, `${JSON.stringify(o)} ${finish}: an id is defined twice`);
@@ -259,5 +259,26 @@ test("bent arms keep ids unique and every reference resolved, in both finishes, 
         assert.ok(svg.length < 400_000);
       }
     }
+  }
+});
+
+test("a folded arm carries the forearm's edge on over the upper arm as its fold line, fading out; a straight arm has none", () => {
+  for (const [arm, bend] of [[6, 148], [16, 148], [6, 155]] as const) {
+    const svg = draw(pose({ right_arm_out: arm, right_elbow: bend }));
+    for (const i of [0, 1, 2]) assert.ok(new RegExp(`<path id="adult-pose-l-fold-${i}" d="M [^"]+"`).test(svg), `arm ${arm} bend ${bend}: fold band ${i}`);
+    const widths = [...svg.matchAll(/<use href="#adult-pose-l-fold-\d" [^>]*stroke-width="([\d.]+)"/g)].map((m) => Number(m[1]));
+    assert.equal(widths.length, 3);
+    assert.ok(widths[0]! >= widths[1]! && widths[1]! > widths[2]!, `arm ${arm} bend ${bend}: the bands thin out`);
+  }
+  assert.ok(!draw(pose({ right_arm_out: 90 })).includes("adult-pose-l-fold"));
+});
+
+test("a folded arm keeps its outline whole: the two outer edges cross inside the forearm, so the outline is one closed path with no chord across the elbow", () => {
+  // the path is the arm's edge as an open path; a fold whose edges never crossed fell back to a straight chord (an `L` before the forearm's edge), which the corrected limit rules out
+  for (const [arm, bend] of [[6, 148], [6, 155], [16, 148], [40, 120], [90, 90], [120, 100]] as const) {
+    const svg = draw(pose({ right_arm_out: arm, right_elbow: bend }));
+    const d = (svg.match(/<path id="adult-pose-l-arm-a" d="([^"]+)"/) ?? [])[1] ?? "";
+    assert.ok(d.length > 100, `arm ${arm} bend ${bend}: the outer edge exists`);
+    assert.ok(!/ L /.test(d.replace(/^M [^C]*/, "")), `arm ${arm} bend ${bend}: no chord in the outer edge`);
   }
 });
