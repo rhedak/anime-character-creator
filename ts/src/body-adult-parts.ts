@@ -97,8 +97,11 @@ const GAP_TOP = 2.2;
 /** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
 const GAP_TIP: Pt = [0.4, 0.955];
 
-/** The ribs, [v, d] in head heights: where the outline of a side without its arm runs from the armpit down to the gap's tip. */
-export const RIB_KNOTS: readonly Pt[] = [[0.455, 0.5], [0.44, 0.62], [0.42, 0.78], [0.405, 0.9]];
+/**
+ * The ribs, [v, d] in head heights: where the outline of a side without its arm runs from the armpit down to the gap's tip. Below the armpit it follows the bikini top's outer edge, a little outside
+ * it (the cup bulges to 0.452 at 0.78), so the breast's side is skin and is not cut off where the hanging arm used to be (the top is clipped to this outline).
+ */
+export const RIB_KNOTS: readonly Pt[] = [[0.455, 0.5], [0.45, 0.62], [0.462, 0.74], [0.458, 0.82], [0.432, 0.9]];
 
 /** A Catmull-Rom curve through `pts`, as cubic segments continuing from the first point (the pen is already there). */
 export function smooth(pts: readonly Pt[]): string {

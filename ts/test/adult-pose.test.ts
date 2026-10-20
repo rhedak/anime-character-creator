@@ -6,6 +6,8 @@ import { createHash } from "node:crypto";
 import { test } from "node:test";
 import { RAISED_SHOULDER_D, adultArmPoses } from "../src/body-adult-pose.ts";
 import { SHOULDER_OUTER } from "../src/body-adult-data.ts";
+import { ADULT_TOP } from "../src/body-adult-top-data.ts";
+import { RIB_KNOTS, at } from "../src/body-adult-parts.ts";
 import { HAND_FIST_OUTLINE, HAND_OPEN_OUTLINE } from "../src/body-adult-hand-poses-data.ts";
 import { HAND_D_CUT } from "../src/body-adult-hand-data.ts";
 import { characterParams, outfit } from "../src/model.ts";
@@ -321,6 +323,14 @@ test("a sleeve raised 105 degrees or more ends in an inked rim against the body,
   const rim = /<path d="M [\d. -]+ Q [\d. -]+" fill="none" stroke="#0d0d0d" stroke-width="[\d.]+" stroke-linecap="round" \/><g clip-path="url\(#adult-blouse-clip\)">/;
   for (const arm of [105, 125, 150]) assert.ok(rim.test(draw(pose({ right_arm_out: arm }, FRANZI))), `arm ${arm}: a rim`);
   for (const arm of [16, 90]) assert.ok(!rim.test(draw(pose({ right_arm_out: arm }, FRANZI))), `arm ${arm}: no rim`);
+});
+
+test("with an arm raised the body's side keeps the breast's bulge: the rib line runs at least as far out as the bikini top's outer edge, which the top is clipped to", () => {
+  const [start, segs] = ADULT_TOP;
+  const pts = [start, ...segs.map(([, e]) => e)].filter(([x, d]) => x < -0.3 && d > 0.58 && d < 0.93);
+  assert.ok(pts.length >= 5);
+  const ribs = RIB_KNOTS.map(([v, d]) => [d, v] as const);
+  for (const [x, d] of pts) assert.ok(at(ribs, d) >= -x - 1e-9, `at ${d} the rib line (${at(ribs, d)}) reaches the cup's edge (${-x})`);
 });
 
 test("a folded arm carries the forearm's edge on over the upper arm as its fold line, fading out; a straight arm has none", () => {
