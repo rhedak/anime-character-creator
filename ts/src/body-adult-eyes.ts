@@ -9,6 +9,7 @@
 import { OUTLINE, outlineW, soft, strokeW } from "./character.ts";
 import { LID_L } from "./body-adult-lid-data.ts";
 import { shade, tint } from "./colorutil.ts";
+import { DEFAULT_FACESTYLE } from "./params.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2, truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
@@ -295,6 +296,24 @@ function placer(h: Skeleton, side: number): (q: Pt) => Pt {
   return ([x, y]) => toCanvas(h, [ix + side * x, iy + y]);
 }
 
+/** How far `eye_tilt` 1 turns the eye, in degrees (the chibi's raises the outer corner; positive here does the same). */
+const EYE_TILT_DEGREES = 25;
+
+/**
+ * The eye's frame for `side` with `FaceStyle.eye_size` and `eye_tilt` applied: the traced eye is her neutral (the defaults, 1 and 0.1), so the eye is scaled by `eye_size` over its default and
+ * turned about the iris centre by the tilt's difference from its default, positive raising the outer corner. `k` is the canvas size of an eye-frame pixel, scaled with the eye so that
+ * widths and radii follow. At the defaults this is the traced eye's own mapping, returned as it is so that her default drawing keeps its bytes.
+ */
+function eyeFrame(h: Skeleton, p: CharacterParams, side: number): { k: number; at: (q: Pt) => Pt } {
+  const k0 = h.head_r / PX_PER_R;
+  const at0 = placer(h, side);
+  const size = p.face.eye_size / DEFAULT_FACESTYLE.eye_size;
+  const turn = ((p.face.eye_tilt - DEFAULT_FACESTYLE.eye_tilt) * EYE_TILT_DEGREES * Math.PI) / 180;
+  if (size === 1 && turn === 0) return { k: k0, at: at0 };
+  const [c, sn] = [Math.cos(turn), Math.sin(turn)];
+  return { k: k0 * size, at: ([x, y]) => at0([size * (x * c + y * sn), size * (y * c - x * sn)]) };
+}
+
 /**
  * The shut eye (`FaceStyle.eyes_closed`, a blink): the upper lid has come down over the aperture, so what is drawn is the lid's edge, one black line along where the
  * aperture's lower outline ran, from the inner corner to the wing's tip. It follows the open eye's own points (the base, `CYAN_OUT`, `WING`), so the wing stays where it was and
@@ -305,9 +324,8 @@ const CLOSED_LINE: Pt[] = [[-21, 9], [-15, 16], [-6, 20], [4, 21.5], BASE[1] as 
 /** How far the lash flicks move down when the eye is shut: from the open lid's inner end to the closed line's. */
 const CLOSED_LASH_DROP = 34;
 
-function closedEye(h: Skeleton, side: number): string {
-  const k = h.head_r / PX_PER_R;
-  const at = placer(h, side);
+function closedEye(h: Skeleton, p: CharacterParams, side: number): string {
+  const { k, at } = eyeFrame(h, p, side);
   const flick = LASHES[0] as { pts: readonly Pt[]; w: number };
   return [
     leafStroke(sampleSmooth(CLOSED_LINE).map(at), 8.5 * k, OUTLINE),
@@ -330,9 +348,10 @@ const GAZE_TRAVEL = 7;
 
 /** One eye. `side` is +1 for the viewer's right. `h` is the skeleton with the head where it hangs. */
 function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): string {
-  if (truthy(p.face.eyes_closed)) return closedEye(h, side);
-  const k = h.head_r / PX_PER_R;
-  const at = placer(h, side);
+  if (truthy(p.face.eyes_closed)) return closedEye(h, p, side);
+  const { k, at } = eyeFrame(h, p, side);
+  /** `iris_size` over its default scales the iris and the pupil in it (the highlights keep their size). */
+  const isz = p.face.iris_size / DEFAULT_FACESTYLE.iris_size;
   const poly = (pts: readonly Pt[], close: boolean): string => {
     const a = pts.map(at);
     return `M ${fmt1((a[0] as Pt)[0])} ${fmt1((a[0] as Pt)[1])} ` + a.slice(1).map(([x, y]) => `L ${fmt1(x)} ${fmt1(y)} `).join("") + (close ? "Z" : "");
@@ -354,10 +373,10 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
   const gradient = isSoft
     ? `<linearGradient id="${id}-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(iris, 0.62)}" /><stop offset="0.55" stop-color="${iris}" /><stop offset="1" stop-color="${tint(iris, 0.38)}" /></linearGradient>` +
       `<radialGradient id="${id}-glow"><stop offset="0" stop-color="${tint(iris, 0.5)}" stop-opacity="0.6" /><stop offset="1" stop-color="${tint(iris, 0.5)}" stop-opacity="0" /></radialGradient>` +
-      `<clipPath id="${id}-iris"><ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(IRIS.rx * k)}" ry="${fmt1(IRIS.ry * k)}" /></clipPath>`
+      `<clipPath id="${id}-iris"><ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(IRIS.rx * k * isz)}" ry="${fmt1(IRIS.ry * k * isz)}" /></clipPath>`
     : "";
   const glow = isSoft
-    ? `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1] + IRIS.ry * k * 0.5)}" rx="${fmt1(IRIS.rx * k * 0.62)}" ry="${fmt1(IRIS.ry * k * 0.4)}" fill="url(#${id}-glow)" clip-path="url(#${id}-iris)" />`
+    ? `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1] + IRIS.ry * k * isz * 0.5)}" rx="${fmt1(IRIS.rx * k * isz * 0.62)}" ry="${fmt1(IRIS.ry * k * isz * 0.4)}" fill="url(#${id}-glow)" clip-path="url(#${id}-iris)" />`
     : "";
   const parts = [
     clip,
@@ -365,11 +384,11 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     `<path d="${apertureD}" fill="#ffffff" />`,
     `<g clip-path="url(#${id})">`,
     gaze,
-    ellipse(ic, IRIS.rx * k, IRIS.ry * k, isSoft ? `url(#${id}-grad)` : iris, ""),
-    `<path d="M ${fmt1(ic[0] - IRIS.rx * k)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k)} A ${fmt1(IRIS.rx * k)} ${fmt1(IRIS.ry * k)} 0 0 1 ${fmt1(ic[0] + IRIS.rx * k)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k)} Z" fill="${irisTop}" />`,
-    ellipse(at(PUPIL.c), PUPIL.rx * k, PUPIL.ry * k, shade(iris, 0.18)),
+    ellipse(ic, IRIS.rx * k * isz, IRIS.ry * k * isz, isSoft ? `url(#${id}-grad)` : iris, ""),
+    `<path d="M ${fmt1(ic[0] - IRIS.rx * k * isz)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k * isz)} A ${fmt1(IRIS.rx * k * isz)} ${fmt1(IRIS.ry * k * isz)} 0 0 1 ${fmt1(ic[0] + IRIS.rx * k * isz)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k * isz)} Z" fill="${irisTop}" />`,
+    ellipse(at(PUPIL.c), PUPIL.rx * k * isz, PUPIL.ry * k * isz, shade(iris, 0.18)),
     glow,
-    `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(IRIS.rx * k)}" ry="${fmt1(IRIS.ry * k)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.7)}" />`,
+    `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(IRIS.rx * k * isz)}" ry="${fmt1(IRIS.ry * k * isz)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.7)}" />`,
     `<circle cx="${fmt1(at(HILITE.c)[0])}" cy="${fmt1(at(HILITE.c)[1])}" r="${fmt1(HILITE.r * k)}" fill="#ffffff" />`,
     `<circle cx="${fmt1(at(GLINT.c)[0])}" cy="${fmt1(at(GLINT.c)[1])}" r="${fmt1(GLINT.r * k)}" fill="#ffffff" opacity="0.85" />`,
     gaze === "" ? "" : `</g>`,

@@ -189,3 +189,52 @@ test("lids, gaze, brows and blush keep her ids unique and every reference resolv
     }
   }
 });
+
+// ---- step 2b: eye_size, iris_size and eye_tilt
+
+/** The left eye's aperture (its clip path) as points. */
+const aperture = (svg: string): [number, number][] => {
+  const m = svg.match(/<clipPath id="adult-eye-l"><path d="([^"]+)"/);
+  assert.ok(m, "the left eye has its aperture");
+  const n = [...(m![1] as string).matchAll(/-?\d+(?:\.\d+)?/g)].map((x) => Number(x[0]));
+  return n.reduce<[number, number][]>((acc, v, i) => (i % 2 === 0 ? [...acc, [v, 0]] : (acc[acc.length - 1]![1] = v, acc)), []);
+};
+const extent = (pts: [number, number][]): { w: number; h: number } => ({ w: Math.max(...pts.map((q) => q[0])) - Math.min(...pts.map((q) => q[0])), h: Math.max(...pts.map((q) => q[1])) - Math.min(...pts.map((q) => q[1])) });
+
+test("eye_size scales the traced eye about its iris, and its default (1) is the traced eye", () => {
+  const rest = extent(aperture(draw(FRANZI)));
+  assert.equal(draw(withFace({ eye_size: 1 })), draw(FRANZI));
+  const big = extent(aperture(draw(withFace({ eye_size: 1.12 }))));
+  const small = extent(aperture(draw(withFace({ eye_size: 0.9 }))));
+  assert.ok(Math.abs(big.w / rest.w - 1.12) < 0.01 && Math.abs(big.h / rest.h - 1.12) < 0.01, `1.12 widens and heightens by 12%: ${big.w / rest.w}, ${big.h / rest.h}`);
+  assert.ok(small.w < rest.w && small.h < rest.h);
+});
+
+test("iris_size scales the iris and the pupil in it over the default 0.72, leaving the aperture alone", () => {
+  const rest = draw(FRANZI);
+  assert.equal(draw(withFace({ iris_size: 0.72 })), rest);
+  const irisRx = (svg: string): number => Number((svg.match(/<ellipse cx="[\d.]+" cy="[\d.]+" rx="([\d.]+)" ry="[\d.]+" fill="#[0-9a-f]{6}" \/>/) ?? [])[1]);
+  const big = draw(withFace({ iris_size: 0.8 }));
+  assert.ok(irisRx(big) > irisRx(rest), "a larger iris");
+  assert.deepEqual(aperture(big), aperture(rest), "the aperture does not change");
+});
+
+test("eye_tilt turns the eye about its iris: above its default 0.1 raises the outer corner, below lowers it", () => {
+  assert.equal(draw(withFace({ eye_tilt: 0.1 })), draw(FRANZI));
+  // the left eye's outer corner is its leftmost point (the wing's tip): its y moves up (smaller) as the tilt grows
+  const outer = (svg: string): number => aperture(svg).reduce((a, q) => (q[0] < a[0] ? q : a))[1];
+  const rest = outer(draw(FRANZI));
+  assert.ok(outer(draw(withFace({ eye_tilt: 0.6 }))) < rest, "a larger tilt raises the outer corner");
+  assert.ok(outer(draw(withFace({ eye_tilt: -0.4 }))) > rest, "a smaller tilt lowers it");
+});
+
+test("a shut eye follows eye_size and eye_tilt too, so a blink does not change the eye's size", () => {
+  const shutSize = (face: Record<string, unknown>): number => {
+    const svg = draw(withFace({ eyes_closed: true, ...face }));
+    const lines = [...svg.matchAll(/<path d="M ([^"]+)Z" fill="#0d0d0d" \/>/g)].map((m) => [...(m[1] as string).matchAll(/-?\d+(?:\.\d+)?/g)].map((x) => Number(x[0])));
+    const lid = lines.reduce((a, b) => (b.length > a.length ? b : a));
+    const xs = lid.filter((_, i) => i % 2 === 0);
+    return Math.max(...xs) - Math.min(...xs);
+  };
+  assert.ok(shutSize({ eye_size: 1.12 }) > shutSize({}));
+});
