@@ -6,7 +6,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 
 - **Done and released (2026-10-19): v0.5.0**, `main` at `eb1d505`, `dev` at `ad401d2`. The adult-female body, Franzi and her garments, the
   age guard, the catalogue and web entries and the Python removal are all in it. `ref/franzi/` is tracked. Both branches were clean when
-  checked on 2026-10-20, before the edits to these docs, which are uncommitted. `PLAN.md` at the repo root says what is current.
+  checked on 2026-10-20, before the edits to these docs, which were committed with the later steps. `PLAN.md` at the repo root says what is current.
 - **Current campaign: Franzi's emotions and gestures for the companion**, `franzi-expressions-plan.md`. Steps 0 and 1 are done and committed (2026-10-20, `44fbc97`): the byte-identity
   baseline, the blink and the mouth. Step 2 (brows, lids, gaze, blush, eye size, iris size, eye tilt) is done and committed. A later polish of the emotions is noted in the plan. Found before that: none of the expression
   fields (`mouth_curve`, `mouth_open`, `blush`, `eye_openness`, `brow_tilt`, `gaze`, `eyes_closed`) and neither arm field (`right_arm_out`,
@@ -16,7 +16,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
   no commit unless the owner asks, no trailer, no em dashes or double hyphens in prose.
 - The owner agreed (2026-10-17) to a `CLAUDE.md` amendment (the adult build as its own decision: SFW rules, bare view in the harness only, age
   guard in the render code). Checked 2026-10-20: it is not in `CLAUDE.md` yet, which still says every figure is the tall chibi.
-- Gates on 2026-10-20 (after step 2): 932 TypeScript tests pass (7 skipped), typecheck, `refresh-ref-out.sh`, `refresh-bases.sh` and `refresh-catalogue.sh`
+- Gates on 2026-10-20 (after steps 3 to 5): 942 TypeScript tests pass (7 skipped), typecheck, `refresh-ref-out.sh`, `refresh-bases.sh` and `refresh-catalogue.sh`
   `--check` all green. The body gate was not rerun (last recorded IoU 0.957).
 - Running the harness: `cd ts && npm ci` first (typecheck needs `typescript`; only the `dev` worktree has `node_modules`); `./harness/run.sh`
   goes through `uv`, which in a sandbox needs `UV_CACHE_DIR` pointed at a writable directory, and sets `DYLD_FALLBACK_LIBRARY_PATH` for cairo
@@ -42,9 +42,16 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 5d Franzi preset | done 2026-10-19: `FRANZI` in `ts/src/presets.ts`, starts in the dirndl; SVG 184 KB | | |
 | 6 garments | done 2026-10-19: shorts, blouse, skirt, apron, sash and bow, bodice with lacing and buttons, boots, knee socks; first pass for belt, pouches, crystals, coat, robe, hakama, collar (`franzi-outfits-plan.md`) | | |
 | 7 guard, tests, catalogue, web | done 2026-10-19 (`python-removal-audit.md` stage 7); released as 0.5.0 (merge `eb1d505`). The `CLAUDE.md` amendment is still to do | 915 TS tests pass, 7 skipped (2026-10-20) | released |
-| 8 expressions and gestures for the companion | steps 0 and 1 done and committed 2026-10-20 (`44fbc97`); step 2 done and committed (brows, lids, gaze, blush, eye size, iris size, eye tilt); hands, arms and gestures to do: `franzi-expressions-plan.md` | 932 TS tests pass, 7 skipped | decisions 6, 8 open |
+| 8 expressions and gestures for the companion | steps 0 and 1 done and committed 2026-10-20 (`44fbc97`); step 2 done and committed (brows, lids, gaze, blush, eye size, iris size, eye tilt); steps 3 to 5 (open palm and fist traced, raised arms, the blouse's sleeve) done and committed: `franzi-expressions-plan.md` | 942 TS tests pass, 7 skipped | decisions 6, 8 open |
 
 ## Findings
+
+### 2026-10-20, expressions steps 3 to 5: the open palm, the fist and raised arms (`franzi-expressions-plan.md`)
+
+The open palm and the fist were traced from `ref/franzi/hands/` in the relaxed hand's frame (`harness/franzi_hands/poses.py`, `poses_lines.py`), and a raised arm is the hanging arm, built from the same knot tables,
+turned about the shoulder's tip by a `rotate` on a group (`ts/src/body-adult-pose.ts`, `body-adult-pose-arm.ts`); the body outline leaves that arm out (`adultBodyPath`'s `without`) and the hanging case is the path it
+always was. The hand is the open palm, or the fist when `grip_style` is "fist". The dirndl blouse is split along its seam so its sleeve goes up with the arm; a coat or a robe keeps the arms down. Measured: the
+second frames of the companion's wave (152 degrees) and cheer (150) reach y -22 and -15, above the 400 by 500 canvas. Not opened in a browser. Details and what is left are in the plan's Progress section.
 
 ### 2026-10-20, expressions step 1: the blink and the mouth (`franzi-expressions-plan.md`)
 

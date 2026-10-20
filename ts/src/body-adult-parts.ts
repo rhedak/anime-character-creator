@@ -28,6 +28,7 @@ import { MOUTH_INSIDE, blush, mouthDepthShare } from "./face.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade, tint } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
+import { RAISED_SHOULDER_D, raisedSides } from "./body-adult-pose.ts";
 import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
@@ -120,14 +121,18 @@ export const quad = (ctrl: Pt, end: Pt): string => `Q ${fmt1(ctrl[0])} ${fmt1(ct
  * definition, before anything refers to it, so a part that uses `adultBodyRef` or `adultBodyClip` needs `adultSkin` (the torso) drawn in the same document.
  */
 export const BODY_OUTLINE_ID = "adult-body-outline";
-export const adultBodyDef = (sk: Skeleton): string => `<defs><path id="${BODY_OUTLINE_ID}" d="${adultBodyPath(sk)}" /></defs>`;
+export const adultBodyDef = (sk: Skeleton, without: readonly number[] = []): string => `<defs><path id="${BODY_OUTLINE_ID}" d="${adultBodyPath(sk, without)}" /></defs>`;
 /** A reference to the body outline with the given presentation attributes (fill, stroke, clip-path). */
 export const adultBodyRef = (attrs: string): string => `<use href="#${BODY_OUTLINE_ID}" ${attrs} />`;
 /** A clip path of the body outline, by id. */
 export const adultBodyClip = (id: string): string => `<clipPath id="${id}"><use href="#${BODY_OUTLINE_ID}" /></clipPath>`;
 
-/** The body's one outline, neck to soles with the arms, as a closed path. */
-export function adultBodyPath(sk: Skeleton): string {
+/**
+ * The body's one outline, neck to soles with the arms, as a closed path. `without` lists the sides (-1 the viewer's left, +1 the right) whose arm is left out, because it is raised and drawn
+ * on its own (body-adult-pose-arm.ts): on such a side the outline runs from the top of the shoulder in to the armpit and down the torso, under the cap of the raised arm. The default, no
+ * side left out, is the same path as always.
+ */
+export function adultBodyPath(sk: Skeleton, without: readonly number[] = []): string {
   const { cx, y, w } = place(sk);
   // The knots are the ink's outer edge, stroke included, so the path sits half a stroke inside it: an outer edge moves
   // toward the centre line, an inner edge (the arm's inside, the legs' gap) away from it.
@@ -142,13 +147,16 @@ export function adultBodyPath(sk: Skeleton): string {
   const side = (sign: number, tab: Knots): Pt[] =>
     tab.map(([d, v]) => [cx + sign * (w(d, v) + (inner(tab) ? hs : -hs)), y(d)]);
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
+  // A side without its arm: the shoulder stops at the shoulder's tip, where the raised arm's cap begins (`RAISED_SHOULDER_D`), and the outline goes in to the armpit and down the ribs to the gap's tip.
+  const shoulderAbove: Knots = [...SHOULDER_OUTER.filter(([dd]) => dd < RAISED_SHOULDER_D), [RAISED_SHOULDER_D, at(SHOULDER_OUTER, RAISED_SHOULDER_D)]];
   const out = (sign: number): Pt[] => [
     [cx + sign * sk.neck_half_w, y(0.12)],
     [cx + sign * (w(0.2, 0.2) - hs), y(0.2)],
     [cx + sign * (w(0.25, 0.4) - hs), y(0.25)],
-    ...side(sign, SHOULDER_OUTER),
-    ...side(sign, armOuterAbove),
+    ...(without.includes(sign) ? side(sign, shoulderAbove) : [...side(sign, SHOULDER_OUTER), ...side(sign, armOuterAbove)]),
   ];
+  const ribs = (sign: number): Pt[] =>
+    ([[0.455, 0.5], [0.44, 0.62], [0.42, 0.78], [0.405, 0.9]] as Pt[]).map(([v, dd]): Pt => [cx + sign * (w(dd, v) - hs), y(dd)]);
   const tip = (sign: number): Pt => [cx + sign * w(GAP_TIP[1], GAP_TIP[0]), y(GAP_TIP[1])];
   // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
   const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0)];
@@ -172,10 +180,15 @@ export function adultBodyPath(sk: Skeleton): string {
   // Left side down, round the left hand, up the arm's inside, over the armpit, down the torso and leg to the sole.
   let d = `M ${fmt1(start[0])} ${fmt1(start[1])} `;
   d += smooth(a);
-  d += hand(L);
-  d += smooth(rev(side(L, armInnerAbove)));
   const leg = legLine(L);
-  d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+  if (without.includes(L)) {
+    d += smooth([a[a.length - 1] as Pt, ...ribs(L), tip(L)]);
+    d += quad(capTor(L), leg[0] as Pt);
+  } else {
+    d += hand(L);
+    d += smooth(rev(side(L, armInnerAbove)));
+    d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+  }
   d += smooth(leg);
   d += foot(L);
   // The inside of the left leg up to the crotch, across, and the same down the right leg.
@@ -190,9 +203,15 @@ export function adultBodyPath(sk: Skeleton): string {
   d += smooth(side(R, legInnerAbove));
   d += foot(R);
   d += smooth(rev(legLine(R)));
-  d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
-  d += smooth(side(R, armInnerAbove));
-  d += hand(R);
+  if (without.includes(R)) {
+    const shoulder = out(R);
+    d += quad(capTor(R), tip(R));
+    d += smooth([tip(R), ...rev(ribs(R)), shoulder[shoulder.length - 1] as Pt]);
+  } else {
+    d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
+    d += smooth(side(R, armInnerAbove));
+    d += hand(R);
+  }
   d += smooth(rev(out(R)));
   return d + "Z";
 }
@@ -225,7 +244,9 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
   // The same weight as the arm's own outline: it is that outline carried up to the armpit, not a lighter interior line.
   const sw = fmt2(outlineW(strokeW(sk)));
+  const raised = raisedSides(p);
   const crease = [1, -1]
+    .filter((sign) => !raised.includes(sign))
     .map((sign) => {
       const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
       // The arm's inner edge from the top of the armpit down: along the bust's outer side (widest about 0.455 H out at 0.8 H),
@@ -238,7 +259,7 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
     })
     .join("");
-  return adultBodyDef(sk) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
+  return adultBodyDef(sk, raised) + adultBodyRef(`fill="${colorStr(p.skin_tone)}"`) + adultBodyStroke(sk) + crease;
 }
 
 /** The hand zones' geometry: each hand's piece between two depths, from the arm's outer side to an inner edge that follows the thigh. */
@@ -528,7 +549,7 @@ export function adultHead(sk: Skeleton, p: CharacterParams): string {
  * One strand line as a single filled shape that swells from a point, holds its weight and thins to a point again, so a strand
  * starts and ends inside the hair like a pen stroke and never stops abruptly. A flat black shape, hard-edged.
  */
-function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string, widths?: readonly number[]): string {
+export function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string, widths?: readonly number[]): string {
   const pts: Pt[] = [];
   let p0: Pt = start;
   for (const [c, e] of segs) {
@@ -757,7 +778,8 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
   const pixelFrame = { head_cx: 0, head_cy: 0, head_r: 1 } as Skeleton; // taperedStrand reads a chain in head radii; this frame makes it read pixels
   const parts: string[] = [];
-  for (const sign of [-1, 1]) {
+  const raised = raisedSides(p);
+  for (const sign of [-1, 1].filter((s) => !raised.includes(s))) {
     const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
     const inPx = ([start, segs]: Chain): Chain => [px(start), segs.map(([c, e]) => [px(c), px(e)] as [Pt, Pt])];
     const closed = (ch: Chain, attrs: string): string => {
@@ -846,8 +868,10 @@ function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
     return `<polygon points="${[...inner, ...outer].join(" ")}" />`;
   };
   const id = "adult-arm-strip";
+  const hanging = [-1, 1].filter((s) => !raisedSides(p).includes(s));
+  if (hanging.length === 0) return "";
   return (
-    `<clipPath id="${id}">${strip(-1)}${strip(1)}</clipPath>` +
+    `<clipPath id="${id}">${hanging.map(strip).join("")}</clipPath>` +
     adultBodyRef(`fill="${colorStr(p.skin_tone)}" clip-path="url(#${id})"`) +
     adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)))}" stroke-linejoin="round" clip-path="url(#${id})"`)
   );

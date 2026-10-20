@@ -1,6 +1,6 @@
 # Franzi's emotions and gestures, for the companion
 
-Written 2026-10-20, after the adult-body campaign (v0.5.0). State: steps 0, 1 and 2 done (see Progress), the rest planned. The record of the earlier campaign is
+Written 2026-10-20, after the adult-body campaign (v0.5.0). State: steps 0 to 4 done and most of 5 (see Progress), the companion side planned. The record of the earlier campaign is
 `adult-body-status.md`; her outfits are in `franzi-outfits-plan.md`.
 
 The companion app (`../anime_ai_companion`) draws a character as a set of pictures it swaps between. Franzi was built without any of
@@ -141,15 +141,14 @@ Options:
 
 Recommended: option 1 first, and look at it before deciding on 2. Decision 1.
 
-### D. The frame (a risk, estimated, not yet measured)
+### D. The frame (measured 2026-10-20)
 
-Her head top is at about y 25 of 500 (`head_cy` 61.4, `head_r` 35.9) and her shoulders at y 117. The reference measurements put the hands
-about 2.6 head heights below the chin when hanging, which makes the arm about 167 units long from the shoulder (an estimate from
-`ref/franzi/README.md`, not read off our render). At 125 degrees a fingertip would then be near y 21, inside the canvas; at 150 degrees
-near y -28, and at 152 near y -30, outside it. If that holds, the second frame of both gestures is cut off at the top of both the full-body
-and the close-up view box, and the companion's AI pack (framed with the fists inside the picture) does not have the problem. Options: raise the
-companion's constants for her, or let the frames request return the posed figure's bounding box, or keep the swing at or below about 135
-degrees. A test should assert that no pose frame's ink leaves the view box, whatever is chosen. Decision 6.
+Her canvas is 400 by 500, her head top is at y 25.5 and the companion's views start at y 0. Rendering the companion's four gesture frames (wave 128 and 152 on the right arm, cheer 125 and 150 on both,
+fists in the cheer) and finding the topmost inked pixel of each: **wave 1 at y 12, wave 2 at y -22, cheer 1 at y 23, cheer 2 at y -15.** So the first frame of each gesture fits and the second is cut off
+at the top, by 22 and 15 units, in both of the companion's views (`0 0 400 500` and the close-up `55 0 290 330`), and the hands go about 45 units above her head. (My first estimate from the reference's
+proportions, -28 to -30, was too large for both, so the measurement replaces it.) The AI pack does not have the problem, being framed with the fists inside the picture. Options:
+a view box that starts at about y -30 for these frames (a companion-side constant, or the frames request returning the posed figure's bounding box), or keeping the swing at or below about 135 degrees.
+A test should assert that no pose frame's ink leaves the view box, whatever is chosen. Decision 6.
 
 ### E. On the companion's side (not this repo, but the plan depends on it)
 
@@ -168,9 +167,9 @@ Nothing is committed without the owner's say.
    default Franzi renders the same bytes as v0.5.0.
 1. **Blink and mouth** (A1, A2). **Done 2026-10-20.** a talking, blinking Franzi in neutral and happy. Pack-maker script on the companion's side to see it.
 2. **The rest of the face** (A3 to A5): the seven emotions. Owner checks each against the AI pack's picture. **Done 2026-10-20**: brows, lids, gaze, blush, and `eye_size`, `iris_size`, `eye_tilt`.
-3. **Hands** (B2): the open palm and the fist.
-4. **Arms** (B1, B3 to B5): split, prove the hanging case unchanged, then bare arms, the blouse, the dirndl.
-5. **Wave and cheer** (C, D): wire the contract, settle the frame, the no-clipping test.
+3. **Hands** (B2): the open palm and the fist. **Done 2026-10-20.**
+4. **Arms** (B1, B3 to B5): split, prove the hanging case unchanged, then bare arms, the blouse, the dirndl. **Done 2026-10-20** as a straight swing: the arm is the hanging arm turned about the shoulder; the blouse's sleeve goes with it; a coat or a robe keeps the arms down.
+5. **Wave and cheer** (C, D): wire the contract, settle the frame, the no-clipping test. **Wired 2026-10-20** (the companion's own angles draw the gestures; the cheer needs `grip_style` fist); the frame (D) and the no-clipping test wait on decision 6.
 6. **Companion** (E) and a release, if the owner says release.
 
 Rules that still bind: SFW (an open mouth is fine, nothing anatomical), flat colour with a second tone only on small elements, no new field
@@ -178,7 +177,7 @@ without the owner's say, the age floor, the adult parts replace the shared ones 
 
 ## Progress
 
-**Steps 0 and 1 done 2026-10-20** (uncommitted, in the `dev` worktree):
+**Steps 0 and 1 done 2026-10-20** (committed on `dev`):
 
 - **Baseline** (`ts/test/adult-face-baseline.test.ts`): the SHA-256 of her default drawing in the dirndl, in her underwear and in the soft finish, taken from v0.5.0 before any
   change, and a check that her face carries the defaults of the fields being added. It passes with the new code, so her neutral picture is byte for byte what 0.5.0 drew.
@@ -225,6 +224,34 @@ frame, where the AI pack is framed from the head to about the apron with the hea
 **`mouth_width` stays hidden in the web tool.** It now draws on her, but showing the control changes the catalogue's recorded fixture, so it sits in `BODY_HIDDEN_EXTRA`
 (`catalogue-tables.ts`) until the owner says. The companion sets the field directly and does not need the control.
 
+**Steps 3 to 5 done 2026-10-20** (committed after `a9f1451`). The bikini pack was the arm reference, as the owner suggested.
+
+- **Hands, traced** (`harness/franzi_hands/poses.py`, `poses_lines.py`; data in `ts/src/body-adult-hand-poses-data.ts` and `body-adult-hand-poses-lines-data.ts`). The open palm and the fist from `ref/franzi/hands/`
+  in the frame of the relaxed hand: the arm's knot coordinates, the viewer's-left hand hanging from the wrist at depth 2.0 with the fingers down and the thumb on the outer side (the anatomical position; the
+  open palm needs a vertical flip and the fist a half turn to get there, the derivation is in the script's docstring). The open palm shares the relaxed hand's scale (their wrists are 328 and 331 px wide in
+  the close-ups) and the fist is scaled to the same wrist width; the outline method is the relaxed hand's (silhouette, inset by the hand's half stroke, blended into the arm's knots over D_CUT to D_BLEND,
+  fitted as an open quadratic B-spline). Interiors: the open palm's thenar arc, two palm creases and the thumb's web line (points read off a gridded contrast-stretched view and snapped onto the drawn ridge)
+  and nine short finger creases (ridges inside Grok's finger cut-outs); the fist's four nails, four finger pieces (the ragged thumb piece left out) and the dark cavity, from Grok's cut-outs.
+- **Arms** (`ts/src/body-adult-pose.ts`, `body-adult-pose-arm.ts`, and `without` in `adultBodyPath`). `right_arm_out` and `left_arm_out` are degrees from hanging, clamped to 0 to 180, an angle under 1 hangs.
+  A raised arm is the hanging arm built from the same knot tables (the shoulder's outer edge, `ARM_OUTER`, `ARM_INNER`, the traced hand), turned about the shoulder's tip (depth 0.36) by a `rotate` on a group,
+  so it is exactly the hanging arm, raised, with the same widths and stroke weights (the stroke tapers to the hand's weight in eight bands). The body outline leaves that arm out (the shoulder stops at the
+  tip, the outline goes in to the armpit and down the ribs; the hanging side keeps its arm, and with no arm raised the path is the same as ever). The arm's fill is its outline path filled as it is, which
+  closes it with a straight chord across the shoulder, not stroked (a half-disc cap was tried first and swung out of the torso at the armpit, leaving a nub of skin with no outline). Her default drawing is
+  byte for byte v0.5.0's (the baseline test).
+- **The hand a pose draws**: the open palm, or the fist when `grip_style` is "fist" (the chibi's word for a closed hand; `hand_style` is a free string and `grip_style` was ignored on her, so no field is added).
+  The companion's cheer must therefore add `grip_style: "fist"` to its pose override (it already lets a pose override any top-level field); its wave needs nothing.
+- **The blouse's sleeve** (`adultBlouse`): the blouse is one traced piece, so with an arm raised it is split along its seam (the line where the sleeve meets the bodice, carried up above the shoulder and
+  down through the gap to depth 1.25, below the cuff and above the hem's flare) into a body piece and one sleeve piece per raised arm, each the whole blouse clipped to its region; the sleeve is turned by the
+  arm's own transform, so the puff, the frilled cuff and the bare forearm come out as in the AI pack's dirndl. The dirndl's wave and cheer work. A blouse tucked into a skirt, or worn loose, splits the same
+  way; with no arm raised the blouse is the one piece it was. **A coat or a robe still keeps the arms down** (decision 2 as recommended): their sleeves are not cut to follow.
+- **Tests** (`ts/test/adult-pose.test.ts`, 10): hanging below a degree, the turn of each side and the clamp, only the raised side changes, the open palm against the fist, unique ids and resolved
+  references (both finishes, the dirndl too), the SVG staying small, the traced chains, the blouse split and its turn matching the arm's, a coat or robe keeping the arms down. Full suite 942 pass, 7
+  skipped, 0 fail; typecheck and the three refresh checks green. The raised-arm SVG was rendered by cairosvg and looked at; it was **not opened in a browser** (the in-app pane shows a local file as a
+  snapshot it will not let me inspect), and it relies on `use`, clip paths and nested transforms, so that is worth doing.
+- **Against the bikini pack**: the straight arm is the cheer-2 V and reads right at 125 and 150 degrees (with fists where the pack has open hands). It is **not** the pack's wave (an elbow bend, the forearm
+  near vertical) or cheer-1 (both fists pumped at shoulder height). The straight swing is what decision 1 recommended; the pack's wave and cheer-1 are the case for reopening it (elbow fields, C option 2).
+- **Seen, not fixed**: the open hand is large against the arm in some poses (it keeps the relaxed hand's scale); the open palm's lines are faint at this size; there is no soft-finish shading on the hands.
+
 ## Later: polish the emotions again
 
 Noted 2026-10-20 at the owner's request, after step 2. The seven emotions work and differ, but they are subtler than the AI pack's, and the owner wants a second polish pass later. Candidates, in the order
@@ -235,19 +262,20 @@ once the pack's head mapping is built; a tighter close-up crop on the companion'
 ## Decisions needed from the owner
 
 On 2026-10-20 the owner said to use the recommendations. Taken as recommended: 1 (straight swing first, but see the bikini pack's cheer-1 above, which may reopen it), 2, 4 (done: the mouth and
-eye fields draw, their web controls wait, see Progress), 5, 7. No recommendation was stated for 3 (blush), 6 (the frame) or 8 (the release). **3 is taken** (blush relative to the default, see Progress); 6 stays open until step 5 and now includes the close-up crop; 8 at the end.
+eye fields draw, their web controls wait, see Progress), 5, 7. No recommendation was stated for 3 (blush), 6 (the frame) or 8 (the release). **3 is taken** (blush relative to the default, see Progress); 6 is still open and now has measured numbers (D) and includes the close-up crop; 8 at the end. **1 and 2 are built as recommended** (straight swing; the blouse follows, a coat or a robe keeps the arms down), and the bikini pack's wave and cheer-1 are the argument to reopen 1.
 
-1. Arm contract: straight swing on the existing fields first (recommended), or add elbow fields now (C).
-2. Gesture scope: dirndl, blouse and bare arms, other garments keep the arms down (recommended), or support the coat and robe as well (B4).
+1. Arm contract: straight swing on the existing fields first (recommended, built), or add elbow fields now (C). The pack's wave has a bent elbow and its cheer-1 pumps both fists, which a straight swing cannot draw.
+2. Gesture scope: dirndl, blouse and bare arms, other garments keep the arms down (recommended, built), or support the coat and robe as well (B4).
 3. Blush: set her preset to 0, or draw the adult blush relative to the default (A, the catch on blush).
 4. Whether the adult face honours `eye_size`, `iris_size`, `eye_tilt` and `mouth_width` (the web tool then offers them for her), or stays with
    the other fields. Recommended: yes, modestly, so `surprised`, `angry` and `thinking` read as the companion intends.
 5. `thinking`: face only, as the companion defines it (recommended), or also the hand at the chin later.
-6. The frame for raised arms (D): which of the three options.
+6. The frame for raised arms (D): the second frame of each gesture is cut off by 15 to 22 units at the top. A view box from about y -30 for these frames, the posed figure's bounding box returned by the frames request, or the swing kept at or below about 135 degrees.
 7. The companion's cheer is symmetric; the AI pack's second cheer is a flex. Keep the companion's.
 8. A release (0.6.0) after step 5, and who bumps the companion's pin.
 
 ## Not verified
 
-The pack's pictures were looked at on contact sheets, not at full size, so the table of what changes is a reading of the overall look. The
-arm length, and so the clipping in D, is an estimate. The pack's head mapping is not built. The companion's tests were not read.
+The pack's pictures were looked at on contact sheets, not at full size, so the table of what changes is a reading of the overall look. The pack's head mapping is not built. The companion's tests were not
+read, and nothing was tried on the companion's side (its pose override with `grip_style`, its view boxes, its pack maker). The raised arms were not opened in a browser. The body gate (IoU at least 0.93) was not
+rerun: it measures the hanging figure, which is byte for byte unchanged.

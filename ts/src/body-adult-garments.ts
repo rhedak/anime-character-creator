@@ -8,6 +8,8 @@ import { OUTLINE, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BLOUSE, ADULT_BLOUSE_LINES } from "./body-adult-blouse-data.ts";
+import { adultArmPoses } from "./body-adult-pose.ts";
+import { armTurn } from "./body-adult-pose-arm.ts";
 import { ADULT_BODICE, BODICE_BUTTONS, BODICE_BUTTON_R } from "./body-adult-bodice-data.ts";
 import { ADULT_BOW } from "./body-adult-bow-data.ts";
 import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
@@ -107,6 +109,9 @@ export function adultShorts(sk: Skeleton, p: CharacterParams): string {
   return `<path d="${d}" ${inkAttrs(sk, fill)} />${band}${seam}${cuff}`;
 }
 
+/** The depth in head heights below the chin where a blouse sleeve ends: its cuff is at about 1.1, and the hem's flare, which is the body's, starts well below. */
+const SLEEVE_END = 1.25;
+
 /**
  * The blouse on `tunic_color`: bodice and puff sleeves in one piece, traced from the white-blouse layer of ref 02 (body-adult-blouse-data.ts), with the sweetheart
  * neckline, frilled cuffs and the opening at the hem. Mapped onto the skeleton as the top and the briefs are, so it follows the profile's shoulders, waist and hips.
@@ -135,7 +140,44 @@ export function adultBlouse(sk: Skeleton, p: CharacterParams): string {
   // the bust and where it does not.
   const bust = adultBustLine(sk, DEFAULT_TAPER, shade(colorStr(p.outfit.tunic_color), 0.8, 1.0), 0.7);
   const lines = bust + open(bind) + both(ADULT_BLOUSE_LINES.seam) + both(ADULT_BLOUSE_LINES.gather) + opening;
-  return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.tunic_color))} />${clip}<g clip-path="url(#adult-blouse-clip)">${lines}</g>`;
+  const raised = adultArmPoses(p);
+  const L = -1;
+  const R = 1;
+  if (raised.length === 0) return `<path d="${d}" ${inkAttrs(sk, colorStr(p.outfit.tunic_color))} />${clip}<g clip-path="url(#adult-blouse-clip)">${lines}</g>`;
+
+  // A raised arm takes its sleeve with it. The blouse is one traced piece, so it is split along the seam (the line where the sleeve meets the bodice) into the body and one sleeve per raised
+  // arm. The sleeve is the cloth outside the seam, which is carried up above the shoulder and down through the gap between the arm and the ribs; it is turned with the arm, by the same
+  // transform. Each piece is the whole blouse clipped to its region, so the outline and the fill are the traced ones, and the seam and the gather above the cuff are drawn on the piece they
+  // belong to, whole (a line on the cut would be clipped in half).
+  const region = (sign: number): Pt[] =>
+    ([[0.42, -0.1], ...ADULT_BLOUSE_LINES.seam, [0.41, SLEEVE_END]] as [number, number][]).map(([v, dd]): Pt => [cx + sign * w(dd, v), y(dd)]);
+  const far = (sign: number, dd: number): Pt => [cx + sign * w(dd, 1.6), y(dd)];
+  const points = (pts: Pt[]): string => pts.map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ");
+  const raisedSigns = raised.map((r) => r.sign);
+  // the body piece is everything but the sleeves: below the sleeve's end the whole width, so the hem's flare, which reaches farther out than the seam, stays with the body
+  const leftEdge = raisedSigns.includes(L) ? [...region(L), far(L, SLEEVE_END), far(L, 2.0)]: [far(L, -0.1), far(L, 2.0)];
+  const rightEdge = raisedSigns.includes(R) ? [far(R, 2.0), far(R, SLEEVE_END), ...[...region(R)].reverse()] : [far(R, 2.0), far(R, -0.1)];
+  const fill = inkAttrs(sk, colorStr(p.outfit.tunic_color));
+  const shape = `<defs><path id="adult-blouse-shape" d="${d}" /></defs><clipPath id="adult-blouse-clip"><use href="#adult-blouse-shape" /></clipPath>`;
+  const cloth = `<use href="#adult-blouse-shape" ${fill} />`;
+  const hanging = [L, R].filter((s) => !raisedSigns.includes(s));
+  const bodyLines = bust + open(bind) + hanging.map((s) => open(side(ADULT_BLOUSE_LINES.seam, s)) + open(side(ADULT_BLOUSE_LINES.gather, s))).join("") + opening;
+  const body =
+    `<clipPath id="adult-blouse-body"><polygon points="${points([...leftEdge, ...rightEdge])}" /></clipPath>` +
+    `<g clip-path="url(#adult-blouse-body)">${cloth}<g clip-path="url(#adult-blouse-clip)">${bodyLines}</g></g>` +
+    `<g clip-path="url(#adult-blouse-clip)">${raisedSigns.map((s) => open(side(ADULT_BLOUSE_LINES.seam, s))).join("")}</g>`;
+  const sleeves = raised
+    .map((r) => {
+      const tag = r.sign < 0 ? "l" : "r";
+      const outer = [far(r.sign, SLEEVE_END), far(r.sign, -0.1)];
+      return (
+        `<clipPath id="adult-blouse-sleeve-${tag}"><polygon points="${points([...region(r.sign), ...outer])}" /></clipPath>` +
+        `<g transform="${armTurn(sk, r)}"><g clip-path="url(#adult-blouse-sleeve-${tag})">${cloth}</g>` +
+        `<g clip-path="url(#adult-blouse-clip)">${open(side(ADULT_BLOUSE_LINES.seam, r.sign))}${open(side(ADULT_BLOUSE_LINES.gather, r.sign))}</g></g>`
+      );
+    })
+    .join("");
+  return shape + body + sleeves;
 }
 
 /** A closed traced chain in [x, d] about the garment's centre line, as a path mapped onto the skeleton. */
