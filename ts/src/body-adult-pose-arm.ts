@@ -33,6 +33,9 @@ const D_ARMPIT = 0.5;
 const TRIM_BELOW = 30;
 /** Over how many degrees past `TRIM_BELOW` the pivot moves from the outer tip back to the middle of the top chord. */
 const PIVOT_BLEND = 20;
+/** How far along each line the corner between the shoulder line and a raised arm's upper edge is rounded, in head heights, and the angle between the lines, in degrees, from which it counts as straight. */
+const CORNER_R = 0.14;
+const CORNER_FLAT = 160;
 /** The arm's width there and where the knot tables take over (1.1), in head heights: the arm above the tables' range thickens linearly between them. */
 const WIDTH_TOP = 0.15;
 const D_TABLES = 1.1;
@@ -70,6 +73,10 @@ interface ArmGeometry {
   /** The shoulder joint, in canvas units: the middle of the arm's top chord, which the turn leaves where it is. */
   readonly pivot: Pt;
   readonly id: string;
+  /** The corner between the body's shoulder line and the arm's upper edge, in canvas units, for `shoulderCorner` to round: the crossing, and the points a short way along each line from it. */
+  readonly corner: { readonly x: Pt; readonly p1: Pt; readonly p2: Pt } | null;
+  /** The part of the body's hidden link (from the shoulder's tip toward the armpit) that the arm's fill does not cover, in canvas units, as points: what is drawn over it in skin. Empty when none. */
+  readonly link: readonly Pt[];
   /** The three open paths the arm is stroked by: the outer edge down to the wrist, the hand, and the inner edge back up (from the armpit, for an arm held close to the body). */
   readonly pieces: { readonly armA: string; readonly hand: string; readonly armB: string; readonly fold: readonly string[] };
 }
@@ -147,6 +154,12 @@ function foldLines(x: Pt, rest: readonly Pt[], length: number): string[] {
   return out;
 }
 
+/** The point `by` along the way from `from` to `toward`. */
+function advance(from: Pt, toward: Pt, by: number): Pt {
+  const d = Math.hypot(toward[0] - from[0], toward[1] - from[1]);
+  return d === 0 ? from : [from[0] + ((toward[0] - from[0]) / d) * by, from[1] + ((toward[1] - from[1]) / d) * by];
+}
+
 function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const { cx, y, w } = place(sk);
   const hs = outlineW(strokeW(sk)) / 2;
@@ -193,29 +206,59 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
     ],
     N,
   );
-  const startOf = (dense: readonly Pt[]): { j: number; x: Pt } | null => {
+  const startOf = (dense: readonly Pt[]): { j: number; x: Pt; t: number } | null => {
     const edge = dense.map((q) => turned(q, pivot, -sign * pose.angle));
     for (let t = 0; t < torsoLine.length - 1; t++) {
       for (let j = 0; j < edge.length - 1; j++) {
         const x = crossing(torsoLine[t] as Pt, torsoLine[t + 1] as Pt, edge[j] as Pt, edge[j + 1] as Pt);
-        if (x !== null) return { j, x: turned(x, pivot, sign * pose.angle) };
+        if (x !== null) return { j, x: turned(x, pivot, sign * pose.angle), t };
       }
     }
     return null;
   };
-  const armpit = startOf(denseIh);
+  const armpit0 = startOf(denseIh);
+  // the ink of an edge starts a little way past the crossing, inside the band of the body's line: a butt end at the crossing sticks a corner out beside the line
+  const armpit = armpit0 === null ? null : { ...armpit0, x: advance(armpit0.x, denseIh[armpit0.j + 1] as Pt, hs * 1.2) };
   const shoulder = startOf(denseOh);
   // An edge may not meet the body's line at all: the line then passes through the arm's top chord, a little beyond where the edge ends (a raised arm's inner edge, which is its lower one, does
   // this at the armpit), and the edge's ink runs on along the chord to that point, so the line is whole.
+  let chordT = -1;
   const chordHit = ((): Pt | null => {
     if (shoulder !== null && armpit !== null) return null;
     const a = turned(o0, pivot, -sign * pose.angle);
     const b = turned(i0, pivot, -sign * pose.angle);
     for (let t = 0; t < torsoLine.length - 1; t++) {
       const x = crossing(torsoLine[t] as Pt, torsoLine[t + 1] as Pt, a, b);
-      if (x !== null) return turned(x, pivot, sign * pose.angle);
+      if (x !== null) {
+        chordT = t;
+        return turned(x, pivot, sign * pose.angle);
+      }
     }
     return null;
+  })();
+  // Where the shoulder line meets the arm's upper edge the two lines make a corner; a short way along each, a quadratic with the corner as its control point rounds it (see `shoulderCorner`).
+  const corner = ((): { x: Pt; p1: Pt; p2: Pt } | null => {
+    if (shoulder === null || shoulder.j === 0) return null;
+    const x = turned(shoulder.x, pivot, -sign * pose.angle);
+    const toward = (q: Pt): [Pt, number] => {
+      const dist = Math.hypot(q[0] - x[0], q[1] - x[1]);
+      return [[(q[0] - x[0]) / dist, (q[1] - x[1]) / dist], dist];
+    };
+    const [s, ds] = toward(torsoLine[shoulder.t] as Pt);
+    const [e, de] = toward(turned(denseOh[shoulder.j + 1] as Pt, pivot, -sign * pose.angle));
+    if (s[0] * e[0] + s[1] * e[1] <= Math.cos((CORNER_FLAT * Math.PI) / 180)) return null; // nearly straight already
+    const r = Math.min(CORNER_R * 2 * sk.head_r, ds * 0.8, de * 0.9);
+    return { x, p1: [x[0] + s[0] * r, x[1] + s[1] * r], p2: [x[0] + e[0] * r, x[1] + e[1] * r] };
+  })();
+  // The body's outline runs from the shoulder's tip to the armpit under the arm (it is the shoulder's fill, not an edge), and where the arm's fill does not cover its first stretch it shows as a
+  // hairline from the tip into the skin. The stretch from just past the tip to just before the point where the line leaves the arm is covered with skin (what is past it is the armpit's line).
+  const link: Pt[] = ((): Pt[] => {
+    const exitT = armpit !== null ? armpit.t : chordT;
+    const tipAt = (SHOULDER_OUTER.filter(([d]) => d < D_TOP - 1e-6).length + 2) * N;
+    if (exitT < 0 || exitT <= tipAt + 1) return [];
+    const a0 = torsoLine[tipAt] as Pt;
+    const a1 = torsoLine[tipAt + 1] as Pt;
+    return [[a0[0] + (a1[0] - a0[0]) * 0.3, a0[1] + (a1[1] - a0[1]) * 0.3], ...torsoLine.slice(tipAt + 1, exitT + 1)];
   })();
   // the viewer's-left arm turns clockwise on the page (outward, then up), the viewer's-right one the other way
   const upperTurn = `rotate(${fmt2(-sign * pose.angle)} ${fmt1(pivot[0])} ${fmt1(pivot[1])})`;
@@ -230,7 +273,7 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
       fold: [],
     };
     const fill = `M ${fmt1(o0[0])} ${fmt1(o0[1])} ` + smoothOuter + `L ${fmt1(last[0])} ${fmt1(last[1])} ` + smooth(rev(inner));
-    return { fill, turn: upperTurn, upperTurn, px, pivot, id, pieces };
+    return { fill, turn: upperTurn, upperTurn, px, pivot, id, corner, link, pieces };
   }
 
   // A bent arm. It is drawn in the forearm's own frame, where the forearm hangs straight and the hand is traced, and the group's transform is the turn about the shoulder after the bend about the
@@ -286,11 +329,29 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
     fold: hit === null ? [] : foldLines(hit.x, lowerO.slice(0, hit.b + 1).reverse(), FOLD_LEN * 2 * sk.head_r),
   };
   const turn = `${upperTurn} rotate(${fmt2(bb)} ${fmt1(elbow[0])} ${fmt1(elbow[1])})`;
-  return { fill, turn, upperTurn, px, pivot, id, pieces };
+  return { fill, turn, upperTurn, px, pivot, id, corner, link, pieces };
 }
 
 /** The path definitions of an arm, for the `<defs>` of its group: its fill and the pieces it is stroked by. */
 const armDefs = (g: ArmGeometry): string => `<path id="${g.id}-fill" d="${g.fill}" /><path id="${g.id}-arm-a" d="${g.pieces.armA}" /><path id="${g.id}-arm-b" d="${g.pieces.armB}" /><path id="${g.id}-hand-edge" d="${g.pieces.hand}" />${g.pieces.fold.map((d, i) => `<path id="${g.id}-fold-${i}" d="${d}" />`).join("")}`;
+
+/**
+ * The corner where the body's shoulder line meets a raised arm's upper edge, rounded: the two lines' ink a short way each side of it is covered with skin, the little piece of page between them and a
+ * curve (a quadratic through the corner's point) is filled with skin, and the curve is inked. In canvas units, after the arm's group, so it lies over both lines.
+ */
+function shoulderCorner(sk: Skeleton, p: CharacterParams, g: ArmGeometry): string {
+  const f = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
+  const skin = colorStr(p.skin_tone);
+  const link = g.link.length >= 2 ? `<path d="M ${f(g.link[0] as Pt)} ${g.link.slice(1).map((q) => `L ${f(q)}`).join(" ")}" fill="none" stroke="${skin}" stroke-width="${fmt2(width0(sk) + 0.6)}" stroke-linejoin="round" />` : "";
+  if (g.corner === null) return link;
+  const { x, p1, p2 } = g.corner;
+  return (
+    link +
+    `<path d="M ${f(x)} L ${f(p1)} Q ${f(x)} ${f(p2)} Z" fill="${skin}" stroke="none" />` +
+    `<path d="M ${f(p1)} L ${f(x)} L ${f(p2)}" fill="none" stroke="${skin}" stroke-width="${fmt2(width0(sk) + 0.3)}" stroke-linejoin="round" />` +
+    `<path d="M ${f(p1)} Q ${f(x)} ${f(p2)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(width0(sk))}" stroke-linecap="round" />`
+  );
+}
 
 /** The skin: the arm without its hand and the hand, each filled (the hand's closing chord is the wrist). `attrs` are the presentation attributes of both. */
 const skinUses = (g: ArmGeometry, attrs: string, transform = ""): string => `<use href="#${g.id}-fill" ${attrs}${transform} /><use href="#${g.id}-hand-edge" ${attrs}${transform} />`;
@@ -335,7 +396,8 @@ export function adultPosedArmSkin(sk: Skeleton, p: CharacterParams): string {
       const bands = strokeBands(sk, g);
       return (
         `<g transform="${g.turn}"><defs>${armDefs(g)}</defs>` +
-        `${skinUses(g, `fill="${colorStr(p.skin_tone)}" stroke="none"`)}${bands.clips}${bands.strokes(width0(sk)).join("")}</g>`
+        `${skinUses(g, `fill="${colorStr(p.skin_tone)}" stroke="none"`)}${bands.clips}${bands.strokes(width0(sk)).join("")}</g>` +
+        shoulderCorner(sk, p, g)
       );
     })
     .join("");

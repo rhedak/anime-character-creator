@@ -300,6 +300,12 @@ test("the raised arm's edges are inked from where the body's line comes out from
   assert.ok(!/ Q [\d. -]+$/.test(d(draw(pose({ right_arm_out: 45, left_arm_out: 45 })), "arm-b")));
 });
 
+test("the corner between the shoulder line and a raised arm's upper edge is rounded with a short inked curve over a skin patch; an arm that continues the line has none", () => {
+  const round = /<path d="M [\d. -]+ Q [\d. -]+" fill="none" stroke="#0d0d0d" stroke-width="[\d.]+" stroke-linecap="round" \/>/;
+  for (const arm of [90, 125, 150]) assert.ok(round.test(draw(pose({ right_arm_out: arm }))), `arm ${arm}: a rounded corner`);
+  assert.ok(!round.test(draw(pose({ right_arm_out: 6, right_elbow: 148 }))), "an arm held in against the body has no corner to round");
+});
+
 test("a folded arm carries the forearm's edge on over the upper arm as its fold line, fading out; a straight arm has none", () => {
   for (const [arm, bend] of [[6, 148], [16, 148], [6, 155]] as const) {
     const svg = draw(pose({ right_arm_out: arm, right_elbow: bend }));
