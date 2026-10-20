@@ -385,6 +385,12 @@ function strokeBands(sk: Skeleton, g: ArmGeometry): { clips: string; strokes: (w
 
 const width0 = (sk: Skeleton): number => outlineW(strokeW(sk));
 
+/** The inverse of `armTurn`: what carries the canvas into the turned arm's own frame, for a clip path of the body to be applied inside the group that is turned. */
+export const armTurnBack = (sk: Skeleton, pose: ArmPose): string => {
+  const g = armGeometry(sk, pose);
+  return `rotate(${fmt2(pose.sign * pose.angle)} ${fmt1(g.pivot[0])} ${fmt1(g.pivot[1])})`;
+};
+
 /** The `transform` that turns the upper arm, and whatever hangs from it (a blouse's sleeve), into the raised one; the forearm of a bent arm is turned further by the elbow. */
 export const armTurn = (sk: Skeleton, pose: ArmPose): string => armGeometry(sk, pose).upperTurn;
 

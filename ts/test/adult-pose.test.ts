@@ -306,6 +306,23 @@ test("the corner between the shoulder line and a raised arm's upper edge is roun
   assert.ok(!round.test(draw(pose({ right_arm_out: 6, right_elbow: 148 }))), "an arm held in against the body has no corner to round");
 });
 
+test("a raised sleeve's cap cloth is clipped to the body's silhouette in the turned frame, so it does not hang in the air; the turn back is the inverse of the arm's turn", () => {
+  const up = draw(pose({ right_arm_out: 125, left_arm_out: 125 }, FRANZI));
+  for (const [tag, sign] of [["l", -1], ["r", 1]] as const) {
+    assert.ok(up.includes(`<clipPath id="adult-blouse-cap-${tag}">`));
+    const back = up.match(new RegExp(`<clipPath id="adult-blouse-cap-body-${tag}"><use href="#adult-body-outline" transform="rotate\\(([-\\d.]+) `));
+    assert.ok(back !== null, `${tag}: the body outline is turned back inside the group`);
+    assert.equal(Number(back![1]), -sign * 125 * -1, `${tag}: the inverse of the arm's turn`);
+    assert.ok(up.includes(`<g clip-path="url(#adult-blouse-cap-${tag})"><g clip-path="url(#adult-blouse-cap-body-${tag})">`));
+  }
+});
+
+test("a sleeve raised 105 degrees or more ends in an inked rim against the body, and none below that", () => {
+  const rim = /<path d="M [\d. -]+ Q [\d. -]+" fill="none" stroke="#0d0d0d" stroke-width="[\d.]+" stroke-linecap="round" \/><g clip-path="url\(#adult-blouse-clip\)">/;
+  for (const arm of [105, 125, 150]) assert.ok(rim.test(draw(pose({ right_arm_out: arm }, FRANZI))), `arm ${arm}: a rim`);
+  for (const arm of [16, 90]) assert.ok(!rim.test(draw(pose({ right_arm_out: arm }, FRANZI))), `arm ${arm}: no rim`);
+});
+
 test("a folded arm carries the forearm's edge on over the upper arm as its fold line, fading out; a straight arm has none", () => {
   for (const [arm, bend] of [[6, 148], [16, 148], [6, 155]] as const) {
     const svg = draw(pose({ right_arm_out: arm, right_elbow: bend }));
