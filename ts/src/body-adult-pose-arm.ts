@@ -77,6 +77,12 @@ interface ArmGeometry {
 /** The depth, in head heights below the chin, of the elbow joint: the middle of the arm between the shoulder's tip and the wrist, at a knot of both edge tables. */
 const ELBOW_D = 1.3;
 
+/** The centre line of the hanging upper arm, in knot units (head heights from the body's centre line) at depth `d`: the middle of its two edges (above the tip, as at the tip). */
+export const armAxis = (d: number): number => {
+  const dd = Math.max(D_TOP, d);
+  return (at(OUTER, dd) + at(INNER, dd)) / 2;
+};
+
 /** Points sampled to each span of an arm edge when one is cut or crossed. */
 const N = 3;
 

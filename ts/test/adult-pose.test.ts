@@ -177,6 +177,16 @@ test("with a blouse a raised arm gets a sleeve head over the shoulder, so the sl
   assert.ok(!draw(FRANZI).includes("-head-clip"));
 });
 
+test("a raised sleeve is a bag round the arm: its inner edge is inked (the outer edge reflected across the arm's axis, or the seam where that is further out), and the seam is not drawn along it", () => {
+  for (const [arm, bend] of [[110, 0], [6, 148]] as const) {
+    const up = draw(pose({ right_arm_out: arm, right_elbow: bend }, FRANZI));
+    const group = up.slice(up.indexOf('<clipPath id="adult-blouse-sleeve-edge-l">'));
+    const ink = group.match(/<g clip-path="url\(#adult-blouse-sleeve-edge-l\)">.*?<\/g><path d="M ([^"]+)" fill="none" stroke="#0d0d0d" stroke-width="[\d.]+" stroke-linecap="round"/);
+    assert.ok(ink !== null, `arm ${arm}: an inked inner edge follows the outline`);
+    assert.ok((ink![1]!.match(/C /g) ?? []).length > 8, "a long curve down the sleeve");
+  }
+});
+
 test("a raised sleeve's outline leaves out its cap edge, so the cloth runs into the bodice instead of ending in a hard cut", () => {
   const up = draw(pose({ right_arm_out: 110, left_arm_out: 110 }, FRANZI));
   for (const tag of ["l", "r"]) {
