@@ -7,8 +7,8 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 - **Done and released (2026-10-19): v0.5.0**, `main` at `eb1d505`, `dev` at `ad401d2`. The adult-female body, Franzi and her garments, the
   age guard, the catalogue and web entries and the Python removal are all in it. `ref/franzi/` is tracked. Both branches were clean when
   checked on 2026-10-20, before the edits to these docs, which are uncommitted. `PLAN.md` at the repo root says what is current.
-- **Current campaign: Franzi's emotions and gestures for the companion**, `franzi-expressions-plan.md`. Steps 0 and 1 are done (2026-10-20, uncommitted): the byte-identity
-  baseline, the blink and the mouth. Found before that: none of the expression
+- **Current campaign: Franzi's emotions and gestures for the companion**, `franzi-expressions-plan.md`. Steps 0 and 1 are done and committed (2026-10-20, `44fbc97`): the byte-identity
+  baseline, the blink and the mouth. Step 2 (brows, lids, gaze, blush) is mostly done and committed. A later polish of the emotions is noted in the plan. Found before that: none of the expression
   fields (`mouth_curve`, `mouth_open`, `blush`, `eye_openness`, `brow_tilt`, `gaze`, `eyes_closed`) and neither arm field (`right_arm_out`,
   `left_arm_out`) changes her drawing. Rendered at several values each: byte-identical to her default. The 5d entry below says the same about
   the face ("the adult head replaces the shared face").
@@ -16,7 +16,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
   no commit unless the owner asks, no trailer, no em dashes or double hyphens in prose.
 - The owner agreed (2026-10-17) to a `CLAUDE.md` amendment (the adult build as its own decision: SFW rules, bare view in the harness only, age
   guard in the render code). Checked 2026-10-20: it is not in `CLAUDE.md` yet, which still says every figure is the tall chibi.
-- Gates on 2026-10-20: 915 TypeScript tests pass (7 skipped), typecheck, `refresh-ref-out.sh`, `refresh-bases.sh` and `refresh-catalogue.sh`
+- Gates on 2026-10-20 (after step 2): 928 TypeScript tests pass (7 skipped), typecheck, `refresh-ref-out.sh`, `refresh-bases.sh` and `refresh-catalogue.sh`
   `--check` all green. The body gate was not rerun (last recorded IoU 0.957).
 - Running the harness: `cd ts && npm ci` first (typecheck needs `typescript`; only the `dev` worktree has `node_modules`); `./harness/run.sh`
   goes through `uv`, which in a sandbox needs `UV_CACHE_DIR` pointed at a writable directory, and sets `DYLD_FALLBACK_LIBRARY_PATH` for cairo
@@ -42,7 +42,7 @@ The record for `adult-body-plan.md`. Newest findings first below the resume sect
 | 5d Franzi preset | done 2026-10-19: `FRANZI` in `ts/src/presets.ts`, starts in the dirndl; SVG 184 KB | | |
 | 6 garments | done 2026-10-19: shorts, blouse, skirt, apron, sash and bow, bodice with lacing and buttons, boots, knee socks; first pass for belt, pouches, crystals, coat, robe, hakama, collar (`franzi-outfits-plan.md`) | | |
 | 7 guard, tests, catalogue, web | done 2026-10-19 (`python-removal-audit.md` stage 7); released as 0.5.0 (merge `eb1d505`). The `CLAUDE.md` amendment is still to do | 915 TS tests pass, 7 skipped (2026-10-20) | released |
-| 8 expressions and gestures for the companion | steps 0 and 1 done 2026-10-20 (baseline, blink, mouth; uncommitted); brows, blush, lids, gaze, hands, arms and gestures to do: `franzi-expressions-plan.md` | 922 TS tests pass, 7 skipped | decisions 3, 6, 8 open |
+| 8 expressions and gestures for the companion | steps 0 and 1 done and committed 2026-10-20 (`44fbc97`); step 2 mostly done and committed (brows, lids, gaze, blush; `eye_size`, `iris_size`, `eye_tilt` to do); hands, arms and gestures to do: `franzi-expressions-plan.md` | 928 TS tests pass, 7 skipped | decisions 6, 8 open |
 
 ## Findings
 

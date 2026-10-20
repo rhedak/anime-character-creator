@@ -1,6 +1,6 @@
 # Franzi's emotions and gestures, for the companion
 
-Written 2026-10-20, after the adult-body campaign (v0.5.0). State: steps 0 and 1 done (see Progress), the rest planned. The record of the earlier campaign is
+Written 2026-10-20, after the adult-body campaign (v0.5.0). State: steps 0, 1 and most of 2 done (see Progress), the rest planned. The record of the earlier campaign is
 `adult-body-status.md`; her outfits are in `franzi-outfits-plan.md`.
 
 The companion app (`../anime_ai_companion`) draws a character as a set of pictures it swaps between. Franzi was built without any of
@@ -167,7 +167,7 @@ Nothing is committed without the owner's say.
 0. **Questions and baseline. Done 2026-10-20.** The owner's decisions below. Resolve the `ignoredFields` discrepancy. Write the byte-identity test: a
    default Franzi renders the same bytes as v0.5.0.
 1. **Blink and mouth** (A1, A2). **Done 2026-10-20.** a talking, blinking Franzi in neutral and happy. Pack-maker script on the companion's side to see it.
-2. **The rest of the face** (A3 to A5): the seven emotions. Owner checks each against the AI pack's picture.
+2. **The rest of the face** (A3 to A5): the seven emotions. Owner checks each against the AI pack's picture. **Mostly done 2026-10-20**: brows, lids, gaze, blush. Still open: `eye_size`, `iris_size`, `eye_tilt` (surprised and angry need them), see Progress.
 3. **Hands** (B2): the open palm and the fist.
 4. **Arms** (B1, B3 to B5): split, prove the hanging case unchanged, then bare arms, the blouse, the dirndl.
 5. **Wave and cheer** (C, D): wire the contract, settle the frame, the no-clipping test.
@@ -196,14 +196,41 @@ without the owner's say, the age floor, the adult parts replace the shared ones 
 Known gaps from step 1, for step 2: the surprised mouth (width 0.6, open 0.65) is a lopsided crescent, not the pack's round "o" (the traced line is uneven and the lower edge follows it);
 the happy open smile has no cheeks or eye curve to go with it; no blush, brows, lids or gaze yet.
 
+**Step 2 mostly done 2026-10-20** (uncommitted at the time of writing; steps 0 and 1 are commit `44fbc97`):
+
+- **Brows** (`tiltBrow`, `body-adult-parts.ts`): `brow_tilt` turns each traced brow about its middle, 9 degrees per unit, positive dropping the inner end (the chibi's sign). 0 returns the traced points.
+- **Lids** (`eye_openness`, `body-adult-eyes.ts`): the lid band, the thin line along the white's top, the aperture's top edge and the lash flicks move down together (the crease three quarters as far),
+  by up to 40 eye-frame pixels at 0, less toward the inner end and none at the wing tip; the iris is cropped by the lowered aperture, so no white shows above the lid.
+- **Gaze** (`gaze`): the iris, pupil and highlights shift sideways inside the aperture clip, 7 eye-frame pixels at the full look, both eyes the same way (+1 to the viewer's right, the chibi's sign).
+- **Blush** (`blush`): **decision 3 taken: relative to the default.** Her neutral face carries 1 and draws none; above 1 two flat tint ellipses (the chibi's blush colour for her skin) appear on the
+  cheeks, their opacity 2 x (blush - 1) x the chibi's, so 1.5 is the chibi's own, never past solid. This keeps her preset and every recorded fixture as they were, and matches the AI pack, where only
+  the shy picture blushes. Flat in both finishes (no soft-finish gradient yet).
+- **Tests** (13 in `adult-face-baseline.test.ts`): brow direction, the lid's drop growing as the value falls, gaze direction and symmetry, blush thresholds and opacity, ids unique in both finishes, and
+  the seven companion emotions drawn as seven different faces (the test also checks its copy of the table against the companion's `emotions.json` when that checkout is next to this one).
+  Full suite 928 pass, 7 skipped, 0 fail; typecheck and the three refresh checks green.
+- **Looked at**: all seven emotions in the companion's close-up crop, beside the AI pack's pictures (`out/franzi-frames/step2-ours-vs-pack.png`, not tracked).
+
+Still missing from step 2, seen in that comparison: **our emotions are subtler than the pack's.** `surprised` needs wider eyes and a larger iris (`eye_size` 1.12, `iris_size` 0.8 are still ignored) and a round
+mouth; `angry` needs `eye_tilt` and a harder brow; `thinking` and `surprised` use `mouth_width`, now drawn but hidden in the web tool. Decision 4 (honour those fields) is taken but `eye_size`, `iris_size` and
+`eye_tilt` are not built. `shy`'s blush and sideways look read; the pack's has the eyes lowered as well, which no field of the companion's asks for.
+
+**The close-up crop does not frame her like the pack.** The companion's `CLOSE_UP` (`55 0 290 330`) shows her from the head top (y 25) to just above the knees with wide margins, so she is small in the
+frame, where the AI pack is framed from the head to about the apron with the head larger. A tighter crop for her (for example head to waist) is a companion-side constant, part of decision 6.
+
 **`mouth_width` stays hidden in the web tool.** It now draws on her, but showing the control changes the catalogue's recorded fixture, so it sits in `BODY_HIDDEN_EXTRA`
 (`catalogue-tables.ts`) until the owner says. The companion sets the field directly and does not need the control.
+
+## Later: polish the emotions again
+
+Noted 2026-10-20 at the owner's request, after step 2. The seven emotions work and differ, but they are subtler than the AI pack's, and the owner wants a second polish pass later. Candidates, in the order
+the comparison (`out/franzi-frames/step2-ours-vs-pack.png`) suggested: honour `eye_size`, `iris_size` and `eye_tilt` (surprised and angry); a round open mouth for surprised; stronger brows and narrower eyes
+for angry; lowered eyes for shy; a soft-finish gradient for the blush; the brow's own height for surprised (the companion sends only a tilt); comparing each face against the pack's with the aligned head overlay
+once the pack's head mapping is built; a tighter close-up crop on the companion's side. Do it after the arms and gestures work, so the emotions are judged as they will be seen, together.
 
 ## Decisions needed from the owner
 
 On 2026-10-20 the owner said to use the recommendations. Taken as recommended: 1 (straight swing first, but see the bikini pack's cheer-1 above, which may reopen it), 2, 4 (done for
-the mouth; the web control waits, see above), 5, 7. No recommendation was stated for 3 (blush), 6 (the frame) or 8 (the release), so they stay open until step 2, step 5 and the
-end respectively.
+the mouth; the web control waits, see above), 5, 7. No recommendation was stated for 3 (blush), 6 (the frame) or 8 (the release). **3 is taken** (blush relative to the default, see Progress); 6 stays open until step 5 and now includes the close-up crop; 8 at the end.
 
 1. Arm contract: straight swing on the existing fields first (recommended), or add elbow fields now (C).
 2. Gesture scope: dirndl, blouse and bare arms, other garments keep the arms down (recommended), or support the coat and robe as well (B4).

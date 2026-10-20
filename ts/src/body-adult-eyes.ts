@@ -315,6 +315,19 @@ function closedEye(h: Skeleton, side: number): string {
   ].join("");
 }
 
+/**
+ * `FaceStyle.eye_openness` lowers the upper lid over the aperture (1 is the traced eye, 0 would shut it): the lid band, the thin line along the top of the white, the aperture's top
+ * edge (so no white shows above the lid) and the lash flicks move down together, the crease half as far. The wing tip stays where it is and the inner end moves about half as far as the
+ * middle, as a lid closes. `LID_TRAVEL` is how far the lid's lower edge drops across the middle of the eye at 0, about to the closed line; the iris keeps its size and is cropped by the
+ * lowered aperture. At 1 nothing moves and the points are returned as they are.
+ */
+const LID_TRAVEL = 40;
+const lidShare = (x: number): number => (x >= 22 ? 1 - smoothstep((x - 22) / (WING[0] - 22)) : x <= -8 ? 0.5 + 0.5 * smoothstep((x + 23) / 15) : 1);
+const lidRow = (y: number): number => 1 - smoothstep((y + 8) / 14);
+const openness = (f: { eye_openness: number }): number => Math.max(0, Math.min(1.3, f.eye_openness));
+/** Where the eyes look (`FaceStyle.gaze`, +1 to the viewer's right), in eye-frame pixels at the full look: both eyes move together, and the aperture crops the iris at the corners. */
+const GAZE_TRAVEL = 7;
+
 /** One eye. `side` is +1 for the viewer's right. `h` is the skeleton with the head where it hangs. */
 function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): string {
   if (truthy(p.face.eyes_closed)) return closedEye(h, side);
@@ -324,7 +337,13 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     const a = pts.map(at);
     return `M ${fmt1((a[0] as Pt)[0])} ${fmt1((a[0] as Pt)[1])} ` + a.slice(1).map(([x, y]) => `L ${fmt1(x)} ${fmt1(y)} `).join("") + (close ? "Z" : "");
   };
-  const apertureD = poly(apertureOutline(), true);
+  const open = openness(p.face);
+  const lowered = (pts: readonly Pt[], byRow: boolean, share = 1): readonly Pt[] =>
+    open === 1 ? pts : pts.map(([x, y]): Pt => [x, y + (1 - open) * LID_TRAVEL * share * lidShare(x) * (byRow ? lidRow(y) : 1)]);
+  const lashDrop = open === 1 ? 0 : (1 - open) * LID_TRAVEL * lidShare(-16);
+  const look = Math.max(-1, Math.min(1, p.face.gaze));
+  const gaze = look === 0 ? "" : `<g transform="translate(${fmt2(look * GAZE_TRAVEL * k)} 0)">`;
+  const apertureD = poly(lowered(apertureOutline(), true), true);
   const iris = p.eye_color;
   const ink = outlineW(strokeW(h));
   const clip = `<clipPath id="${id}"><path d="${apertureD}" /></clipPath>`;
@@ -345,6 +364,7 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     gradient,
     `<path d="${apertureD}" fill="#ffffff" />`,
     `<g clip-path="url(#${id})">`,
+    gaze,
     ellipse(ic, IRIS.rx * k, IRIS.ry * k, isSoft ? `url(#${id}-grad)` : iris, ""),
     `<path d="M ${fmt1(ic[0] - IRIS.rx * k)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k)} A ${fmt1(IRIS.rx * k)} ${fmt1(IRIS.ry * k)} 0 0 1 ${fmt1(ic[0] + IRIS.rx * k)} ${fmt1(ic[1] - 0.05 * IRIS.ry * k)} Z" fill="${irisTop}" />`,
     ellipse(at(PUPIL.c), PUPIL.rx * k, PUPIL.ry * k, shade(iris, 0.18)),
@@ -352,17 +372,18 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(IRIS.rx * k)}" ry="${fmt1(IRIS.ry * k)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.7)}" />`,
     `<circle cx="${fmt1(at(HILITE.c)[0])}" cy="${fmt1(at(HILITE.c)[1])}" r="${fmt1(HILITE.r * k)}" fill="#ffffff" />`,
     `<circle cx="${fmt1(at(GLINT.c)[0])}" cy="${fmt1(at(GLINT.c)[1])}" r="${fmt1(GLINT.r * k)}" fill="#ffffff" opacity="0.85" />`,
+    gaze === "" ? "" : `</g>`,
     `</g>`,
     // the outline round the lower half of the aperture: the same black as the lid, thinner, from where the lid ends
     varStroke(lowerLine().map(at), ink * 0.66, 0.55, ink * 0.16, OUTLINE),
     // the thin line on along the top of the white, growing out of the lid and tapering to a point
-    taperedStroke(lidTail().map(at), ink * 0.9, OUTLINE),
+    taperedStroke(lowered(lidTail(), true).map(at), ink * 0.9, OUTLINE),
     // the crease line above the lid
-    leafStroke(sampleSmooth(CREASE).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
+    leafStroke(lowered(sampleSmooth(CREASE), false, 0.75).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
-    `<path d="${poly(lidBand(), true)}" fill="${OUTLINE}" />`,
+    `<path d="${poly(lowered(lidBand(), false), true)}" fill="${OUTLINE}" />`,
     // the lash flicks, growing out of the lid's thin inner end and tapering to points
-    ...LASHES.map((l) => taperedStroke(sampleSmooth(l.pts).map(at), l.w * k, OUTLINE)),
+    ...LASHES.map((l) => taperedStroke(sampleSmooth(lashDrop === 0 ? l.pts : l.pts.map(([x, y]): Pt => [x, y + lashDrop])).map(at), l.w * k, OUTLINE)),
   ];
   return parts.join("");
 }

@@ -9,14 +9,15 @@ The companion app (`../anime_ai_companion`) shows a character as a set of pictur
 `angry`, `surprised`, `shy`, `thinking`), each with a rest picture, a blink and three mouth openings, plus two gestures, `wave` and
 `cheer`, of two pictures each. It asks this repo for them through the face and arm fields of `CharacterParams`. Franzi was built
 without them, and until 2026-10-20 **none of those fields changed her drawing**: the adult head draws its own traced eyes, brows and
-mouth, and the adult arms ignore `right_arm_out` and `left_arm_out`. The blink and the mouth fields work now; the brows, blush, lids, gaze and arms do not yet. Checked by rendering her with each field at several values
+mouth, and the adult arms ignore `right_arm_out` and `left_arm_out`. The blink, mouth, brow, lid, gaze and blush fields work now; `eye_size`, `iris_size`, `eye_tilt` and the arms do not yet. Checked by rendering her with each field at several values
 (every render was byte-identical to her default one). Today the companion can only show her through the AI-made pack
 `packs/franzi-dress` in its own repo.
 
 - Plan, findings, open questions for the owner: [docs/franzi-expressions-plan.md](docs/franzi-expressions-plan.md)
-- State: steps 0 and 1 done 2026-10-20, uncommitted: the byte-identity baseline for her default drawing, the blink (`eyes_closed`) and the mouth (`mouth_curve`,
-  `mouth_width`, `mouth_open`). Next is step 2, the rest of the face (brows, blush, lids, gaze), then hands, arms and the gestures. The bikini pack
-  (`../anime_ai_companion-packs/packs-src/franzi-bikini`) is the reference for the arms. Decisions 3 (blush), 6 (the frame) and 8 (release) are still open.
+- State: steps 0 and 1 are committed on `dev` (`44fbc97`: the byte-identity baseline for her default drawing, the blink, the mouth). Step 2 is mostly done and uncommitted: brows (`brow_tilt`),
+  lids (`eye_openness`), gaze and blush work. Still to do in step 2: `eye_size`, `iris_size`, `eye_tilt` (the surprised and angry faces need them). Then the hands, the arms and the gestures. The bikini
+  pack (`../anime_ai_companion-packs/packs-src/franzi-bikini`) is the reference for the arms. Decisions 6 (the frame, now including the close-up crop) and 8 (release) are still open.
+  **Later, on the owner's note: a polish pass on the emotions** (they work but are subtler than the AI pack's; candidates are listed in the expressions plan under "Later: polish the emotions again").
 - Work happens on `dev` in `../anime-character-creator-dev`, in `ts/`, as before.
 
 ## Last campaign: Franzi and the adult-woman body (2026-10-17 to 2026-10-19), done and released as v0.5.0

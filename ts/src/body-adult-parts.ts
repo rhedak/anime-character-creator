@@ -24,7 +24,7 @@ import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foo
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
 import type { CharacterParams, FaceStyle } from "./params.ts";
-import { MOUTH_INSIDE, mouthDepthShare } from "./face.ts";
+import { MOUTH_INSIDE, blush, mouthDepthShare } from "./face.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
 import { shade, tint } from "./colorutil.ts";
 import { adultEyes } from "./body-adult-eyes.ts";
@@ -633,18 +633,43 @@ export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
 /** What is drawn over the face: the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */
 export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
-  return adultBrows(h) + adultEyes(h, p);
+  return adultBrows(h, p) + adultEyes(h, p);
+}
+
+/** How far `brow_tilt` 1 turns a brow, in degrees (the chibi's drops the inner end by 0.28 of an eye radius per unit; this is the same idea on a traced brow). */
+const BROW_TILT_DEGREES = 9;
+
+/**
+ * A traced brow turned about its middle for `FaceStyle.brow_tilt`: positive drops the inner end (stern) and raises the outer, negative the reverse. 0 returns the traced points
+ * untouched, so her default drawing keeps its bytes.
+ */
+function tiltBrow(poly: readonly (readonly [number, number])[], tilt: number): readonly (readonly [number, number])[] {
+  if (tilt === 0) return poly;
+  const n = poly.length;
+  const mx = poly.reduce((a, q) => a + q[0], 0) / n;
+  const my = poly.reduce((a, q) => a + q[1], 0) / n;
+  const outward = mx < 0 ? -1 : 1; // the left brow's outer end is at negative x
+  const phi = (-outward * tilt * BROW_TILT_DEGREES * Math.PI) / 180;
+  const [c, sn] = [Math.cos(phi), Math.sin(phi)];
+  return poly.map(([x, y]): [number, number] => [mx + (x - mx) * c - (y - my) * sn, my + (x - mx) * sn + (y - my) * c]);
 }
 
 /** The brows: two filled, tapering shapes traced from the reference, thick at the outer end and thin toward the nose. */
-function adultBrows(h: Skeleton): string {
+function adultBrows(h: Skeleton, p: CharacterParams): string {
   return [ADULT_BROW_L, ADULT_BROW_R]
-    .map((poly) => {
+    .map((traced) => {
+      const poly = tiltBrow(traced, p.face.brow_tilt);
       const pts = poly.map(([x, y]): Pt => [h.head_cx + x * h.head_r, h.head_cy + y * h.head_r]);
       return `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${pts.slice(1).map(line).join("")}Z" fill="${OUTLINE}" stroke="${OUTLINE}" stroke-width="0.3" stroke-linejoin="round" />`;
     })
     .join("");
 }
+
+/** The cheeks' flush, in reference pixels (ref 04, the face's calibration): centre, radii and a turn in degrees, below and outside each eye. Judged by eye against the AI pack's shy picture. */
+const ADULT_CHEEKS: readonly { c: Pt; rx: number; ry: number; turn: number }[] = [
+  { c: [608, 361], rx: 25, ry: 10, turn: -8 },
+  { c: [715, 358], rx: 25, ry: 10, turn: 8 },
+];
 
 /** The traced mouth line, in reference pixels (ref 04, the face's calibration), left to right, and its width at each point. */
 const MOUTH_POINTS: readonly Pt[] = [[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [665, 403.4], [668, 403.3], [671, 403], [674, 402.4], [677, 401.4], [680, 400.2], [683, 398.8], [685.5, 397.4], [687.5, 395.8]];
@@ -688,6 +713,16 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
     return taperedStrand(h, [r[0] as Pt, segs], 0, line, widths.map((v) => v / 175.7));
   };
   const parts: string[] = [];
+  // the flush: `blush` above its default of 1 (her neutral face carries 1 and draws none, as the reference does; the chibi's mild blush at 1 is not hers). Two flat tint ellipses on the
+  // cheeks, in the chibi's blush colour for this skin, their opacity growing with how far above 1 the value is (1.5 is the chibi's own opacity, 2 twice it, never past solid).
+  if (p.face.blush > 1) {
+    const [tint0, opacity] = blush(p.skin_tone);
+    const alpha = Math.min(1, opacity * 2 * (p.face.blush - 1));
+    for (const cheek of ADULT_CHEEKS) {
+      const c = ref(cheek.c);
+      parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(cheek.rx * k)}" ry="${fmt1(cheek.ry * k)}" transform="rotate(${cheek.turn} ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint0}" opacity="${fmt2(alpha)}" />`);
+    }
+  }
   // the nose: the pale oval highlight, a lighter tone of the skin, then the dark tick
   const c = ref([657, 360.5]);
   parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(3.1 * k)}" ry="${fmt1(5.8 * k)}" transform="rotate(4 ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint(p.skin_tone, 0.62)}" />`);
