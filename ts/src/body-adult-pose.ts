@@ -14,6 +14,8 @@ export interface ArmPose {
   readonly sign: number;
   /** Degrees from hanging, outward then up: 90 level, 180 straight up. */
   readonly angle: number;
+  /** How far the forearm folds at the elbow, in degrees, further in the direction the arm was raised: 0 is straight, 90 square, about 140 folded back. */
+  readonly bend: number;
   readonly hand: PoseHand;
 }
 
@@ -26,6 +28,10 @@ export const ARM_POSE_MAX = 180;
  * gap and no longer a sliver).
  */
 export const ARM_POSE_MIN = 6;
+
+/** The least elbow bend, in degrees, that is drawn (a bent arm is drawn on its own), and the most the elbow folds: nearly back along the upper arm. */
+export const ARM_ELBOW_MIN = 1;
+export const ARM_ELBOW_MAX = 150;
 
 /** The depth below the chin, in head heights, where a raised arm begins and turns: the shoulder's tip. The body outline on that side stops its shoulder here too. */
 export const RAISED_SHOULDER_D = 0.36;
@@ -42,8 +48,12 @@ export function adultArmPoses(p: CharacterParams): ArmPose[] {
   const hand: PoseHand = gripIsFist(p) ? "fist" : "open";
   const out: ArmPose[] = [];
   for (const sign of [-1, 1]) {
-    const angle = Math.max(0, Math.min(ARM_POSE_MAX, Number(sign === -1 ? p.right_arm_out : p.left_arm_out)));
-    if (angle >= ARM_POSE_MIN) out.push({ sign, angle, hand });
+    const swing = Math.max(0, Math.min(ARM_POSE_MAX, Number(sign === -1 ? p.right_arm_out : p.left_arm_out)));
+    const folded = Math.max(0, Math.min(ARM_ELBOW_MAX, Number(sign === -1 ? p.right_elbow : p.left_elbow)));
+    const bend = folded >= ARM_ELBOW_MIN ? folded : 0;
+    // a bent arm is drawn on its own even when it hangs, because the one outline cannot bend: it is held out the least that leaves a gap beside the ribs
+    const angle = bend > 0 ? Math.max(swing, ARM_POSE_MIN) : swing;
+    if (angle >= ARM_POSE_MIN) out.push({ sign, angle, bend, hand });
   }
   return out;
 }

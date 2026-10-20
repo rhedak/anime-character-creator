@@ -14,8 +14,8 @@
    "kind": "cover",
    "args": [],
    "local_faces": false,
-   "sha256": "7fe2773a87f9f62f37bed30a95874a389280ce84f3fbe54e3346d55c9787331b",
-   "bytes": 34591
+   "sha256": "5331c18bac811caa8c9dbb2c8884fc739ce2106b41c9179a892ed1ac0de7c606",
+   "bytes": 34638
   },
   {
    "kind": "cover",
@@ -125,8 +125,8 @@
    "kind": "sheet",
    "args": [],
    "local_faces": false,
-   "sha256": "1de33951c6d6082b826af0da3d7cfe31b51b03d9f96d8d8f03af28da58b51aa5",
-   "bytes": 447731
+   "sha256": "6bea64802901379eb533ce51c9adeb0d2332166a68382d19de446aa3fabeaab4",
+   "bytes": 448380
   },
   {
    "kind": "sheet",
@@ -229,8 +229,8 @@
     "3"
    ],
    "local_faces": false,
-   "sha256": "4baffc37f597354e8368d042a0f9a618b72f822209dcc013c06053b021dc00ba",
-   "bytes": 252958
+   "sha256": "33317cb3e8d0ccb6499fd9a1179f79e784269f2f449a927344e8dc63e016e07d",
+   "bytes": 253286
   },
   {
    "kind": "sheet",
@@ -252,8 +252,8 @@
     "satoshi"
    ],
    "local_faces": false,
-   "sha256": "c1999f3ef55ed3c14a42802d5d897fb9514e6e552707916ecf490844e3bfb633",
-   "bytes": 35490
+   "sha256": "df8071453b16e5d76fdc8a433faadcd8f040abc971bd2581f1d4f015d74d4bd5",
+   "bytes": 35536
   }
  ]
 }

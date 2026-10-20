@@ -188,3 +188,76 @@ test("a raised sleeve's outline leaves out its cap edge, so the cloth runs into 
   assert.ok(up.includes('<g clip-path="url(#adult-blouse-body)"><use href="#adult-blouse-shape" fill="#faf6f5" stroke="#0d0d0d"'));
   assert.ok(!draw(FRANZI).includes("adult-blouse-sleeve-edge"));
 });
+
+// ---- the elbow: `right_elbow` and `left_elbow` bend the forearm of a raised arm
+
+test("the elbow fields are in the registry with a neutral default, and a bend under a degree is a straight arm", () => {
+  const p = characterParams();
+  assert.equal(p.right_elbow, 0);
+  assert.equal(p.left_elbow, 0);
+  assert.equal(draw(pose({ right_arm_out: 90, right_elbow: 0.5 })), draw(pose({ right_arm_out: 90 })), "under a degree is no bend");
+  assert.equal(draw(pose({ right_elbow: 0, left_elbow: 0 })), draw(BARE));
+});
+
+test("a bend is clamped to 0 to 150 degrees, turns the forearm further the way the arm was raised, and a bent arm hangs out at least six degrees", () => {
+  const a = (o: Record<string, unknown>) => adultArmPoses(pose(o))[0]!;
+  assert.equal(a({ right_arm_out: 40, right_elbow: 100 }).bend, 100);
+  assert.equal(a({ right_arm_out: 40, right_elbow: 400 }).bend, 150);
+  assert.deepEqual(adultArmPoses(pose({ right_arm_out: 40, right_elbow: -20 })).map((x) => x.bend), [0]);
+  // an arm that hangs but is bent is drawn on its own, held out the least that leaves a gap beside the ribs
+  assert.equal(a({ right_elbow: 120 }).angle, 6);
+  assert.equal(a({ left_elbow: 120 }).sign, 1);
+  // the two sides are independent
+  assert.deepEqual(adultArmPoses(pose({ right_arm_out: 40, right_elbow: 90, left_arm_out: 40 })).map((x) => [x.sign, x.bend]), [[-1, 90], [1, 0]]);
+});
+
+test("a bent arm is drawn in the forearm's frame under the turn about the shoulder after the bend about the elbow, and its sleeve follows the upper arm alone", () => {
+  const up = draw(pose({ right_arm_out: 30, right_elbow: 140 }, FRANZI));
+  const groups = [...up.matchAll(/<g transform="(rotate\([^)]*\))( rotate\([^)]*\))?"/g)].map((m) => [m[1], m[2] ?? null] as const);
+  const forearm = groups.filter(([, e]) => e !== null);
+  const upper = groups.filter(([, e]) => e === null);
+  assert.ok(forearm.length >= 2, "the arm's skin and its hand detail are in the forearm's frame");
+  assert.ok(forearm.every(([s, e]) => s === forearm[0]![0] && e!.startsWith(" rotate(140")), "every one turns by the bend, 140, about the elbow, after the turn about the shoulder");
+  assert.ok(upper.some(([s]) => s === forearm[0]![0]), "the sleeve carries the shoulder's turn only");
+  // the viewer's-right arm bends the other way
+  const right = draw(pose({ left_arm_out: 30, left_elbow: 140 }, FRANZI));
+  assert.ok(/rotate\(-30[^)]*\) rotate\(-140/.test(right));
+  // a straight arm has no elbow turn at all
+  assert.ok(![...draw(pose({ right_arm_out: 30 }, FRANZI)).matchAll(/<g transform="rotate\([^)]*\) rotate\(/g)].length);
+});
+
+test("the viewer's-right bent arm is the mirror image of the left, command for command (the elbow's round join sweeps the other way)", () => {
+  const edge = (svg: string, tag: string): string => (svg.match(new RegExp(`<path id="adult-pose-${tag}-edge" d="([^"]+)"`)) ?? [])[1] ?? "";
+  const cmds = (d: string): { c: string; n: number[] }[] => [...d.matchAll(/([MLCQAZ])([^MLCQAZ]*)/g)].map((m) => ({ c: m[1]!, n: [...m[2]!.matchAll(/-?\d+(?:\.\d+)?/g)].map((x) => Number(x[0])) }));
+  for (const grip of ["mitten", "fist"]) {
+    const svg = draw(pose({ right_arm_out: 40, left_arm_out: 40, right_elbow: 120, left_elbow: 120, grip_style: grip }));
+    const [l, r] = [cmds(edge(svg, "l")), cmds(edge(svg, "r"))];
+    assert.equal(l.length, r.length, `${grip}: the same commands`);
+    assert.ok(l.some((c) => c.c === "A"), `${grip}: the elbow is a round join`);
+    l.forEach((c, i) => {
+      const o = r[i]!;
+      assert.equal(o.c, c.c);
+      if (c.c === "A") {
+        assert.equal(o.n[4], 1 - (c.n[4] as number), `${grip}: the arc sweeps the other way`);
+        assert.deepEqual(o.n.slice(0, 4), c.n.slice(0, 4));
+        assert.ok(Math.abs((o.n[5] as number) - (400 - (c.n[5] as number))) < 0.25 && Math.abs((o.n[6] as number) - (c.n[6] as number)) < 0.25);
+      } else {
+        for (let k = 0; k + 1 < c.n.length; k += 2) assert.ok(Math.abs((o.n[k] as number) - (400 - (c.n[k] as number))) < 0.25 && Math.abs((o.n[k + 1] as number) - (c.n[k + 1] as number)) < 0.25, `${grip}: command ${i} point ${k / 2}`);
+      }
+    });
+  }
+});
+
+test("bent arms keep ids unique and every reference resolved, in both finishes, with the blouse and without, and the SVG small", () => {
+  for (const finish of ["flat", "soft"] as const) {
+    for (const base of [BARE, FRANZI]) {
+      for (const o of [{ right_arm_out: 28, right_elbow: 150 }, { right_arm_out: 55, left_arm_out: 55, right_elbow: 125, left_elbow: 125, grip_style: "fist" }, { right_arm_out: 90, right_elbow: 60 }]) {
+        const svg = draw(pose({ ...o, finish }, base));
+        const defined = ids(svg);
+        assert.equal(new Set(defined).size, defined.length, `${JSON.stringify(o)} ${finish}: an id is defined twice`);
+        for (const u of [...svg.matchAll(/url\(#([^)]+)\)/g), ...svg.matchAll(/href="#([^"]+)"/g)].map((m) => m[1] as string)) assert.ok(defined.includes(u), `${JSON.stringify(o)} ${finish}: ${u} is used and never defined`);
+        assert.ok(svg.length < 400_000);
+      }
+    }
+  }
+});

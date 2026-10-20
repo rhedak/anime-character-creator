@@ -1937,469 +1937,469 @@
    "expression": "stern",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.55,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.9,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "72b2d61ee15ae0d6cc094787ccfe40f60967e5b1b4689a65b40927f033eabcce"
+   "params_sha256": "d544d0ecd0a003c2d881db6f57a5970af08b032c582722d55d228a6055554367"
   },
   {
    "expression": "stern",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "806b16fc2d92f935f2bd38bcab0bc2cc558fdc85da4adcfbf494d2f443b60ed0"
+   "params_sha256": "9bbd74d8bd8f6b306bf94dd61fc216cf9a75ce193f59cd5ee03a161a4eb26e6c"
   },
   {
    "expression": "stern",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.72,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "5ca768cd2a76833f85f62c64eeb532e09277c3566fa0a6edcfb4658c8eb0528c"
+   "params_sha256": "5a9e1b6b5bc75a63afe4713501acbbd26b519e8b3c578f414ff7a0c9d7d50609"
   },
   {
    "expression": "stern",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.55,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "afb9ca6748e5caf137ac82f7ee2853952f03e186fb01e1090752d2ec2a317789"
+   "params_sha256": "a21141103908b3c7545e8fd8fe3add8ec0eed1b274e85d549bec5bfc5320c662"
   },
   {
    "expression": "stern",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.85,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "d16029b937554d45c29e1a51ecded44e384c11b68e19ae87c768b057478451d6"
+   "params_sha256": "7ed88ef1832d2d556aa7c76efce9b0c452c0496c45ae9d95f432065070e98ef5"
   },
   {
    "expression": "stern",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.95,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.75,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "7a2c8a7403e06eace9c07dd486fa99315bee1f79b2c6a1aff692a1ad68c2c858"
+   "params_sha256": "0e5793a0828b5bb6e1c5416274ebbe358ee3783c2c670583ff462c523313ffbe"
   },
   {
    "expression": "grim",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.75,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.9,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.62,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "fd439a6ac091d8561588e426371685d62c7e99d7500d17d5834f5fad4e54ac0b"
+   "params_sha256": "a27426280f0a7b9633527306a350b3811f1cc2fe176948d0e531b55162d7d28a"
   },
   {
    "expression": "grim",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.75,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.62,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "1d53e2e8d19144f5969e9288e3005638865d938cd480bf1462d4c710dc808da1"
+   "params_sha256": "365d6cb4a18a3e211d6da9def95b0519b1a9733bd8aa119e87bf29d7a5d0ba35"
   },
   {
    "expression": "grim",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.75,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.62,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "3e59c89caf8da61a42cbed0e3897d8b53ff5ca34668f03bcf2a6a625f5708194"
+   "params_sha256": "1084785489c28da302dcb466e4adfdef1bde6bc28a03df12503f4e1c7d4605ad"
   },
   {
    "expression": "grim",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.75,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.62,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "c07b9d04455652be08cb3839c692ab6ff577cd85b1411e588bfb3f7423fa6497"
+   "params_sha256": "7857a97803409ce0fd8dfce6ccd264dabed167a9f550fc1a70733ade3e54720f"
   },
   {
    "expression": "grim",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.75,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.62,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "c7ddc2718149503384dd1f475234b05434f4fcdef7e365bdf5ab3b7031284713"
+   "params_sha256": "9409169e0f279a57608b9e153e0422c9111b3e22e92940f2d15a6bb5f380f1a7"
   },
   {
    "expression": "grim",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.75,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.95,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.62,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "cabdcc27b06ff147b69405f919e4896c01e6ce69ddef4bf501c292440ef81072"
+   "params_sha256": "cf51a4e3636bc40ada2553b2fb5f2357051b62322bb897c55e0addfd1f821db8"
   },
   {
    "expression": "hollow",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.2,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "6caac571673f71ac6332700119b18c0acaa02d8d554c2c7fb1b2914b4daa7ca6"
+   "params_sha256": "7a9e251ac0f723b9056df24b61a9090dad69525d69eccde155eae0b067c424a1"
   },
   {
    "expression": "hollow",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.2,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "f259e5238fa74f0f85c926765ea9b9bfaa22d4026fd3d4e08db45ee52ac5fc2d"
+   "params_sha256": "bbe04667d183a28e43a371764ea836a4cd06550252ee8f79f2debf27bea72af8"
   },
   {
    "expression": "hollow",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.2,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.72,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "ce6a3897626c5ece76df28c7a6970adbc47cb3eed87e3d28636351aadfae71dd"
+   "params_sha256": "cf7fb57a790500890bc9f600f07a7192b34ff736bb51159c84d6f416315d04f2"
   },
   {
    "expression": "hollow",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.2,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "672bf34f44baee9cc43685a3fc737c503789573a1bc715481e51d9f9aaae4f31"
+   "params_sha256": "1a28f99f7857a0014701f76c3a4ebb58371ddd0bd36d228186d506b8dd557203"
   },
   {
    "expression": "hollow",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.2,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.85,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "90658128e791a007ac4a4f6c769f3296f6e9b66ff3619a45760a616561e93839"
+   "params_sha256": "64ea9fd807319f94c04292508255b271a88d98974d265b9a63b43d752bb3bfaa"
   },
   {
    "expression": "hollow",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.66,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.2,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.75,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "7a9212491bc716a7130a0ea609a0896463e831dcfa23717648970f5bce99675b"
+   "params_sha256": "a308937269ea79b0a46ecdefbaa772e42eb2f80957cb4b575e6a64aeb0316fe1"
   },
   {
    "expression": "wry",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "8c316eb11030d73a364f2d2b2fac57ce3c90213bc821a24b28b704921bdd2642"
+   "params_sha256": "d219c952956062de8db38c40f30aacafa750f5da2ab2604161610484ecf659b4"
   },
   {
    "expression": "wry",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "da9a148a50bc61995af8e2cf432ec482dc25146e934bf74cf18699b2d5334ace"
+   "params_sha256": "cd0b20cfe8c374492129e13bdf6b0ff87b56f9c57f46d0e12d8d7c13ca1f5225"
   },
   {
    "expression": "wry",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.72,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "c6d33ee9254b9d57d83e02bf3c25fff5b2ffe4d3fb351be9d5afe9b05754d8e2"
+   "params_sha256": "dececa9c65eb92d81abc469515ba8962da75fdc8c92d9ba4c6a35374fc8f1d24"
   },
   {
    "expression": "wry",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "1ba5b08257a9e76dc0f3ae70fe4f78b85b2a3ce4bd1c86165b76e293a4d4f1be"
+   "params_sha256": "8be6003a3cb9acc4f06eda95fadfd527191703d9065b2be4e54cb1177a2bfed1"
   },
   {
    "expression": "wry",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.66,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.85,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "422254581c2f84f81cf71b316fb4ee7f630a33f0c421cc5d048c0ddf5277155f"
+   "params_sha256": "8b8842650de18f01d535af60e27ef51f92c1c3ad4321e049db4c8fd835f3d254"
   },
   {
    "expression": "wry",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.3,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.66,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.45,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.75,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "508008237e5b2029d71fa669e7b0fddf317478bd2f9bd7378f942cc338b3a959"
+   "params_sha256": "f0619129e01a767e4b44ad2487d04cf57024588ab63ae7160fb0299fe8e0b63b"
   },
   {
    "expression": "sorrow",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.4,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.82,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.3,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "c0a6bc5f57c0746167d1c3a1554b02b147126a7a282f94cb68794828d21edcee"
+   "params_sha256": "5767cb2312c0ad89b6c1bfc2f7c71906e22bfd00aca472bbd5c5945144fe9924"
   },
   {
    "expression": "sorrow",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.4,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.82,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.3,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "e375c8eb4c3a1749d2b1f9703391a939a09fcb2fe1441e2c48a3cacf89651bb1"
+   "params_sha256": "420ba9e6e3a9528223c86219b43c7cb7a03e03116f7d192d3cc91d1c572e92c4"
   },
   {
    "expression": "sorrow",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":-0.4,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.82,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.3,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.72,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "ec1a61eedd13daa58829425b5516baf56c8a1fef03e04671f7ab422122e07d8c"
+   "params_sha256": "55ab7ada0744770b9fa943b9f1730968d18750550b07c2a6bc4611764c411ed0"
   },
   {
    "expression": "sorrow",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.4,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.82,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.3,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "43c81ef57034e1a78495df41b1addd775c4b32924995bd1a5d9a777cd0a4229b"
+   "params_sha256": "e031d534540752dbb8237f6daa7ce2a33a489006accdbe7521b84cc345ad798b"
   },
   {
    "expression": "sorrow",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.4,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.82,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.3,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.85,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "49d7a451471a934c5208902a827000c363a60accb5478b194ae3431708e70180"
+   "params_sha256": "a880f48dee03ced2db7ea4bc87701f62198bf720b90d7425bb539e600a3643c2"
   },
   {
    "expression": "sorrow",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.4,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.82,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.3,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.75,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "dfad32b02a9f796495b521759f305491b99ce5e1c66fd42eb8e487627cea7218"
+   "params_sha256": "28fb140f3219e060baf25bfa4531d240ec5a99da688cf4063451c129f1a1312d"
   },
   {
    "expression": "resolute",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.5,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "e5acb84a91c31d7c68cadbfb23f9009cc625817dd4308943184bcc0380c27c79"
+   "params_sha256": "7dba2ecfa2cfdb1abee451bd583b7f67baf4837eb892b166260910a58d307e03"
   },
   {
    "expression": "resolute",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.5,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "d98143bac58604d1d0ed915bafff21d0a25a62e6993987c032f441315af26f36"
+   "params_sha256": "4f84e9f7316f63b2225409cd5e432fe214b41b35507fcd9bae2409c4e8e8c54e"
   },
   {
    "expression": "resolute",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.5,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "ebe3b7c0a2d8a48ae257d543f7f2a7e706665277d24f51cd647c7a9d2aa2b2da"
+   "params_sha256": "0637617fd60fb4af0d999d3464cae75f03c16fc44540850078211eeaa28b517c"
   },
   {
    "expression": "resolute",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.5,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "3da4814a57a69a58bd682e7ab57982ebffe48eae46d376a4349a761a75efea32"
+   "params_sha256": "e2295f010561325a723896b1de4fe759db3763ac9a2c85ce608c0e4413480bb0"
   },
   {
    "expression": "resolute",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.5,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.0,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "f8bb9352a0f85deafa1154b0974118e2856d9eee323feb61dc23667a7a3785f6"
+   "params_sha256": "69af4c6fa9e6c31e0ce96c5131aa7c6b95146daf1741765bac8efd90ddb28e21"
   },
   {
    "expression": "resolute",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.5,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":1.0,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "111a02ccf0acb4a3501209d3a1c25d662a2f9691cca640da227f22750183acd7"
+   "params_sha256": "684af5b0013f124c5d81a7ab0d784154b671af6bac766a42da291d1cde978d95"
   },
   {
    "expression": "startled",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.55,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.22,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.4,\"mouth_drop\":0.0,\"mouth_open\":0.8,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "6b45cfb8fac4af3a55bc5e58d6520435e95ae8ae768534377ce23326e7530876"
+   "params_sha256": "880fba34c8934b2ba73324f09fba0ab4795617fe401dccbe32d675dc041095fa"
   },
   {
    "expression": "startled",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.22,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.4,\"mouth_drop\":0.0,\"mouth_open\":0.8,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "a32a6d726f191c37ed39d3f3d1537764e6d0c4fc9956f7c9ede13f1f9f0cab8e"
+   "params_sha256": "dd5222bb800ddf87a7efefaeff3276797b820776da28825e0aa8c06d4426eac0"
   },
   {
    "expression": "startled",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":-0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.22,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.4,\"mouth_drop\":0.0,\"mouth_open\":0.8,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "4e547a14899e246e2f8f9be499c77e07f2499c549c2c9ede3248602ea4c2b2b6"
+   "params_sha256": "527514ad7137eb7964854e09c0fee76a3a70a2540e18be45064e9c29c20b0b33"
   },
   {
    "expression": "startled",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.55,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.22,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.4,\"mouth_drop\":0.0,\"mouth_open\":0.8,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "42086083bff56bfbc4c79bdda08bcaef2fd6c76a66b24fbdce623c58f9d1f142"
+   "params_sha256": "a3369dac4eb750efa453cc829f5712b7c20bcfcc3a02f508cf6e44eeb2d81e03"
   },
   {
    "expression": "startled",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.22,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.4,\"mouth_drop\":0.0,\"mouth_open\":0.8,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "d691480a809fbbfb0482797ac8b12e9401f0501a82fefd9af16525867c996661"
+   "params_sha256": "6a435d43d821a283eae780190deee4b66fe64ff5b1227bb0629d77d80cd4213e"
   },
   {
    "expression": "startled",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.55,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":1.22,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.4,\"mouth_drop\":0.0,\"mouth_open\":0.8,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "8a20c5a7863d6cbfbf7ac695f0159e3fca73fc57dd5bf54e5dc33b55e7806098"
+   "params_sha256": "b11cd73168c1155735682c215b4e1f019e589b2a06b5ccaf3bc67d00fbbc6cf3"
   },
   {
    "expression": "exasperated",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.35,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "317ad979dcab963525a49c4bf80b844c36af60f9817d0bdde1fe46947d1722e0"
+   "params_sha256": "30acdad9bbf6b5bd2f8e3aa63c1805a0e1207fb1dced3f777d76072ee2d876f9"
   },
   {
    "expression": "exasperated",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.35,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "167e88081c29fa6526084fd2723987ebd9ea5d5158ca8dc99926c4d3f7bb7ebc"
+   "params_sha256": "e20c1bcea214a08650e188e2dd8f8eac1d369038a39112288f03ad737f9ee228"
   },
   {
    "expression": "exasperated",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.35,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "a6567717084f7eb2d0f2644adcb4111185cb3f8949f0b0ce38feb27407aebc1a"
+   "params_sha256": "f8f17c25e7b4b7804f5f9f3fc827e3235a624a937eb044ab178c22695b7ef08f"
   },
   {
    "expression": "exasperated",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.35,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "f581496ceef410e0844864d40fdb117bf9b535b70e25a068db497fb69c783fc2"
+   "params_sha256": "3b2fc610c7460022caa90fdcfdbdadbd667a7703163fa8872e9c3577e38c70d3"
   },
   {
    "expression": "exasperated",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.35,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "02e1dabfa1c7cfc4c40b453c69b43fa55cfe7c1fa171b47140f6b34b2557311e"
+   "params_sha256": "1073e0953c8872abca000c0c97a6b3bf9d3a9c061909d529a710a5a405f56a23"
   },
   {
    "expression": "exasperated",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.8,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.35,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.8,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "dacc3ac42673e71897ff8188d51865cd6433fd0e5648cf9300c6e94abf88c493"
+   "params_sha256": "dff990d93b5864afdd74fc1e2baa409aee0f89a06671c2adc3aa2fbf316d3403"
   },
   {
    "expression": "alert",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.1,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.05,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "a1732080d47825d07aeef54628acbe2920ce12587a2710a195f686348d850d2f"
+   "params_sha256": "189a137fb49d2dbcd2815e619f045271de33d025a957cba36d0a5e08d8276095"
   },
   {
    "expression": "alert",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.1,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.05,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.68,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "9fdf012a71d8c1774573275ea55fbecd9c09a030ed63baf57e846f193b01e565"
+   "params_sha256": "c2b740ebe19d202639ca1c91b5728cbee8d5e5038d9971a673577383274b25ef"
   },
   {
    "expression": "alert",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.1,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.05,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.72,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "3c027db04b2764d66e929775db7dc5449d2ab399959766ada17e8f3f66280edf"
+   "params_sha256": "b93d6d88bc827daa5edb1408af5d8be415113418d0891b6b6396932bcf798da7"
   },
   {
    "expression": "alert",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.1,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.05,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "ef5d0cc1331675955f166991da6ee7a61d9fb8f0c214dc4f6edab422af961f77"
+   "params_sha256": "88a75db3224129ca54d60b58dfb7e1cc7fee370880c987f626ae74c3f81f08dc"
   },
   {
    "expression": "alert",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":1.1,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.05,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.85,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "9ca83fd443b9f973d1cc3b821f8fd6b8c0cb6b7f4e0699748759bc7f9d301c2d"
+   "params_sha256": "880b9ee5002dc1db057e74e01696853ba5d95f03ac5ea63c4d9781af58039932"
   },
   {
    "expression": "alert",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.15,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":1.1,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.05,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.75,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "bf12ff73de6dda99ef1ea8207dfe328599f7cdae60cd800b6f01daeaf3c404e1"
+   "params_sha256": "2f9933041ca643825d344777bcfede3561cea2b0e65789b0fb0be8dd5572d3f0"
   },
   {
    "expression": "menacing",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.65,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":0.6,\"eye_openness\":0.55,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "c2f0c13ded00621bed66f9a1fd0f1a9d39d6d85b0f183ed59a4b0e30ce981387"
+   "params_sha256": "4fcd3bc2bc45fb9f0add364b24b63f0fc747f26445c4afde7e647a691e443c8b"
   },
   {
    "expression": "menacing",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.65,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":0.6,\"eye_openness\":0.55,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "4204a9b53a719cf7130f5a3827ee3a33a123dc7c4997835f69958bb0e1a9018a"
+   "params_sha256": "6d836873f7af2fcdfde49e7272edc8314e46b37affb416503e0d5e34d6dd1e38"
   },
   {
    "expression": "menacing",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.65,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":0.6,\"eye_openness\":0.55,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "2fe065bc883cdea77eeecc801836ed95198e33094070bdf9a096758eb35ba41e"
+   "params_sha256": "c17dd595d3df1f7a6b565a64bce7d9051e5048c3f48b0414f65b0bff309cbdec"
   },
   {
    "expression": "menacing",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.65,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":0.6,\"eye_openness\":0.55,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "c9266d08152772b44a62f9f6e360b4b584d94100fbc23d5b3dacf15d57248d2c"
+   "params_sha256": "39334b25e64b79a5e33e091297dd4ab15d7558cd2b95a3d603b95f0f631cee03"
   },
   {
    "expression": "menacing",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.65,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":0.6,\"eye_openness\":0.55,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "1fbd509d82355f196785a43378ed3aad107f188cb220ad824cfe485090ac189c"
+   "params_sha256": "ec975c160c8428e24994171ef0be4eaf3ca6ffa700cfab673860ad7e9555e391"
   },
   {
    "expression": "menacing",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.65,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.6,\"eye_openness\":0.55,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.25,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.7,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "373530805e001cbc3c71a6182e563d41f0260b4912a1ed6c41d370e2ad1fe87e"
+   "params_sha256": "4ca5d9047a5e254771de4b4f35d459e642b60d9e740a7c1db5a4f22e0d58a40d"
   },
   {
    "expression": "unyielding",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.6,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":0.75,\"eye_openness\":0.8,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.4,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.65,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "ed1474b66cfbe032befe3aca6f1f7d3877afd386c5c698881328c99fbdb5e49f"
+   "params_sha256": "90d0cda5466da7f4c6b37aa7a19a53241996b8ae47f962fae4ddd24c7c3b565e"
   },
   {
    "expression": "unyielding",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.6,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":0.75,\"eye_openness\":0.8,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.4,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.65,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "4d332ea44b4d13589ddfac9e04111b648e2ec563461d909dfd89a3aa47c799a6"
+   "params_sha256": "3f9724d5aaa531c6dd1edb5a9b879fbba4a65980576eeca8b53bbfaebdc46ece"
   },
   {
    "expression": "unyielding",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":0.6,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":0.75,\"eye_openness\":0.8,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.4,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.65,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "c8baa783dd9ed60338ac081208d6b6c1eef1da8428b9ec516d39c78126cb2023"
+   "params_sha256": "ac5a22fd4554cf1251d100c8b81233c6f5e47897230cd10862768ab864ec752f"
   },
   {
    "expression": "unyielding",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.6,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":0.75,\"eye_openness\":0.8,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":-0.4,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.65,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "043834400f50ee8c06fd1bbccb6356ba4ba7bcaeb4c7f44d7475cd8320265225"
+   "params_sha256": "ce1bf4474caf13687161f45958c17eda30c6139753fc5def1c7ffab26ba6c804"
   },
   {
    "expression": "unyielding",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":0.6,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":0.75,\"eye_openness\":0.8,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.4,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.65,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "f208d2bef3b048852d75a56b5d94ce7dce5ff9eeb873b4d895bf1de13fd24aad"
+   "params_sha256": "15c9fd26e701e60b180ecccde9c2900c2571776e44e03d6749af068b5cabbd95"
   },
   {
    "expression": "unyielding",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":0.6,\"brow_weight\":1.5,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.75,\"eye_openness\":0.8,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":-0.4,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.65,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "813ee1496dcd0ddff6486d20de790c82be1c686a8597c24cbb884e86637eda7a"
+   "params_sha256": "b714eb8e9be6403ecaa0b9c46e84053e46d4829f219725a81227dd0b8ef441fb"
   },
   {
    "expression": "at_ease",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.6,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.9,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "e81eeb163a68b9dbc5f9d9fd1c2f528445c3effd63708173cb58f1a1ea2b03e6"
+   "params_sha256": "0e48f8eb9ec436dca0abfafb0cb99968aa336e63d74cccdb88079250a906384f"
   },
   {
    "expression": "at_ease",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.6,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.9,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "2b3cc6c101e134dbdcde351919358095d9e7414e54a9402b3471f69cc8a2f66b"
+   "params_sha256": "fa3fdde3ac6e42ab921af7dc8fec239165cab0a57211b3621869e9b6c2c2337e"
   },
   {
    "expression": "at_ease",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.6,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.9,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "366f103f9740956389b65d3b28de63dafacfb3d6afdb6efa308fedd869e891c4"
+   "params_sha256": "92d363add489bf7ded03c7ba95ad83cbdaf5e06d62994d059e73e2f26701e324"
   },
   {
    "expression": "at_ease",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":0.6,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.9,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "bd55bc8f01f63d536a3e970fef9d2122e822deb399eab7857187c973c570228d"
+   "params_sha256": "652abbb2be563532902dd0e69af8bbe487dc2658a97dc378cbf8aeee90bc40d5"
   },
   {
    "expression": "at_ease",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.8,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.6,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.9,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "1325377b738ba0136d96f3f7ed533817d929b7f58cbb8d3bf80049da11f43891"
+   "params_sha256": "dee54fbbf25f8025c4e5aa00a879c0ffb2e7f1ead6aa5fc4566c7413a55ae990"
   },
   {
    "expression": "at_ease",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.8,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":0.6,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":0.9,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "e8eec67b2cdbdc0589c76770844e6e4e114590ea041eda5e052d9645ca4179ae"
+   "params_sha256": "f17c989a0fd3f3244161f5122ea4d74b6b0118c0395b9cbd8ba5a1d4b176497e"
   },
   {
    "expression": "smile",
    "preset": "katherina",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.68,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.35,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.95,\"eye_size\":1.05,\"eye_tilt\":0.1,\"eye_width\":1.02,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.1,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":2.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.1,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "ceaa7c32c5e5e05113770755125b585b431159719ae3ed7685568ad435b039d1"
+   "params_sha256": "5fbb638664c16bfe93d967d574f2abb26624094b7c1ad8a08324b7c20cb503f4"
   },
   {
    "expression": "smile",
    "preset": "gero",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.55,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.95,\"eye_size\":0.88,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":2.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.1,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "b2fe87fdae70779c9ea027905d35a1a51a1d55eec210a1dd22af96baac01337c"
+   "params_sha256": "06d85ed3ca9f7a091ae81379f4da59518f2ec5cf36d58def5651dcdf44e0387a"
   },
   {
    "expression": "smile",
    "preset": "linnea",
    "face": "{\"blush\":0.05,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.95,\"eye_size\":0.98,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":2.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.1,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "28eccc40b54a7384ac1ab8826cba0a88506eb2e04f7632e16bf225b40613afec"
+   "params_sha256": "e703a43e04da28c3f8354b45f53aee8d212624176e0e0deaedb204b982054da5"
   },
   {
    "expression": "smile",
    "preset": "dritan",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.9,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.5,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.95,\"eye_size\":0.95,\"eye_tilt\":0.05,\"eye_width\":1.0,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.0,\"lash\":0.4,\"lid_shadow\":0.0,\"mouth_curve\":2.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.1,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "bc6373c99c78d7f2bbb52eee817000d790613b3c5255c618db9f53ad9b33476c"
+   "params_sha256": "65b5fc25bafcebc65693dc103903f340e64cd93779949a6c3ea88c00e1ba1c9e"
   },
   {
    "expression": "smile",
    "preset": "lindita",
    "face": "{\"blush\":0.1,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.4,\"eye_gap\":null,\"eye_lower_lid\":1.0,\"eye_openness\":0.95,\"eye_size\":1.0,\"eye_tilt\":0.05,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.05,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":2.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.1,\"nose_dot\":false,\"scar_side\":0}",
-   "params_sha256": "f5ffa5d45ae8029473b59bd7ab9c80d3ccccdec0512b081afee652f1085ccc77"
+   "params_sha256": "77777756b88c6fe6423cfc10852efd58a88a902e74309df03c9bbef1f02d118f"
   },
   {
    "expression": "smile",
    "preset": "satoko",
    "face": "{\"blush\":0.0,\"brow_length\":1.0,\"brow_tilt\":-0.1,\"brow_weight\":0.85,\"brows_over_hair\":false,\"chin_shadow\":false,\"eye_corner\":0.45,\"eye_gap\":null,\"eye_lower_lid\":0.95,\"eye_openness\":0.95,\"eye_size\":0.95,\"eye_tilt\":0.15,\"eye_width\":1.05,\"eyes_closed\":false,\"gaze\":0.0,\"glasses\":false,\"iris_aspect\":1.0,\"iris_inset\":0.0,\"iris_size\":1.06,\"lash\":1.0,\"lid_shadow\":0.0,\"mouth_curve\":2.0,\"mouth_drop\":0.0,\"mouth_open\":0.0,\"mouth_width\":1.1,\"nose_dot\":false,\"scar_side\":1}",
-   "params_sha256": "594e4cbf302abb32631dac8bc810a5bb272cb959628bd8952325b9e73beb3a77"
+   "params_sha256": "abd798622556b34fa08d8cd4550ced316a76822ca9d6c744fc626e54c4cec560"
   }
  ],
  "errors": [

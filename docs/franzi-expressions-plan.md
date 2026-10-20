@@ -275,6 +275,21 @@ frame, where the AI pack is framed from the head to about the apron with the hea
   to the sleeve's region, and its outline as a separate element clipped to the same region less the cap's corner (depth above 0.42 H, half-width inside 0.58 H; `CAP_D`, `CAP_V` in `body-adult-garments.ts`), so the
   outline stays along the outer edge, the cuff and the underside and the cloth runs into the bodice. The sleeve head's disc is 0.2 H (it was 0.15) to cover the last bare tick under the sleeve's end. Checked
   at 125, 90 and 60 degrees (zoomed) and on the whole figure; one tiny hook remains at the very end of the underside edge. 947 tests pass (15 in `adult-pose.test.ts`), typecheck and the three refresh checks green.
+- **Elbow fields** (the owner's request after the wave and cheer comparison with the packs; decision 1's option 2, built). `CharacterParams` gained `right_elbow` and `left_elbow` (degrees, 0 neutral, clamped to 0 to
+  150, named from the viewer's side like `right_arm_out`; the chibi ignores them). A bend of a degree or more draws the arm on its own, and a hanging arm that is bent is held out at least six degrees (the one
+  outline cannot bend). **Geometry** (`armGeometry`, `body-adult-pose-arm.ts`): the arm is drawn in the forearm's own frame, where the forearm hangs straight and the hand is traced, under the transform
+  `rotate(shoulder turn about the shoulder) rotate(bend about the elbow)`, so the forearm, the hand, its details, the stroke bands and the hand-in-front redraw needed nothing else. The upper arm is the hanging upper
+  arm turned back by the bend about the elbow (at depth 1.3 H, a knot of both edge tables), and the two are one outline: on the outer edge, where the bend closes, the edges cross and are cut at the crossing;
+  on the inner edge, where it opens, they are joined by a round elbow (an SVG arc, centred on the elbow with the arm's half width, sweeping the way the bend turns). The path is stroked in three pieces (the outer
+  edge to the wrist, the hand with its taper bands, the inner edge back) because a bent upper arm lies in the hand's rows of the forearm's frame. The blouse's sleeve is carried by the upper arm's turn alone
+  (`armTurn`), so the puff stays on the upper arm and the forearm is bare. Straight arms are drawn by the code they always were (a bend under a degree is no bend). **Values that match the packs** (read off the
+  comparison sheet): the wave is `right_arm_out` 28 with `right_elbow` 137 then 152 (the forearm tilted out, then vertical), the pack's cheer-1 is both arms 42 with elbows 138 and `grip_style` "fist", and its cheer-2
+  is the straight V (150, open hands). The companion's `GESTURES` still send straight angles; it should send these (a pose may override any top-level field, and its field list comes from the creator's registry).
+  **Recorded fixtures**: the two fields moved every recorded text that holds a character, so the goldens were updated by mechanical rules from their old content and checked against the new code, as for
+  `bodice_color`: `harness/ts_port/golden-updates-elbow/README.md` (nineteen tests were red, all green after; one hard-coded field count, 29 to 31, changed by hand). `docs/api.md` documents the fields. 952 tests
+  pass (20 in `adult-pose.test.ts`: the registry default, the clamp and the minimum angle, the composite transform and the sleeve's single turn, the mirror image command for command including the elbow's
+  arc, unique ids and resolved references with and without the blouse), typecheck and the three refresh checks green. Looked at in the bikini and the dirndl beside both packs
+  (`out/franzi-frames/elbow-poses-vs-packs.png`), and zoomed on the elbow at 90, 135 and 145 degrees.
 - **Seen, not fixed**: the open hand is large against the arm in some poses (it keeps the relaxed hand's scale); the open palm's lines are faint at this size; there is no soft-finish shading on the hands.
 
 ## Later: polish the emotions again
@@ -289,7 +304,7 @@ once the pack's head mapping is built; a tighter close-up crop on the companion'
 On 2026-10-20 the owner said to use the recommendations. Taken as recommended: 1 (straight swing first, but see the bikini pack's cheer-1 above, which may reopen it), 2, 4 (done: the mouth and
 eye fields draw, their web controls wait, see Progress), 5, 7. No recommendation was stated for 3 (blush), 6 (the frame) or 8 (the release). **3 is taken** (blush relative to the default, see Progress); 6 is still open and now has measured numbers (D) and includes the close-up crop; 8 at the end. **1 and 2 are built as recommended** (straight swing; the blouse follows, a coat or a robe keeps the arms down), and the bikini pack's wave and cheer-1 are the argument to reopen 1.
 
-1. Arm contract: straight swing on the existing fields first (recommended, built), or add elbow fields now (C). The pack's wave has a bent elbow and its cheer-1 pumps both fists, which a straight swing cannot draw.
+1. Arm contract: straight swing on the existing fields first (built), then elbow fields (built 2026-10-20 at the owner's request, see Progress): the pack's wave has a bent elbow and its cheer-1 pumps both fists, which a straight swing cannot draw.
 2. Gesture scope: dirndl, blouse and bare arms, other garments keep the arms down (recommended, built), or support the coat and robe as well (B4).
 3. Blush: set her preset to 0, or draw the adult blush relative to the default (A, the catch on blush).
 4. Whether the adult face honours `eye_size`, `iris_size`, `eye_tilt` and `mouth_width` (the web tool then offers them for her), or stays with
