@@ -7,7 +7,10 @@ import { test } from "node:test";
 import { RAISED_SHOULDER_D, adultArmPoses } from "../src/body-adult-pose.ts";
 import { SHOULDER_OUTER } from "../src/body-adult-data.ts";
 import { ADULT_TOP } from "../src/body-adult-top-data.ts";
-import { RIB_KNOTS, at } from "../src/body-adult-parts.ts";
+import { RIB_KNOTS, at, place } from "../src/body-adult-parts.ts";
+import { ADULT_BODICE } from "../src/body-adult-bodice-data.ts";
+import { ADULT_BLOUSE_LINES } from "../src/body-adult-blouse-data.ts";
+import { skeletonFor } from "../src/body.ts";
 import { HAND_FIST_OUTLINE, HAND_OPEN_OUTLINE } from "../src/body-adult-hand-poses-data.ts";
 import { HAND_D_CUT } from "../src/body-adult-hand-data.ts";
 import { characterParams, outfit } from "../src/model.ts";
@@ -331,6 +334,40 @@ test("with an arm raised the body's side keeps the breast's bulge: the rib line 
   assert.ok(pts.length >= 5);
   const ribs = RIB_KNOTS.map(([v, d]) => [d, v] as const);
   for (const [x, d] of pts) assert.ok(at(ribs, d) >= -x - 1e-9, `at ${d} the rib line (${at(ribs, d)}) reaches the cup's edge (${-x})`);
+});
+
+test("with an arm raised the blouse's body piece is cut along the bodice's outer edge where that lies inside the seam, so no white strip of armhole allowance shows beside the bodice", () => {
+  const params = pose({ right_arm_out: 150 }, FRANZI);
+  const svg = draw(params);
+  const sk = skeletonFor(params);
+  const { cx, y, w } = place(sk);
+  const pts = (((svg.match(/<clipPath id="adult-blouse-body"><polygon points="([^"]+)"/) ?? [])[1] ?? "").split(" ").map((q) => q.split(",").map(Number)));
+  assert.ok(pts.length > 10, "the body piece is a polygon");
+  // each seam point at or below the bodice's top is pulled in to the bodice's outer edge when that lies inside it
+  const [start, segs] = ADULT_BODICE;
+  const edge = [start, ...segs.map(([, e]) => e)].slice(23, 35).map(([x, d]) => [d, -x] as const).sort((a, b) => a[0] - b[0]);
+  const last = edge[edge.length - 1]![0];
+  const has = (px: number, py: number): boolean => (pts as [number, number][]).some(([a, b]) => Math.abs(a - px) < 0.06 && Math.abs(b - py) < 0.06);
+  let pulled = 0;
+  for (const [v, d] of ADULT_BLOUSE_LINES.seam) {
+    if (d < edge[0]![0]) continue;
+    const cut = Math.min(v, at(edge, Math.min(d, last)));
+    assert.ok(has(cx - w(d, cut), y(d)), `the boundary passes through the bodice-cut seam point at ${d}`);
+    if (cut < v - 1e-9) pulled++;
+  }
+  assert.ok(pulled >= 2, "the bodice's edge lies inside the seam somewhere, so the cut has an effect");
+});
+
+test("on a side whose arm is raised the bodice is filled out straight to the sash, with an inked edge; a hanging side keeps the traced nip", () => {
+  const edge = (svg: string): number => (svg.match(/stroke-linecap="round" stroke-linejoin="round" \/>/g) ?? []).length;
+  const hang = draw(pose({ right_arm_out: 0 }, FRANZI));
+  const one = draw(pose({ right_arm_out: 150 }, FRANZI));
+  const both = draw(pose({ right_arm_out: 150, left_arm_out: 150 }, FRANZI));
+  const filled = (svg: string): number => (svg.match(/<path d="M [\d. -]+ C [^"]+L [\d. -]+ L [\d. -]+ Z" fill="#[0-9a-f]{6}" stroke="none" \/>/g) ?? []).length;
+  assert.equal(filled(hang), 0);
+  assert.equal(filled(one), 1);
+  assert.equal(filled(both), 2);
+  assert.ok(edge(both) >= edge(one) && edge(one) >= edge(hang));
 });
 
 test("a folded arm carries the forearm's edge on over the upper arm as its fold line, fading out; a straight arm has none", () => {
