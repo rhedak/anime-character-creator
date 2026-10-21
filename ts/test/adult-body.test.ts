@@ -491,4 +491,13 @@ test("Risa's face is straight and symmetric: the eyes level about one midline, t
   const [bl, br] = cut.brows!.lines.map((c) => [c[0], ...c[1].map((s) => s[1])].map(px));
   assert.ok(Math.abs((bl![0]![0] + br![br!.length - 1]![0]) / 2 - mid) < 0.01 && Math.abs(bl![0]![1] - br![br!.length - 1]![1]) < 0.01, "the right brow is the left one mirrored");
   assert.ok(Math.abs(cut.featuresAt.mouth[0] + 666.5 - mid) < 1e-9 && Math.abs(cut.featuresAt.nose[0] + 660 - mid) < 1e-9, "the nose and the mouth are centred on the midline");
+  // the mouth line: mirrored about the middle of its ends, so both corners sit at the same height (the traced right corner is 3.5 px higher, which on a straight face reads as a smirk)
+  const { SYMMETRIC_MOUTH_POINTS: m } = await import("../src/body-adult-parts.ts");
+  assert.ok(m.length % 2 === 0 && m.length >= 10);
+  for (let i = 0; i < m.length / 2; i++) {
+    const [a, z] = [m[i] as readonly number[], m[m.length - 1 - i] as readonly number[]];
+    assert.ok(Math.abs((a[0] as number) + (z[0] as number) - ((m[0] as readonly number[])[0] as number) - ((m[m.length - 1] as readonly number[])[0] as number)) < 1e-9 && a[1] === z[1], `point ${i} mirrors point ${m.length - 1 - i}`);
+  }
+  assert.equal(cut.symmetricMouth, true);
+  assert.equal((ADULT_HEAD_CUTS["swept_ponytail"] as typeof cut).symmetricMouth, false);
 });

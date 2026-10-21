@@ -51,6 +51,8 @@ export interface AdultHeadCut {
   readonly cheeks: readonly { readonly c: readonly [number, number]; readonly rx: number; readonly ry: number; readonly turn: number }[] | null;
   /** Where the nose and the mouth sit, as a shift in reference pixels from the traced (Franzi's) placement: a cut whose eyes sit elsewhere moves them with its eyes. [0, 0] for Franzi's. */
   readonly featuresAt: { readonly nose: readonly [number, number]; readonly mouth: readonly [number, number] };
+  /** Whether the mouth is made symmetric (the traced line's right half rises further than its left, a smirk on a straight face): the left half is mirrored for the right. */
+  readonly symmetricMouth: boolean;
   readonly brows: { readonly lines: readonly Chain[]; readonly widths: readonly (readonly number[])[]; readonly tone: readonly [number, number] } | null;
   /** Small skin regions beside the face, drawn over the hair after the body. */
   readonly strips: readonly Chain[];
@@ -87,6 +89,7 @@ const SWEPT_PONYTAIL: AdultHeadCut = {
   eye: { sclera: "#ffffff", lowerLine: 1, lidThickness: 1, lidColor: null, lashWeight: 1 },
   irisAt: { [-1]: [606, 325], 1: [718.5, 321.5] },
   featuresAt: { nose: [0, 0], mouth: [0, 0] },
+  symmetricMouth: false,
   brows: null,
   strips: ADULT_SKIN_STRIPS,
   earL: { skin: ADULT_SKIN_EAR_L, concha: ADULT_EAR_CONCHA_L, folds: ADULT_EAR_FOLDS_L, foldWidths: ADULT_EAR_FOLD_WIDTHS_L },
@@ -128,6 +131,7 @@ const LONG_STRAIGHT_FRINGED: AdultHeadCut = {
   // The traced irises were (617, 319.6) and (727.4, 307.4); they are now level about the midline.
   irisAt: { [-1]: [RISA_MID - RISA_EYE_HALF, RISA_EYE_Y], 1: [RISA_MID + RISA_EYE_HALF, RISA_EYE_Y] },
   // Franzi's nose and mouth sit about her eyes' midline (662.25, 323.25) with the nose a little left of it and the mouth a little right; hers go about Risa's, centred on the midline.
+  symmetricMouth: true,
   featuresAt: { nose: [RISA_MID - 660, RISA_EYE_Y - 323.25], mouth: [RISA_MID - 666.5, RISA_EYE_Y - 323.25] },
   brows: {
     lines: [shiftChain(RISA_BROWS[0] as Chain, 0, RISA_EYE_Y - RISA_LEFT_IRIS_Y), RISA_BROW_RIGHT.chain],

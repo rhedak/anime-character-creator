@@ -762,7 +762,17 @@ const ADULT_CHEEKS: readonly { c: Pt; rx: number; ry: number; turn: number }[] =
 
 /** The traced mouth line, in reference pixels (ref 04, the face's calibration), left to right, and its width at each point. */
 const MOUTH_POINTS: readonly Pt[] = [[645.5, 399.3], [648, 400.2], [651, 401.2], [654.5, 402.1], [658, 402.8], [662, 403.2], [665, 403.4], [668, 403.3], [671, 403], [674, 402.4], [677, 401.4], [680, 400.2], [683, 398.8], [685.5, 397.4], [687.5, 395.8]];
+/** The traced line made symmetric about the middle of its ends: the left half is kept and mirrored for the right, so neither corner sits higher (the traced right corner is 3.5 px higher). */
+export const SYMMETRIC_MOUTH_POINTS: readonly Pt[] = (() => {
+  const mid = (((MOUTH_POINTS[0] as Pt)[0]) + (MOUTH_POINTS[MOUTH_POINTS.length - 1] as Pt)[0]) / 2;
+  const left = MOUTH_POINTS.filter((q) => q[0] < mid);
+  return [...left, ...[...left].reverse().map((q): Pt => [2 * mid - q[0], q[1]])];
+})();
 const MOUTH_WIDTHS: readonly number[] = [1.5, 1.8, 1.9, 1.9, 1.7, 1.5, 1.4, 1.5, 1.7, 1.9, 2.0, 1.9, 1.5, 1.1, 0.7];
+const SYMMETRIC_MOUTH_WIDTHS: readonly number[] = (() => {
+  const left = MOUTH_WIDTHS.slice(0, SYMMETRIC_MOUTH_POINTS.length / 2);
+  return [...left, ...[...left].reverse()];
+})();
 /** The open mouth's greatest drop below the line, in widths of the mouth, at `mouth_open` 1 (the chibi's is 1.0, which on this narrow mouth read as a gape). */
 const ADULT_MOUTH_DEPTH = 0.5;
 
@@ -771,12 +781,13 @@ const ADULT_MOUTH_DEPTH = 0.5;
  * the curve scales how far each point sits from the straight line between the two ends (so 0 is straight and below 0 turns the corners down), then the width scales the whole
  * line about its middle.
  */
-function adultMouthPoints(f: FaceStyle): readonly Pt[] {
-  if (f.mouth_curve === 1 && f.mouth_width === 1) return MOUTH_POINTS;
-  const a = MOUTH_POINTS[0] as Pt;
-  const z = MOUTH_POINTS[MOUTH_POINTS.length - 1] as Pt;
+function adultMouthPoints(f: FaceStyle, symmetric = false): readonly Pt[] {
+  const traced = symmetric ? SYMMETRIC_MOUTH_POINTS : MOUTH_POINTS;
+  if (f.mouth_curve === 1 && f.mouth_width === 1) return traced;
+  const a = traced[0] as Pt;
+  const z = traced[traced.length - 1] as Pt;
   const mid = (a[0] + z[0]) / 2;
-  return MOUTH_POINTS.map(([x, y]): Pt => {
+  return traced.map(([x, y]): Pt => {
     const chord = a[1] + ((z[1] - a[1]) * (x - a[0])) / (z[0] - a[0]);
     return [mid + (x - mid) * f.mouth_width, chord + (y - chord) * f.mouth_curve];
   });
@@ -828,7 +839,7 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
   // the mouth: one continuous line. The reference draws it as two strokes with a small gap at the low point (x about 665), which the owner called a flaw of the reference, so the
   // two are joined there along the curve (the low point is flat for a few px) with the line a little thinner across the join; thickest toward the outer ends, thin at both tips.
   // `mouth_curve`, `mouth_width` and `mouth_open` move it (adultMouthPoints); at their defaults the points are the traced ones, untouched.
-  const upper = adultMouthPoints(p.face).map((q): Pt => [q[0] + at.mouth[0], q[1] + at.mouth[1]]);
+  const upper = adultMouthPoints(p.face, adultCutOf(p).symmetricMouth).map((q): Pt => [q[0] + at.mouth[0], q[1] + at.mouth[1]]);
   const open = p.face.mouth_open;
   if (open > 0) {
     // Open: the traced line is the upper lip and a second curve below it closes the shape, filled with the one flat dark red the chibi's open mouth uses, no teeth or tongue.
@@ -841,7 +852,7 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
     parts.push(`<path d="M ${px(upper[0] as Pt)} ${upper.slice(1).map((q) => `L ${px(q)} `).join("")}${[...lower].reverse().map((q) => `L ${px(q)} `).join("")}Z" fill="${MOUTH_INSIDE}" />`);
     parts.push(stroke(lower, lower.map((_, i) => (i === 0 || i === lower.length - 1 ? 0.6 : 1.3))));
   }
-  parts.push(stroke(upper, MOUTH_WIDTHS));
+  parts.push(stroke(upper, adultCutOf(p).symmetricMouth ? SYMMETRIC_MOUTH_WIDTHS : MOUTH_WIDTHS));
   return parts.join("");
 }
 
