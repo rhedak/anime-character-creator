@@ -25,8 +25,8 @@ drawing happens in `ts/`: see `ts/README.md`.
 Fourteen named characters, plus guests. They are all the tall chibi, the one
 figure since 2026-09-26, when the realistic build and the old compressed chibi
 were retired; a `height` from 0.8 to 1.3 stretches it for a shorter or a
-taller character. Risa is the exception in proportion: she is drawn on her own
-longer body, measured off her reference (`docs/risa-plan.md`).
+taller character. Risa and Franzi are the exceptions: they are adult women, drawn on
+the adult woman's body (about 6.4 heads tall, `docs/adult-body-plan.md`, `docs/risa-adult-plan.md`).
 
 Every preset is **twenty-one or older**. The age of majority differs by
 country, and twenty-one is the highest of the common ones, so that is the

@@ -14,7 +14,7 @@ import { skeletonFor } from "../src/body.ts";
 import { HAND_FIST_OUTLINE, HAND_OPEN_OUTLINE } from "../src/body-adult-hand-poses-data.ts";
 import { HAND_D_CUT } from "../src/body-adult-hand-data.ts";
 import { characterParams, outfit } from "../src/model.ts";
-import { FRANZI } from "../src/presets.ts";
+import { FRANZI, RISA } from "../src/presets.ts";
 import { renderCharacter } from "../src/render.ts";
 
 /** Franzi in her underwear alone: no sleeve is in the way of a raised arm. */
@@ -389,4 +389,40 @@ test("a folded arm keeps its outline whole: the two outer edges cross inside the
     assert.ok(d.length > 100, `arm ${arm} bend ${bend}: the outer edge exists`);
     assert.ok(!/ L /.test(d.replace(/^M [^C]*/, "")), `arm ${arm} bend ${bend}: no chord in the outer edge`);
   }
+});
+
+// Risa's uniform follows a raised arm: the shirt and the blazer draw their sleeves by growing the arm's own fill (src/body-adult-pose-arm.ts, adultPosedSleeve).
+const UNIFORM = characterParams({ ...RISA });
+const SHIRT_ONLY = characterParams({ ...RISA, outfit: outfit({ ...RISA.outfit, coat_color: null }) });
+
+test("a blazer does not hold the arms still: a raised arm turns, and a coat or a robe still does", () => {
+  assert.deepEqual(turns(draw(pose({ right_arm_out: 130 }, UNIFORM))).slice(0, 1), [130]);
+  assert.deepEqual(adultArmPoses(pose({ right_arm_out: 130 }, UNIFORM)).map((a) => a.angle), [130]);
+  const longCoat = characterParams({ ...UNIFORM, right_arm_out: 130, outfit: outfit({ ...UNIFORM.outfit, coat_cut: "long" }) });
+  assert.deepEqual(adultArmPoses(longCoat), [], "a long coat's sleeve is not redrawn, so the arm stays down");
+});
+
+test("a raised arm gets a sleeve of its own in the shirt and in the blazer, each clipped at its own end, and the other side keeps its hanging sleeve", () => {
+  for (const [base, tags] of [[SHIRT_ONLY, ["shirt"]], [UNIFORM, ["shirt", "blazer"]]] as const) {
+    const hang = draw(pose({}, base));
+    const up = draw(pose({ right_arm_out: 130 }, base));
+    for (const t of tags) {
+      assert.equal(ids(hang).filter((i) => i.endsWith(`-sleeve-${t}`)).length, 0, `${t}: none at rest`);
+      assert.equal(ids(up).filter((i) => i.endsWith(`-sleeve-${t}`)).length, 1, `${t}: one for the raised arm`);
+    }
+    const both = draw(pose({ right_arm_out: 130, left_arm_out: 130 }, base));
+    for (const t of tags) assert.equal(ids(both).filter((i) => i.endsWith(`-sleeve-${t}`)).length, 2, `${t}: one per arm`);
+  }
+});
+
+test("a sleeve's cut keeps the forearm's band below the end line out and the rest of the arm's cloth in", () => {
+  const svg = draw(pose({ right_arm_out: 16, right_elbow: 148 }, UNIFORM));
+  const clips = [...svg.matchAll(/<clipPath id="[^"]*-sleeve-(?:shirt|blazer)">(.*?)<\/clipPath>/g)].map((m) => m[1] as string);
+  assert.equal(clips.length, 2);
+  for (const c of clips) assert.equal((c.match(/<rect /g) ?? []).length, 3, "above the end line, and beside the band below it on each side");
+});
+
+test("Risa's hanging drawing is as before: no sleeve clip, no cap clip", () => {
+  const svg = draw(pose({}, UNIFORM));
+  assert.ok(!svg.includes("-sleeve-") && !svg.includes("adult-shirt-torso") && !svg.includes("adult-blazer-torso"));
 });

@@ -13,7 +13,7 @@ import { BODY_TYPES, limbTaperAt, skeletonFor } from "../src/body.ts";
 import { armLine } from "../src/core-limbs.ts";
 import { characterParams, replace } from "../src/model.ts";
 import type { CharacterParams } from "../src/params.ts";
-import { PRESETS } from "../src/presets.ts";
+import { PRESETS, RISA_TALL_SLENDER } from "../src/presets.ts";
 import { renderCharacter } from "../src/render.ts";
 import { BUILDS, applied, buildSkeletonWith, bustY, bustReach, headScaled, replace as replaceSk, type BodyProfile, type Skeleton } from "../src/skeleton.ts";
 import { approx, assertApprox } from "./rules-util.ts";
@@ -183,7 +183,7 @@ test("test_only_a_profile_that_measured_the_neck_narrows_it", () => {
 });
 
 test("test_a_stretched_body_carries_its_measured_wrist_with_it", () => {
-  const p = PRESETS.risa as CharacterParams;
+  const p = RISA_TALL_SLENDER;
   const sk = skeletonFor(p);
   const tall = skeletonFor(replace(p, { height: 1.2 }));
   const headsDown = (s: Skeleton): [number, number] => [((s.wrist_y as number) - s.head_cy) / s.head_r, (s.hip_y - s.head_cy) / s.head_r];

@@ -12,7 +12,7 @@ import { garmentCut } from "../src/core-limbs-tables.ts";
 import { crotchY } from "../src/body-parts-legs.ts";
 import { FIELDS, outfit, replace } from "../src/model.ts";
 import type { CharacterParams, Outfit } from "../src/params.ts";
-import { PRESETS } from "../src/presets.ts";
+import { PRESETS, RISA_TALL_SLENDER } from "../src/presets.ts";
 import { renderCharacter } from "../src/render.ts";
 import type { Chain } from "../src/tables.ts";
 import { PRESET_NAMES, numbersIn, withOutfit } from "./rules-util.ts";
@@ -26,7 +26,7 @@ const COLOUR_FIELDS = FIELDS.Outfit.map((f) => f.name).filter((n) => n.endsWith(
 
 test("test_a_cuts_holes_are_left_open_under_the_even_odd_rule", () => {
   // A hole is an extra subpath of its fill's own path, so what is behind the garment shows through it (the shirt behind a bow's slit).
-  const sk = skeletonFor(preset("risa"));
+  const sk = skeletonFor(RISA_TALL_SLENDER);
   const square: Chain = [[-0.4, 2.0], [[[0.4, 2.0], [0.4, 2.0]], [[0.4, 3.0], [0.4, 3.0]], [[-0.4, 3.0], [-0.4, 3.0]]]];
   const hole: Chain = [[-0.1, 2.4], [[[0.1, 2.4], [0.1, 2.4]], [[0.1, 2.6], [0.1, 2.6]], [[-0.1, 2.6], [-0.1, 2.6]]]];
   const plain = garmentCut({ fills: [square], ref_body: "tall_slender" });

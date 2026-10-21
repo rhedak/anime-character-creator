@@ -326,8 +326,10 @@ export function hairstyleFor(name: unknown): Hairstyle {
  * the choice stays `swept_ponytail` in the character, so the body can be switched back and she has her hair again.
  */
 export const ADULT_CUT_ON_CHIBI = "long_center_part";
+/** The adult cuts and the chibi cut each falls back to on a body that is not the adult woman's (Risa's long straight cut falls back to the chibi's blunt fringe and side locks). */
+const ADULT_CUTS_ON_CHIBI: Readonly<Record<string, string>> = { swept_ponytail: ADULT_CUT_ON_CHIBI, long_straight_fringed: "long_fringed" };
 export function hairstyleOf(p: CharacterParams): Hairstyle {
-  if (p.hairstyle === "swept_ponytail" && !Object.hasOwn(ADULT_BODY_TYPES, p.body as string)) return hairstyleFor(ADULT_CUT_ON_CHIBI);
+  if (Object.hasOwn(ADULT_CUTS_ON_CHIBI, p.hairstyle) && !Object.hasOwn(ADULT_BODY_TYPES, p.body as string)) return hairstyleFor(ADULT_CUTS_ON_CHIBI[p.hairstyle] as string);
   return hairstyleFor(p.hairstyle);
 }
 

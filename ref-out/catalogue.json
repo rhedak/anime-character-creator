@@ -265,6 +265,10 @@
       "label": "Long, front locks"
     },
     {
+      "id": "long_straight_fringed",
+      "label": "Long, straight, blunt fringe"
+    },
+    {
       "id": "long_traced",
       "label": "Long"
     },
@@ -983,6 +987,10 @@
             {
               "value": "bar",
               "label": "Bar"
+            },
+            {
+              "value": "bracket",
+              "label": "Bracket frame"
             },
             {
               "value": "crescent",

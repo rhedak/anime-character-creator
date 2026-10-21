@@ -8,21 +8,18 @@
 // upper arm is drawn over the body anyway) will split them off at stage 6.
 
 import { OUTLINE, curve, outlineW, soft, strokeW } from "./character.ts";
-import { SOFT_LOCK_STRENGTH_SCALE, softLocks } from "./hair.ts";
-import type { Lock } from "./core-head-tables.ts";
+import { SOFT_LOCK_STRENGTH_SCALE, hairClip, softLocks } from "./hair.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
 import { ADULT_BOTTOM } from "./body-adult-bottom-data.ts";
-import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
 import { HAND_D_CUT, HAND_OUTLINE, HAND_STROKE_K } from "./body-adult-hand-data.ts";
 import { HAND_CAVITY, HAND_FINGERS, HAND_GAPS, HAND_LINES, HAND_LINE_WIDTHS, HAND_NAILS, HAND_SHADE, HAND_THUMB, HAND_THUMB_FROM } from "./body-adult-hand-lines-data.ts";
 import { FOOT_DIVIDERS, FOOT_DIVIDER_WIDTHS, FOOT_NAILS } from "./body-adult-foot-lines-data.ts";
-import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
-import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
+import { adultCutOf } from "./body-adult-cuts.ts";
 import type { CharacterParams, FaceStyle } from "./params.ts";
 import { MOUTH_INSIDE, blush, mouthDepthShare } from "./face.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
@@ -349,6 +346,33 @@ export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all", idP
   return (only === "all" ? rest + stroke(full, `${idPrefix}-rest`) : "") + hands + strokes;
 }
 
+/**
+ * How far one unit of the `bust` knob scales the adult bust. On the adult woman `bust` is an offset from her traced bust (Franzi's), not an amount from nothing as on the
+ * chibi: 0, the default, is the traced one and draws exactly what it always did, below 0 a smaller bust (-0.5 is 0.75 of it) and above 0 a larger one.
+ */
+export const ADULT_BUST_SPAN = 0.5;
+
+/** The scale the `bust` knob asks of the adult bust: 1 at the default. */
+export const adultBustScale = (bust: number): number => 1 + bust * ADULT_BUST_SPAN;
+
+/** Where the scaling of the bust starts to bite and where it is full, in head heights below the chin: above them the straps and the neck are the garment's, not the breast's. */
+const BUST_RAMP_FROM = 0.3;
+const BUST_RAMP_TO = 0.5;
+/** The depth the bust's height is scaled about, just above the top of the breasts (0.485). */
+const BUST_TOP = 0.45;
+
+/**
+ * A point of the bust's traced outlines ([x, d] in head heights: x from the centre line, d below the chin) moved for the bust knob `s` (`adultBustScale`): x scales about the centre line,
+ * so the cleavage's V stays where it is, and the depth about the top of the breasts, so a smaller bust is shorter and its lower edge rises (measured on Risa's reference, whose
+ * bikini top is 0.87 of Franzi's wide and sits shorter). The ramp over the neck and straps keeps them from following. `s` of 1 returns the point as it is.
+ */
+export function bustWarp(q: Pt, s: number): Pt {
+  if (s === 1) return q;
+  const t = Math.min(1, Math.max(0, (q[1] - BUST_RAMP_FROM) / (BUST_RAMP_TO - BUST_RAMP_FROM)));
+  const g = t * t * (3 - 2 * t);
+  return [q[0] * (1 + (s - 1) * g), q[1] <= BUST_TOP ? q[1] : BUST_TOP + (q[1] - BUST_TOP) * (1 + (s - 1) * g)];
+}
+
 /** One point on a breast's edge: canvas position and where it lies in head heights (|x| from the centre line, d below the chin). */
 export interface EdgePoint {
   readonly pos: Pt;
@@ -363,7 +387,9 @@ export function adultBreastPoints(sk: Skeleton, per = 10): EdgePoint[][] {
   return [1, -1].map((sign) => {
     const out: EdgePoint[] = [];
     let p0: Pt = start;
-    const add = (q: Pt): void => {
+    const scale = adultBustScale(sk.bust);
+    const add = (q0: Pt): void => {
+      const q = bustWarp(q0, scale);
       out.push({ pos: [cx + sign * w(q[1], -q[0]), y(q[1])], x: -q[0], d: q[1] });
     };
     add(p0);
@@ -440,7 +466,11 @@ export function adultBreastOutlines(sk: Skeleton): string {
   const sw = fmt2(outlineW(strokeW(sk), 0.7));
   return [1, -1]
     .map((sign) => {
-      const map = (q: Pt): Pt => [cx + sign * w(q[1], -q[0]), y(q[1])];
+      const scale = adultBustScale(sk.bust);
+      const map = (q0: Pt): Pt => {
+        const q = bustWarp(q0, scale);
+        return [cx + sign * w(q[1], -q[0]), y(q[1])];
+      };
       const s0 = map(start);
       const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
       return `<path d="${d}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`;
@@ -502,7 +532,11 @@ export function adultBand(sk: Skeleton, p: CharacterParams): string {
 function adultBandPath(sk: Skeleton): string {
   const { cx, y, w } = place(sk);
   const [start, segs] = ADULT_TOP;
-  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1])];
+  const scale = adultBustScale(sk.bust);
+  const map = (q0: Pt): Pt => {
+    const q = bustWarp(q0, scale);
+    return [cx + w(q[1], q[0]), y(q[1])];
+  };
   const s0 = map(start);
   return `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
 }
@@ -554,15 +588,16 @@ export function withLoweredHead(shared: PartTable): PartTable {
  */
 export function adultHead(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
-  const sw = fmt2(outlineW(strokeW(sk)));
-  return ADULT_SKIN_FACE.map(([start, segs]) => `<path d="${curve(h.head_cx, h.head_cy, h.head_r, start, segs)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
+  const cut = adultCutOf(p);
+  const sw = fmt2(outlineW(strokeW(sk), cut.faceWeight));
+  return cut.face.map(([start, segs]) => `<path d="${curve(h.head_cx, h.head_cy, h.head_r, start, segs)}" fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
 }
 
 /**
  * One strand line as a single filled shape that swells from a point, holds its weight and thins to a point again, so a strand
  * starts and ends inside the hair like a pen stroke and never stops abruptly. A flat black shape, hard-edged.
  */
-export function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string, widths?: readonly number[]): string {
+export function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number, color: string, widths?: readonly number[], tipEnd = 0.4): string {
   const pts: Pt[] = [];
   let p0: Pt = start;
   for (const [c, e] of segs) {
@@ -585,7 +620,7 @@ export function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number,
     const nx = -(b[1] - a[1]) / len;
     const ny = (b[0] - a[0]) / len;
     const t = i / (n - 1);
-    let half = (weight / 2) * Math.min(1, t / 0.2, (1 - t) / 0.4);
+    let half = (weight / 2) * Math.min(1, t / 0.2, (1 - t) / tipEnd);
     if (widths) {
       // measured thickness (head radii) interpolated along the line; the ends still close to a point
       const x = t * (widths.length - 1);
@@ -601,18 +636,6 @@ export function taperedStrand(h: Skeleton, [start, segs]: Chain, weight: number,
   return `<path d="M ${fmt1((poly[0] as Pt)[0])} ${fmt1((poly[0] as Pt)[1])} ${poly.slice(1).map(line).join("")}Z" fill="${color}" />`;
 }
 
-/** The soft finish's clumps on her hair, in head radii about the head's centre (hand placed on a grid over the render, as the chibi cuts' `Lock`s are): the crown's two arcs from the parting, the curtains' and the ponytail's falls. */
-const ADULT_HAIR_LOCKS: readonly Lock[] = [
-  ["lit", [[0.12, -1.0], [0.4, -0.92], [0.68, -0.7], [0.84, -0.35]], 0.18, 0.94],
-  ["lit", [[-0.12, -1.0], [-0.42, -0.92], [-0.68, -0.7], [-0.84, -0.35]], 0.18, 0.94],
-  ["shadow", [[0.1, -0.9], [0.3, -0.82], [0.52, -0.62], [0.62, -0.35]], 0.12, 0.9],
-  ["shadow", [[-0.1, -0.9], [-0.3, -0.82], [-0.52, -0.62], [-0.62, -0.35]], 0.12, 0.9],
-  ["shadow", [[-0.86, -0.3], [-0.88, 0.1], [-0.8, 0.6], [-0.66, 1.1]], 0.14, 0.92],
-  ["lit", [[-0.7, 0.0], [-0.68, 0.4], [-0.6, 0.8]], 0.1, 0.9],
-  ["shadow", [[0.8, 0.0], [0.86, 0.5], [0.8, 1.0], [0.68, 1.35]], 0.16, 0.92],
-  ["lit", [[0.62, 0.2], [0.7, 0.6], [0.66, 1.0], [0.58, 1.3]], 0.11, 0.9],
-];
-
 /**
  * Franzi's hair, drawn behind the whole body (the `_hair_tail` slot, before the torso). One silhouette, the visible hair plus the
  * face, ears and strips shrunk a few pixels (harness/franzi_hair/outline_masks.py), so its edge only ever meets the page, the neck
@@ -623,7 +646,7 @@ const ADULT_HAIR_LOCKS: readonly Lock[] = [
 export function adultHairBehind(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
-  const clip = `<clipPath id="adult-hair-clip">${ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>`;
+  const clip = `<clipPath id="adult-hair-clip">${adultCutOf(p).silhouette.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>`;
   return clip + adultHairShape(sk, p);
 }
 
@@ -632,11 +655,14 @@ function adultHairShape(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
   const sw = fmt2(outlineW(strokeW(sk)));
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
-  const hair = ADULT_HAIR_SILHOUETTE.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
+  const cut = adultCutOf(p);
+  const hair = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
   // the soft finish's clumps over the fill, in the hair's tones, clipped to the silhouette, under the strands
-  const clumps = soft(p) && p.highlight_strength > 0 ? softLocks(h, colorStr(p.hair_color), ADULT_HAIR_LOCKS, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE, "adult-hair-clip") : "";
-  const strands = ADULT_HAIR_STRANDS.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), 0.5), shade(p.hair_color, 2.6, 0.9))).join("");
-  return hair + clumps + `<g clip-path="url(#adult-hair-clip)">${strands}</g>`;
+  const clumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE, "adult-hair-clip") : "";
+  const strands = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
+  // the lines that run down to the face's edge: blunt at the end (the share of the length over which it tapers is a twentieth), the face drawn over what passes the edge
+  const edgeStrands = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
+  return hair + clumps + `<g clip-path="url(#adult-hair-clip)">${strands}${edgeStrands}</g>`;
 }
 
 /**
@@ -653,21 +679,37 @@ export function adultSkinBeside(sk: Skeleton, p: CharacterParams): string {
   const inner = shade(p.skin_tone, 0.83, 1.6);
   const concha = (cs: readonly Chain[]): string => cs.map((c) => `<path d="${d(c)}" fill="${inner}" />`).join("");
   const folds = (cs: readonly Chain[], ws: readonly (readonly number[])[]): string => cs.map((c, i) => taperedStrand(h, c, outlineW(strokeW(sk), 0.38), OUTLINE, ws[i])).join("");
-  return (
-    ADULT_SKIN_STRIPS.map((c) => skin(c, 0.4)).join("") +
-    ADULT_SKIN_EAR_L.map((c) => skin(c, 0.5)).join("") +
-    concha(ADULT_EAR_CONCHA_L) +
-    folds(ADULT_EAR_FOLDS_L, ADULT_EAR_FOLD_WIDTHS_L) +
-    ADULT_SKIN_EAR_R.map((c) => skin(c, 0.5)).join("") +
-    concha(ADULT_EAR_CONCHA_R) +
-    folds(ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_R)
-  );
+  const cut = adultCutOf(p);
+  const ear = (e: typeof cut.earL): string => e.skin.map((c) => skin(c, 0.5)).join("") + concha(e.concha) + folds(e.folds, e.foldWidths);
+  return cut.strips.map((c) => skin(c, 0.4)).join("") + ear(cut.earL) + ear(cut.earR);
 }
 
-/** What is drawn over the face: the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */
+/** The hair clip, where the cut puts it (the shared placement beside the hair's edge for a cut that does not say). */
+export function adultHairClip(sk: Skeleton, p: CharacterParams): string {
+  return hairClip(onHead(sk), p, adultCutOf(p).clip);
+}
+
+/** What is drawn over the face: the fringe where a cut has one of its own, the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */
 export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
-  return adultBrows(h, p) + adultEyes(h, p);
+  const cut = adultCutOf(p);
+  const fringe = cut.fringe;
+  let locks = "";
+  if (fringe !== null) {
+    const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
+    const tone = shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]);
+    // The fringe's hair is a shape of its own over the skin, so it covers the strand lines drawn behind the face: the lines are drawn again over it, clipped to it, and the
+    // lines that run on past its edge as thin dark lines (the locks' tips) are drawn whole, over the skin.
+    const inside = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight), tone)).join("");
+    const edge = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight), tone, undefined, 0.05)).join("");
+    locks =
+      `<clipPath id="adult-fringe-clip">${fringe.hair.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>` +
+      fringe.hair.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" />`).join("") +
+      `<g clip-path="url(#adult-fringe-clip)">${inside}</g>` +
+      edge +
+      fringe.lines.map((c, i) => taperedStrand(h, c, 0, OUTLINE, fringe.widths[i])).join("");
+  }
+  return locks + adultBrows(h, p) + adultEyes(h, p);
 }
 
 /** How far `brow_tilt` 1 turns a brow, in degrees (the chibi's drops the inner end by 0.28 of an eye radius per unit; this is the same idea on a traced brow). */
@@ -688,8 +730,21 @@ function tiltBrow(poly: readonly (readonly [number, number])[], tilt: number): r
   return poly.map(([x, y]): [number, number] => [mx + (x - mx) * c - (y - my) * sn, my + (x - mx) * sn + (y - my) * c]);
 }
 
+/** A traced brow line turned about the middle of its points for `brow_tilt`, as `tiltBrow` turns a filled brow; 0 returns it untouched. */
+function tiltChain([start, segs]: Chain, tilt: number): Chain {
+  if (tilt === 0) return [start, segs];
+  const all: Pt[] = [start, ...segs.flatMap(([c, e]) => [c, e])];
+  const turned = tiltBrow(all, tilt);
+  return [turned[0] as Pt, segs.map((_, i) => [turned[1 + 2 * i] as Pt, turned[2 + 2 * i] as Pt] as [Pt, Pt])];
+}
+
 /** The brows: two filled, tapering shapes traced from the reference, thick at the outer end and thin toward the nose. */
 function adultBrows(h: Skeleton, p: CharacterParams): string {
+  const lines = adultCutOf(p).brows;
+  if (lines !== null) {
+    const color = shade(p.hair_color, lines.tone[0], lines.tone[1]);
+    return lines.lines.map((c, i) => taperedStrand(h, tiltChain(c, p.face.brow_tilt), 0, color, lines.widths[i])).join("");
+  }
   return [ADULT_BROW_L, ADULT_BROW_R]
     .map((traced) => {
       const poly = tiltBrow(traced, p.face.brow_tilt);
@@ -752,19 +807,28 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
   if (p.face.blush > 1) {
     const [tint0, opacity] = blush(p.skin_tone);
     const alpha = Math.min(1, opacity * 2 * (p.face.blush - 1));
-    for (const cheek of ADULT_CHEEKS) {
+    // A cut with its own cheeks (Risa's) has the blush clipped to the face's own skin (its traced edge), so a blush near the cheek never runs over the hair or the outline; Franzi's is as it was.
+    const clipped = adultCutOf(p).cheeks !== null;
+    if (clipped) {
+      const faceClip = adultCutOf(p).face.map(([start, segs]) => `<path d="${curve(h.head_cx, h.head_cy, h.head_r, start, segs)}" />`).join("");
+      parts.push(`<clipPath id="adult-cheek-clip">${faceClip}</clipPath><g clip-path="url(#adult-cheek-clip)">`);
+    }
+    for (const cheek of adultCutOf(p).cheeks ?? ADULT_CHEEKS) {
       const c = ref(cheek.c);
       parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(cheek.rx * k)}" ry="${fmt1(cheek.ry * k)}" transform="rotate(${cheek.turn} ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint0}" opacity="${fmt2(alpha)}" />`);
     }
+    if (clipped) parts.push(`</g>`);
   }
   // the nose: the pale oval highlight, a lighter tone of the skin, then the dark tick
-  const c = ref([657, 360.5]);
+  const at = adultCutOf(p).featuresAt;
+  const nose = (q: Pt): Pt => [q[0] + at.nose[0], q[1] + at.nose[1]];
+  const c = ref(nose([657, 360.5]));
   parts.push(`<ellipse cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" rx="${fmt1(3.1 * k)}" ry="${fmt1(5.8 * k)}" transform="rotate(4 ${fmt1(c[0])} ${fmt1(c[1])})" fill="${tint(p.skin_tone, 0.62)}" />`);
-  parts.push(stroke([[660.6, 366.2], [661.8, 368.8], [663, 372.2]], [1.8, 2.4, 1.2]));
+  parts.push(stroke([nose([660.6, 366.2]), nose([661.8, 368.8]), nose([663, 372.2])], [1.8, 2.4, 1.2]));
   // the mouth: one continuous line. The reference draws it as two strokes with a small gap at the low point (x about 665), which the owner called a flaw of the reference, so the
   // two are joined there along the curve (the low point is flat for a few px) with the line a little thinner across the join; thickest toward the outer ends, thin at both tips.
   // `mouth_curve`, `mouth_width` and `mouth_open` move it (adultMouthPoints); at their defaults the points are the traced ones, untouched.
-  const upper = adultMouthPoints(p.face);
+  const upper = adultMouthPoints(p.face).map((q): Pt => [q[0] + at.mouth[0], q[1] + at.mouth[1]]);
   const open = p.face.mouth_open;
   if (open > 0) {
     // Open: the traced line is the upper lip and a second curve below it closes the shape, filled with the one flat dark red the chibi's open mouth uses, no teeth or tongue.
@@ -882,7 +946,17 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
  * lies over the arms there and the arms are not drawn twice. The strip runs from the outside of the arm in to just past its inner edge, from 1.1 H below the chin (under the
  * blouse's cuff) to the wrist, where the hands' own layer takes over.
  */
+/**
+ * Garments that cover the arm to the wrist (the school shirt's long sleeves) register here to draw their own sleeves, instead of the skin the arms are drawn again with over the skirt.
+ * The first that answers (a string, not null) is used. They register themselves when their module is loaded (body-adult-shirt.ts), because the garments import this module.
+ */
+export const ARM_OVER_HOOKS: ((sk: Skeleton, p: CharacterParams) => string | null)[] = [];
+
 function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
+  for (const hook of ARM_OVER_HOOKS) {
+    const own = hook(sk, p);
+    if (own !== null) return own;
+  }
   if (p.outfit.skirt_color === null && p.outfit.apron_color === null && p.outfit.hakama_color === null) return "";
   const { cx, y, w } = place(sk);
   const hs = outlineW(strokeW(sk)) / 2;
@@ -944,6 +1018,7 @@ export const ADULT_PARTS = {
   _neck: adultNeck,
   _head: adultHead,
   _hair_front: adultHairFront,
+  _hair_clip: adultHairClip,
   _face: adultFace,
   _ears: adultSkinBeside,
   _hair_tail: adultHairBehind,

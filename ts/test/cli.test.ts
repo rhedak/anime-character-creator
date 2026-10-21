@@ -70,7 +70,8 @@ test("render.ts with no preset draws the default character, with metadata", () =
 test("render.ts --finish, --highlight-strength and --background change the drawing the way they say", () => {
   const draw = (name: string, args: readonly string[]): string => {
     const base = join(OUT, `opts-${name}`);
-    const r = render(["--out", base, "--preset", "risa", "--no-metadata", ...args]);
+    // satoko: the strength scales the hair's clumps, which Risa's adult cut has none of (docs/risa-adult-plan.md)
+    const r = render(["--out", base, "--preset", "satoko", "--no-metadata", ...args]);
     assert.equal(r.status, 0, r.stderr);
     return read(`${base}.svg`);
   };

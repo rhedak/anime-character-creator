@@ -835,7 +835,9 @@ export interface CharacterParams {
    * proportion of the build, which is why it lives here and not on the
    * skeleton: the skeleton says where a bust sits, this says how much of one
    * there is. Male characters stay at 0 and render byte-identically to before
-   * the anchor existed (`docs/bust-plan.md`).
+   * the anchor existed (`docs/bust-plan.md`). On the adult woman it is an offset
+   * from her traced bust instead: 0, the default, is the traced one, below 0 a
+   * smaller bust and above 0 a larger one (`adultBustScale`, body-adult-parts.ts).
    */
   readonly bust: number;
   /**

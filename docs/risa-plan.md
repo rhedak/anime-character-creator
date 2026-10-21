@@ -1,3 +1,6 @@
+> **Superseded, 2026-10-21.** Risa is now on the adult woman's body, drawn from the references in `ref/risa-adult/` (`docs/risa-adult-plan.md`). This plan is the record of the tall slender body and the traced chibi garments she wore; the
+> pieces are still in the code (`tall_slender`, the traced `blazer`, `pleated`, `loafer` and ribbon cuts, `long_fringed`) and `RISA_TALL_SLENDER` in `ts/src/presets.ts` keeps her old definition for their tests.
+
 # Risa plan
 
 > **Renamed and recoloured, 2026-10-11.** This campaign began as "Mio", traced off a reference
