@@ -74,8 +74,11 @@ const SWEPT_PONYTAIL_LOCKS: readonly Lock[] = [
   ["lit", [[0.62, 0.2], [0.7, 0.6], [0.66, 1.0], [0.58, 1.3]], 0.11, 0.9],
 ];
 
+/** Her jaw made symmetric about the midline of her eyes (its chin was traced 7 px right of it), from the cheekbone line down. */
+const SWEPT_PONYTAIL_FACE: readonly Chain[] = ADULT_SKIN_FACE.map((c) => symmetricJaw(c, 662.25, 330, 30));
+
 const SWEPT_PONYTAIL: AdultHeadCut = {
-  face: ADULT_SKIN_FACE,
+  face: SWEPT_PONYTAIL_FACE,
   silhouette: ADULT_HAIR_SILHOUETTE,
   strands: ADULT_HAIR_STRANDS,
   strandTone: [2.6, 0.9],
@@ -87,9 +90,10 @@ const SWEPT_PONYTAIL: AdultHeadCut = {
   clip: null,
   cheeks: null,
   eye: { sclera: "#ffffff", lowerLine: 1, lidThickness: 1, lidColor: null, lashWeight: 1 },
-  irisAt: { [-1]: [606, 325], 1: [718.5, 321.5] },
-  featuresAt: { nose: [0, 0], mouth: [0, 0] },
-  symmetricMouth: false,
+  // Her eyes were traced at (606, 325) and (718.5, 321.5), the head tilted a little; they are level about the midline of the traced pair (662.25, 323.25), and her nose and mouth are centred on it.
+  irisAt: { [-1]: [606, 323.25], 1: [718.5, 323.25] },
+  featuresAt: { nose: [2.25, 0], mouth: [-4.25, 0] },
+  symmetricMouth: true,
   brows: null,
   strips: ADULT_SKIN_STRIPS,
   earL: { skin: ADULT_SKIN_EAR_L, concha: ADULT_EAR_CONCHA_L, folds: ADULT_EAR_FOLDS_L, foldWidths: ADULT_EAR_FOLD_WIDTHS_L },

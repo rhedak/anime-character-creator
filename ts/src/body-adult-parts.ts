@@ -28,7 +28,7 @@ import { adultEyes } from "./body-adult-eyes.ts";
 import { RAISED_SHOULDER_D, gripIsFist, raisedSides } from "./body-adult-pose.ts";
 import { HAND_FIST_OUTLINE } from "./body-adult-hand-poses-data.ts";
 import { HAND_FIST_CAVITY, HAND_FIST_FINGERS, HAND_FIST_NAILS } from "./body-adult-hand-poses-lines-data.ts";
-import { ADULT_BROW_L, ADULT_BROW_R } from "./body-adult-brow-data.ts";
+import { ADULT_BROW_L } from "./body-adult-brow-data.ts";
 import type { PartTable } from "./parts.ts";
 import type { Chain } from "./tables.ts";
 import { replace as replaceSk, type Skeleton } from "./skeleton.ts";
@@ -738,6 +738,15 @@ function tiltChain([start, segs]: Chain, tilt: number): Chain {
   return [turned[0] as Pt, segs.map((_, i) => [turned[1 + 2 * i] as Pt, turned[2 + 2 * i] as Pt] as [Pt, Pt])];
 }
 
+/**
+ * The traced brows made straight: her right brow was traced about 7 px above the left (the head tilted), so the left brow is kept, moved up by the eyes' move to their level height, and the right is its mirror
+ * about the midline of the eyes (reference x 662.25).
+ */
+const BROW_MID = (662.25 - 660) / 175.7;
+const BROW_DY = (323.25 - 325) / 175.7;
+const STRAIGHT_BROW_L: readonly (readonly [number, number])[] = ADULT_BROW_L.map(([x, y]): [number, number] => [x, y + BROW_DY]);
+const STRAIGHT_BROW_R: readonly (readonly [number, number])[] = ADULT_BROW_L.map(([x, y]): [number, number] => [2 * BROW_MID - x, y + BROW_DY]);
+
 /** The brows: two filled, tapering shapes traced from the reference, thick at the outer end and thin toward the nose. */
 function adultBrows(h: Skeleton, p: CharacterParams): string {
   const lines = adultCutOf(p).brows;
@@ -745,7 +754,7 @@ function adultBrows(h: Skeleton, p: CharacterParams): string {
     const color = shade(p.hair_color, lines.tone[0], lines.tone[1]);
     return lines.lines.map((c, i) => taperedStrand(h, tiltChain(c, p.face.brow_tilt), 0, color, lines.widths[i])).join("");
   }
-  return [ADULT_BROW_L, ADULT_BROW_R]
+  return [STRAIGHT_BROW_L, STRAIGHT_BROW_R]
     .map((traced) => {
       const poly = tiltBrow(traced, p.face.brow_tilt);
       const pts = poly.map(([x, y]): Pt => [h.head_cx + x * h.head_r, h.head_cy + y * h.head_r]);
@@ -756,8 +765,8 @@ function adultBrows(h: Skeleton, p: CharacterParams): string {
 
 /** The cheeks' flush, in reference pixels (ref 04, the face's calibration): centre, radii and a turn in degrees, below and outside each eye. Judged by eye against the AI pack's shy picture. */
 const ADULT_CHEEKS: readonly { c: Pt; rx: number; ry: number; turn: number }[] = [
-  { c: [608, 361], rx: 25, ry: 10, turn: -8 },
-  { c: [715, 358], rx: 25, ry: 10, turn: 8 },
+  { c: [608.75, 359.5], rx: 25, ry: 10, turn: -8 },
+  { c: [715.75, 359.5], rx: 25, ry: 10, turn: 8 },
 ];
 
 /** The traced mouth line, in reference pixels (ref 04, the face's calibration), left to right, and its width at each point. */

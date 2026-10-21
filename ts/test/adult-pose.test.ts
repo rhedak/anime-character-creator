@@ -126,7 +126,7 @@ test("the dirndl's blouse sleeve goes up with the arm: the blouse is split along
   const both = draw(pose({ right_arm_out: 125, left_arm_out: 125, grip_style: "fist" }, FRANZI));
   assert.ok(both.includes('id="adult-blouse-sleeve-l"') && both.includes('id="adult-blouse-sleeve-r"'));
   // with no arm raised the blouse is the one piece it was: her dirndl is her v0.5.0 dirndl
-  assert.equal(sha(down), "0f61e4d3f85303f57a4c26c9be2c36525210c32063331162e50c7b7d98f76890");
+  assert.equal(sha(down), "4d3dd691d443ebcea515d0b916263c5ea6776faebe34f718420900482904be37");
   assert.ok(!down.includes("adult-blouse-body"));
 });
 

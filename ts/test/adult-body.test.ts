@@ -499,5 +499,24 @@ test("Risa's face is straight and symmetric: the eyes level about one midline, t
     assert.ok(Math.abs((a[0] as number) + (z[0] as number) - ((m[0] as readonly number[])[0] as number) - ((m[m.length - 1] as readonly number[])[0] as number)) < 1e-9 && a[1] === z[1], `point ${i} mirrors point ${m.length - 1 - i}`);
   }
   assert.equal(cut.symmetricMouth, true);
-  assert.equal((ADULT_HEAD_CUTS["swept_ponytail"] as typeof cut).symmetricMouth, false);
+  assert.equal((ADULT_HEAD_CUTS["swept_ponytail"] as typeof cut).symmetricMouth, true, "Franzi's is straightened too");
+});
+
+test("Franzi's face is straight too: the eyes level, the mouth symmetric, her jaw the same either side of the midline of her eyes", async () => {
+  const { ADULT_HEAD_CUTS } = await import("../src/body-adult-cuts.ts");
+  const cut = ADULT_HEAD_CUTS["swept_ponytail"] as (typeof ADULT_HEAD_CUTS)[string];
+  assert.equal((cut.irisAt[-1] as readonly number[])[1], (cut.irisAt[1] as readonly number[])[1], "the eyes are level");
+  assert.equal(cut.symmetricMouth, true);
+  const mid = (((cut.irisAt[-1] as readonly number[])[0] as number) + ((cut.irisAt[1] as readonly number[])[0] as number)) / 2;
+  const px = (q: readonly number[]): [number, number] => [660 + (q[0] as number) * 175.7, 270.5 + (q[1] as number) * 175.7];
+  const [start, segs] = cut.face[0] as NonNullable<(typeof cut.face)[0]>;
+  const pts = [start, ...segs.map(([, e]) => e)].map(px);
+  for (const y of [370, 395, 420]) {
+    const xs: number[] = [];
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [p, q] = [pts[i] as [number, number], pts[i + 1] as [number, number]];
+      if (p[1] !== q[1] && (p[1] - y) * (q[1] - y) <= 0) xs.push(p[0] + ((q[0] - p[0]) * (y - p[1])) / (q[1] - p[1]));
+    }
+    assert.ok(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2 - mid) < 0.5, `row ${y}`);
+  }
 });

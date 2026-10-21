@@ -320,7 +320,7 @@ function ellipse(c: Pt, rx: number, ry: number, fill: string, extra = ""): strin
 }
 
 /** The iris centre of each eye in reference pixels (ref 04), the origin of its frame: read off the 8x grids. */
-const IRIS_AT: Record<number, Pt> = { [-1]: [606, 325], 1: [718.5, 321.5] };
+const IRIS_AT: Record<number, Pt> = { [-1]: [606, 323.25], 1: [718.5, 323.25] };
 
 /** Reference pixels to canvas, for the head as it hangs: the calibration of harness/franzi_hair/trace.py (origin (660, 270.5)). */
 function toCanvas(h: Skeleton, q: Pt): Pt {

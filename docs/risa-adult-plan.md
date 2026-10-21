@@ -262,8 +262,7 @@ already worked. The arms did not: the blazer held `armsUnderSleeves` true (a coa
 - Franzi's and Risa's hanging drawings are byte-identical (`ref-out/` check), and `ts/test/adult-pose.test.ts` pins the sleeve counts, the cut's shape and the unchanged hanging drawing.
 
 Checked by eye on both sides and mixed poses (hang, wave 1 and 2, cheer A and B, 90 degrees, one arm folded and the other up) and through the companion's own frame requests (7 emotions x 5 frames, wave 2, cheer 2).
-Open: the shirt alone (no blazer) has a small ledge at the shoulder top on a folded arm; not Risa's outfit, not fixed. The companion's pinned creator is still `v0.5.1`, so it sees this only after a release
-(`creator-release-to-companion`).
+Open: the shirt alone (no blazer) has a small ledge at the shoulder top on a folded arm; not Risa's outfit, not fixed. The companion sees this from 0.6.0 on (`creator-release-to-companion`).
 
 ## Her face made straight (2026-10-21, not committed)
 
@@ -279,6 +278,19 @@ The reference has her head tilted (the right eye 12 px above the left, about 6.3
 Not done on purpose: the fringe and the hair stay as traced (turning the fringe upright by the same angle left ticks at the temples, tried and dropped); it is hair, so some asymmetry reads as natural. Franzi's
 drawing is unchanged. `ref-out/risa.*` and the three `pages.json` cases that draw her were refreshed with `./refresh-ref-out.sh` and `harness/ts_port/golden-updates-risa-adult/upd_fixtures.ts` (the head only changed; no
 field of her preset did). `ts/test/adult-body.test.ts` pins the levelling and the symmetry.
+
+## Franzi's face made straight (2026-10-21, approved by the owner)
+
+Her traced face was tilted a little as well (the right eye 3.5 px above the left, the right brow about 7 px above the left, the right mouth corner 3.5 px higher, the mouth 4 px right of her eyes' midline and the chin 7 px right of it).
+Her neutral face reads fine, but every expression amplifies it (the shared happy lifts a mouth whose right corner is already higher, so it reads as a smirk). Tuning the emotions cannot remove an asymmetry of the base geometry
+(`mouth_curve` and `brow_tilt` scale around the existing slope), so the geometry was straightened instead, with the same pieces as Risa's: in `body-adult-cuts.ts`, `irisAt` level at the traced pair's midline (662.25, 323.25),
+`featuresAt` and `symmetricMouth` for the nose and mouth, `symmetricJaw` for the jaw from y 330 down; in `body-adult-parts.ts` the left brow kept and the right its mirror (`STRAIGHT_BROW_L`/`R`) and the cheeks mirrored;
+in `body-adult-eyes.ts` the default `IRIS_AT`. Her hair, ears and the eye shapes are as traced.
+
+Her default drawing therefore moved, and the recorded pins with it, with the owner's say: `ref-out/franzi.*`, the three hashes of `adult-face-baseline.test.ts` (and the dirndl hash in `adult-pose.test.ts`), the `eye_size` test's tolerance
+(1% to 1.5%: it reads extents off one-decimal coordinates), and the cut assertion of the Risa test. Nothing else of the recorded fixtures held her face.
+
+The companion's happy for the two adult cuts is an open smile, `CUT_FACES` in its `public/frames.js` (`mouth_width` 1.5, `mouth_curve` 1.5, `mouth_open` 0.6, `blush` 1.3, `eye_openness` 0.8, `brow_tilt` 0), the owner's pick of six variations.
 
 ## Stage 2: the uniform (next), then the clean-up
 
