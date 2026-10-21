@@ -13,6 +13,10 @@ import { armAxis, armTurn, armTurnBack } from "./body-adult-pose-arm.ts";
 import { ADULT_BODICE, BODICE_BUTTONS, BODICE_BUTTON_R } from "./body-adult-bodice-data.ts";
 import { ADULT_BOW } from "./body-adult-bow-data.ts";
 import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
+import { adultBlazer, wearsBlazer } from "./body-adult-blazer.ts";
+import { adultRibbon, adultShirt, wearsShirt } from "./body-adult-shirt.ts";
+import { LOAFER_ASPECT, LOAFER_OUTLINE, LOAFER_SEAM, LOAFER_SLOT, LOAFER_SOLE_EDGE, LOAFER_STRAP_BOT, LOAFER_STRAP_TOP } from "./body-adult-loafer-data.ts";
+import { ADULT_PLEATED_BAND, ADULT_PLEATED_FOLDS, ADULT_PLEATED_SKIRT } from "./body-adult-skirt-pleated-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
 import { DEFAULT_TAPER, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
 import { shade, tint } from "./colorutil.ts";
@@ -139,6 +143,7 @@ const CONTOUR_TO = 28;
  */
 export function adultBlouse(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.tunic_color === null) return "";
+  if (wearsShirt(p)) return adultShirt(sk, p);
   const { cx, y, w } = place(sk);
   const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1])];
   const [start, segs] = ADULT_BLOUSE;
@@ -277,7 +282,60 @@ function chainPath(sk: Skeleton, [start, segs]: Chain): string {
  */
 export function adultSkirt(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.skirt_color === null) return "";
+  if (p.outfit.skirt_cut === "pleated") return adultPleatedSkirt(sk, colorStr(p.outfit.skirt_color));
   return `<path d="${chainPath(sk, ADULT_SKIRT)}" ${inkAttrs(sk, colorStr(p.outfit.skirt_color))} />`;
+}
+
+/**
+ * The pleated skirt (`skirt_cut` "pleated"): the flare with its slanted hem, traced from the uniform of ref/risa-adult/ (body-adult-skirt-pleated-data.ts, docs/risa-adult-plan.md),
+ * one flat colour, the pleats as thin fold lines in a dark tone of it from the waistband's lower edge to the hem, and that edge as one continuous line across (its top shifted down by the band's depth) (the darker strip beside each fold in the reference is left out). Its top is
+ * hidden under whatever is worn over it.
+ */
+function adultPleatedSkirt(sk: Skeleton, color: string): string {
+  const { cx, y, w } = place(sk);
+  // The skirt is traced on Risa's reference, whose hips are narrower than this body's (the briefs 339 px wide against 355 in our render), so the traced edge can fall inside the body's own
+  // side and leave skin and the briefs' wing showing beside it. Wherever it does, the whole skirt is widened there: a point moves out by the shortfall of the edge at its depth, in
+  // proportion to how near it is to that edge (so the top's curve and the folds keep their shape and the edge reaches the body's outer edge, the knots being the ink's outer edge, so
+  // the skirt's centre line goes on them and its stroke covers the body's). It eases off between 2.0 and 2.3 H below the chin, where the thigh is wider than the skirt's flare.
+  const inkHalf = outlineW(strokeW(sk)) / 2; // half a stroke of margin, so the skirt's line covers the body's
+  const map = (q: Pt): Pt => {
+    const edge = skirtEdgeAt(q[1], Math.sign(q[0]));
+    const shortfall = edge === null ? 0 : Math.max(0, w(q[1], at(SIDE, q[1])) + inkHalf - Math.abs(w(q[1], edge)));
+    const over = 1 - ease((q[1] - 2.0) / 0.3);
+    const near = edge === null ? 0 : Math.min(1, Math.abs(q[0]) / edge);
+    return [cx + w(q[1], q[0]) + Math.sign(q[0]) * over * shortfall * near, y(q[1])];
+  };
+  const [start, segs] = ADULT_PLEATED_SKIRT;
+  const s0 = map(start);
+  const outline = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
+  const open = ([a, rest]: Chain): string => {
+    const p0 = map(a);
+    return `<path d="M ${fmt1(p0[0])} ${fmt1(p0[1])} ${rest.map(([c, e]) => quad(map(c), map(e))).join("")}" fill="none" stroke="${shade(color, 0.42, 1.0)}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.5))}" stroke-linecap="round" />`;
+  };
+  return `<path d="${outline}" ${inkAttrs(sk, color)} />${[...ADULT_PLEATED_FOLDS, ADULT_PLEATED_BAND].map(open).join("")}`;
+}
+
+/** The traced skirt's half-width in head heights at a depth on one side (-1 the viewer's left; the traced skirt is not centred on the body, as the reference's is not): the widest point of its outline within 0.012 H of it (the outline flares by 0.4 H of width per H of depth, so a wider window reads the edge as wider than it is there), null where the outline has none. */
+let pleatedEdge: readonly (readonly [number, number])[] | null = null;
+function skirtEdgeAt(d: number, side: number): number | null {
+  if (pleatedEdge === null) {
+    const out: [number, number][] = [];
+    let p0: Pt = ADULT_PLEATED_SKIRT[0];
+    for (const [c, e] of ADULT_PLEATED_SKIRT[1]) {
+      for (let i = 1; i <= 16; i++) {
+        const t = i / 16;
+        out.push([(1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * c[1] + t * t * e[1], (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * c[0] + t * t * e[0]]);
+      }
+      p0 = e;
+    }
+    pleatedEdge = out;
+  }
+  let best: number | null = null;
+  for (const [dd, xs] of pleatedEdge) {
+    const x = side * xs; // the half-width on this side, negative where the outline is on the other
+    if (Math.abs(dd - d) <= 0.012 && x > 0 && (best === null || x > best)) best = x;
+  }
+  return best;
 }
 
 /**
@@ -462,17 +520,61 @@ export function adultKneeSocks(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.knee_sock_color === null) return "";
   const { cx, y, w } = place(sk);
   const ink = outlineW(strokeW(sk));
-  const m = 0.012;
   const ds = depths(SOCK_TOP, FOOT_D_CUT, 0.1);
   const leg = (sign: number): string => {
-    const outer = ds.map((d) => [cx + sign * w(d, at(LEG_OUTER, d) + m), y(d)] as Pt);
-    const inner = ds.map((d) => [cx + sign * w(d, Math.max(0.02, at(LEG_IN, d) - m)), y(d)] as Pt).reverse();
+    // The sock's ink edge lies on the leg's own (the knots are the leg's outer ink edge, and its path sits half a stroke inside them), a fifth of a pixel proud of it (about one pixel of the 1312-wide reference grid) so the skin's line is covered: the path
+    // is half a stroke inside the knots on the outer side and half a stroke outside them on the inner, as the body's is. (It stood `m` off the knots, so with its own stroke it overhung by about six pixels a side.)
+    const hs = ink / 2;
+    const outer = ds.map((d) => [cx + sign * (w(d, at(LEG_OUTER, d)) - hs + 0.2), y(d)] as Pt);
+    const inner = ds.map((d) => [cx + sign * (w(d, Math.max(0.02, at(LEG_IN, d))) + hs - 0.2), y(d)] as Pt).reverse();
     const first = outer[0] as Pt;
-    const path = `M ${fmt1(first[0])} ${fmt1(first[1])} ${smooth(outer)}L ${fmt1((inner[0] as Pt)[0])} ${fmt1((inner[0] as Pt)[1])} ${smooth(inner)}Z`;
+    // With loafers the sock is the school's (the references' 02 and 03): its top edge dips at the front in one curve (0.07 H deep, as in the references), there is no band line, and its lower end is open
+    // (it goes into the shoe), so only its two sides and its top edge are inked.
+    const school = p.outfit.boot_cut === "loafer";
+    const innerTop = inner[inner.length - 1] as Pt;
+    const sag = 0.07 * 2 * sk.head_r;
+    const closing = school ? `Q ${fmt1((first[0] + innerTop[0]) / 2)} ${fmt1(first[1] + 2 * sag)} ${fmt1(first[0])} ${fmt1(first[1])} ` : "";
+    // The school sock goes on down into the shoe (whose opening shows it), and its lower sides are the reference's: in 08 (the legs close-up) the sock narrows to about 0.62 of the shoe's width where it
+    // enters it and runs straight down inside the counters. So from 4.0 H, where the leg's own edges are, down to the shoe's top the edges ease (smoothstep) from the leg's to that width about the shoe's
+    // centre, then run on to a third of the way into the shoe, where they are hidden. (They used to follow the foot's outline, which stepped at the ankle where the leg's tables end and was wider than the
+    // shoe's counters.)
+    let outerS: Pt[] = outer;
+    let innerTD: Pt[] = [...inner].reverse(); // top to bottom
+    if (school && p.outfit.boot_color !== null) {
+      const fit = loaferFit(shoeFoot(sk, sign));
+      const yA = y(4.0);
+      const yEnd = y(FOOT_D_CUT);
+      const yCut = fit.top + 0.3 * fit.length;
+      const legX = (yy: number, outerSide: boolean): number => {
+        const d = Math.min(FOOT_D_CUT, Math.max(4.0, 4.0 + ((yy - yA) / (yEnd - yA)) * (FOOT_D_CUT - 4.0)));
+        return outerSide ? cx + sign * (w(d, at(LEG_OUTER, d)) - hs + 0.2) : cx + sign * (w(d, Math.max(0.02, at(LEG_IN, d))) + hs - 0.2);
+      };
+      const tOuter = fit.xc + sign * 0.33 * fit.width;
+      const tInner = fit.xc - sign * 0.33 * fit.width;
+      const rows: number[] = [];
+      for (let i = 0; i <= 12; i++) rows.push(yA + ((yCut - yA) * i) / 12);
+      const low = (outerSide: boolean): Pt[] =>
+        rows.map((yy): Pt => {
+          const t = Math.min(1, Math.max(0, (yy - yA) / (fit.top - yA)));
+          const k = t * t * (3 - 2 * t);
+          const target = outerSide ? tOuter : tInner;
+          return [legX(yy, outerSide) * (1 - k) + target * k, yy];
+        });
+      outerS = [...outer.filter((q) => q[1] < yA - 1e-6), ...low(true)];
+      innerTD = [...innerTD.filter((q) => q[1] < yA - 1e-6), ...low(false)];
+    }
+    const innerLast = innerTD[innerTD.length - 1] as Pt;
+    const innerUp = [...innerTD].reverse();
+    const path = `M ${fmt1(first[0])} ${fmt1(first[1])} ${smooth(outerS)}L ${fmt1(innerLast[0])} ${fmt1(innerLast[1])} ${smooth(innerUp)}${closing}Z`;
+    const schoolInk = school
+      ? `<path d="M ${fmt1(first[0])} ${fmt1(first[1])} ${smooth(outerS)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" stroke-linecap="round" />` +
+        `<path d="M ${fmt1(innerLast[0])} ${fmt1(innerLast[1])} ${smooth(innerUp)}${closing}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" stroke-linecap="round" />`
+      : "";
     const bandD = SOCK_TOP + 0.05;
-    const a: Pt = [cx + sign * w(bandD, at(LEG_OUTER, bandD) + m), y(bandD)];
-    const b: Pt = [cx + sign * w(bandD, Math.max(0.02, at(LEG_IN, bandD) - m)), y(bandD)];
+    const a: Pt = [cx + sign * (w(bandD, at(LEG_OUTER, bandD)) - hs + 0.2), y(bandD)];
+    const b: Pt = [cx + sign * (w(bandD, Math.max(0.02, at(LEG_IN, bandD))) + hs - 0.2), y(bandD)];
     const band = `<path d="M ${fmt1(a[0])} ${fmt1(a[1])} L ${fmt1(b[0])} ${fmt1(b[1])}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.67)}" stroke-linecap="round" />`;
+    if (school) return `<path d="${path}" fill="${colorStr(p.outfit.knee_sock_color as string)}" />${schoolInk}`;
     return `<path d="${path}" ${inkAttrs(sk, colorStr(p.outfit.knee_sock_color as string))} />${band}`;
   };
   return leg(-1) + leg(1);
@@ -483,6 +585,82 @@ export function adultKneeSocks(sk: Skeleton, p: CharacterParams): string {
  * little off the skin, with a thicker sole. `boot_cut` "loafer" is a low shoe, the foot alone. A flat garment in one colour; its cuff is a line. The foot's toes and nails are not drawn
  * under it (body-adult-parts.ts, `adultDetail`).
  */
+/** The shoe's last for one foot: the foot outline's convex hull in the chain's order (outer edge, toes, inner edge), smoothed and stood off the skin's ink edge, as the boots draw it. */
+function shoeFoot(sk: Skeleton, sign: number): Pt[] {
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const unit = 2 * sk.head_r;
+  const off = ink / 2 + 0.014 * unit;
+  const sole = 0.012 * unit;
+  const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
+  const chain = smoothed(densify(hullInOrder(sampleChain(FOOT_OUTLINE, 5).map(([v, d]) => P(v, d))), 3), 4);
+  return chain.map((q, i) => {
+    const a = chain[Math.max(0, i - 1)] as Pt;
+    const b = chain[Math.min(chain.length - 1, i + 1)] as Pt;
+    const tx = b[0] - a[0];
+    const ty = b[1] - a[1];
+    const len = Math.hypot(tx, ty) || 1;
+    const nx = (sign * ty) / len;
+    const ny = (-sign * tx) / len;
+    const k = off + (ny > 0.5 ? sole * ny : 0);
+    return [q[0] + nx * k, q[1] + ny * k] as Pt;
+  });
+}
+
+/**
+ * The school loafer, traced from the legs close-up of ref/risa-adult/08-legs-closeup.png (body-adult-loafer-data.ts) in its own coordinates and fitted to this body's foot, not placed by registration:
+ * Grok drew the legs of the uniform images much shorter than the body's, so the shoe is the reference's shape (a length of 1.6 widths) as wide as the foot, its toe at the foot's toe, and the foot's
+ * instep above it is the sock's (`schoolSockLength`), which shows through the notch in the shoe's top. The shoe is one silhouette with that notch, a darker sole band, the strap with its slot, and the seam
+ * round the oval below it. The right shoe is the left's mirror.
+ */
+interface LoaferFit {
+  readonly xc: number;
+  readonly width: number;
+  readonly top: number;
+  readonly length: number;
+}
+
+function loaferFit(foot: readonly Pt[]): LoaferFit {
+  const xs = foot.map((q) => q[0]);
+  const ys = foot.map((q) => q[1]);
+  const width = (Math.max(...xs) - Math.min(...xs)) * 1.05;
+  const length = width * LOAFER_ASPECT;
+  const bottom = Math.max(...ys) + 0.012 * (Math.max(...ys) - Math.min(...ys));
+  return { xc: (Math.max(...xs) + Math.min(...xs)) / 2, width, top: bottom - length, length };
+}
+
+/** The shoe's silhouette and the lines on it for the foot `foot`, `sign` -1 the viewer's left (the traced shoe) and 1 its mirror. */
+function loaferShoe(sk: Skeleton, p: CharacterParams, sign: number, foot: readonly Pt[]): string {
+  const fit = loaferFit(foot);
+  const ink = outlineW(strokeW(sk));
+  const brown = colorStr(p.outfit.boot_color as string);
+  const at2 = ([u, t]: readonly [number, number]): Pt => [fit.xc + (sign < 0 ? u : -u) * fit.width, fit.top + t * fit.length];
+  const chainD = ([start, segs]: Chain): string => {
+    const s0 = at2(start);
+    return `M ${fmt1(s0[0])} ${fmt1(s0[1])} ${segs.map(([c, e]) => quad(at2(c), at2(e))).join("")}Z`;
+  };
+  const poly = (pts: readonly (readonly [number, number])[], close = false): string => {
+    const q = pts.map(at2);
+    return `M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}${close ? "Z" : ""}`;
+  };
+  const id = `adult-loafer-clip-${sign < 0 ? "l" : "r"}`;
+  const outline = chainD(LOAFER_OUTLINE);
+  const dark = shade(brown, 0.55, 1.0);
+  const fine = `fill="none" stroke="${shade(brown, 0.4, 1.0)}" stroke-width="${fmt2(ink * 0.5)}" stroke-linecap="round" stroke-linejoin="round"`;
+  const strap = `${poly(LOAFER_STRAP_TOP)} L ${fmt1(at2(LOAFER_STRAP_BOT[LOAFER_STRAP_BOT.length - 1] as readonly [number, number])[0])} ${fmt1(at2(LOAFER_STRAP_BOT[LOAFER_STRAP_BOT.length - 1] as readonly [number, number])[1])} ${smooth([...LOAFER_STRAP_BOT].reverse().map(at2))}Z`;
+  const inside =
+    `<path d="${poly(LOAFER_SOLE_EDGE)} L ${fmt1(at2([0.6, 1.2])[0])} ${fmt1(at2([0.6, 1.2])[1])} L ${fmt1(at2([-0.6, 1.2])[0])} ${fmt1(at2([-0.6, 1.2])[1])} Z" fill="${dark}" />` +
+    `<path d="${poly(LOAFER_SEAM)}" ${fine} />` +
+    `<path d="${strap}" fill="${tint(brown, 0.08)}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round" />` +
+    `<path d="${poly(LOAFER_SLOT, true)}" fill="${shade(brown, 0.3, 1.0)}" />`;
+  return (
+    `<clipPath id="${id}"><path d="${outline}" /></clipPath>` +
+    `<path d="${outline}" fill="${brown}" />` +
+    `<g clip-path="url(#${id})">${inside}</g>` +
+    `<path d="${outline}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />`
+  );
+}
+
 export function adultBoots(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.boot_color === null) return "";
   const { cx, y, w } = place(sk);
@@ -500,18 +678,7 @@ export function adultBoots(sk: Skeleton, p: CharacterParams): string {
     const outer = loafer ? [] : ds.map((d) => P(at(LEG_OUTER, d) + mLeg, d));
     const inner = loafer ? [] : ds.map((d) => P(Math.max(0.02, at(LEG_IN, d) - mLeg), d)).reverse();
     // A shoe's toe is one smooth curve, not the foot's five toes: the outline's convex hull (in the chain's order), densified and smoothed, is the shoe's last.
-    const chain = smoothed(densify(hullInOrder(sampleChain(FOOT_OUTLINE, 5).map(([v, d]) => P(v, d))), 3), 4);
-    const foot = chain.map((q, i) => {
-      const a = chain[Math.max(0, i - 1)] as Pt;
-      const b = chain[Math.min(chain.length - 1, i + 1)] as Pt;
-      const tx = b[0] - a[0];
-      const ty = b[1] - a[1];
-      const len = Math.hypot(tx, ty) || 1;
-      const nx = (sign * ty) / len; // outward: the chain runs outer edge, toes, inner edge
-      const ny = (-sign * tx) / len;
-      const k = off + (ny > 0.5 ? sole * ny : 0);
-      return [q[0] + nx * k, q[1] + ny * k] as Pt;
-    });
+    const foot = shoeFoot(sk, sign);
     // the foot's offset ends are on the leg's offset edges at the ankle cut; the shoe's own top edge is straight across
     const run: Pt[] = [...outer, ...foot, ...inner];
     const first = run[0] as Pt;
@@ -520,6 +687,7 @@ export function adultBoots(sk: Skeleton, p: CharacterParams): string {
     const cuff = loafer
       ? ""
       : `<path d="M ${fmt1(P(at(LEG_OUTER, cuffD) + mLeg, cuffD)[0])} ${fmt1(y(cuffD))} L ${fmt1(P(Math.max(0.02, at(LEG_IN, cuffD) - mLeg), cuffD)[0])} ${fmt1(y(cuffD))}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.67)}" stroke-linecap="round" />`;
+    if (loafer) return loaferShoe(sk, p, sign, foot);
     return `<path d="${path}" ${inkAttrs(sk, colorStr(p.outfit.boot_color as string))} />${cuff}`;
   };
   return boot(-1) + boot(1);
@@ -651,6 +819,7 @@ const COAT_FRONT: Knots = [[0.5, 0.09], [0.8, 0.14], [1.0, 0.19], [1.2, 0.205], 
  */
 export function adultCoat(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.coat_color === null) return "";
+  if (wearsBlazer(p)) return adultBlazer(sk, p);
   const { cx, y, w } = place(sk);
   const ink = outlineW(strokeW(sk));
   const hem = coatHem(p.outfit.coat_length);
@@ -828,7 +997,7 @@ export function adultHakama(sk: Skeleton, p: CharacterParams): string {
  * sagging under the chin; a standing collar has a notch at the front where the two halves meet. The traced cuts are the chibi's shapes and are not used.
  */
 export function adultCollar(sk: Skeleton, p: CharacterParams): string {
-  if (p.outfit.collar_color === null) return "";
+  if (p.outfit.collar_color === null || wearsShirt(p)) return ""; // the school shirt has its own collar
   const { cx, y } = place(sk);
   const ink = outlineW(strokeW(sk));
   const nw = sk.neck_half_w;
@@ -872,6 +1041,8 @@ export const ADULT_GARMENT_PARTS = {
   _coat: adultCoat,
   _robe_front: adultRobe,
   _collar: adultCollar,
+  // the shirt draws its own ribbon under its collar; on any other top the ribbon goes where the shared one does, on its own (the chibi's traced bow would sit wrong on this body)
+  _ribbon: (sk: Skeleton, p: CharacterParams): string => (wearsShirt(p) ? "" : adultRibbon(sk, p)),
   _hakama: adultHakama,
   _hanging_sleeves: none,
   // the traced coat cuts are the chibi's shapes: on this body the coat is the one above, whatever `coat_cut` says

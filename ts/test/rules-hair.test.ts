@@ -17,9 +17,9 @@ import { BUILDS, buildSkeletonWith } from "../src/skeleton.ts";
 import type { Point, Segment } from "../src/tables.ts";
 import { make, walk } from "./rules-util.ts";
 
-// The swept ponytail is the adult body's cut: its front piece is drawn by `adultHairFront` from its mass (body-adult-hair.ts), not through the five-callable contract these rules walk,
-// so it is not in the family; ts/test/adult-body.test.ts covers it.
-const HAIRSTYLE_NAMES = Object.keys(HAIRSTYLES).filter((n) => n !== "swept_ponytail").sort();
+// The swept ponytail and the long straight fringed cut are the adult body's: their front piece is drawn by `adultHairFront` from its mass (body-adult-hair.ts), not through the
+// five-callable contract these rules walk, so they are not in the family; ts/test/adult-body.test.ts covers them.
+const HAIRSTYLE_NAMES = Object.keys(HAIRSTYLES).filter((n) => n !== "swept_ponytail" && n !== "long_straight_fringed").sort();
 
 test("there are eight hairstyles, the family the Python parametrisations were sized against", () => {
   assert.equal(HAIRSTYLE_NAMES.length, 8);

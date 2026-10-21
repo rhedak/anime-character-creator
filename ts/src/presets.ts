@@ -1243,7 +1243,13 @@ export const LINDITA = characterParams({
 // and a light blue-grey pleated skirt. Her clothes, hair and body are traced off a
 // reference (`ref-local/mio/`, local only); the colours of hair and blazer are her own
 // (the reference's were black and navy, too like an existing character).
-export const RISA = characterParams({
+/**
+ * Risa as she was drawn on the tall slender body (`docs/risa-plan.md`), kept for the tests of the traced chibi cuts she wore (the blazer, the pleated skirt, the ribbon, the loafer, `long_fringed` with its
+ * locks) and not a preset: she is on the adult woman's body now (`RISA`, below), and `tall_slender` is deprecated (`docs/risa-adult-plan.md`).
+ *
+ * @deprecated use `RISA`
+ */
+export const RISA_TALL_SLENDER = characterParams({
   // The young-adult face at the adult floor, the same as Katherina and Linnea.
   face_age: 0.9,
   bust: 0.3,
@@ -1351,6 +1357,45 @@ export const FRANZI: CharacterParams = characterParams({
     underwear_top: true,
     underwear_color: "#faf5f4",
   }),
+});
+
+/**
+ * Risa, on the adult woman's body (`docs/risa-adult-plan.md`): an original, adult character in a school uniform, traced from the references in `ref/risa-adult/`. Her head, hair, hands and feet are drawn
+ * by the adult body's parts like Franzi's, from Risa's own traced cut (`long_straight_fringed`, body-adult-cuts.ts): dark red hair with a blunt fringe held by a gold bracket clip, green eyes with fine
+ * dark-brown lids. The uniform is a navy blazer with gold buttons over a white shirt with a light blue ribbon, a blue-grey pleated skirt, black knee socks and brown loafers, each traced from its own
+ * reference and one flat colour. The colours are the medians of the reference's layers, except the hair, which is the owner's (`#6b1f2a`). Her bust is a little smaller than the traced one (`bust` is an
+ * offset from it on this body).
+ */
+export const RISA: CharacterParams = characterParams({
+  body: "adult_female",
+  face_age: 1.0,
+  bust: -0.18,
+  skin_tone: "#fac4a8",
+  hair_color: "#6b1f2a",
+  hairstyle: "long_straight_fringed",
+  hair_length: 0.5,
+  eye_color: "#78925a",
+  outfit: outfit({
+    tunic_color: "#f4ecec",
+    collar_cut: "shirt",
+    sleeve_long: true,
+    tunic_tucked: true,
+    ribbon_color: "#5784ae",
+    skirt_color: "#697897",
+    skirt_cut: "pleated",
+    coat_color: "#212940",
+    coat_cut: "blazer",
+    coat_button_color: "#ba975e",
+    knee_sock_color: "#2a292c",
+    boot_color: "#4b332c",
+    boot_cut: "loafer",
+    hair_clip_color: "#d2a368",
+    hair_clip: "bracket",
+    underwear_top: true,
+    underwear_color: "#f5ebea",
+  }),
+  // Her eyes a little lower-lidded than Franzi's, and a faint flush (the adult face reads these two; her other face settings are the traced face's).
+  face: faceStyle({ eye_openness: 0.85, blush: 1.12 }),
 });
 
 export const PRESETS: Record<string, CharacterParams> = {

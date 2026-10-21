@@ -11,6 +11,7 @@ import { LID_L } from "./body-adult-lid-data.ts";
 import { shade, tint } from "./colorutil.ts";
 import { DEFAULT_FACESTYLE } from "./params.ts";
 import type { CharacterParams } from "./params.ts";
+import { adultCutOf } from "./body-adult-cuts.ts";
 import { fmt1, fmt2, truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
 
@@ -123,7 +124,7 @@ const tableAt = (tab: readonly (readonly [number, number, number])[], x: number,
 };
 /** Where the circle arcs are defined: GREEN reaches x = -22.2 and CYAN x = -23.5; the table alone is used past that (its weight is 1 there). */
 const circleTop = (circ: { c: Pt; r: number }, x: number): number | null => (x > circ.c[0] - circ.r + 0.3 ? onTop(circ, x)[1] : null);
-const lidBand = (): Pt[] => {
+const lidBand = (thickness = 1): Pt[] => {
   const tab = LID_L;
   const xTip = (tab[0] as readonly [number, number, number])[0];
   const upper: Pt[] = [];
@@ -138,14 +139,41 @@ const lidBand = (): Pt[] => {
   const tipU = upper[upper.length - 1] as Pt;
   const tipL = lower[lower.length - 1] as Pt;
   const tip: Pt = [xTip - 1.5, (tipU[1] + tipL[1]) / 2 + 0.5];
+  // `thickness` below 1 thins the band toward its upper edge (the reference's lid is a fine line, not Franzi's heavy band): every point of the lower edge, the measured part and the wing's lower arc, moves
+  // toward the upper edge at its x by that factor.
+  const upperAt = (x: number): number => (x <= XB1 ? tableAt(tab, x, 1) : onTop(GREEN, x)[1]);
+  const thin = (q: Pt): Pt => (thickness === 1 ? q : [q[0], upperAt(q[0]) + (q[1] - upperAt(q[0])) * thickness]);
   return [
     ...arc(GREEN, WING, onTop(GREEN, XB1), onTop(GREEN, 32)),
     ...upper.slice(1),
     tip,
-    ...[...lower].reverse(),
-    ...arc(CYAN_LID, onTop(CYAN_LID, XB1), CYAN_OUT, onTop(CYAN_LID, 26)).slice(1),
+    ...[...lower].reverse().map(thin),
+    ...arc(CYAN_LID, onTop(CYAN_LID, XB1), CYAN_OUT, onTop(CYAN_LID, 26)).slice(1).map(thin),
   ];
 };
+/**
+ * The lid band's lower edge from its inner tip out to the outer corner, thinned by `thickness` as `lidBand` thins it: with a thin lid this edge, not the circle the thick band used to cover, is where the
+ * eye's white and its outline begin, so the lid and the eye meet with no gap.
+ */
+const lidLower = (thickness: number): Pt[] => {
+  const tab = LID_L;
+  const xTip = (tab[0] as readonly [number, number, number])[0];
+  const upper: Pt[] = [];
+  const lower: Pt[] = [];
+  for (let x = XB1; x >= xTip - 1e-9; x -= 1) {
+    const wgt = 1 - smoothstep((x - XB0) / (XB1 - XB0));
+    const gt = circleTop(GREEN, x);
+    const ct = circleTop(CYAN_LID, x);
+    upper.push([x, gt === null || wgt >= 1 ? tableAt(tab, x, 1) : gt + (tableAt(tab, x, 1) - gt) * wgt]);
+    lower.push([x, ct === null || wgt >= 1 ? tableAt(tab, x, 2) : ct + (tableAt(tab, x, 2) - ct) * wgt]);
+  }
+  const tipU = upper[upper.length - 1] as Pt;
+  const tipL = lower[lower.length - 1] as Pt;
+  const upperAt = (x: number): number => (x <= XB1 ? tableAt(tab, x, 1) : onTop(GREEN, x)[1]);
+  const thin = (q: Pt): Pt => [q[0], upperAt(q[0]) + (q[1] - upperAt(q[0])) * thickness];
+  return [[xTip - 1.5, (tipU[1] + tipL[1]) / 2 + 0.5], ...[...lower].reverse().map(thin), ...arc(CYAN_LID, onTop(CYAN_LID, XB1), CYAN_OUT, onTop(CYAN_LID, 26)).slice(1).map(thin)];
+};
+
 
 /**
  * The lash flicks, from the viewer's-left eye's 16x grid (out/franzi/lash-ref-L.png; eye frame points, widths in ref px), mirrored for the right eye with the rest of the
@@ -160,7 +188,7 @@ const LASHES: readonly { pts: readonly Pt[]; w: number }[] = [
 /** The thin line along the aperture's top where the black lid has ended, to the crossing of the circles. */
 const lidTail = (): Pt[] => arc(CYAN, onTop(CYAN, 2), JOIN, onTop(CYAN, -12), 16);
 /** The aperture: the lower outline from the wing's tip round the base, up green's inner side, and back along cyan's lower edge. */
-const apertureOutline = (): Pt[] => [
+const apertureOutline = (thickness = 1): Pt[] => thickness < 1 ? apertureUnderThinLid(thickness) : [
   // Starts at the lid's lower corner, not the wing tip: the chord from the tip to the corner is the lid's own edge, and a white
   // fill bounded by it showed as a hairline beside the black on both eyes.
   CYAN_OUT,
@@ -168,8 +196,18 @@ const apertureOutline = (): Pt[] => [
   ...arc(GREEN, GREEN_LOW, JOIN, [GREEN.c[0] - GREEN.r, GREEN.c[1]], 10),
   ...arc(CYAN, JOIN, CYAN_OUT, TOP_VIA).slice(1),
 ];
+/** The aperture under a thin lid: the lower outline as ever, then up green's inner side to where the lid's tip is, and back along the lid's lower edge to the outer corner. */
+const apertureUnderThinLid = (thickness: number): Pt[] => {
+  const edge = lidLower(thickness);
+  return [edge[edge.length - 1] as Pt, ...BASE, ...arc(GREEN, GREEN_LOW, JOIN, [GREEN.c[0] - GREEN.r, GREEN.c[1]], 10), ...edge];
+};
 /** The soft lower outline alone: wing tip, down the short line and along the base, and up green's inner side. */
-const lowerLine = (): Pt[] => [[WING[0] + (CYAN_OUT[0] - WING[0]) * 0.7, WING[1] + (CYAN_OUT[1] - WING[1]) * 0.7] as Pt, CYAN_OUT, ...BASE, ...arc(GREEN, GREEN_LOW, JOIN, [GREEN.c[0] - GREEN.r, GREEN.c[1]], 10)];
+const lowerLine = (thickness = 1): Pt[] => {
+  const out = thickness < 1 ? (lidLower(thickness)[lidLower(thickness).length - 1] as Pt) : CYAN_OUT;
+  // with a thin lid the outline runs on from the inner corner to the lid's tip, so the eye's outline and the lid are one line
+  const joinToTip: Pt[] = thickness < 1 ? [(lidLower(thickness)[0] as Pt)] : [];
+  return [[WING[0] + (out[0] - WING[0]) * 0.7, WING[1] + (out[1] - WING[1]) * 0.7] as Pt, out, ...BASE, ...arc(GREEN, GREEN_LOW, JOIN, [GREEN.c[0] - GREEN.r, GREEN.c[1]], 10), ...joinToTip];
+};
 
 /** A filled stroke along `pts` that is `w0` wide at the start and tapers to a point at the end (flat black, hard-edged). */
 function taperedStroke(pts: readonly Pt[], w0: number, color: string): string {
@@ -282,7 +320,7 @@ function ellipse(c: Pt, rx: number, ry: number, fill: string, extra = ""): strin
 }
 
 /** The iris centre of each eye in reference pixels (ref 04), the origin of its frame: read off the 8x grids. */
-const IRIS_AT: Record<number, Pt> = { [-1]: [606, 325], 1: [718.5, 321.5] };
+const IRIS_AT: Record<number, Pt> = { [-1]: [606, 323.25], 1: [718.5, 323.25] };
 
 /** Reference pixels to canvas, for the head as it hangs: the calibration of harness/franzi_hair/trace.py (origin (660, 270.5)). */
 function toCanvas(h: Skeleton, q: Pt): Pt {
@@ -291,8 +329,8 @@ function toCanvas(h: Skeleton, q: Pt): Pt {
 }
 
 /** The eye frame's outward-positive points to canvas for `side`. */
-function placer(h: Skeleton, side: number): (q: Pt) => Pt {
-  const [ix, iy] = IRIS_AT[side] as Pt;
+function placer(h: Skeleton, side: number, irisAt: Record<number, Pt> = IRIS_AT): (q: Pt) => Pt {
+  const [ix, iy] = irisAt[side] as Pt;
   return ([x, y]) => toCanvas(h, [ix + side * x, iy + y]);
 }
 
@@ -306,7 +344,7 @@ const EYE_TILT_DEGREES = 25;
  */
 function eyeFrame(h: Skeleton, p: CharacterParams, side: number): { k: number; at: (q: Pt) => Pt } {
   const k0 = h.head_r / PX_PER_R;
-  const at0 = placer(h, side);
+  const at0 = placer(h, side, adultCutOf(p).irisAt);
   const size = p.face.eye_size / DEFAULT_FACESTYLE.eye_size;
   const turn = ((p.face.eye_tilt - DEFAULT_FACESTYLE.eye_tilt) * EYE_TILT_DEGREES * Math.PI) / 180;
   if (size === 1 && turn === 0) return { k: k0, at: at0 };
@@ -356,13 +394,14 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     const a = pts.map(at);
     return `M ${fmt1((a[0] as Pt)[0])} ${fmt1((a[0] as Pt)[1])} ` + a.slice(1).map(([x, y]) => `L ${fmt1(x)} ${fmt1(y)} `).join("") + (close ? "Z" : "");
   };
+  const cut = adultCutOf(p);
   const open = openness(p.face);
   const lowered = (pts: readonly Pt[], byRow: boolean, share = 1): readonly Pt[] =>
     open === 1 ? pts : pts.map(([x, y]): Pt => [x, y + (1 - open) * LID_TRAVEL * share * lidShare(x) * (byRow ? lidRow(y) : 1)]);
   const lashDrop = open === 1 ? 0 : (1 - open) * LID_TRAVEL * lidShare(-16);
   const look = Math.max(-1, Math.min(1, p.face.gaze));
   const gaze = look === 0 ? "" : `<g transform="translate(${fmt2(look * GAZE_TRAVEL * k)} 0)">`;
-  const apertureD = poly(lowered(apertureOutline(), true), true);
+  const apertureD = poly(lowered(apertureOutline(cut.eye.lidThickness), true), true);
   const iris = p.eye_color;
   const ink = outlineW(strokeW(h));
   const clip = `<clipPath id="${id}"><path d="${apertureD}" /></clipPath>`;
@@ -381,7 +420,7 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
   const parts = [
     clip,
     gradient,
-    `<path d="${apertureD}" fill="#ffffff" />`,
+    `<path d="${apertureD}" fill="${cut.eye.sclera}" />`,
     `<g clip-path="url(#${id})">`,
     gaze,
     ellipse(ic, IRIS.rx * k * isz, IRIS.ry * k * isz, isSoft ? `url(#${id}-grad)` : iris, ""),
@@ -394,15 +433,16 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     gaze === "" ? "" : `</g>`,
     `</g>`,
     // the outline round the lower half of the aperture: the same black as the lid, thinner, from where the lid ends
-    varStroke(lowerLine().map(at), ink * 0.66, 0.55, ink * 0.16, OUTLINE),
+    varStroke(lowerLine(cut.eye.lidThickness).map(at), ink * 0.66 * cut.eye.lowerLine, 0.55, ink * 0.16 * cut.eye.lowerLine, cut.eye.lidColor ?? OUTLINE),
     // the thin line on along the top of the white, growing out of the lid and tapering to a point
-    taperedStroke(lowered(lidTail(), true).map(at), ink * 0.9, OUTLINE),
+    // the lid's thin tail along the old circle is not drawn under a thin lid: the lid's own lower edge is where the eye begins
+    cut.eye.lidThickness < 1 ? "" : taperedStroke(lowered(lidTail(), true).map(at), ink * 0.9, cut.eye.lidColor ?? OUTLINE),
     // the crease line above the lid
     leafStroke(lowered(sampleSmooth(CREASE), false, 0.75).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
     // the lid: a thick black band between the two arcs, tapering to a wing at the outer corner
-    `<path d="${poly(lowered(lidBand(), false), true)}" fill="${OUTLINE}" />`,
+    `<path d="${poly(lowered(lidBand(cut.eye.lidThickness), false), true)}" fill="${cut.eye.lidColor ?? OUTLINE}" />`,
     // the lash flicks, growing out of the lid's thin inner end and tapering to points
-    ...LASHES.map((l) => taperedStroke(sampleSmooth(lashDrop === 0 ? l.pts : l.pts.map(([x, y]): Pt => [x, y + lashDrop])).map(at), l.w * k, OUTLINE)),
+    ...LASHES.map((l) => taperedStroke(sampleSmooth(lashDrop === 0 ? l.pts : l.pts.map(([x, y]): Pt => [x, y + lashDrop])).map(at), l.w * k * cut.eye.lashWeight, cut.eye.lidColor ?? OUTLINE)),
   ];
   return parts.join("");
 }

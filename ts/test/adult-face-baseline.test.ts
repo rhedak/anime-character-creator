@@ -1,7 +1,8 @@
 // Franzi's default drawing is pinned byte for byte (docs/franzi-expressions-plan.md, step 0). The face and arm fields the companion
 // sends (mouth, blink, brows, gestures) are being added to the adult body; at their neutral values she must draw exactly what v0.5.0
 // drew, so every picture made from her before the change (ref-out/, a pack drawn at 0.5.0) stays the same. The hashes were taken from
-// v0.5.0 on 2026-10-20. If one of them has to change, her default look has moved: that is the owner's call, not a test to update.
+// v0.5.0 on 2026-10-20 and taken again on 2026-10-21, when the owner approved straightening her face (the eyes level, the brows and the mouth symmetric, the nose, mouth and chin on one midline:
+// docs/risa-adult-plan.md, "Franzi's face made straight"). If one of them has to change, her default look has moved: that is the owner's call, not a test to update.
 
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -15,9 +16,9 @@ const sha = (p: Parameters<typeof renderCharacter>[0]): string => createHash("sh
 const UNDERWEAR = characterParams({ ...FRANZI, outfit: outfit({ ...FRANZI.outfit, tunic_color: null, bodice_color: null, skirt_color: null, apron_color: null }) });
 
 const V050 = {
-  dirndl: "0f61e4d3f85303f57a4c26c9be2c36525210c32063331162e50c7b7d98f76890",
-  underwear: "0847893c61f10dfac625040263a198daa8d13b99a7709a64843d78eaa2c0d855",
-  dirndlSoft: "2a9e9478ece7484090469f2976cdb6b50007f94cfdde1483f7afede3e59ff461",
+  dirndl: "4d3dd691d443ebcea515d0b916263c5ea6776faebe34f718420900482904be37",
+  underwear: "7d95390664ab5df24b2fa0b28bb3a155038891a94e37f305993e023563a64931",
+  dirndlSoft: "450f85528a4e7960e52c99ec824e1254bbb3b695b0fcc2b774c35dd024aeb7bc",
 };
 
 test("her default drawing is what v0.5.0 drew, in the dirndl, in her underwear and in the soft finish", () => {
@@ -206,7 +207,8 @@ test("eye_size scales the traced eye about its iris, and its default (1) is the 
   assert.equal(draw(withFace({ eye_size: 1 })), draw(FRANZI));
   const big = extent(aperture(draw(withFace({ eye_size: 1.12 }))));
   const small = extent(aperture(draw(withFace({ eye_size: 0.9 }))));
-  assert.ok(Math.abs(big.w / rest.w - 1.12) < 0.01 && Math.abs(big.h / rest.h - 1.12) < 0.01, `1.12 widens and heightens by 12%: ${big.w / rest.w}, ${big.h / rest.h}`);
+  // the extents are read off coordinates printed to one decimal, so a ratio is good to about a percent and a half
+  assert.ok(Math.abs(big.w / rest.w - 1.12) < 0.015 && Math.abs(big.h / rest.h - 1.12) < 0.015, `1.12 widens and heightens by 12%: ${big.w / rest.w}, ${big.h / rest.h}`);
   assert.ok(small.w < rest.w && small.h < rest.h);
 });
 

@@ -382,3 +382,141 @@ test("the soft finish on her: hair clumps and a shaded iris, nothing in the flat
   // her flat document is already 230 KB (the body outline), over the chibis' 150 KB soft budget: what the soft finish adds to it is what is held down
   assert.ok(softer.length - flat.length < 20_000, `${softer.length - flat.length} bytes added`);
 });
+
+// ---- the bust (an offset from the traced bust on the adult woman)
+
+test("the adult bust: 0 is the traced one, below 0 a smaller one that moves only the bust's own shapes", async () => {
+  const { adultBustScale, bustWarp } = await import("../src/body-adult-parts.ts");
+  assert.equal(adultBustScale(0), 1);
+  assert.ok(adultBustScale(-0.2) < 1 && adultBustScale(0.2) > 1);
+  // the warp: the identity at 1, the neck and straps untouched, the cleavage's V on the centre line, a smaller bust narrower and shorter
+  assert.deepEqual(bustWarp([0.3, 0.8], 1), [0.3, 0.8]);
+  assert.deepEqual(bustWarp([0.2, 0.1], 0.8), [0.2, 0.1]);
+  assert.equal((bustWarp([0, 0.8], 0.8) as readonly number[])[0], 0);
+  const [x, d] = bustWarp([0.4, 0.9], 0.8) as readonly [number, number];
+  assert.ok(x < 0.4 && d < 0.9 && d > 0.45, "narrower and with its lower edge raised, below the top of the breasts");
+  // drawn: the default is a bust of 0, a smaller one is a different drawing with no new ids, and Franzi at 0 is unchanged by it
+  const base = renderCharacter(BARE, null, null, false);
+  assert.equal(renderCharacter(characterParams({ ...BARE, bust: 0 }), null, null, false), base);
+  const smaller = renderCharacter(characterParams({ ...BARE, bust: -0.2 }), null, null, false);
+  assert.notEqual(smaller, base);
+  const ids = [...smaller.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+  assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), []);
+});
+
+// ---- the school shirt (collar_cut "shirt", docs/risa-adult-plan.md)
+
+test("the adult school shirt replaces the puff blouse, tucks under a skirt and keeps its sleeves in front of it, with unique ids", () => {
+  const shirt = (o: Parameters<typeof outfit>[0] = {}) => characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, tunic_color: "#f4ecec", collar_cut: "shirt", sleeve_long: true, tunic_tucked: true, ...o }) });
+  const blouse = renderCharacter(characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, tunic_color: "#f4ecec" }) }), null, null, false);
+  const bare = renderCharacter(shirt(), null, null, false);
+  assert.ok(bare.includes('id="adult-shirt-clip"') && !blouse.includes('id="adult-shirt-clip"'), "the shirt is its own garment, the blouse is not drawn with it");
+  assert.notEqual(bare, blouse);
+  // over a skirt the sleeves are drawn again in the cloth, not as skin
+  const skirted = renderCharacter(shirt({ skirt_color: "#697897", skirt_cut: "pleated" }), null, null, false);
+  assert.ok(skirted.includes('id="adult-shirt-sleeves-over"'));
+  const plain = renderCharacter(shirt({ skirt_color: "#697897" }), null, null, false);
+  assert.ok(plain.includes('id="adult-shirt-sleeves-over"') && !plain.includes('id="adult-arm-strip"'));
+  for (const svg of [bare, skirted, plain]) {
+    const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+    assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), []);
+  }
+  // Franzi's own collar and blouse are unchanged by it
+  assert.ok(!renderCharacter(BARE, null, null, false).includes("adult-shirt"));
+});
+
+test("the adult ribbon is a bow in ribbon_color under the shirt's collar, mirrored, and the chibi's traced bow is not drawn on this body", () => {
+  const withRibbon = (o: Parameters<typeof outfit>[0] = {}) => characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, tunic_color: "#f4ecec", collar_cut: "shirt", sleeve_long: true, tunic_tucked: true, ...o }) });
+  const plain = renderCharacter(withRibbon(), null, null, false);
+  const bow = renderCharacter(withRibbon({ ribbon_color: "#5784ae" }), null, null, false);
+  assert.ok(bow.includes('fill="#5784ae"') && !plain.includes('fill="#5784ae"'));
+  // five pieces a side's worth: two bands, two tails, two loops, the knot (seven filled paths), over the shirt and before the collar
+  assert.equal((bow.match(/fill="#5784ae"/g) ?? []).length, 7);
+  assert.ok(bow.indexOf('fill="#5784ae"') < bow.lastIndexOf("adult-shirt-neck-opening"), "the bow is drawn before the collar's neck is put back over it");
+  const ids = [...bow.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+  assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), []);
+  // without a shirt the same bow is drawn on its own, in the same colour
+  const blouse = renderCharacter(characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, tunic_color: "#f4ecec", ribbon_color: "#5784ae" }) }), null, null, false);
+  assert.equal((blouse.match(/fill="#5784ae"/g) ?? []).length, 7);
+});
+
+// ---- the school blazer (coat_cut "blazer", docs/risa-adult-plan.md)
+
+test("the adult blazer replaces the open coat, is two mirrored panels with three gold buttons, and keeps its sleeves in front of the skirt, with unique ids", () => {
+  const worn = (o: Parameters<typeof outfit>[0] = {}) =>
+    characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, tunic_color: "#f4ecec", collar_cut: "shirt", sleeve_long: true, tunic_tucked: true, skirt_color: "#697897", skirt_cut: "pleated", coat_color: "#212940", coat_button_color: "#ba975e", ...o }) });
+  const coat = renderCharacter(worn({ coat_cut: null }), null, null, false);
+  const blazer = renderCharacter(worn({ coat_cut: "blazer" }), null, null, false);
+  assert.notEqual(blazer, coat);
+  assert.equal((blazer.match(/fill="#ba975e"/g) ?? []).length, 3, "three gold buttons");
+  assert.equal((blazer.match(/fill="#212940"/g) ?? []).length >= 2, true, "two panels in the blazer's colour");
+  assert.ok(blazer.includes('id="adult-blazer-sleeves-over"'), "the sleeves are drawn again over the skirt");
+  const ids = [...blazer.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+  assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), []);
+  // without a shirt the blazer is still drawn on its own, and Franzi's own outfit is untouched
+  const alone = renderCharacter(characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, coat_color: "#212940", coat_cut: "blazer" }) }), null, null, false);
+  assert.equal((alone.match(/fill="#212940"/g) ?? []).length >= 2, true);
+  assert.ok(!renderCharacter(BARE, null, null, false).includes("adult-blazer"));
+});
+
+test("the school sock and loafer (boot_cut loafer with knee socks): open-ended sock, rim and strap on the shoe, unique ids, and the other boots unchanged", () => {
+  const worn = (o: Parameters<typeof outfit>[0] = {}) => characterParams({ ...BARE, outfit: outfit({ ...BARE.outfit, knee_sock_color: "#2a282b", boot_color: "#4d332c", ...o }) });
+  const school = renderCharacter(worn({ boot_cut: "loafer" }), null, null, false);
+  const plain = renderCharacter(worn({}), null, null, false);
+  assert.ok(school.includes('id="adult-loafer-clip-l"') && school.includes('id="adult-loafer-clip-r"'));
+  assert.ok(!plain.includes("adult-loafer-clip"), "an ankle boot is not the loafer");
+  const ids = [...school.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1] as string);
+  assert.deepEqual(ids.filter((v, i) => ids.indexOf(v) !== i), []);
+});
+
+test("Risa's face is straight and symmetric: the eyes level about one midline, the brows mirrored, the jaw the same either side, and the nose and mouth on the midline", async () => {
+  const { ADULT_HEAD_CUTS } = await import("../src/body-adult-cuts.ts");
+  const cut = ADULT_HEAD_CUTS["long_straight_fringed"] as (typeof ADULT_HEAD_CUTS)[string];
+  const [l, r] = [cut.irisAt[-1] as readonly number[], cut.irisAt[1] as readonly number[]];
+  assert.equal(l[1], r[1], "the eyes are level");
+  const mid = ((l[0] as number) + (r[0] as number)) / 2;
+  // the jaw: at each row below the eyes the two edges are the same distance from the midline
+  const px = (q: readonly number[]): [number, number] => [660 + (q[0] as number) * 175.7, 270.5 + (q[1] as number) * 175.7];
+  const [start, segs] = (cut.face[0] as NonNullable<typeof cut.face[0]>);
+  const pts = [start, ...segs.map(([, e]) => e)].map(px);
+  for (const y of [345, 370, 395, 420]) {
+    const xs: number[] = [];
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [p, q] = [pts[i] as [number, number], pts[i + 1] as [number, number]];
+      if (p[1] !== q[1] && (p[1] - y) * (q[1] - y) <= 0) xs.push(p[0] + ((q[0] - p[0]) * (y - p[1])) / (q[1] - p[1]));
+    }
+    assert.ok(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2 - mid) < 0.5, `row ${y}: edges ${xs.map((x) => x.toFixed(1)).join(", ")} about ${mid}`);
+  }
+  assert.equal(Math.max(...pts.map((p) => p[1])), pts.find((p) => p[0] === mid)?.[1], "the chin is on the midline");
+  const [bl, br] = cut.brows!.lines.map((c) => [c[0], ...c[1].map((s) => s[1])].map(px));
+  assert.ok(Math.abs((bl![0]![0] + br![br!.length - 1]![0]) / 2 - mid) < 0.01 && Math.abs(bl![0]![1] - br![br!.length - 1]![1]) < 0.01, "the right brow is the left one mirrored");
+  assert.ok(Math.abs(cut.featuresAt.mouth[0] + 666.5 - mid) < 1e-9 && Math.abs(cut.featuresAt.nose[0] + 660 - mid) < 1e-9, "the nose and the mouth are centred on the midline");
+  // the mouth line: mirrored about the middle of its ends, so both corners sit at the same height (the traced right corner is 3.5 px higher, which on a straight face reads as a smirk)
+  const { SYMMETRIC_MOUTH_POINTS: m } = await import("../src/body-adult-parts.ts");
+  assert.ok(m.length % 2 === 0 && m.length >= 10);
+  for (let i = 0; i < m.length / 2; i++) {
+    const [a, z] = [m[i] as readonly number[], m[m.length - 1 - i] as readonly number[]];
+    assert.ok(Math.abs((a[0] as number) + (z[0] as number) - ((m[0] as readonly number[])[0] as number) - ((m[m.length - 1] as readonly number[])[0] as number)) < 1e-9 && a[1] === z[1], `point ${i} mirrors point ${m.length - 1 - i}`);
+  }
+  assert.equal(cut.symmetricMouth, true);
+  assert.equal((ADULT_HEAD_CUTS["swept_ponytail"] as typeof cut).symmetricMouth, true, "Franzi's is straightened too");
+});
+
+test("Franzi's face is straight too: the eyes level, the mouth symmetric, her jaw the same either side of the midline of her eyes", async () => {
+  const { ADULT_HEAD_CUTS } = await import("../src/body-adult-cuts.ts");
+  const cut = ADULT_HEAD_CUTS["swept_ponytail"] as (typeof ADULT_HEAD_CUTS)[string];
+  assert.equal((cut.irisAt[-1] as readonly number[])[1], (cut.irisAt[1] as readonly number[])[1], "the eyes are level");
+  assert.equal(cut.symmetricMouth, true);
+  const mid = (((cut.irisAt[-1] as readonly number[])[0] as number) + ((cut.irisAt[1] as readonly number[])[0] as number)) / 2;
+  const px = (q: readonly number[]): [number, number] => [660 + (q[0] as number) * 175.7, 270.5 + (q[1] as number) * 175.7];
+  const [start, segs] = cut.face[0] as NonNullable<(typeof cut.face)[0]>;
+  const pts = [start, ...segs.map(([, e]) => e)].map(px);
+  for (const y of [370, 395, 420]) {
+    const xs: number[] = [];
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [p, q] = [pts[i] as [number, number], pts[i + 1] as [number, number]];
+      if (p[1] !== q[1] && (p[1] - y) * (q[1] - y) <= 0) xs.push(p[0] + ((q[0] - p[0]) * (y - p[1])) / (q[1] - p[1]));
+    }
+    assert.ok(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2 - mid) < 0.5, `row ${y}`);
+  }
+});

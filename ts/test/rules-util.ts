@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { characterParams, replace } from "../src/model.ts";
 import type { CharacterParams, FaceStyle, Outfit } from "../src/params.ts";
-import { NEUTRAL_BASES, PRESETS } from "../src/presets.ts";
+import { NEUTRAL_BASES, PRESETS, RISA_TALL_SLENDER } from "../src/presets.ts";
 import { renderCharacter } from "../src/render.ts";
 import { rgbToHsv, hexToRgb01 } from "../src/colorutil.ts";
 import { HAIRSTYLES, type Hairstyle } from "../src/core-head.ts";
@@ -29,7 +29,12 @@ export const withOutfit = (p: CharacterParams, changes: Partial<Outfit>): Charac
 export const withFace = (p: CharacterParams, changes: Partial<FaceStyle>): CharacterParams => replace(p, { face: replace(p.face, changes) });
 
 /** `render_character(replace(PRESETS[name], finish="soft"), **kw)` of the soft-finish tests. */
-export const soft = (name: string, idPrefix = ""): string => renderCharacter(replace(PRESETS[name] as CharacterParams, { finish: "soft" }), null, null, false, idPrefix);
+/**
+ * The presets plus the old chibi Risa (`risa_tall_slender`, `RISA_TALL_SLENDER`): she was the only preset on the tall slender body and the only one with the `long_fringed` cut and its locks, so the tests of those
+ * (and of the traced chibi garments she wore) draw her as this fixture now that the `risa` preset is on the adult woman's body (docs/risa-adult-plan.md).
+ */
+export const FIXTURES: Record<string, CharacterParams> = { ...PRESETS, risa_tall_slender: RISA_TALL_SLENDER };
+export const soft = (name: string, idPrefix = ""): string => renderCharacter(replace(FIXTURES[name] as CharacterParams, { finish: "soft" }), null, null, false, idPrefix);
 
 /** A character with the defaults and these fields set. */
 export const make = (changes: Partial<CharacterParams> = {}): CharacterParams => characterParams(changes);

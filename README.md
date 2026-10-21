@@ -13,7 +13,7 @@ designs began from AI-generated references).
 Animation is out of scope. Backgrounds and text overlays are a
 possible later addition (they'd slot in as extra SVG layers).
 
-**The drawing code is TypeScript** (`ts/src/`, version 0.5.1). It draws the same bytes the Python
+**The drawing code is TypeScript** (`ts/src/`, version 0.6.0). It draws the same bytes the Python
 package drew, proved on a corpus of 7,662 characters (see "The TypeScript port" in `STATUS.md`),
 and it is what the web tool, the SVG command line and the committed `ref-out/` art come from. The
 Python package is gone from the tree (2026-10-19); the tag `python-final` has it, as the reference the port was
@@ -25,8 +25,8 @@ drawing happens in `ts/`: see `ts/README.md`.
 Fourteen named characters, plus guests. They are all the tall chibi, the one
 figure since 2026-09-26, when the realistic build and the old compressed chibi
 were retired; a `height` from 0.8 to 1.3 stretches it for a shorter or a
-taller character. Risa is the exception in proportion: she is drawn on her own
-longer body, measured off her reference (`docs/risa-plan.md`).
+taller character. Risa and Franzi are the exceptions: they are adult women, drawn on
+the adult woman's body (about 6.4 heads tall, `docs/adult-body-plan.md`, `docs/risa-adult-plan.md`).
 
 Every preset is **twenty-one or older**. The age of majority differs by
 country, and twenty-one is the highest of the common ones, so that is the

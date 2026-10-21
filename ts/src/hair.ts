@@ -325,6 +325,19 @@ export function clipBar(r: number, line: number, fold: number, color: string): s
   );
 }
 
+/**
+ * A bracket clip: a gold frame open on one side, two parallel bars joined by a short one, the way a flat barrette lies on the temple. The bars run along the clip's own x axis
+ * (it is drawn outline first, a wider dark stroke under the gold one, so the frame is outlined whole without a fill).
+ */
+export function clipBracket(r: number, line: number, _fold: number, color: string): string {
+  const [w, h, t] = [r * 0.16, r * 0.12, r * 0.04];
+  const d = `M ${fmt2(w / 2)} ${fmt2(-h / 2)} L ${fmt2(-w / 2)} ${fmt2(-h / 2)} L ${fmt2(-w / 2)} ${fmt2(h / 2)} L ${fmt2(w / 2)} ${fmt2(h / 2)}`;
+  return (
+    `<path d="${d}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(t + line)}" stroke-linejoin="round" stroke-linecap="round" />` +
+    `<path d="${d}" fill="none" stroke="${pyStr(color)}" stroke-width="${fmt2(t)}" stroke-linejoin="round" stroke-linecap="round" />`
+  );
+}
+
 /** Two thin pins crossed in an X. */
 export function clipCrossed(r: number, line: number, _fold: number, color: string): string {
   const [length, w] = [r * 0.45, r * 0.075];
@@ -391,6 +404,7 @@ export const HAIR_CLIPS: Readonly<Record<string, readonly [ClipShape, number | n
   Object.create(null) as Record<string, readonly [ClipShape, number | null]>,
   {
     bar: [clipBar, null],
+    bracket: [clipBracket, -21.5],
     crescent: [clipCrescent, -15.0],
     crossed: [clipCrossed, null],
     snap: [clipSnap, null],
@@ -413,14 +427,15 @@ function hairClipFor(name: unknown): readonly [ClipShape, number | null] {
  * A clip worn in the hair, over the hair and the fringe, under anything
  * worn on the head: goggles' strap, a scarf or a hat's brim covers it.
  */
-export function hairClip(sk: Skeleton, p: CharacterParams): string {
+export function hairClip(sk: Skeleton, p: CharacterParams, at: readonly [number, number] | null = null): string {
   const color = p.outfit.hair_clip_color;
   if (color === null) return "";
   const [shape, tilt] = hairClipFor(p.outfit.hair_clip);
   const r = sk.head_r;
   const sw = strokeW(sk);
-  const atY = HAIR_CLIP_AT[1];
-  const atX = pyMin(HAIR_CLIP_AT[0], hairEdgeX(atY, sk, p) - HAIR_CLIP_INSET);
+  // `at`: where a cut that knows its own hair (the adult woman's, body-adult-cuts.ts) puts the clip, in head radii about the head's centre, instead of beside the hair's edge.
+  const atY = at === null ? HAIR_CLIP_AT[1] : at[1];
+  const atX = at === null ? pyMin(HAIR_CLIP_AT[0], hairEdgeX(atY, sk, p) - HAIR_CLIP_INSET) : at[0];
   const [x, y] = [sk.head_cx + atX * r, sk.head_cy + atY * r];
   const angle = tilt === null ? HAIR_CLIP_TILT : tilt;
   const body = shape(r, outlineW(sw), interiorW(sw, 0.7), color);

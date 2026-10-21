@@ -279,6 +279,14 @@ layering or colour by hand when it's a composition problem.
 which is expected), `./refresh-ref-out.sh` and confirm its report says only
 that character changed, then `./refresh-ref-out.sh --check`.
 
+## A trace belongs to the pose it was taken in
+
+A chain fitted to a reference in one pose (arms down) is wrong in another (arms raised). The Franzi dirndl
+sleeve, traced from lowered arms, looked cut off once the arm was raised, and the fix was a second look at
+references in the target pose, then mirroring the visible side onto the hidden one, not a bigger trace. When a part
+must follow a pose, trace or compare it in that pose, and keep what you fill in between on the already-traced
+curves (a straight fill stuck out past the apron). The method for posed figures is in `adult-pose-iteration`.
+
 ## When NOT to use this
 
 A part that's a placement/color decision, not a silhouette question

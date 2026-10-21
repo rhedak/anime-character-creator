@@ -204,6 +204,7 @@ export const HAT: GarmentSlot = garmentSlot("hat", "Witch hat", color("hat_color
 // for Katherina's and the owner kept them (2026-10-03).
 export const HAIR_CLIP_LABELS: Readonly<Record<string, string>> = {
   "bar": "Bar",
+  "bracket": "Bracket frame",
   "crescent": "Crescent moon",
   "crossed": "Crossed pins",
   "snap": "Snap clip",
@@ -401,6 +402,7 @@ export const HAIRSTYLE_LABELS: Readonly<Record<string, string>> = {
   "short_tousled": "Short, tousled",
   "long_center_part": "Long, center part",
   "swept_ponytail": "Swept ponytail",
+  "long_straight_fringed": "Long, straight, blunt fringe",
 };
 assertKeysEqual(HAIRSTYLE_LABELS, HAIRSTYLES, "HAIRSTYLE_LABELS and HAIRSTYLES have drifted apart; a cut was added or removed on one side without the other");
 // `BODY_TYPES` is the registry; these label it, the same arrangement as the
@@ -489,9 +491,14 @@ export const FACE_SELECTS: readonly SelectField[] = [FACE_SCAR];
 // D3: a chibi ponytail root and a chibi bun on her traced hair, and a waist shift the traced head and hands do not follow), hidden on purpose.
 // `mouth_width`, `eye_size`, `iris_size`, `eye_tilt` and `grip_style` are also hidden here, for a different reason: the adult face and hands now draw them (docs/franzi-expressions-plan.md, steps 1
 // to 5; the companion sends them), but offering the controls in the web tool moves the catalogue's recorded fixture (`ts/fixtures/`, `ref-out/catalogue.json`), which is the owner's call, so they stay
-// hidden until then.
+// hidden until then. `hairstyle` is hidden for the same reason since the adult woman has a second cut (`long_straight_fringed`, Risa's, docs/risa-adult-plan.md): the cut matters to her drawing now, but the web
+// tool would offer the chibi cuts beside it (they draw as Franzi's), so a character picks it through its preset until the owner decides how the page should offer it.
+// `coat_cut` is hidden for the same reason: on a coat the adult woman draws one value of it (`blazer`, Risa's school blazer, docs/risa-adult-plan.md), and any other value is her open coat.
+// `collar_cut` is hidden for the same reason: on a tunic the adult woman draws one value of it (`shirt`, Risa's school shirt, docs/risa-adult-plan.md), which then replaces her puff-sleeved blouse.
+// `skirt_cut` is hidden for the same reason: the adult woman draws one cut of it (`pleated`, Risa's uniform skirt, docs/risa-adult-plan.md) and any other value is her dirndl skirt, so the page's list of cuts would mislead.
+// `bust` is hidden because on the adult woman it is an offset from her traced bust (`adultBustScale`, body-adult-parts.ts): 0 is the traced one and below 0 is smaller, which the page's 0 to 1 range cannot say.
 export const BODY_HIDDEN_EXTRA: Readonly<Record<string, readonly string[]>> = {
-  adult_female: ["hair_knot", "hair_tail", "waist_shift", "mouth_width", "eye_size", "iris_size", "eye_tilt", "grip_style"],
+  adult_female: ["hair_knot", "hair_tail", "waist_shift", "mouth_width", "eye_size", "iris_size", "eye_tilt", "grip_style", "hairstyle", "bust", "skirt_cut", "collar_cut", "coat_cut"],
 };
 export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
   adult_female: sorted([
@@ -500,20 +507,16 @@ export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
     "belt_keeper_pair",
     "belt_reach",
     "brow_length",
-    "bust",
     "chest",
     "chin_shadow",
     "coat_button_color",
-    "coat_cut",
     "coat_sleeves",
-    "collar_cut",
     "eye_corner",
     "eye_gap",
     "eye_width",
     "face_age",
     "hair_length",
     "hair_tip_color",
-    "hairstyle",
     "hakama_length_chibi",
     "hand_style",
     "hip_pocket_color",
@@ -528,7 +531,6 @@ export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
     "neckline_trim",
     "nose_dot",
     "scar_side",
-    "skirt_cut",
     "skirt_length",
     "skirt_length_chibi",
     "sleeve_cut",

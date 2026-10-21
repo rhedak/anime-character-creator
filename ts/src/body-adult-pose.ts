@@ -43,9 +43,11 @@ export const RAISED_SHOULDER_D = 0.4;
 
 /**
  * Whether a garment that would stay on the hanging arm is worn: a coat or a robe. Their sleeves are cut for the hanging arm, so until they follow a raised one the arms stay down under
- * them, as the companion treats a gesture with no pictures (it does nothing). The blouse's sleeves do follow a raised arm (`adultBlouse` splits them from the bodice along the seam).
+
+ * them, as the companion treats a gesture with no pictures (it does nothing). The blouse's sleeves do follow a raised arm (`adultBlouse` splits them from the bodice along the seam), and so do the school shirt's
+ * and blazer's (`adultPosedSleeve` in body-adult-pose-arm.ts: the posed arm's own silhouette, grown), so the blazer is not one of the coats.
  */
-export const armsUnderSleeves = (p: CharacterParams): boolean => p.outfit.coat_color !== null || p.outfit.robe_color !== null;
+export const armsUnderSleeves = (p: CharacterParams): boolean => (p.outfit.coat_color !== null && p.outfit.coat_cut !== "blazer") || p.outfit.robe_color !== null;
 
 /** The raised arms, left then right. None when both hang (the default: her drawing is then exactly what it was) or a sleeve is in the way. */
 export function adultArmPoses(p: CharacterParams): ArmPose[] {

@@ -36,7 +36,8 @@ import { FINISHES } from "../src/character.ts";
 import { HAIRSTYLES } from "../src/core-head.ts";
 import { ADULT_FACE_AGE, FIELDS, characterParams, faceStyle, outfit, replace } from "../src/model.ts";
 import type { CharacterParams, FaceStyle, Outfit } from "../src/params.ts";
-import { NEUTRAL_BASES, PRESETS } from "../src/presets.ts";
+import { NEUTRAL_BASES, PRESETS, RISA_TALL_SLENDER } from "../src/presets.ts";
+import { ADULT_BODY_TYPES } from "../src/body-adult.ts";
 import { PyInt } from "../src/pyjson.ts";
 import { renderCharacter } from "../src/render.ts";
 import { BUILDS, buildSkeletonWith } from "../src/skeleton.ts";
@@ -270,7 +271,8 @@ test("the_bust_slider_covers_every_preset_s_value", () => {
   // `bust` is offered as a plain range beside the belt line, and the cast's own values sit inside it.
   const bust = obj(cat().bust);
   assert.ok(bust.field === "bust" && bust.min === 0.0 && bust.max === 1.0);
-  for (const p of Object.values(PRESETS)) assert.ok((bust.min as number) <= p.bust && p.bust <= (bust.max as number));
+  // the adult woman's `bust` is an offset from her traced bust (hidden in the page), not an amount from nothing, so her presets are not held to the slider's range
+  for (const p of Object.values(PRESETS)) if (!Object.hasOwn(ADULT_BODY_TYPES, p.body as string)) assert.ok((bust.min as number) <= p.bust && p.bust <= (bust.max as number));
 });
 
 test("the_chest_slider_covers_every_preset_s_value", () => {
@@ -310,7 +312,7 @@ test("the_finish_controls_are_real_fields_with_a_label_for_every_finish", () => 
 });
 
 test("a_soft_character_survives_a_link_and_renders", () => {
-  const p = replace(PRESETS.risa as CharacterParams, { finish: "soft", highlight_strength: 0.4 });
+  const p = replace(RISA_TALL_SLENDER, { finish: "soft", highlight_strength: 0.4 });
   const back = decodeParams(encodeParams(p));
   assert.deepEqual([back.finish, back.highlight_strength], ["soft", 0.4]);
   assert.equal(renderCharacter(back), renderCharacter(p));

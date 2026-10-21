@@ -454,6 +454,8 @@ export function adultPosedSleeveHead(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.tunic_color === null) return "";
   const { cx, y, w } = place(sk);
   const ink = outlineW(strokeW(sk));
+  // The shirt's sleeve is a close one that folds with the arm, so the disc must not reach the hand, which a folded arm lays beside the shoulder: it would be painted in the shirt's colour.
+  const shirt = p.outfit.collar_cut === "shirt";
   return adultArmPoses(p)
     .map((pose) => {
       const g = armGeometry(sk, pose);
@@ -465,7 +467,7 @@ export function adultPosedSleeveHead(sk: Skeleton, p: CharacterParams): string {
       const bounds = `<clipPath id="${id}-box"><rect x="${fmt1(bx0)}" y="${fmt1(y(0.15))}" width="${fmt1(bx1 - bx0)}" height="${fmt1(y(0.75) - y(0.15))}" /></clipPath>`;
       const bands = strokeBands(sk, g);
       return (
-        `<clipPath id="${id}-clip"><use href="#${BODY_OUTLINE_ID}" /><use href="#${g.id}-fill" transform="${g.turn}" /><use href="#${g.id}-hand-edge" transform="${g.turn}" /></clipPath>` +
+        `<clipPath id="${id}-clip"><use href="#${BODY_OUTLINE_ID}" /><use href="#${g.id}-fill" transform="${g.turn}" />${shirt ? "" : `<use href="#${g.id}-hand-edge" transform="${g.turn}" />`}</clipPath>` +
         `<g clip-path="url(#${id}-clip)"><circle cx="${fmt1(g.pivot[0])}" cy="${fmt1(g.pivot[1])}" r="${fmt1(r)}" fill="${colorStr(p.outfit.tunic_color as string)}" /></g>` +
         bounds +
         `<use href="#${BODY_OUTLINE_ID}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" clip-path="url(#${id}-box)" />` +
@@ -473,6 +475,47 @@ export function adultPosedSleeveHead(sk: Skeleton, p: CharacterParams): string {
       );
     })
     .join("");
+}
+
+/**
+ * A sleeve for a raised arm: the arm's own silhouette (its fill, which bends at the elbow and ends at the wrist) grown outward by `ease` canvas units, drawn in the arm's turned frame, so it turns and
+ * folds exactly as the arm does and needs nothing of the sleeve's own. Grown by stroke: the fill is stroked in ink `2 * ease + ink` wide, then filled and stroked in the cloth `2 * ease` wide over it,
+ * which leaves a cloth sleeve one outline wide round the arm. It is clipped to end at depth `endD` (head heights, in the hanging arm's frame: 2.0 is the wrist, a shorter one leaves the cuff of the
+ * sleeve under it showing) and the end is inked across. `extra` is more drawing in that frame (a cuff's line). The arm's fill is the one `adultPosedArmSkin` defines, so it is used by id.
+ */
+export interface SleeveSpec {
+  readonly cloth: string;
+  readonly ease: number;
+  readonly endD: number;
+  readonly tag: string;
+  /** How far beside the forearm's band, in outline widths, the cut below the end line reaches: it has to clear the layer's own ease, and a layer that shows another beside its end takes less. */
+  readonly cutMargin: number;
+  /** Drawing in the hanging arm's frame, from the sleeve's outer and inner x at its end (canvas units) and the end's y: a cuff's line. */
+  readonly extra?: (outerX: number, innerX: number, yEnd: number) => string;
+}
+
+export function adultPosedSleeve(sk: Skeleton, pose: ArmPose, spec: SleeveSpec): string {
+  const g = armGeometry(sk, pose);
+  const { cx, y, w } = place(sk);
+  const ink = outlineW(strokeW(sk));
+  const hs = ink / 2;
+  const yEnd = y(spec.endD);
+  const clipId = `${g.id}-sleeve-${spec.tag}`;
+  const xo = cx + pose.sign * (w(spec.endD, at(OUTER, spec.endD)) - hs) + pose.sign * spec.ease;
+  const xi = cx + pose.sign * (w(spec.endD, at(INNER, spec.endD)) + hs) - pose.sign * spec.ease;
+  // The cut is the forearm's own: everything above the end line, and below it everything but the forearm's band. (A plain cut at the end line, in the hanging frame, also sliced the upper arm of a bent
+  // arm, which this frame lays back along the forearm and which reaches below the wrist line; it lies well to the side of the band, so the band is all the cut has to take out.)
+  // The band is the forearm's own width at the end line and the same margin for every layer (the shirt's and the blazer's eases differ), so the layers stack the same way beside the band.
+  const skinO = cx + pose.sign * (w(spec.endD, at(OUTER, spec.endD)) - hs);
+  const skinI = cx + pose.sign * (w(spec.endD, at(INNER, spec.endD)) + hs);
+  const [bx0, bx1] = [Math.min(skinO, skinI) - spec.cutMargin * ink, Math.max(skinO, skinI) + spec.cutMargin * ink];
+  const clip = `<clipPath id="${clipId}"><rect x="-1000" y="-1000" width="3000" height="${fmt1(yEnd + 1000)}" /><rect x="-1000" y="${fmt1(yEnd)}" width="${fmt1(bx0 + 1000)}" height="3000" /><rect x="${fmt1(bx1)}" y="${fmt1(yEnd)}" width="3000" height="3000" /></clipPath>`;
+  const end = `<path d="M ${fmt1(xo)} ${fmt1(yEnd)} L ${fmt1(xi)} ${fmt1(yEnd)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linecap="round" />`;
+  return (
+    `<g transform="${g.turn}">${clip}<g clip-path="url(#${clipId})">` +
+    `<use href="#${g.id}-fill" fill="${OUTLINE}" stroke="${OUTLINE}" stroke-width="${fmt2(2 * spec.ease + ink)}" stroke-linejoin="round" />` +
+    `<use href="#${g.id}-fill" fill="${spec.cloth}" stroke="${spec.cloth}" stroke-width="${fmt2(2 * spec.ease)}" stroke-linejoin="round" /></g>${end}${spec.extra === undefined ? "" : spec.extra(xo, xi, yEnd)}</g>`
+  );
 }
 
 /** The adult torso layer with the raised arms' skin after it, and the blouse's sleeve head over the shoulder. */

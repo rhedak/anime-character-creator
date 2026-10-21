@@ -26,3 +26,16 @@ const swept = makeHairstyle(
 );
 
 HAIRSTYLES.swept_ponytail = swept;
+
+/**
+ * Risa's cut, long and straight with a blunt fringe, hanging behind the shoulders and the arms (docs/risa-adult-plan.md). Like the swept ponytail it is drawn by the adult head
+ * parts, from its own traced data (body-adult-cuts.ts, body-adult-risa-data.ts); the shared hair code only ever sees the dome, which the shared parts that measure the head
+ * (the clip, the brows over the hair) read.
+ */
+HAIRSTYLES.long_straight_fringed = makeHairstyle(
+  () => ADULT_HAIR_DOME,
+  () => nothing,
+  (): Chain[] => [[domeStart, domeSegments.slice(0, 0)]],
+  () => [],
+  { tip_range: [0.25, 0.7] },
+);
