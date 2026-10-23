@@ -175,7 +175,8 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
   A new field gets a neutral default in `params.ts` and, if the web tool should offer it, an entry in `catalogue*.ts`.
   `ts/README.md`, "How a part is added", has the steps.
 - After changing shape geometry, actually render it (`node ts/bin/render.ts --out out/tmp --preset satoko`, then a PNG
-  with `tools/.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png`) and view it before calling it done, coordinates
+  with `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib tools/.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png`,
+  the variable because dlopen on macOS does not look in Homebrew's prefix for cairo) and view it before calling it done, coordinates
   that look right in the math are routinely wrong visually; this is an iterate-by-looking project.
 - The `gap-analysis` skill is retired with the realistic build it measured (moved to `harness/gap_analysis_skill/` as a
   record on 2026-09-26; its standing result is `docs/gap-analysis.md`). Chibi work and new characters are judged by eye

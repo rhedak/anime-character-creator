@@ -206,6 +206,7 @@ writes the web tool's catalogue JSON.
 For a PNG, rasterise the SVG with the same call the Python CLI makes:
 
 ```bash
+export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib         # macOS: lets cairosvg find Homebrew's cairo
 tools/.venv/bin/python harness/svg2png.py out/satoko.svg out/satoko.png    # scale 2, as the CLI did
 ```
 

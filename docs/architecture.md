@@ -240,6 +240,7 @@ repo came from looking rather than from reasoning.
 
 ```bash
 node ts/bin/render.ts --out out/tmp --preset satoko   # then view out/tmp.svg, or make a PNG:
+export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib   # macOS: lets cairosvg find Homebrew's cairo
 tools/.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png
 ./refresh-ref-out.sh                                  # same change as any shape edit
 (cd ts && npm run typecheck && npm test)              # types, then the oracle and the rules
