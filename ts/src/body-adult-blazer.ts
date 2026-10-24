@@ -15,17 +15,12 @@ import {
   BLAZER_BUTTONHOLE,
   BLAZER_BUTTON_DEPTHS,
   BLAZER_BUTTON_R,
-  BLAZER_COLLAR,
   BLAZER_DART,
   BLAZER_FLAP,
   BLAZER_FLAP_LINE,
   BLAZER_FRONT,
   BLAZER_HEM,
-  BLAZER_LAPEL_FOLD,
-  BLAZER_LAPEL_TOP,
-  BLAZER_NOTCH,
   BLAZER_V_EDGE,
-  BLAZER_WELT,
 } from "./body-adult-blazer-data.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
 import { adultArmPoses, raisedSides } from "./body-adult-pose.ts";
@@ -90,7 +85,23 @@ function geometry(sk: Skeleton) {
  */
 const V_TOP: Pt = [0.172, 0.11];
 const vEdgePts: readonly Pt[] = [V_TOP, ...BLAZER_V_EDGE.slice(1)];
-const collarPts: readonly Pt[] = [V_TOP, ...BLAZER_COLLAR.slice(1)];
+
+/**
+ * The collar and the lapel, the viewer's right, in head heights from the centre line. Read off `01-school-uniform` registered by the irises (a 3x gridded zoom with the navy's range
+ * stretched), not the flat blazer of `05` the rest of the blazer is traced from: laid flat, Grok drew the lapels about three times as wide as worn (at 0.5 H below the chin the flat
+ * blazer's lapel ran from 0.11 to 0.39 H, the worn one's from 0.07 to 0.15), its collar out to 0.43 H, nearly the shoulder, and that read as an oversized jacket (the owner,
+ * 2026-10-24). Worn, the notch sits close to the neck and the lapel is long and narrow, its tip low. The reads are scaled by 1.06 across and 1.03 down, the uniform image's drift
+ * against the bikini image this body matches (docs/risa-polish-plan.md, decision 1), and the fold ends on the V's point.
+ */
+const COLLAR: readonly Pt[] = [V_TOP, [0.215, 0.19], [0.235, 0.285]];
+const NOTCH: readonly Pt[] = [[0.235, 0.285], [0.19, 0.305]];
+const LAPEL_TOP: readonly Pt[] = [[0.19, 0.305], [0.245, 0.395], [0.3, 0.485]];
+/**
+ * The breast welt pocket, the viewer's right only, in head heights from the centre line: read off `01` as the lapel is (0.22 to 0.37 H across, 0.55 to 0.59 H down, scaled the same). The
+ * flat blazer's, a fraction of the half-width, reached past the armhole seam once the seam came in beside the bust (2026-10-24).
+ */
+const WELT: readonly Pt[] = [[0.235, 0.567], [0.395, 0.561], [0.398, 0.611], [0.235, 0.617]];
+const LAPEL_FOLD: readonly Pt[] = [[0.3, 0.485], [0.225, 0.585], [0.15, 0.684], [0.076, 0.782], [0.0022, 0.8791]];
 
 /** One front panel's closed outline: the V's top, over the shoulder, down the sleeve, up its inner edge, down the torso's side, along the hem, up the front edge and the V's edge. */
 function panel(sk: Skeleton, s: number): string {
@@ -126,20 +137,21 @@ function line(sk: Skeleton, s: number, pts: readonly Pt[], style: string, wide =
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
 }
 
-function polygon(sk: Skeleton, s: number, pts: readonly Pt[], style: string): string {
+function polygon(sk: Skeleton, s: number, pts: readonly Pt[], style: string, wide = true): string {
   const g = geometry(sk);
-  const q = pts.map(([v, d]): Pt => g.P(s, v * halfWidth(d), d));
+  const q = pts.map(([v, d]): Pt => g.P(s, wide ? v * halfWidth(d) : v, d));
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])} `).join("")}Z" ${style} />`;
 }
 
 /**
  * The sleeve's seam: a smooth curve from the shoulder's end down to the armpit, a little inside the sleeve's outer edge and ending on its inner edge. (The body's own underarm crease, which the shirt follows, is
  * wavy; on the blazer it read as bubbles.) It is where the front panel ends and the sleeve begins, so it is inked, at the lapel lines' weight: in a dark tone of the navy it did not read, and the front panel
- * seemed to run on over the arm (the owner, 2026-10-24). Its middle is where the owner drew it against `01`, the panel's edge running in toward the armpit (0.53 at 0.6 H, 0.475 at 0.9 H; it was 0.56 and 0.52).
+ * seemed to run on over the arm (the owner, 2026-10-24). In `01` it runs close beside the bust, so it comes in to 0.425 H from 0.7 to 0.9 H, just outside the bust's widest point (0.41 H): the sleeve is
+ * then about 0.18 H wide at the bust, as in `01` (it was 0.56 and 0.52 at 0.6 and 0.9 H, which left the front panel a fifth wider than the reference's).
  */
 function armhole(sk: Skeleton, s: number, style: string): string {
   const g = geometry(sk);
-  const knots: [number, number][] = [[0.3, 0.6], [0.6, 0.53], [0.9, 0.475], [1.1, at(ARM_INNER, ARMPIT) - EASE.inner]];
+  const knots: [number, number][] = [[0.3, 0.6], [0.48, 0.47], [0.7, 0.425], [0.9, 0.425], [1.1, at(ARM_INNER, ARMPIT) - EASE.inner]];
   const q = knots.map(([d, v]) => g.P(s, v, d));
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
 }
@@ -155,12 +167,12 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
   const R = 1;
   const panels = [L, R].map((s) => `<path d="${panel(sk, s)}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />`).join("");
   // the lapel: the collar's outer edge, the notch, the lapel's top edge and its fold, each side
-  const lapel = [L, R].map((s) => line(sk, s, collarPts, fine) + line(sk, s, BLAZER_NOTCH, fine) + line(sk, s, BLAZER_LAPEL_TOP, fine) + line(sk, s, BLAZER_LAPEL_FOLD, fine)).join("");
+  const lapel = [L, R].map((s) => line(sk, s, COLLAR, fine) + line(sk, s, NOTCH, fine) + line(sk, s, LAPEL_TOP, fine) + line(sk, s, LAPEL_FOLD, fine)).join("");
   const raised = adultArmPoses(p);
   const raisedSigns = raised.map((r) => r.sign);
   const details =
     [L, R].map((s) => polygon(sk, s, BLAZER_FLAP, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`) + line(sk, s, BLAZER_FLAP_LINE, seam, true) + line(sk, s, BLAZER_DART, seam, true) + (raisedSigns.includes(s) ? "" : armhole(sk, s, fine))).join("") +
-    polygon(sk, R, BLAZER_WELT, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`);
+    polygon(sk, R, WELT, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`, false);
   // the buttons: gold, a ring in a dark tone of it and a pale highlight, each with its buttonhole's slit to the left
   const gold = p.outfit.coat_button_color === null ? "#ba975e" : colorStr(p.outfit.coat_button_color);
   const r = BLAZER_BUTTON_R * 2 * sk.head_r;

@@ -186,6 +186,15 @@ registered by the irises, region by region (`out/risa_adult/uniform-{blazer,shir
   against 395, 406, 415, 424, 446), the gate passes as before (IoU 0.941, worst +3.0%, the torso at 1.0 H), and the raised, held-out and bent arms draw as before. Not changed: the
   bust, which measures as the reference's (283 px wide against 277, its lower edge at 761 against 762); that it reads larger is the flat colour (the reference shades the cups and the
   blazer's front toward the sides), which is stage 8's, and the front locks over the shoulders (stage 4). A smaller `bust` would be a choice by eye, the owner's.
+* **The bust under the blazer, and the lapels** (owner, 2026-10-24, from a one-off overlay of the bust contour over the uniform and of `00`'s bikini top over `01`). The blazer sits
+  snugly (its cloth 3 to 4 px outside the body's ink edge on every row from the shoulder to the waist, about the ease), the lapels meet just above the bust's lower edge and the first
+  button is just below it, as in `01`. Two faults, both of the flat trace of `05`: **the armhole seam ran about 23 px outside the bust** at its height (the front panel about a fifth
+  wider than `01`'s), and **the lapels were about three times too wide** (at 0.5 H the flat lapel ran from 0.11 to 0.39 H, `01`'s from 0.07 to 0.15; its collar reached 0.43 H, the
+  worn notch sits at about 0.25 H). The seam now comes in to 0.425 H from 0.7 to 0.9 H, just outside the bust's widest point (0.41 H), so the sleeve is about 0.18 H wide at the bust as
+  in `01`. The collar, the notch, the lapel's top edge and its fold are read off `01` (a 3x gridded zoom with the navy's range stretched; notch at 0.19, 0.30, the lapel's tip at
+  0.30, 0.485, the fold straight down to the V's point; scaled 1.06 across and 1.03 down for the uniform image's drift) and the breast welt pocket with them (0.235 to 0.40 H across,
+  0.56 to 0.62 H down), since the flat blazer's, placed by fractions of the half-width, crossed the seam once it came in. The flat trace's lapel and welt stay in
+  `body-adult-blazer-data.ts` as its record, unused. The raised arm's cut has its own knots and is unchanged.
 * **The shirt** follows the narrower ribcage and waist; its tucked hem meets the skirt's waistband as before.
 * **The skirt** is narrower and higher, and now sits between the hands much as in `01` and `02` (the hands reach its sides); its traced hem and folds are unchanged in shape.
 * **The cuffs, the socks and the loafers** are as before: the cuffs show below the blazer's sleeves, and below the knee the legs are Franzi's (decision 3), so the socks' tops
