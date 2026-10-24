@@ -11,7 +11,7 @@ import { PyError } from "../src/pynum.ts";
 import { FRANZI, PRESETS, RISA } from "../src/presets.ts";
 import { renderCharacter } from "../src/render.ts";
 
-const NEUTRAL: AdultBuild = { shorten: 0, shorten_from: 0.95, shorten_to: 1.26, arm_shorten: 0, body: [[0, 1]], gap: [[0, 1]], leg_gap: [[0, 1]], arm: [[0, 1]] };
+const NEUTRAL: AdultBuild = { shorten: 0, shorten_from: 0.95, shorten_to: 1.26, arm_shorten: 0, body: [[0, 1]], leg_gap: [[0, 1]], arm_in: [[0, 0]], arm_out: [[0, 0]] };
 const GRID_D = Array.from({ length: 49 }, (_, i) => 0.1 * i); // 0 to 4.8 H, past the feet
 const GRID_V = Array.from({ length: 121 }, (_, i) => 0.01 * i); // 0 to 1.2 H, past the hands
 
