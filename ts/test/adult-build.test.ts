@@ -3,7 +3,8 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ADULT_BUILDS, type AdultBuild, warpDepth, warpHalf } from "../src/body-adult-build.ts";
+import { ADULT_BUILDS, type AdultBuild, spacedDepths, warpDepth, warpHalf } from "../src/body-adult-build.ts";
+import { BLAZER_BUTTON_DEPTHS } from "../src/body-adult-blazer-data.ts";
 import { place } from "../src/body-adult-parts.ts";
 import { skeletonFor } from "../src/body.ts";
 import { characterParams, replace } from "../src/model.ts";
@@ -72,4 +73,16 @@ test("Risa is on the slender build: a shorter torso, narrower thighs, the hands 
   // a thigh is narrower (its outer edge in, about its inner edge), the ankle is the traced one
   assert.ok(slender.w(2.7, 0.537) < traced.w(2.7, 0.537) - 2);
   assert.ok(Math.abs(slender.w(4.2, 0.367) - traced.w(4.2, 0.367)) < 1e-9);
+});
+
+test("a row of buttons keeps its spacing under a build: the warped gaps in the traced proportions, and nothing moved without a build", () => {
+  assert.equal(spacedDepths(undefined, BLAZER_BUTTON_DEPTHS), BLAZER_BUTTON_DEPTHS);
+  const b = ADULT_BUILDS["slender"] as AdultBuild;
+  const ws = spacedDepths(b, BLAZER_BUTTON_DEPTHS).map((d) => warpDepth(b, d));
+  const ds = BLAZER_BUTTON_DEPTHS;
+  const k = ((ws[2] as number) - (ws[0] as number)) / ((ds[2] as number) - (ds[0] as number));
+  assert.ok(Math.abs((ws[1] as number) - (ws[0] as number) - k * ((ds[1] as number) - (ds[0] as number))) < 1e-9);
+  // the warp alone would bunch them: the top gap well under the lower one, against the traced near-equal gaps
+  const raw = ds.map((d) => warpDepth(b, d));
+  assert.ok((raw[1] as number) - (raw[0] as number) < 0.8 * ((raw[2] as number) - (raw[1] as number)));
 });

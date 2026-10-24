@@ -23,6 +23,8 @@ export const RISA_BIKINI = characterParams({
   hairstyle: "long_straight_fringed",
   // A bust smaller than the traced one (Franzi's): on the adult woman `bust` is an offset from it, and -0.18 puts the cups at the reference's width and lower edge (harness/risa_adult/bust_metrics.py).
   bust: -0.18,
+  // her build, as the preset's (docs/risa-polish-plan.md, stage 2); `{"body_build":null}` draws the traced body for a comparison
+  body_build: "slender",
   hair_length: 0.5,
   outfit: outfit({ tunic_color: null, skirt_color: null, boot_color: null, underwear_top: true, underwear_color: "#f5ebea", hair_clip_color: "#d2a368", hair_clip: "bracket" }),
   face: faceStyle({ eye_openness: 0.85, blush: 1.12 }),

@@ -48,7 +48,8 @@ export const ADULT_BUILDS: Readonly<Record<string, AdultBuild>> = {
     body: [[0.9, 1.0], [1.0, 0.85], [1.26, 0.86], [1.5, 0.9], [2.2, 0.9], [2.3, 0.89], [2.7, 0.84], [3.0, 0.8], [3.5, 1.0]],
     leg_gap: [[2.3, 1.0], [2.5, 1.3], [2.7, 1.4], [2.9, 1.5], [3.0, 1.6], [3.5, 1.0]],
     arm_in: [[0.85, 0.0], [1.2, -0.05], [2.0, -0.055], [2.6, -0.06]],
-    arm_out: [[0.3, -0.038], [0.9, -0.048], [1.25, -0.068], [2.0, -0.075], [2.6, -0.08]],
+    // the shoulder's outer edge in by more at the deltoid (0.55 H) than at its top, so the upper body stops widening where the reference's does, above the bust
+    arm_out: [[0.3, -0.038], [0.55, -0.062], [0.9, -0.06], [1.25, -0.068], [2.0, -0.075], [2.6, -0.08]],
   },
 };
 
@@ -137,4 +138,30 @@ export function warpHalf(b: AdultBuild, d: number, v: number): number {
     }
   }
   return v < 0 ? -r : r;
+}
+
+/**
+ * The traced depths for a row of details down the front (buttons), so that under a build they keep their spacing: the first and the last land where the warp puts them, and
+ * those between keep their places in proportion. The warp alone would close up the ones in the rows it shortens and leave the rest, so a row of buttons would bunch at the top.
+ * Without a build the depths are returned as they are. The details sit on the torso, so the torso's shortening is the one inverted.
+ */
+export function spacedDepths(b: AdultBuild | undefined, ds: readonly number[]): readonly number[] {
+  if (b === undefined || ds.length < 3) return ds;
+  const d0 = ds[0] as number;
+  const dn = ds[ds.length - 1] as number;
+  const w0 = warpDepth(b, d0);
+  const wn = warpDepth(b, dn);
+  return ds.map((d, i) => {
+    if (i === 0 || i === ds.length - 1) return d;
+    const want = w0 + ((d - d0) * (wn - w0)) / (dn - d0);
+    // warpDepth only rises with d, so the traced depth that lands on `want` is found by halving
+    let lo = d0;
+    let hi = dn;
+    for (let k = 0; k < 60; k++) {
+      const mid = (lo + hi) / 2;
+      if (warpDepth(b, mid) < want) lo = mid;
+      else hi = mid;
+    }
+    return (lo + hi) / 2;
+  });
 }

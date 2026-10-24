@@ -18,6 +18,7 @@ import { adultPosedSleeve } from "./body-adult-pose-arm.ts";
 import { shade } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
+import { spacedDepths } from "./body-adult-build.ts";
 import type { Skeleton } from "./skeleton.ts";
 
 const SIDE: Knots = [...TORSO_SIDE, ...LEG_OUTER.filter(([d]) => d <= FOOT_D_CUT)];
@@ -215,7 +216,9 @@ export function adultShirt(sk: Skeleton, p: CharacterParams): string {
     const rr = r * 2 * sk.head_r;
     return `<circle cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" r="${fmt2(rr)}" ${soft} /><circle cx="${fmt1(c[0])}" cy="${fmt1(c[1])}" r="${fmt2(rr * 0.4)}" fill="${shade(cloth, 0.85, 1.0)}" />`;
   };
-  const buttons = SHIRT_BUTTONS.map(([v, dd, r]) => button(v, dd, r)).join("");
+  // under a build the buttons keep their spacing (spacedDepths): the warp alone would close up the ones in the rows it shortens
+  const buttonDs = spacedDepths(sk.adult_build, SHIRT_BUTTONS.map(([, dd]) => dd));
+  const buttons = SHIRT_BUTTONS.map(([v, , r], i) => button(v, buttonDs[i] as number, r)).join("");
   const raised = adultArmPoses(p);
   const raisedSigns = raised.map((r) => r.sign);
   const cuffs = [-1, 1].filter((s) => !raisedSigns.includes(s)).map((s) => cuffLine(sk, s, soft, E)).join("");

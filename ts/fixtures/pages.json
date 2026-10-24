@@ -39,7 +39,7 @@
     "--no-metadata"
    ],
    "local_faces": false,
-   "sha256": "887a1ed032681bfdd2b23a71793c9533cd049b5147468273553fdc4f2329839f",
+   "sha256": "fd8ca81fdd582009fddbc00a8312f66639ddb02f245e820de572d120f75eec35",
    "bytes": 355701
   },
   {
@@ -182,7 +182,7 @@
     "--no-metadata"
    ],
    "local_faces": false,
-   "sha256": "54795212a588f4b67ff58a6e42c09e98ad935caf658aaea7b34c637e9868d10a",
+   "sha256": "e6af41249266230309bb7dd5658430d690b3f49cbc36fa9f85a4030dc2656a3b",
    "bytes": 353534
   },
   {
@@ -229,7 +229,7 @@
     "3"
    ],
    "local_faces": false,
-   "sha256": "dfed0989fb972ba26df43ca910d6bff4adc47b25faef8e0d72a617ae651d16d4",
+   "sha256": "48f7aff4aeed2d122c2c688b08379b657735f1e6f2072d6b73320223c08f306c",
    "bytes": 556257
   },
   {

@@ -161,6 +161,40 @@ silhouette and hem (`body-adult-skirt-pleated-data.ts`, through `registration.py
 half-width, so they follow), the socks and the loafers. `blazer_outline_check.py` against `01`; the width the blazer should reach is the new body's plus its ease, not the
 drifted `01`'s. Then the poses.
 
+**Done 2026-10-24.** `harness/risa_adult/uniform_check.py` draws the preset with and without the blazer, on the traced body and on the slender build, beside `01` and `02`
+registered by the irises, region by region (`out/risa_adult/uniform-{blazer,shirt}-{collar,torso,skirt,cuffs,legs}.png`), and counts the skin a garment should cover.
+
+* **Coverage:** no skin shows under the garments. In the torso's middle none on either body; across the whole width the slender build shows about 700 px more (1,831 against
+  1,134), all in the rows 1.95 to 2.05 H and at least 0.6 H from the centre line: the wrists below the cuffs, which sit higher with the arm's own shortening.
+* **The collar, the ribbon and the shirt's top** are above the rows the build moves (0.95 H) and are unchanged.
+* **The blazer** follows the body: narrower, fitted at the waist, its hem higher, the pockets and darts in place (they are fractions of the half-width). **The buttons were the one
+  fault:** at traced depths 1.00, 1.23 and 1.48 H they straddle the rows the build closes up, so the gaps went from 0.23 and 0.25 H to 0.16 and 0.24 H (the top two bunched). The
+  shirt's five buttons wobbled the same way. `spacedDepths` (`body-adult-build.ts`) now places a row of details so its first and last land where the warp puts them and those
+  between keep their traced proportions; the blazer's and the shirt's buttons use it, and without a build it returns the depths unchanged (`adult-build.test.ts` pins both).
+* **The blazer's armhole seam** (owner, 2026-10-24: the blazer read as too wide on the upper body, running on over the arms where `01` does not; the owner drew the line the front
+  panel should end on). The seam existed (`armhole`, `body-adult-blazer.ts`) but was drawn in a dark tone of the navy at half weight and did not read, so the front panel and the
+  sleeve were one block. It is now inked at the lapel lines' weight, and its middle moved in to the owner's line (traced knots 0.56 and 0.52 at 0.6 and 0.9 H, now 0.53 and
+  0.475; on the bikini grid it measured 0.535 and 0.49 H from the centre line against the drawn 0.51 and 0.464). The silhouette itself was not narrowed: against `01` it is 2.5%
+  wider at row 560, 5% at 620, 2% at 700, equal at 780 and narrower below (`blazer_outline_check.py`), and at 620 its right edge is the reference's (881 against 884) while the left
+  sticks out 24 px, because the reference's body is centred about 8 px right of her head's centre line and ours on it. In `01` the front locks of hair also cover the tops of the
+  sleeves, which stage 4 adds.
+* **The upper body widened outward above the bust** (owner, 2026-10-24, after the seam: "it reads as if the upper body stretches outward rather than inward above the bust", and the
+  breasts as larger). Measured, the blazer's outer width bulged at the deltoid: 405, 427, 423, 424 at rows 560, 620, 700, 780 against `01`'s steadily widening 395, 406, 415, 424.
+  The body had the same bulge against the canon: from 0.3 to 0.8 H the target's outer extent is 380, 400, 405, 405, ours was 379, 407, 417, 419 (within the gate's 5% row by row,
+  but widening about 60% more between the shoulder and 0.6 H, then holding). `arm_out` now takes the shoulder's outer edge in by more at the deltoid (-0.062 H at 0.55) than at
+  its top (-0.038 at 0.3): the body's outer extent is within 0.5% of the target on every row from 0.3 to 0.9 H, the blazer widens downward as `01`'s does (403, 413, 413, 418, 434
+  against 395, 406, 415, 424, 446), the gate passes as before (IoU 0.941, worst +3.0%, the torso at 1.0 H), and the raised, held-out and bent arms draw as before. Not changed: the
+  bust, which measures as the reference's (283 px wide against 277, its lower edge at 761 against 762); that it reads larger is the flat colour (the reference shades the cups and the
+  blazer's front toward the sides), which is stage 8's, and the front locks over the shoulders (stage 4). A smaller `bust` would be a choice by eye, the owner's.
+* **The shirt** follows the narrower ribcage and waist; its tucked hem meets the skirt's waistband as before.
+* **The skirt** is narrower and higher, and now sits between the hands much as in `01` and `02` (the hands reach its sides); its traced hem and folds are unchanged in shape.
+* **The cuffs, the socks and the loafers** are as before: the cuffs show below the blazer's sleeves, and below the knee the legs are Franzi's (decision 3), so the socks' tops
+  and the shoes are unchanged.
+* **The poses** were checked with the arm fix of stage 2 (`out/gap/uniform_pose_fix.png`): the blazer's posed sleeves draw as the traced ones do.
+
+The harness base `harness/risa_adult/risa.ts` now carries her build as the preset does, so the gate passes by default and `{"body_build":null}` draws the traced body. The older
+measuring scripts of `docs/risa-adult-plan.md` (`bust_metrics.py`, `body_landmarks.py` and the rest) measured the traced body; run again, they measure the slender one.
+
 ### Stage 4: the hair in front of the shoulders
 
 Front locks over the shoulders and the chest, traced from `01`'s `red-hair` layer where it covers the blazer (registered, `registration.py`), drawn as a part over the garments,

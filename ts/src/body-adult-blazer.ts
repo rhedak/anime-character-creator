@@ -34,6 +34,7 @@ import { BLAZER_SLEEVE_END, shirtSleevesOver, torsoWithoutRaisedSleeves, wearsSh
 import { shade, tint } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
+import { spacedDepths } from "./body-adult-build.ts";
 import type { Skeleton } from "./skeleton.ts";
 
 const SIDE: Knots = [...TORSO_SIDE, ...LEG_OUTER.filter(([d]) => d <= FOOT_D_CUT)];
@@ -131,10 +132,14 @@ function polygon(sk: Skeleton, s: number, pts: readonly Pt[], style: string): st
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])} `).join("")}Z" ${style} />`;
 }
 
-/** The sleeve's seam: a smooth curve from the shoulder's end down to the armpit, a little inside the sleeve's outer edge and ending on its inner edge. (The body's own underarm crease, which the shirt follows, is wavy; on the blazer it read as bubbles.) */
+/**
+ * The sleeve's seam: a smooth curve from the shoulder's end down to the armpit, a little inside the sleeve's outer edge and ending on its inner edge. (The body's own underarm crease, which the shirt follows, is
+ * wavy; on the blazer it read as bubbles.) It is where the front panel ends and the sleeve begins, so it is inked, at the lapel lines' weight: in a dark tone of the navy it did not read, and the front panel
+ * seemed to run on over the arm (the owner, 2026-10-24). Its middle is where the owner drew it against `01`, the panel's edge running in toward the armpit (0.53 at 0.6 H, 0.475 at 0.9 H; it was 0.56 and 0.52).
+ */
 function armhole(sk: Skeleton, s: number, style: string): string {
   const g = geometry(sk);
-  const knots: [number, number][] = [[0.3, 0.6], [0.6, 0.56], [0.9, 0.52], [1.1, at(ARM_INNER, ARMPIT) - EASE.inner]];
+  const knots: [number, number][] = [[0.3, 0.6], [0.6, 0.53], [0.9, 0.475], [1.1, at(ARM_INNER, ARMPIT) - EASE.inner]];
   const q = knots.map(([d, v]) => g.P(s, v, d));
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
 }
@@ -154,12 +159,13 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
   const raised = adultArmPoses(p);
   const raisedSigns = raised.map((r) => r.sign);
   const details =
-    [L, R].map((s) => polygon(sk, s, BLAZER_FLAP, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`) + line(sk, s, BLAZER_FLAP_LINE, seam, true) + line(sk, s, BLAZER_DART, seam, true) + (raisedSigns.includes(s) ? "" : armhole(sk, s, seam))).join("") +
+    [L, R].map((s) => polygon(sk, s, BLAZER_FLAP, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`) + line(sk, s, BLAZER_FLAP_LINE, seam, true) + line(sk, s, BLAZER_DART, seam, true) + (raisedSigns.includes(s) ? "" : armhole(sk, s, fine))).join("") +
     polygon(sk, R, BLAZER_WELT, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`);
   // the buttons: gold, a ring in a dark tone of it and a pale highlight, each with its buttonhole's slit to the left
   const gold = p.outfit.coat_button_color === null ? "#ba975e" : colorStr(p.outfit.coat_button_color);
   const r = BLAZER_BUTTON_R * 2 * sk.head_r;
-  const buttons = BLAZER_BUTTON_DEPTHS.map((d) => {
+  // under a build the buttons keep their spacing (spacedDepths): the warp alone would close up the top two, which lie in the rows it shortens
+  const buttons = spacedDepths(sk.adult_build, BLAZER_BUTTON_DEPTHS).map((d) => {
     const c = g.P(1, BUTTON_X, d);
     const a = g.P(1, BUTTON_X - BLAZER_BUTTON_R - BLAZER_BUTTONHOLE, d);
     const b = g.P(1, BUTTON_X - BLAZER_BUTTON_R, d);
