@@ -53,6 +53,9 @@ const ease = (t: number): number => {
   return u * u * (3 - 2 * u);
 };
 
+/** How far a posed arm's blazer sleeve stands off the arm, in canvas units (the posed sleeve is the arm's own silhouette grown by this). */
+export const blazerSleeveEase = (sk: Skeleton): number => ((EASE.outer + EASE.inner) / 2) * 2 * sk.head_r;
+
 export const wearsBlazer = (p: CharacterParams): boolean => p.outfit.coat_color !== null && p.outfit.coat_cut === "blazer";
 
 /** The blazer's half-width at a depth, in head heights: the chest's, nipped at the waist, flaring toward the hem. */
@@ -196,6 +199,21 @@ function armhole(sk: Skeleton, s: number, style: string): string {
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
 }
 
+/** The armhole a raised arm's side of the torso is cut along (`torsoWithoutRaisedSleeves`), [v, d]: wider than the drawn seam, round the sleeve's root. */
+const raisedCutKnots = (): [number, number][] => [[0.62, 0.45], [0.6, 0.6], [0.56, 0.9], [at(ARM_INNER, ARMPIT) - EASE.inner, ARMPIT]].map(([v, d]) => [v as number, d as number] as [number, number]);
+
+/**
+ * The blazer's front panels as shapes in `attrs`, cut as the drawing cuts them where an arm is raised (the clip under `id`): for a mask of what the blazer covers (the front locks' outline,
+ * body-adult-front-locks.ts). "" when it is not worn.
+ */
+export function blazerCover(sk: Skeleton, p: CharacterParams, attrs: string, id: string): string {
+  if (!wearsBlazer(p)) return "";
+  const panels = [-1, 1].map((s) => `<path d="${panel(sk, s)}" ${attrs} />`).join("");
+  const raisedSigns = adultArmPoses(p).map((r) => r.sign);
+  if (raisedSigns.length === 0) return panels;
+  return `<clipPath id="${id}"><polygon points="${torsoWithoutRaisedSleeves(sk, raisedSigns, raisedCutKnots, (dd) => halfWidth(dd))}" /></clipPath><g clip-path="url(#${id})">${panels}</g>`;
+}
+
 export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.coat_color === null) return "";
   const g = geometry(sk);
@@ -232,10 +250,9 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
   if (raised.length === 0) return torso;
   // A raised arm takes its sleeve with it: the torso is cut along the armhole (the shoulder's cap stays), and the sleeve is the posed arm's own silhouette grown by the blazer's ease, drawn after in the arm's
   // turned frame, ending above the shirt's cuff so that shows. The shirt's own sleeve is drawn before, under it.
-  const sleeveEase = ((EASE.outer + EASE.inner) / 2) * 2 * sk.head_r;
+  const sleeveEase = blazerSleeveEase(sk);
   const sleeves = raised.map((r) => adultPosedSleeve(sk, r, { cloth, ease: sleeveEase, endD: SLEEVE_END, tag: "blazer", cutMargin: 1.2 })).join("");
-  const knots = (): [number, number][] => [[0.62, 0.45], [0.6, 0.6], [0.56, 0.9], [at(ARM_INNER, ARMPIT) - EASE.inner, ARMPIT]].map(([v, d]) => [v as number, d as number] as [number, number]);
-  const cut = torsoWithoutRaisedSleeves(sk, raisedSigns, knots, (dd) => halfWidth(dd));
+  const cut = torsoWithoutRaisedSleeves(sk, raisedSigns, raisedCutKnots, (dd) => halfWidth(dd));
   return `<clipPath id="adult-blazer-torso"><polygon points="${cut}" /></clipPath><g clip-path="url(#adult-blazer-torso)">${torso}</g>${sleeves}`;
 }
 

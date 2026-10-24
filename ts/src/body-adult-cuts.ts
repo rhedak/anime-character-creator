@@ -11,6 +11,7 @@ import { ADULT_HAIR_STRANDS } from "./body-adult-head-data.ts";
 import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SKIN_EAR_L, ADULT_SKIN_EAR_R, ADULT_SKIN_FACE, ADULT_SKIN_STRIPS } from "./body-adult-outline-data.ts";
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
 import { mirrorChain, shiftChain, symmetricJaw } from "./body-adult-cut-level.ts";
+import { RISA_FRONT_LOCKS } from "./body-adult-risa-locks-data.ts";
 import { RISA_BROWS, RISA_BROW_WIDTHS, RISA_HAIR_EDGE_STRANDS, RISA_FRINGE_HAIR, RISA_FRINGE_LINES, RISA_FRINGE_LINE_WIDTHS, RISA_HAIR_SILHOUETTE, RISA_HAIR_STRANDS, RISA_SKIN_FACE } from "./body-adult-risa-data.ts";
 
 /** One ear: its skin, the shaded inner part, and the fold lines with their measured thicknesses. A cut that covers the ear has none. */
@@ -60,6 +61,17 @@ export interface AdultHeadCut {
   readonly earR: AdultEar;
   /** The soft finish's clumps, in head radii about the head's centre; none draws none. */
   readonly locks: readonly Lock[];
+  /**
+   * Locks of hair that fall in front of the shoulders onto the body and whatever is worn on it (`adultFrontLocks`, body-adult-front-locks.ts), in the body's knot space so they follow its build;
+   * none draws none (Franzi's ponytail is behind her).
+   */
+  readonly frontLocks: readonly FrontLock[];
+}
+
+/** A lock of hair in front of the shoulder: its outline down one edge to the tip and back up the other, and the strand lines inside it, each [v, d] in the body's knot space (head heights). */
+export interface FrontLock {
+  readonly outline: readonly (readonly [number, number])[];
+  readonly strands: readonly (readonly (readonly [number, number])[])[];
 }
 
 /** The soft finish's clumps on Franzi's hair, in head radii about the head's centre (hand placed on a grid over the render, as the chibi cuts' `Lock`s are): the crown's two arcs from the parting, the curtains' and the ponytail's falls. */
@@ -99,6 +111,7 @@ const SWEPT_PONYTAIL: AdultHeadCut = {
   earL: { skin: ADULT_SKIN_EAR_L, concha: ADULT_EAR_CONCHA_L, folds: ADULT_EAR_FOLDS_L, foldWidths: ADULT_EAR_FOLD_WIDTHS_L },
   earR: { skin: ADULT_SKIN_EAR_R, concha: ADULT_EAR_CONCHA_R, folds: ADULT_EAR_FOLDS_R, foldWidths: ADULT_EAR_FOLD_WIDTHS_R },
   locks: SWEPT_PONYTAIL_LOCKS,
+  frontLocks: [],
 };
 
 const NO_EAR: AdultEar = { skin: [], concha: [], folds: [], foldWidths: [] };
@@ -146,6 +159,7 @@ const LONG_STRAIGHT_FRINGED: AdultHeadCut = {
   earL: NO_EAR,
   earR: NO_EAR,
   locks: [],
+  frontLocks: RISA_FRONT_LOCKS,
 };
 
 /** The adult hairstyles and the cut each is drawn with. */

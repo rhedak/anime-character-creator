@@ -410,6 +410,20 @@ export function adultPosedArmSkin(sk: Skeleton, p: CharacterParams): string {
     .join("");
 }
 
+/**
+ * Each posed arm's silhouette, the arm grown by `grow` and the hand by `handGrow` (canvas units) to take in a sleeve's ease and the ink, in `paint`: for a mask of what a posed arm and its sleeve
+ * cover (the front locks' outline, body-adult-front-locks.ts). It refers to the arm's shapes `adultPosedArmSkin` defines in the torso's layer, so it is drawn after that. "" when no arm is posed.
+ */
+export function adultPosedArmCover(sk: Skeleton, p: CharacterParams, grow: number, handGrow: number, paint: string): string {
+  return adultArmPoses(p)
+    .map((pose) => {
+      const g = armGeometry(sk, pose);
+      const look = (k: number): string => `fill="${paint}" stroke="${paint}" stroke-width="${fmt2(2 * k)}" stroke-linejoin="round"`;
+      return `<g transform="${g.turn}"><use href="#${g.id}-fill" ${look(grow)} /><use href="#${g.id}-hand-edge" ${look(handGrow)} /></g>`;
+    })
+    .join("");
+}
+
 /** The hand's interior, turned with the arm: the open palm's lines, or the fist's cavity, finger separations and nails, clipped to the arm and the hand's outline drawn again over them. */
 export function adultPosedArmDetail(sk: Skeleton, p: CharacterParams): string {
   return adultArmPoses(p)

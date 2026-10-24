@@ -216,6 +216,34 @@ Front locks over the shoulders and the chest, traced from `01`'s `red-hair` laye
 behind the arms where they cross. Checked on the raised and folded arms, where a lock over a moving arm would read wrong (the likely answer: the locks stay on the chest and the
 arm passes in front). The bikini drawing gets the same locks where `00` shows them.
 
+**Done 2026-10-25.**
+
+* **The trace** (`harness/risa_adult/locks_trace.py`, then `locks_data.ts`): in `01` registered by the irises, the hair in front of the uniform is the `red-hair` layer's pixels inside
+  the uniform's span on their row (between the blazer's or the shirt's outermost pixels, below the neck; the blazer's own layer has no pixels where hair covers it, so a mask of the cloth
+  missed them). Two locks, one each side, from the shoulder beside the collar (0.20 and 0.22 H below the chin) down over the outer chest to a pointed tip (0.88 and 0.92 H); a thin
+  third piece from 0.96 to 1.22 H, which starts over the chest and so has no top to hang from, is left out. Each is read row by row every 0.01 H (its left and right edges, smoothed),
+  carried up from the cloth's top to 0.04 H along its edges' direction into the hair beside the neck, and given two strand lines at a third and two thirds of its width. Scaled 1.06
+  across and 1.03 down as the other `01` reads, then stored in the body's knot space (`locks_data.ts` inverts the slender build's warp by halving), so `place` puts them on whatever
+  body is built: `ts/src/body-adult-risa-locks-data.ts`, generated.
+* **The cut** carries them (`frontLocks` on `AdultHeadCut`, a `FrontLock` an outline and strands); Franzi's ponytail has none, so her drawing is byte-identical.
+* **The part** `_front_locks` (`ts/src/body-adult-front-locks.ts`) in a new slot after the arms, before the collar and the head (render.ts calls it only when the part table has it,
+  which only the adult one does, so no other body draws anything there): each lock filled in the hair's colour, its strands in the cut's strand tone and weight (`taperedStrand`), and its
+  outline inked only where the lock lies over the body or something worn on it, out to the edge of that ink, so above them the lock runs into the hair beside the neck unlined. The
+  outline's mask is white shapes: the body's outline, the blazer's panels (`blazerCover`), the shirt's body (`shirtCover`), each cut as the drawing cuts it for a raised arm, and the
+  posed arms with their sleeves (`adultPosedArmCover`, grown by the outermost sleeve's ease, `blazerSleeveEase`, `shirtSleeveEase`), each with its own ink. Seen and fixed on the way:
+  inked everywhere, the outline drew two heavy lines up through the hair to the jaw; clipped to the body's outline alone (owner, 2026-10-25), it stopped short of the blazer's
+  shoulder (which stands off the body by its ease) and of a raised arm's sleeve.
+* **cairosvg's masks** (found on the way, tested in isolation): cairosvg reads a mask by its **alpha**, a browser by its luminance, and it ignores a mask given `maskUnits="userSpaceOnUse"`
+  with an explicit region. A mask of white shapes on nothing, in its default units, reads alike in both; a black backdrop makes cairosvg let everything through. So the outline's mask is
+  white shapes only, and the locks have **no mask for posed arms**: one that hid the posed forearm and hand with black shapes on white would hide them in the companion's browser and in
+  no PNG. The locks are drawn over a posed arm's root as over a hanging arm's (so nothing changes between a hanging arm and one held out a little), and in this pose model a bent forearm
+  folds outward, the way the arm was raised, never across the locks; the waves' and the cheers' hands stay clear of them in the renders.
+* **Seen** (`out/gap/slender_uniform.png`, `slender_bikini.png`, `out/gap/lock_poses.png`, `lock_pose_zoom.png`): in the uniform the locks fall over the blazer's shoulder line and the outer
+  chest as in `01`, and the front reads narrower; in the bikini they lie along the bust's sides to the band as in `00`. The reference's locks are fuller, split into more clumps and
+  a little longer; ours are one shape with two strands each, a choice for the flat style.
+* `ts/test/adult-front-locks.test.ts` pins that only a cut with locks draws them, each outline masked, that a posed arm is in the outline's mask and the mask is white shapes only, that the
+  ids stay unique, and that the locks follow the build. Her drawing is now 389 KB (the outline's mask repeats the blazer's panels), inside the adult budget (400 KB) but close to it.
+
 ### Stage 5: line work
 
 Thinner lines in a dark tone of what they bound, for Risa: the outline, the hair's silhouette and strands. Her cut already carries its own face stroke (0.45), so per-cut line
