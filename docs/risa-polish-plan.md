@@ -118,6 +118,34 @@ and `RIB_KNOTS`), imported as module constants by five modules (`body-adult-part
 The profile is a new field (decision 2), neutral by default so Franzi draws as before; the recorded fixtures of every character take the field's default through an updater
 in `harness/ts_port/golden-updates-*/`, as the elbow fields did. Below mid-thigh the legs are Franzi's (decision 3).
 
+**Done 2026-10-24.** What was built differs from the sketch above in one way: the tables were not moved into the character. Everything on the body already goes through one
+function, `place` (`body-adult-parts.ts`), which maps a knot [v, d] (head heights) to pixels, so the build is a **warp of the knot space inside `place`**, and the five modules keep
+importing their tables as before.
+
+* **`ts/src/body-adult-build.ts`**: `AdultBuild` and `ADULT_BUILDS` (one, `slender`). Vertically, the rows from 0.95 to 1.26 H close up by `shorten` (0.08 H), so the waist, the hips
+  and the legs move up rigidly (the legs keep their lengths); the arm closes up by its own `arm_shorten` (0.045 H), so the hands do not rise with the hips. Horizontally, row by row, a
+  piecewise-linear map through the traced body's own edges at that depth (the centre line, the torso's side or, below the crotch, each leg's inner and outer edge, the arm's inner and
+  outer edge), each moved by a factor table by depth: `body` (the torso, and each leg's width about its inner edge), `gap` (between arm and torso), `leg_gap` (between the legs) and
+  `arm` (the arm's and the hand's width). Points between edges follow linearly, so a garment's ease or a traced chain keeps its place; points beyond the arm move with it.
+* **`place`'s `y` takes the point's half-width** (`y(d, v)`): a point moves with the torso up to the torso's side and with the arm from the arm's inner edge out, blended across the
+  gap. The 47 point constructions that pair `w(d, v)` with `y(d)` pass `v` (mechanically: right by construction); the clip rows and bands of the hands and the sleeves take the arm's.
+  The hand zones of `adultBodyStroke` put every corner on the hand's rows, since a corner on the torso's rows opened a seam (a white tick on each thigh's outline, seen and fixed).
+* **The field** `body_build` (after `body`, null), read by `skeletonFor`, which lays the build on the skeleton as an optional `adult_build` key, absent without one, so a skeleton
+  without a build is key for key the one the recorded calls hold. Every other body ignores the field; an unknown name is a KeyError. Not offered in the web tool.
+  `harness/ts_port/golden-updates-build/README.md` records the field's fixture update (no drawing moved), `golden-updates-risa-build/README.md` Risa's switch.
+* **`RISA`** sets `body_build: "slender"`. `ts/test/adult-build.test.ts` pins the rest: no key without a build, the chibi unchanged by the field, the KeyError, a neutral build moves
+  no knot, no build folds the outline, and Risa's torso rises more than her hands.
+
+**The gate**, with the build: **PASS**, IoU **0.939** (0.821 before), worst width **-4.8%** (the outer extent at 1.1 H, just under the armpit), landmarks waist **-0.011**, hip
+**+0.017**, crotch **-0.017** H. Every torso and leg row is within 1.1%, except the outer extent at 1.1 H and 2.1 to 2.4 H (-3 to -5%). The arms (not gated) are within 6% from
+1.1 H down, but +10 to +12% at 1.0 H, where the armpit's cap meets the arm. Measured fingertips 2.51 H in the reference, 2.55 traced, 2.47 with the torso's shortening alone, now as
+the reference's within a few px. Franzi and every other render are byte-identical (`ref-out/`, `refresh-bases.sh --check`); typecheck and 980 tests pass (7 skipped).
+
+**Seen by eye** (`out/gap/slender_bikini.png`, `slender_uniform.png`, `poses.png`): the blazer, the waist, the hips and the thighs read close to the reference; the uniform follows
+the body with no change of its own (stage 3 still checks it piece by piece); the raised and folded arms draw clean; the hands are a little narrower (the `arm` factor), their
+traced lines unchanged. Open for the owner's eye: the inner edge of the thigh bends a little above the knee, where the wider gap between the legs returns to Franzi's, and from the
+knee down the legs are Franzi's (decision 3), which reads straight against her slimmer thighs.
+
 ### Stage 3: refit the uniform on the new body
 
 The shirt's torso and sleeves and the blazer are built from the tables and should follow; what is traced is placed by landmarks and needs a check: the pleated skirt's

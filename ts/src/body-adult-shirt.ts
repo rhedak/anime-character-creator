@@ -50,7 +50,7 @@ const tableFrom = (tab: Knots, from: number, to: number): [number, number][] => 
 /** The shirt's pieces as paths and point lists, for one skeleton. */
 function geometry(sk: Skeleton, EASE: Ease) {
   const { cx, y, w } = place(sk);
-  const P = (s: number, v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+  const P = (s: number, v: number, d: number): Pt => [cx + s * w(d, v), y(d, v)];
   const outerKnots = (): [number, number][] => [
     [0.2, 0.2],
     [0.25, 0.4],
@@ -107,7 +107,7 @@ function outline(sk: Skeleton, E: Ease): string {
 /** One sleeve's own region, the outer edge down, the cuff's end, the inner edge up: for drawing the sleeve again over the skirt. */
 function sleeve(sk: Skeleton, s: number, E: Ease): string {
   const g = geometry(sk, E);
-  const o = g.outer(s).filter((q) => q[1] >= g.y(ARMPIT - 0.05));
+  const o = g.outer(s).filter((q) => q[1] >= g.y(ARMPIT - 0.05, 1.0));
   const i = g.inner(s);
   const f = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
   return `M ${f(o[0] as Pt)} ${smooth(o)} L ${f(i[i.length - 1] as Pt)} ${smooth([...i].reverse())} Z`;
@@ -272,7 +272,7 @@ export function shirtSleevesOver(sk: Skeleton, p: CharacterParams, from: number 
   const line = `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.67)}" stroke-linecap="round" stroke-linejoin="round"`;
   const hanging = [-1, 1].filter((s) => !raisedSides(p).includes(s));
   if (hanging.length === 0) return "";
-  const top = g.y(from);
+  const top = g.y(from, 1.0); // the sleeve's row, which moves with the arm under a build
   const clip = `<clipPath id="adult-shirt-sleeves-over"><rect x="0" y="${fmt1(top)}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
   const pieces = hanging.map((s) => `<path d="${sleeve(sk, s, E)}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />${cuffLine(sk, s, line, E)}`).join("");
   return `${clip}<g clip-path="url(#adult-shirt-sleeves-over)">${pieces}</g>`;

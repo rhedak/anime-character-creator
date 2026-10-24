@@ -152,6 +152,7 @@ The three tables below are unchanged by the port: the same fields, the same name
 | `outfit` | `Outfit()` | The garments, below. |
 | `face` | `FaceStyle()` | The expression, below. |
 | `body` | `"tall_chibi_long_torso"` | The body profile, from `BODY_TYPES`: `tall_chibi` (Katherina's, measured), the long torso, or `tall_slender` (Risa's, about 4.4 heads, with a narrow neck and arm and its own wrist anchors). |
+| `body_build` | `None` | The adult woman's build only (every other body ignores it): a name from `ADULT_BUILDS` (`body-adult-build.ts`), a warp of her traced outline that everything on the body follows. `"slender"` (Risa's) has a shorter torso, a narrower ribcage, hips and thighs and thinner arms, fitted to `ref/risa-adult/00-bikini.png`. None is the traced body. Not offered in the web tool. See `docs/risa-polish-plan.md`, stage 2. |
 | `frame` | `0.0` | Shoulder against hip, -1 to 1. Ignored when a skeleton is passed. |
 | `bust` | `0.0` | How much bust the figure carries, 0 to 1; 0 draws the figure as it was before the bust existed. Ignored when a skeleton is passed: build it with `buildSkeleton` (`bust`). See `docs/bust-plan.md`. |
 | `height` | `1.0` | How tall the figure stands against its head, 0.8 to 1.3 in the web tool: below the shoulder line the figure is this many times as long, two thirds of the difference in the legs. See `docs/tall-chibi-plan.md`, R4b. |

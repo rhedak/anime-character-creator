@@ -1364,10 +1364,12 @@ export const FRANZI: CharacterParams = characterParams({
  * by the adult body's parts like Franzi's, from Risa's own traced cut (`long_straight_fringed`, body-adult-cuts.ts): dark red hair with a blunt fringe held by a gold bracket clip, green eyes with fine
  * dark-brown lids. The uniform is a navy blazer with gold buttons over a white shirt with a light blue ribbon, a blue-grey pleated skirt, black knee socks and brown loafers, each traced from its own
  * reference and one flat colour. The colours are the medians of the reference's layers, except the hair, which is the owner's (`#6b1f2a`). Her bust is a little smaller than the traced one (`bust` is an
- * offset from it on this body).
+ * offset from it on this body). Her body is the `slender` build (body-adult-build.ts, `docs/risa-polish-plan.md` stage 2): a shorter torso, a narrower ribcage, hips and thighs and thinner arms than the
+ * traced body, fitted to her bikini reference, which is canon for her proportions.
  */
 export const RISA: CharacterParams = characterParams({
   body: "adult_female",
+  body_build: "slender",
   face_age: 1.0,
   bust: -0.18,
   skin_tone: "#fac4a8",

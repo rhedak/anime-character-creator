@@ -1,23 +1,19 @@
 // Harness only: Risa's body outline alone (neck to soles, the arms and hands), filled and inked in black, for the silhouette gate (harness/risa_adult/gate.py,
 // docs/risa-polish-plan.md stage 1). No hair, no face, no garment, no detail of any kind: the outline the skin is drawn with, so the gate measures the body and nothing over it.
 //
-//   node harness/risa_adult/body_outline.ts OUT.svg ['{"bust":-0.1}']     overrides are merged over risa.ts's base, as risa.ts merges them
+//   node harness/risa_adult/body_outline.ts OUT.svg ['{"bust":-0.1}']     overrides as risa.ts takes them (`_build` lays an adult build on the skeleton)
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { characterParams, faceStyle, outfit } from "../../ts/src/model.ts";
-import { skeletonFor } from "../../ts/src/body.ts";
 import { adultBodyPath, inkAttrs } from "../../ts/src/body-adult-parts.ts";
-import { RISA_BIKINI } from "./risa.ts";
+import { withOverrides } from "./risa.ts";
 
 const [out, json] = process.argv.slice(2);
 if (out === undefined) {
   process.stderr.write("usage: node harness/risa_adult/body_outline.ts OUT.svg [OVERRIDES_JSON]\n");
   process.exit(2);
 }
-const o = json === undefined ? {} : JSON.parse(json);
-const p = characterParams({ ...RISA_BIKINI, ...o, face: faceStyle({ ...RISA_BIKINI.face, ...(o.face ?? {}) }), outfit: outfit({ ...RISA_BIKINI.outfit, ...(o.outfit ?? {}) }) });
-const sk = skeletonFor(p);
+const { sk } = withOverrides(json);
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(
   out,

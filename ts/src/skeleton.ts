@@ -8,6 +8,7 @@
 // Port of skeleton.py. Field names stay snake_case so a skeleton dumped from Python loads as it is.
 
 import { BadValue, pyDiv, pyMax, pyMin } from "./pynum.ts";
+import type { AdultBuild } from "./body-adult-build.ts";
 
 export const BUILDS: Readonly<Record<string, number>> = { chibi: 2.4 };
 export const DEFAULT_BUILD = "chibi";
@@ -49,6 +50,11 @@ export interface Skeleton {
   readonly limb_taper: number;
   readonly wrist_y: number | null;
   readonly wrist_x: number | null;
+  /**
+   * The adult woman's build (body-adult-build.ts), when the character picks one; absent for the traced body and for every other body type. Optional and left out rather than
+   * `null`, so a skeleton without it is the same object, key for key, that the recorded calls hold.
+   */
+  readonly adult_build?: AdultBuild;
 }
 
 const BUST_ALONG = 0.15;

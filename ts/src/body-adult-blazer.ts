@@ -68,7 +68,7 @@ function halfWidth(d: number): number {
 
 function geometry(sk: Skeleton) {
   const { cx, y, w } = place(sk);
-  const P = (s: number, v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+  const P = (s: number, v: number, d: number): Pt => [cx + s * w(d, v), y(d, v)];
   const tableFrom = (tab: Knots, from: number, to: number): [number, number][] => tab.filter(([d]) => d >= from - 1e-9 && d <= to + 1e-9) as [number, number][];
   const outerKnots = (): [number, number][] => [
     [0.12, 0.26],
@@ -184,7 +184,7 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
 /** One sleeve as a fill (the outer edge down to the cuff, the cuff's end, the inner edge back up) and its two edges and the cuff's end as open lines, so no line is drawn across the top where it is clipped. */
 function sleeve(sk: Skeleton, s: number): { fill: string; edges: string } {
   const g = geometry(sk);
-  const o = g.outer(s).filter((q) => q[1] >= g.y(ARMPIT - 0.05));
+  const o = g.outer(s).filter((q) => q[1] >= g.y(ARMPIT - 0.05, 1.0));
   const i = g.inner(s);
   const f = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
   const edges = `M ${f(o[0] as Pt)} ${smooth(o)} L ${f(i[i.length - 1] as Pt)} ${smooth([...i].reverse())}`;
@@ -199,7 +199,7 @@ function blazerSleevesOver(sk: Skeleton, p: CharacterParams): string | null {
   const g = geometry(sk);
   const ink = outlineW(strokeW(sk));
   const cloth = colorStr(p.outfit.coat_color as string);
-  const top = g.y(ARMPIT + 0.05);
+  const top = g.y(ARMPIT + 0.05, 1.0); // the sleeve's row, which moves with the arm under a build
   const clip = `<clipPath id="adult-blazer-sleeves-over"><rect x="0" y="${fmt1(top)}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
   const pieces = hanging
     .map((s) => {

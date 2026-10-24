@@ -7,6 +7,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { characterParams, faceStyle, outfit } from "../../ts/src/model.ts";
 import { renderCharacter } from "../../ts/src/render.ts";
+import { skeletonFor } from "../../ts/src/body.ts";
+import { replace, type Skeleton } from "../../ts/src/skeleton.ts";
+import { ADULT_BUILDS, type AdultBuild } from "../../ts/src/body-adult-build.ts";
+import { PRESETS } from "../../ts/src/presets.ts";
+import type { CharacterParams } from "../../ts/src/params.ts";
 
 export const RISA_BIKINI = characterParams({
   body: "adult_female",
@@ -23,10 +28,22 @@ export const RISA_BIKINI = characterParams({
   face: faceStyle({ eye_openness: 0.85, blush: 1.12 }),
 });
 
+/**
+ * The parameters and the skeleton for a set of overrides merged over `base`. `_build` (docs/risa-polish-plan.md, stage 2) lays an adult build on the skeleton: a name of
+ * `ADULT_BUILDS`, or a whole build object, for fitting one before it has a name. `_preset` starts from a preset instead of `base` (`"risa"`: her uniform).
+ */
+export function withOverrides(json: string | undefined, base: CharacterParams = RISA_BIKINI): { p: CharacterParams; sk: Skeleton } {
+  const { _build, _preset, ...o } = json === undefined ? {} : JSON.parse(json);
+  const from = _preset === undefined ? base : (PRESETS[_preset] as CharacterParams);
+  const p = characterParams({ ...from, ...o, face: faceStyle({ ...from.face, ...(o.face ?? {}) }), outfit: outfit({ ...from.outfit, ...(o.outfit ?? {}) }) });
+  const sk = skeletonFor(p);
+  if (_build === undefined) return { p, sk };
+  return { p, sk: replace(sk, { adult_build: typeof _build === "string" ? (ADULT_BUILDS[_build] as AdultBuild) : (_build as AdultBuild) }) };
+}
+
 const [out, json] = process.argv.slice(2);
 if (import.meta.main && out !== undefined) {
-  const o = json === undefined ? {} : JSON.parse(json);
-  const p = characterParams({ ...RISA_BIKINI, ...o, face: faceStyle({ ...RISA_BIKINI.face, ...(o.face ?? {}) }), outfit: outfit({ ...RISA_BIKINI.outfit, ...(o.outfit ?? {}) }) });
+  const { p, sk } = withOverrides(json);
   mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, renderCharacter(p, null, null, false));
+  writeFileSync(out, renderCharacter(p, sk, null, false));
 }

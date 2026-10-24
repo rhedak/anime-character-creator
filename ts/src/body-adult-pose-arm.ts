@@ -166,13 +166,13 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   const sign = pose.sign;
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
   // the outer edge is the ink's edge less half a stroke toward the centre line, the inner edge half a stroke away from it, as in the body outline
-  const outer = OUTER.map(([d, v]): Pt => [cx + sign * (w(d, v) - hs), y(d)]);
+  const outer = OUTER.map(([d, v]): Pt => [cx + sign * (w(d, v) - hs), y(d, v)]);
   // the knot above the tip, which the body's shoulder line runs through: the outer edge leaves the tip in the direction that line arrives in (see `withoutLastSpan`)
   const above = SHOULDER_OUTER.filter(([d]) => d < D_TOP - 1e-6).at(-1) as readonly [number, number];
-  const outerFrom: Pt[] = [[cx + sign * (w(above[0], above[1]) - hs), y(above[0])], ...outer];
+  const outerFrom: Pt[] = [[cx + sign * (w(above[0], above[1]) - hs), y(above[0], above[1])], ...outer];
   const smoothOuter = withoutFirstSpan(smooth(outerFrom));
-  const inner = INNER.map(([d, v]): Pt => [cx + sign * (w(d, v) + hs), y(d)]);
-  const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+  const inner = INNER.map(([d, v]): Pt => [cx + sign * (w(d, v) + hs), y(d, v)]);
+  const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1], q[0])];
   const chain = pose.hand === "fist" ? HAND_FIST_OUTLINE : HAND_OPEN_OUTLINE;
   const [, segs] = chain;
   // The path runs down the outer edge, round the hand and up the inner edge on both sides, and the chain runs outer edge to inner edge, so both sides walk it forward and only `px` mirrors it.
@@ -198,11 +198,11 @@ function armGeometry(sk: Skeleton, pose: ArmPose): ArmGeometry {
   // `j` is the index of the dense point before the crossing, `x` the crossing in the hanging arm's frame; none when the edge does not cross the line (it then starts at its top).
   const torsoLine = catmull(
     [
-      [cx + sign * (w(0.2, 0.2) - hs), y(0.2)],
-      [cx + sign * (w(0.25, 0.4) - hs), y(0.25)],
-      ...SHOULDER_OUTER.filter(([d]) => d < D_TOP - 1e-6).map(([d, v]): Pt => [cx + sign * (w(d, v) - hs), y(d)]),
+      [cx + sign * (w(0.2, 0.2) - hs), y(0.2, 0.2)],
+      [cx + sign * (w(0.25, 0.4) - hs), y(0.25, 0.4)],
+      ...SHOULDER_OUTER.filter(([d]) => d < D_TOP - 1e-6).map(([d, v]): Pt => [cx + sign * (w(d, v) - hs), y(d, v)]),
       o0,
-      ...RIB_KNOTS.map(([v, d]): Pt => [cx + sign * (w(d, v) - hs), y(d)]),
+      ...RIB_KNOTS.map(([v, d]): Pt => [cx + sign * (w(d, v) - hs), y(d, v)]),
     ],
     N,
   );
@@ -366,8 +366,9 @@ function strokeBands(sk: Skeleton, g: ArmGeometry): { clips: string; strokes: (w
   const { y } = place(sk);
   const big = Math.max(sk.canvas_w, sk.canvas_h) * 2;
   const rect = (y0: number, y1: number): string => `<rect x="${fmt1(-big)}" y="${fmt1(y0)}" width="${fmt1(3 * big)}" height="${fmt1(y1 - y0)}" />`;
-  const top = y(HAND_D_CUT);
-  const end = y(HAND_D_CUT + TAPER);
+  // the hand's rows, which move with the arm under a build (1.0 is beyond the arm)
+  const top = y(HAND_D_CUT, 1.0);
+  const end = y(HAND_D_CUT + TAPER, 1.0);
   const lap = 0.4;
   let clips = "";
   for (let i = 0; i < BANDS; i++) clips += `<clipPath id="${id}-t${i}">${rect(top + ((end - top) * i) / BANDS - lap, top + ((end - top) * (i + 1)) / BANDS)}</clipPath>`;
@@ -499,7 +500,7 @@ export function adultPosedSleeve(sk: Skeleton, pose: ArmPose, spec: SleeveSpec):
   const { cx, y, w } = place(sk);
   const ink = outlineW(strokeW(sk));
   const hs = ink / 2;
-  const yEnd = y(spec.endD);
+  const yEnd = y(spec.endD, at(OUTER, spec.endD));
   const clipId = `${g.id}-sleeve-${spec.tag}`;
   const xo = cx + pose.sign * (w(spec.endD, at(OUTER, spec.endD)) - hs) + pose.sign * spec.ease;
   const xi = cx + pose.sign * (w(spec.endD, at(INNER, spec.endD)) + hs) - pose.sign * spec.ease;
