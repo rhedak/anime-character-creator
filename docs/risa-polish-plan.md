@@ -195,6 +195,12 @@ registered by the irises, region by region (`out/risa_adult/uniform-{blazer,shir
   0.30, 0.485, the fold straight down to the V's point; scaled 1.06 across and 1.03 down for the uniform image's drift) and the breast welt pocket with them (0.235 to 0.40 H across,
   0.56 to 0.62 H down), since the flat blazer's, placed by fractions of the half-width, crossed the seam once it came in. The flat trace's lapel and welt stay in
   `body-adult-blazer-data.ts` as its record, unused. The raised arm's cut has its own knots and is unchanged.
+
+  Then (owner, same day) the seam's curve: through fixed knots it ran straight down the bust's side and bowed out *below* the bust on its way in to the armpit, where in `01` it wraps the
+  bust's side. It is now the smooth outer envelope (`smoothMax`, a log-sum-exp with a 0.01 H blend) of three lines, row by row: the line down from the shoulder's end (0.562 H at 0.3 H)
+  toward the bust (0.38 H at 0.75 H), the bust's own outer edge (`adultBreastPoints`, its outermost crossing with each row) 0.012 H outside it, and the vertical down to the armpit's
+  end. Where the bust bulges out the seam follows it (it widens with a larger `bust`), and it hands over between the lines without a corner. A first try that joined the bust's edge to
+  the lines end to end left a kink at 0.68 H and a hook at 0.88 H, which the envelope removes.
 * **The shirt** follows the narrower ribcage and waist; its tucked hem meets the skirt's waistband as before.
 * **The skirt** is narrower and higher, and now sits between the hands much as in `01` and `02` (the hands reach its sides); its traced hem and folds are unchanged in shape.
 * **The cuffs, the socks and the loafers** are as before: the cuffs show below the blazer's sleeves, and below the knee the legs are Franzi's (decision 3), so the socks' tops

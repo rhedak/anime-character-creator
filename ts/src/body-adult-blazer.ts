@@ -10,7 +10,7 @@
 import { OUTLINE, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ARM_INNER, ARM_OUTER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
-import { ARM_OVER_HOOKS, at, place, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
+import { ARM_OVER_HOOKS, adultBreastPoints, at, place, smooth, type EdgePoint, type Knots, type Pt } from "./body-adult-parts.ts";
 import {
   BLAZER_BUTTONHOLE,
   BLAZER_BUTTON_DEPTHS,
@@ -143,16 +143,56 @@ function polygon(sk: Skeleton, s: number, pts: readonly Pt[], style: string, wid
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])} `).join("")}Z" ${style} />`;
 }
 
+/** How far outside the bust's outer edge the sleeve's seam runs, in head heights; how soft the seam's hand-over between the lines it follows is (`smoothMax`); where it leaves the shoulder. */
+const SEAM_GAP = 0.012;
+const SEAM_SOFT = 0.01;
+const SEAM_SHOULDER: Pt = [0.562, 0.3];
+/** The line the seam comes down on from the shoulder, [v, d] at its two ends in head heights (from the centre line, below the chin), heading in toward the bust's side. */
+const SEAM_DOWN: readonly [Pt, Pt] = [SEAM_SHOULDER, [0.38, 0.75]];
+
+/** A maximum that turns no corner: within a few `k` of each other the values blend (a log-sum-exp), apart it is the largest. */
+function smoothMax(vals: readonly number[], k: number): number {
+  const m = Math.max(...vals);
+  return m + k * Math.log(vals.reduce((t, v) => t + Math.exp((v - m) / k), 0));
+}
+
 /**
- * The sleeve's seam: a smooth curve from the shoulder's end down to the armpit, a little inside the sleeve's outer edge and ending on its inner edge. (The body's own underarm crease, which the shirt follows, is
- * wavy; on the blazer it read as bubbles.) It is where the front panel ends and the sleeve begins, so it is inked, at the lapel lines' weight: in a dark tone of the navy it did not read, and the front panel
- * seemed to run on over the arm (the owner, 2026-10-24). In `01` it runs close beside the bust, so it comes in to 0.425 H from 0.7 to 0.9 H, just outside the bust's widest point (0.41 H): the sleeve is
- * then about 0.18 H wide at the bust, as in `01` (it was 0.56 and 0.52 at 0.6 and 0.9 H, which left the front panel a fifth wider than the reference's).
+ * The sleeve's seam: where the front panel ends and the sleeve begins, from the shoulder's end down to the armpit, where it meets the sleeve's inner edge. (The body's own underarm crease, which the
+ * shirt follows, is wavy; on the blazer it read as bubbles.) It is inked, at the lapel lines' weight: in a dark tone of the navy it did not read, and the front panel seemed to run on over the arm (the
+ * owner, 2026-10-24). In `01` it wraps the bust's side, so it is the smooth outer envelope (`smoothMax`) of three lines, row by row: the line down from the shoulder's end toward the bust (`SEAM_DOWN`),
+ * the bust's own outer edge (the contour the skin and the top draw, `adultBreastPoints`) a `SEAM_GAP` outside it, and the vertical down to the armpit's end. Where the bust bulges out the seam follows
+ * it, whatever the bust; elsewhere it follows the lines, and it hands over between them without a corner. A line through fixed knots, straight down the bust's side and in to the armpit, bowed out under
+ * the bust; the bust's edge joined to the lines end to end left a kink above and a hook below (the owner, 2026-10-24). The sleeve is then about 0.18 H wide at the bust, as in `01`.
  */
 function armhole(sk: Skeleton, s: number, style: string): string {
   const g = geometry(sk);
-  const knots: [number, number][] = [[0.3, 0.6], [0.48, 0.47], [0.7, 0.425], [0.9, 0.425], [1.1, at(ARM_INNER, ARMPIT) - EASE.inner]];
-  const q = knots.map(([d, v]) => g.P(s, v, d));
+  const { cx, y } = place(sk);
+  const unit = 2 * sk.head_r;
+  // the bust's outer edge at a row: the outermost crossing of its contour with the row, in head heights from the centre line
+  const contour = (adultBreastPoints(sk, 12)[s > 0 ? 0 : 1] as EdgePoint[]).map((e) => e.pos);
+  const bustAt = (row: number): number | null => {
+    let best: number | null = null;
+    for (let i = 0; i + 1 < contour.length; i++) {
+      const a = contour[i] as Pt;
+      const b = contour[i + 1] as Pt;
+      if (a[1] === b[1] || (a[1] - row) * (b[1] - row) > 0) continue;
+      const out = (s * (a[0] + ((row - a[1]) / (b[1] - a[1])) * (b[0] - a[0]) - cx)) / unit;
+      if (best === null || out > best) best = out;
+    }
+    return best;
+  };
+  const end = g.P(s, at(ARM_INNER, ARMPIT) - EASE.inner, 1.1);
+  const endV = (s * (end[0] - cx)) / unit;
+  const [[v0, d0], [v1, d1]] = SEAM_DOWN;
+  const q: Pt[] = [];
+  for (let i = 0; d0 + 0.02 * i <= 0.94 + 1e-9; i++) {
+    const d = d0 + 0.02 * i;
+    const row = y(d);
+    const bust = bustAt(row);
+    const lines = [v0 + ((d - d0) / (d1 - d0)) * (v1 - v0), endV, ...(bust === null ? [] : [bust + SEAM_GAP])];
+    q.push([cx + s * smoothMax(lines, SEAM_SOFT) * unit, row]);
+  }
+  q.push(end);
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
 }
 
