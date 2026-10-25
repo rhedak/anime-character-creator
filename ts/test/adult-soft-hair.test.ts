@@ -18,7 +18,7 @@ const shapes = (g: string): number => (g.match(/<path /g) ?? []).length;
 const groups = (svg: string, clip: string): number => svg.split(`<g clip-path="url(#${clip})">`).length - 1;
 
 test("the flat finish draws none of Risa's clumps: the hair and the fringe have only their strands' group, the soft finish a clumps' group as well", () => {
-  const flat = draw(RISA);
+  const flat = draw(replace(RISA, { finish: "flat" }));
   const soft = draw(replace(RISA, { finish: "soft" }));
   assert.ok(!flat.includes("adult-front-lock-0"));
   for (const clip of ["adult-hair-clip", "adult-fringe-clip"]) {

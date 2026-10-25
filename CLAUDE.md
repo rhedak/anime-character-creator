@@ -116,7 +116,10 @@ consumers are kept in `local/`.
   beside painted art. It is off by default, never used by the presets, the
   covers, the sheets or `ref-out/` (`ts/test/rules-finish.test.ts` pins
   that), offered in the web tool as a "Finish" choice that starts on flat, and
-  it moves no shape. `"flat"` stays the house style and every rule above still
+  it moves no shape. **One preset is the exception (the owner, 2026-10-25):**
+  Risa is drawn soft, so her `ref-out/` renders, the cover and sheets that
+  include her, and her starting point in the web tool are soft; the test pins
+  every other preset flat (`SOFT_PRESETS` in `rules-finish.test.ts`). `"flat"` stays the house style and every rule above still
   holds for it. Gradients only, no blur: cairosvg has none. Anything further in
   the soft finish needs the owner's say, judged by blind pairs, and its record
   is `docs/soft-hair-plan.md` and `docs/soft-hair-status.md`.
@@ -202,7 +205,7 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
   part, option or character should default to nothing (a `null` field, a part that returns `""`), so every existing
   document stays byte-identical. New realism work stays behind `finish = "soft"` (flat is the house style and does
   not move), and is judged by blind pairs as `docs/soft-hair-plan.md` describes. The soft finish's consumers
-  (the presets, the covers, the sheets, `ref-out/`) are pinned flat by `ts/test/rules-*.test.ts`.
+  (the presets, the covers, the sheets, `ref-out/`) are pinned flat by `ts/test/rules-*.test.ts`, except Risa, who is drawn soft.
 - Test color parametrization by rendering at least one palette very different from the defaults, confirms `shade()`
   derivations still look right outside the default hue range, not just coincidentally right for blonde/green.
 - Branches and releases: `main` is released code and `dev` is where work happens. Commit to `dev`, and merge into

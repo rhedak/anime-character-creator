@@ -1366,12 +1366,15 @@ export const FRANZI: CharacterParams = characterParams({
  * reference and one flat colour. The colours are the medians of the reference's layers, except the hair, which is the owner's (`#6b1f2a`). Her bust is a little smaller than the traced one (`bust` is an
  * offset from it on this body). Her body is the `slender` build (body-adult-build.ts, `docs/risa-polish-plan.md` stage 2): a shorter torso, a narrower ribcage, hips and thighs and thinner arms than the
  * traced body, fitted to her bikini reference, which is canon for her proportions. Her lines are the `fine` style (character.ts, `docs/risa-polish-plan.md` stage 5): every stroke at 0.6, the
- * hair's strands with it, and her hair's outline in its strand tone, as the reference draws it.
+ * hair's strands with it, and her hair's outline in its strand tone, as the reference draws it. She is drawn in the soft finish (stages 6 and 8: the hair's clumps, the cel shadows),
+ * the one preset that is (the owner, 2026-10-25).
  */
 export const RISA: CharacterParams = characterParams({
   body: "adult_female",
   body_build: "slender",
   line_style: "fine",
+  // the soft finish, her own (the owner, 2026-10-25): her hair's clumps and sheen, the cel shadows, the graded iris; the only preset drawn soft
+  finish: "soft",
   face_age: 1.0,
   bust: -0.18,
   skin_tone: "#fac4a8",

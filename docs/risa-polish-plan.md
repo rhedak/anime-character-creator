@@ -385,3 +385,12 @@ they stay one line. Franzi's traced top is drawn as it was.
 ## Open questions for the owner
 
 None at present: the four the first draft listed are decisions 2 to 5 above.
+
+### Risa's preset drawn soft (2026-10-25)
+
+The owner: the soft finish on for Risa's preset only, in the committed references and the web tool. `RISA` sets `finish: "soft"`, the one preset that does: `ref-out/risa.*`, the cover and the
+sheets that include her (their pages in `ts/fixtures/pages.json`), and her starting point in the web tool (which loads the preset's whole state, finish included, and shows its gallery card from
+`ref-out/risa.svg`) are soft; every other preset, the neutral bases and the default stay flat. `rules-finish.test.ts` now pins every preset flat but those in `SOFT_PRESETS` (Risa), and CLAUDE.md
+says so where it states the rule. Checked in the staged web tool: Risa opens with Finish "Soft" and her cel shadows and hair clumps in the preview, Franzi with "Flat". Her soft drawing is 438 KB,
+the cover with her 441 KB.
+

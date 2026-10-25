@@ -24,7 +24,7 @@ test("Risa's cut draws its traced eye, Franzi's her measured one", () => {
 });
 
 test("the flat traced iris lays three tones: its middle band, the dark top band and the light crescent", () => {
-  const eye = eyeOf(draw(RISA), "adult-eye-l");
+  const eye = eyeOf(draw(replace(RISA, { finish: "flat" })), "adult-eye-l");
   const fills = new Set([...eye.matchAll(/<(?:ellipse|path) [^>]*fill="(#[0-9a-f]{6})"/g)].map((m) => m[1]));
   // the white, the middle band, the top band, the crescent, the pupil, the highlight, the lid (and the lower line and crease, drawn as fills)
   assert.ok(fills.size >= 7, [...fills].join(" "));

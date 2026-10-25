@@ -16,8 +16,8 @@ const CLIPS = ["adult-neck-cel", "adult-skirt-cast", "adult-skirt-cel", "adult-b
 test("the cel shadows are drawn only in the soft finish and only on a cut that asks for them", () => {
   assert.equal(adultCutOf(RISA).celShading, true);
   assert.equal(adultCutOf(FRANZI).celShading, false);
-  assert.ok(celOn(softly(RISA)) && !celOn(RISA) && !celOn(softly(FRANZI)));
-  const flat = draw(RISA);
+  assert.ok(celOn(softly(RISA)) && !celOn(replace(RISA, { finish: "flat" })) && !celOn(softly(FRANZI)));
+  const flat = draw(replace(RISA, { finish: "flat" }));
   for (const id of CLIPS) assert.ok(!flat.includes(`id="${id}"`), `flat: ${id}`);
   const soft = draw(softly(RISA));
   for (const id of CLIPS) assert.ok(soft.includes(`id="${id}"`), `soft: ${id}`);
