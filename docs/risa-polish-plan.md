@@ -306,6 +306,29 @@ inside each curtain (y 0.4 to 1.4) and the falls behind the body (y 2.1 to 4.1, 
 Per-eye lids, wings and lashes traced as the brows were (`harness/risa_adult/brows.py`), the inner corner's flick, and the iris's lower half in a second tone (flat) or graded
 (soft). The two eyes may differ in shape while their placement stays the levelled one (`body-adult-cut-level.ts`).
 
+**Done 2026-10-25.** Her eyes were Franzi's measured eye with a few settings; up close (`out/risa_adult/eyes-compare.png`) the differences were a bold black lower outline with hard corners (the
+reference's lower lid is thin, soft and broken), an iris with two tones where the reference has three (a dark top band, the colour, a large yellow-green crescent), highlights mirrored from eye to
+eye where the reference lights both from the viewer's upper left, and a shorter wing.
+
+* **The trace** (`harness/risa_adult/eye_trace.py`, then `eye_data.ts` into `ts/src/body-adult-risa-eye-data.ts`): in the eye model's frame (reference pixels about the iris centre, x outward, y
+  down, at the head's calibration). Her face is drawn straight on purpose (the owner) while the reference's head is tilted 6.3 degrees and a little turned, so each eye is levelled about its
+  iris centre, the left mirrored onto the right, and the two averaged as masks on a 0.25 px grid: one frontal eye, drawn mirrored on the straight face, its placement the levelled one. From
+  the `green-eyes-1` layer (the whole eye) and the colours under it: the lid is its dark pixels that are not green (the iris's dark top band is dark green and must not count) and not the pupil,
+  the opening the rest; the iris's centre, half width and drop; the light crescent's start (7.25 px below the centre); the pupil; the highlight, near-white and unsaturated in the iris's upper
+  part, kept in image orientation. Checked on `out/risa_adult/eye-check.png` (each eye with the mean outlines over it).
+* **The iris's tones**, measured as shifts from its middle band and given against the preset's eye colour (`#78925a`, the reference's lower half, near the crescent): the middle band at 0.705
+  of its value (so the iris's body is darker than the eye colour), the dark top band as before (`shade` 0.55, the measured 0.51), the crescent turned 0.076 toward yellow at 1.11 of its value.
+  Filled with the eye colour itself, the body first came out as light as the crescent, which then did not show. The soft finish grades through the same three.
+* **The drawing** (`tracedEye`, `body-adult-eyes.ts`, when a cut has an `eyeShape`; `AdultEyeShape` in `body-adult-cuts.ts`): the opening in the white, the iris clipped to it with its three tones
+  (the crescent an ellipse whose top is the traced start, clipped to the iris), the pupil, the rim, the highlights (frame x is the side times the image offset, so both stay at the upper left),
+  the lower line along the opening's bottom in the lid's ink at the cut's thin `lowerLine`, the crease, and the lid with its wing and lashes as one shape. Opening, gaze, size and tilt go through
+  the same frame and lowering as Franzi's eye (checked: `out/risa_adult/eyes-states.png`). The **shut eye** was Franzi's heavy black line, wider than Risa's eye: a traced eye now shuts onto its
+  own lower edge, one leaf from the wing's tip along the opening's bottom, in the lid's colour, as thin as the open lid (`out/risa_adult/eyes-closed.png`).
+* Franzi's eye is untouched (`eyeShape` null, `ref-out/franzi.*` unchanged); Risa's drawing is 383 KB (her eye has fewer parts than Franzi's). `ts/test/adult-eye-shape.test.ts` pins the cut's
+  choice, the iris's tones, the highlights' orientation and the shut eye's colour.
+
+Not done: the inner corner's flick (the reference's is a faint mark, lost in the average), and two eyes of different shapes (the owner keeps the face symmetric).
+
 ### Stage 8: cel shading, after the base is right
 
 Hard-edged shadow shapes, one tone each, under `finish = "soft"` only: on the skin (under the chin, under the bust, the knees, the inner thighs) and on the cloth (the blazer's

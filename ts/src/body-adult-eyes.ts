@@ -8,10 +8,10 @@
 
 import { OUTLINE, outlineW, soft, strokeW } from "./character.ts";
 import { LID_L } from "./body-adult-lid-data.ts";
-import { shade, tint } from "./colorutil.ts";
+import { hexToRgb01, hsvToRgb, rgb01ToHex, rgbToHsv, shade, tint } from "./colorutil.ts";
 import { DEFAULT_FACESTYLE } from "./params.ts";
 import type { CharacterParams } from "./params.ts";
-import { adultCutOf } from "./body-adult-cuts.ts";
+import { adultCutOf, type AdultEyeShape } from "./body-adult-cuts.ts";
 import { fmt1, fmt2, truthy } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
 
@@ -364,6 +364,14 @@ const CLOSED_LASH_DROP = 34;
 
 function closedEye(h: Skeleton, p: CharacterParams, side: number): string {
   const { k, at } = eyeFrame(h, p, side);
+  const cut = adultCutOf(p);
+  const shape = cut.eyeShape;
+  if (shape !== null) {
+    // a traced eye shuts onto its own lower edge: one leaf from the lid's wing tip along the opening's bottom to the inner corner, in the lid's ink and as thin as the open lid (its lashes
+    // are part of the traced wing, so no flick is added)
+    const wing = shape.lid.reduce((best, q) => (q[0] > best[0] ? q : best), shape.lid[0] as Pt);
+    return leafStroke(sampleSmooth([wing, ...shape.lower]).map(at), 8.5 * k * cut.eye.lidThickness, cut.eye.lidColor ?? OUTLINE);
+  }
   const flick = LASHES[0] as { pts: readonly Pt[]; w: number };
   return [
     leafStroke(sampleSmooth(CLOSED_LINE).map(at), 8.5 * k, OUTLINE),
@@ -401,6 +409,7 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
   const lashDrop = open === 1 ? 0 : (1 - open) * LID_TRAVEL * lidShare(-16);
   const look = Math.max(-1, Math.min(1, p.face.gaze));
   const gaze = look === 0 ? "" : `<g transform="translate(${fmt2(look * GAZE_TRAVEL * k)} 0)">`;
+  if (cut.eyeShape !== null) return tracedEye(h, p, side, id, cut.eyeShape, { k, at, isz, poly, lowered, gaze });
   const apertureD = poly(lowered(apertureOutline(cut.eye.lidThickness), true), true);
   const iris = p.eye_color;
   const ink = outlineW(strokeW(h));
@@ -445,6 +454,77 @@ function oneEye(h: Skeleton, p: CharacterParams, side: number, id: string): stri
     ...LASHES.map((l) => taperedStroke(sampleSmooth(lashDrop === 0 ? l.pts : l.pts.map(([x, y]): Pt => [x, y + lashDrop])).map(at), l.w * k * cut.eye.lashWeight, cut.eye.lidColor ?? OUTLINE)),
   ];
   return parts.join("");
+}
+
+/** `hex` turned in hue by `t.dh` (turns) and its saturation and value scaled by `t.s` and `t.v`, each held to [0, 1]. */
+function toneShift(hex: string, t: { readonly dh: number; readonly s: number; readonly v: number }): string {
+  const [r, g, b] = hexToRgb01(hex);
+  const [hh, ss, vv] = rgbToHsv(r, g, b);
+  return rgb01ToHex(hsvToRgb((((hh + t.dh) % 1) + 1) % 1, Math.min(1, ss * t.s), Math.min(1, vv * t.v)));
+}
+
+/** How tall the iris's light crescent is, as a share of the iris's half height: an ellipse whose top is at the cut's `crescentFrom`, clipped to the iris, so its upper edge curves as the reference's does. */
+const CRESCENT_RY = 0.45;
+const CRESCENT_RX = 0.8;
+
+/**
+ * A cut's own traced eye (`AdultEyeShape`, body-adult-cuts.ts) in place of Franzi's measured one: the opening filled with the white, the iris in it (its dark top band under the lid, its middle
+ * band, a little darker than the eye colour, and a light crescent in a warmer, lighter tone), the pupil, the highlights (in image orientation: the light falls from the same side on both eyes), the iris's rim, the soft lower line along the
+ * opening's bottom, the crease and the lid with its wing. Opening, gaze, size and tilt work as for Franzi's eye, through the same frame and the same lowering of the lid.
+ */
+function tracedEye(
+  h: Skeleton,
+  p: CharacterParams,
+  side: number,
+  id: string,
+  shape: AdultEyeShape,
+  f: { k: number; at: (q: Pt) => Pt; isz: number; poly: (pts: readonly Pt[], close: boolean) => string; lowered: (pts: readonly Pt[], byRow: boolean, share?: number) => readonly Pt[]; gaze: string },
+): string {
+  const { k, at, isz, poly, lowered, gaze } = f;
+  const cut = adultCutOf(p);
+  const iris = p.eye_color;
+  const ink = outlineW(strokeW(h));
+  const lidInk = cut.eye.lidColor ?? OUTLINE;
+  const apertureD = poly(lowered(shape.aperture, true), true);
+  const ic = at(shape.iris.c);
+  const [rx, ry] = [shape.iris.rx * k * isz, shape.iris.ry * k * isz];
+  const irisTop = shade(iris, 0.55);
+  const body = toneShift(iris, { dh: 0, s: 1, v: shape.body.v });
+  const crescent = toneShift(iris, shape.crescent);
+  const isSoft = soft(p);
+  const irisClip = `<clipPath id="${id}-iris"><ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(rx)}" ry="${fmt1(ry)}" /></clipPath>`;
+  // the soft finish grades the iris from the lid's shadow through its middle band to the crescent's tone; the flat one lays the three as steps
+  const gradient = isSoft
+    ? `<linearGradient id="${id}-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(iris, 0.62)}" /><stop offset="0.5" stop-color="${body}" /><stop offset="1" stop-color="${crescent}" /></linearGradient>`
+    : "";
+  const cTop = ic[1] + shape.crescentFrom * k * isz;
+  const crescentShape = isSoft
+    ? ""
+    : `<g clip-path="url(#${id}-iris)">${ellipse([ic[0], cTop + CRESCENT_RY * ry], CRESCENT_RX * rx, CRESCENT_RY * ry, crescent)}</g>`;
+  const highlights = shape.highlights.map((hl) => {
+    const c = at([side * hl.c[0] + shape.iris.c[0], hl.c[1] + shape.iris.c[1]]);
+    return ellipse(c, hl.rx * k, hl.ry * k, "#ffffff");
+  });
+  return [
+    `<clipPath id="${id}"><path d="${apertureD}" /></clipPath>`,
+    irisClip,
+    gradient,
+    `<path d="${apertureD}" fill="${cut.eye.sclera}" />`,
+    `<g clip-path="url(#${id})">`,
+    gaze,
+    ellipse(ic, rx, ry, isSoft ? `url(#${id}-grad)` : body),
+    isSoft ? "" : `<path d="M ${fmt1(ic[0] - rx)} ${fmt1(ic[1] - 0.05 * ry)} A ${fmt1(rx)} ${fmt1(ry)} 0 0 1 ${fmt1(ic[0] + rx)} ${fmt1(ic[1] - 0.05 * ry)} Z" fill="${irisTop}" />`,
+    crescentShape,
+    ellipse(at(shape.pupil.c), shape.pupil.rx * k * isz, shape.pupil.ry * k * isz, shade(iris, 0.18)),
+    `<ellipse cx="${fmt1(ic[0])}" cy="${fmt1(ic[1])}" rx="${fmt1(rx)}" ry="${fmt1(ry)}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.7)}" />`,
+    ...highlights,
+    gaze === "" ? "" : `</g>`,
+    `</g>`,
+    // the soft lower line along the opening's bottom, in the lid's ink, thin
+    varStroke(lowered(shape.lower, true).map(at), ink * 0.66 * cut.eye.lowerLine, 0.55, ink * 0.16 * cut.eye.lowerLine, lidInk),
+    leafStroke(lowered(sampleSmooth(CREASE), false, 0.75).map(at), 3.8 * k, shade(p.skin_tone, 0.42)),
+    `<path d="${poly(lowered(shape.lid, false), true)}" fill="${lidInk}" />`,
+  ].join("");
 }
 
 /** Both eyes. */

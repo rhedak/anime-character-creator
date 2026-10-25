@@ -12,6 +12,7 @@ import { ADULT_EAR_CONCHA_L, ADULT_EAR_CONCHA_R, ADULT_HAIR_SILHOUETTE, ADULT_SK
 import { ADULT_EAR_FOLDS_L, ADULT_EAR_FOLDS_R, ADULT_EAR_FOLD_WIDTHS_L, ADULT_EAR_FOLD_WIDTHS_R } from "./body-adult-ear-data.ts";
 import { mirrorChain, shiftChain, symmetricJaw } from "./body-adult-cut-level.ts";
 import { RISA_FRONT_LOCKS } from "./body-adult-risa-locks-data.ts";
+import { RISA_EYE } from "./body-adult-risa-eye-data.ts";
 import { RISA_BROWS, RISA_BROW_WIDTHS, RISA_HAIR_EDGE_STRANDS, RISA_FRINGE_HAIR, RISA_FRINGE_LINES, RISA_FRINGE_LINE_WIDTHS, RISA_HAIR_SILHOUETTE, RISA_HAIR_STRANDS, RISA_SKIN_FACE } from "./body-adult-risa-data.ts";
 
 /** One ear: its skin, the shaded inner part, and the fold lines with their measured thicknesses. A cut that covers the ear has none. */
@@ -48,6 +49,8 @@ export interface AdultHeadCut {
   readonly irisAt: Readonly<Record<number, readonly [number, number]>>;
   /** The eye's colour of the white and the weight of the soft outline round the lower half of the aperture, as a multiple of the traced eye's. */
   readonly eye: { readonly sclera: string; readonly lowerLine: number; readonly lidThickness: number; readonly lidColor: string | null; readonly lashWeight: number };
+  /** The cut's own traced eye (`AdultEyeShape`), or null for Franzi's measured eye with the settings above. */
+  readonly eyeShape: AdultEyeShape | null;
   /** The cheeks' flush, in reference pixels (the face's calibration): centre, radii and a turn in degrees, left then right; null keeps Franzi's. Risa's right eye sits 12 px higher than her left (the head is tilted), so her right cheek is higher than Franzi's. */
   readonly cheeks: readonly { readonly c: readonly [number, number]; readonly rx: number; readonly ry: number; readonly turn: number }[] | null;
   /** Where the nose and the mouth sit, as a shift in reference pixels from the traced (Franzi's) placement: a cut whose eyes sit elsewhere moves them with its eyes. [0, 0] for Franzi's. */
@@ -68,6 +71,24 @@ export interface AdultHeadCut {
    * none draws none (Franzi's ponytail is behind her).
    */
   readonly frontLocks: readonly FrontLock[];
+}
+
+/**
+ * A cut's own eye, traced in the adult eye model's frame (reference pixels about the iris centre, x outward, y down: body-adult-eyes.ts), drawn instead of Franzi's measured eye: the lid
+ * (with its wing) and the opening as polygons, the lower line along the opening's bottom, the iris, its middle band's tone, the start of its light crescent and the crescent's tone (a hue turn and saturation and
+ * value factors against the eye colour), the pupil, and the highlights in image orientation about the iris centre (the light from one side for both eyes, so they are not mirrored).
+ */
+export interface AdultEyeShape {
+  readonly lid: readonly (readonly [number, number])[];
+  readonly aperture: readonly (readonly [number, number])[];
+  readonly lower: readonly (readonly [number, number])[];
+  readonly iris: { readonly c: readonly [number, number]; readonly rx: number; readonly ry: number };
+  /** The iris's middle band, as a value factor on the eye colour (the colour is the reference's lower half, near the crescent, so the band is darker). */
+  readonly body: { readonly v: number };
+  readonly crescentFrom: number;
+  readonly crescent: { readonly dh: number; readonly s: number; readonly v: number };
+  readonly pupil: { readonly c: readonly [number, number]; readonly rx: number; readonly ry: number };
+  readonly highlights: readonly { readonly c: readonly [number, number]; readonly rx: number; readonly ry: number }[];
 }
 
 /** A lock of hair in front of the shoulder: its outline down one edge to the tip and back up the other, and the strand lines inside it, each [v, d] in the body's knot space (head heights). */
@@ -104,6 +125,7 @@ const SWEPT_PONYTAIL: AdultHeadCut = {
   clip: null,
   cheeks: null,
   eye: { sclera: "#ffffff", lowerLine: 1, lidThickness: 1, lidColor: null, lashWeight: 1 },
+  eyeShape: null,
   // Her eyes were traced at (606, 325) and (718.5, 321.5), the head tilted a little; they are level about the midline of the traced pair (662.25, 323.25), and her nose and mouth are centred on it.
   irisAt: { [-1]: [606, 323.25], 1: [718.5, 323.25] },
   featuresAt: { nose: [2.25, 0], mouth: [-4.25, 0] },
@@ -166,6 +188,8 @@ const LONG_STRAIGHT_FRINGED: AdultHeadCut = {
   // Her white is a warm light tone (the median of the reference's, (242, 228, 222)) and the line under her eye is faint.
   // Her lid is a fine dark-brown line in the reference, not Franzi's heavy black band: thinner (about half), brown, and with finer lashes.
   eye: { sclera: "#f2e4de", lowerLine: 0.35, lidThickness: 0.5, lidColor: "#2e1a14", lashWeight: 0.7 },
+  // her own eye, traced from the bikini reference with both eyes levelled and averaged (docs/risa-polish-plan.md, stage 7)
+  eyeShape: RISA_EYE,
   // Measured on the reference's green iris blobs (harness/risa_adult/eye_metrics.py); her eyes sit further right and her right eye higher than Franzi's, the head being turned and tilted a little.
   // The traced irises were (617, 319.6) and (727.4, 307.4); they are now level about the midline.
   irisAt: { [-1]: [RISA_MID - RISA_EYE_HALF, RISA_EYE_Y], 1: [RISA_MID + RISA_EYE_HALF, RISA_EYE_Y] },
