@@ -11,7 +11,7 @@ and clothes, choose a finish, and download the SVG or PNG. It runs in your brows
 
 ## What's new
 
-The latest round of work rebuilt **Risa** on the adult body and then polished her, stage by stage, against her
+**0.7.0** polishes **Risa** on the adult body, stage by stage, against her
 reference art (the record is [docs/risa-polish-plan.md](docs/risa-polish-plan.md)). Each step was measured against
 the reference before it was judged by eye, and every other character draws exactly as before.
 
