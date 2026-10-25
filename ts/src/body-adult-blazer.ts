@@ -23,9 +23,9 @@ import {
   BLAZER_V_EDGE,
 } from "./body-adult-blazer-data.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
-import { adultArmPoses, raisedSides } from "./body-adult-pose.ts";
+import { RAISED_SHOULDER_D, adultArmPoses, raisedSides } from "./body-adult-pose.ts";
 import { adultPosedSleeve } from "./body-adult-pose-arm.ts";
-import { BLAZER_SLEEVE_END, shirtSleevesOver, torsoWithoutRaisedSleeves, wearsShirt } from "./body-adult-shirt.ts";
+import { BLAZER_SLEEVE_END, RAISED_SIDE_FROM, shirtSleevesOver, torsoBreadth, wearsShirt } from "./body-adult-shirt.ts";
 import { shade, tint } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
@@ -60,9 +60,7 @@ export const wearsBlazer = (p: CharacterParams): boolean => p.outfit.coat_color 
 
 /** The blazer's half-width at a depth, in head heights: the chest's, nipped at the waist, flaring toward the hem. */
 function halfWidth(d: number): number {
-  const chest: Knots = [[0.5, 0.43], [0.81, 0.467], [1.0, 0.41]];
-  const base = d < 1.0 ? at(chest, d) : at(SIDE, Math.max(d, 1.1)) + (d < 1.1 ? (1.1 - d) * 0.3 : 0);
-  return base + EASE.torso + 0.03 * ease((d - 1.3) / 0.65);
+  return torsoBreadth(d) + EASE.torso + 0.03 * ease((d - 1.3) / 0.65);
 }
 
 function geometry(sk: Skeleton) {
@@ -79,7 +77,7 @@ function geometry(sk: Skeleton) {
   const innerKnots = (): [number, number][] => [...tableFrom(ARM_INNER, ARMPIT, SLEEVE_END), [SLEEVE_END, at(ARM_INNER, SLEEVE_END)]].map(([d, v]): [number, number] => [d, v - EASE.inner]);
   const outer = (s: number): Pt[] => outerKnots().map(([d, v]) => P(s, v, d));
   const inner = (s: number): Pt[] => innerKnots().map(([d, v]) => P(s, v, d));
-  return { P, outer, inner, cx, y, w };
+  return { P, outer, inner, outerKnots, cx, y, w };
 }
 
 /**
@@ -107,11 +105,29 @@ const WELT: readonly Pt[] = [[0.235, 0.567], [0.395, 0.561], [0.398, 0.611], [0.
 const LAPEL_FOLD: readonly Pt[] = [[0.3, 0.485], [0.225, 0.585], [0.15, 0.684], [0.076, 0.782], [0.0022, 0.8791]];
 
 /** One front panel's closed outline: the V's top, over the shoulder, down the sleeve, up its inner edge, down the torso's side, along the hem, up the front edge and the V's edge. */
-function panel(sk: Skeleton, s: number): string {
+function panel(sk: Skeleton, s: number, raised = false): string {
   const g = geometry(sk);
   const f = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
   const run = (pts: Pt[]): string => (pts.length === 0 ? "" : `L ${f(pts[0] as Pt)} ${smooth(pts)}`);
   const top = g.P(s, V_TOP[0], V_TOP[1]);
+  if (raised) {
+    // A raised arm takes the sleeve with it, so this side's outline is the torso's own: down the shoulder to where the posed arm begins, curving in to the torso's breadth
+    // (`RAISED_SIDE_FROM`, body-adult-shirt.ts) and down it (`halfWidth`: the chest, then the torso's side, with the blazer's ease) to the hem, one inked line. A clip of the whole panel along the
+    // armhole left a wedge of the sleeve under the arm, cut along straight chords with no ink (the owner, 2026-10-25).
+    const shoulder = g.outerKnots().filter(([d]) => d < RAISED_SHOULDER_D - 1e-9).map(([d, v]) => g.P(s, v, d));
+    const cap = g.P(s, at(SHOULDER_OUTER, RAISED_SHOULDER_D) + EASE.shoulder, RAISED_SHOULDER_D);
+    const down: Pt[] = [];
+    for (let i = 0; RAISED_SIDE_FROM + 0.05 * i < HEM_D - 0.1; i++) down.push(g.P(s, halfWidth(RAISED_SIDE_FROM + 0.05 * i), RAISED_SIDE_FROM + 0.05 * i));
+    const hem = BLAZER_HEM.map(([nx, d]): Pt => g.P(s, nx * halfWidth(d), d));
+    const front = BLAZER_FRONT.map(([v, d]): Pt => g.P(s, Math.max(0, v - (BLAZER_FRONT[0] as Pt)[0]), d));
+    const vEdge = vEdgePts.map(([v, d]): Pt => g.P(s, v, d));
+    return (
+      `M ${f(top)} ${run([...shoulder, cap, ...down])} L ${f(hem[hem.length - 1] as Pt)} ` +
+      `${run([...hem].reverse())} ` +
+      `${run([...front].reverse())} ` +
+      `${run([...vEdge].reverse())} Z`
+    );
+  }
   const outer = g.outer(s);
   const inner = g.inner(s);
   // the torso's side starts where the sleeve's inner edge ends (the armpit) and eases out to the blazer's half-width, so there is no hook where the two meet
@@ -199,19 +215,14 @@ function armhole(sk: Skeleton, s: number, style: string): string {
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
 }
 
-/** The armhole a raised arm's side of the torso is cut along (`torsoWithoutRaisedSleeves`), [v, d]: wider than the drawn seam, round the sleeve's root. */
-const raisedCutKnots = (): [number, number][] => [[0.62, 0.45], [0.6, 0.6], [0.56, 0.9], [at(ARM_INNER, ARMPIT) - EASE.inner, ARMPIT]].map(([v, d]) => [v as number, d as number] as [number, number]);
-
 /**
- * The blazer's front panels as shapes in `attrs`, cut as the drawing cuts them where an arm is raised (the clip under `id`): for a mask of what the blazer covers (the front locks' outline,
+ * The blazer's front panels as shapes in `attrs`, a raised side's along its own outline as the drawing draws it: for a mask of what the blazer covers (the front locks' outline,
  * body-adult-front-locks.ts). "" when it is not worn.
  */
-export function blazerCover(sk: Skeleton, p: CharacterParams, attrs: string, id: string): string {
+export function blazerCover(sk: Skeleton, p: CharacterParams, attrs: string): string {
   if (!wearsBlazer(p)) return "";
-  const panels = [-1, 1].map((s) => `<path d="${panel(sk, s)}" ${attrs} />`).join("");
   const raisedSigns = adultArmPoses(p).map((r) => r.sign);
-  if (raisedSigns.length === 0) return panels;
-  return `<clipPath id="${id}"><polygon points="${torsoWithoutRaisedSleeves(sk, raisedSigns, raisedCutKnots, (dd) => halfWidth(dd))}" /></clipPath><g clip-path="url(#${id})">${panels}</g>`;
+  return [-1, 1].map((s) => `<path d="${panel(sk, s, raisedSigns.includes(s))}" ${attrs} />`).join("");
 }
 
 export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
@@ -223,11 +234,11 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
   const seam = `fill="none" stroke="${shade(cloth, 0.45, 1.0)}" stroke-width="${fmt2(ink * 0.5)}" stroke-linecap="round" stroke-linejoin="round"`;
   const L = -1;
   const R = 1;
-  const panels = [L, R].map((s) => `<path d="${panel(sk, s)}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />`).join("");
   // the lapel: the collar's outer edge, the notch, the lapel's top edge and its fold, each side
   const lapel = [L, R].map((s) => line(sk, s, COLLAR, fine) + line(sk, s, NOTCH, fine) + line(sk, s, LAPEL_TOP, fine) + line(sk, s, LAPEL_FOLD, fine)).join("");
   const raised = adultArmPoses(p);
   const raisedSigns = raised.map((r) => r.sign);
+  const panels = [L, R].map((s) => `<path d="${panel(sk, s, raisedSigns.includes(s))}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />`).join("");
   const details =
     [L, R].map((s) => polygon(sk, s, BLAZER_FLAP, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`) + line(sk, s, BLAZER_FLAP_LINE, seam, true) + line(sk, s, BLAZER_DART, seam, true) + (raisedSigns.includes(s) ? "" : armhole(sk, s, fine))).join("") +
     polygon(sk, R, WELT, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`, false);
@@ -252,8 +263,8 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
   // turned frame, ending above the shirt's cuff so that shows. The shirt's own sleeve is drawn before, under it.
   const sleeveEase = blazerSleeveEase(sk);
   const sleeves = raised.map((r) => adultPosedSleeve(sk, r, { cloth, ease: sleeveEase, endD: SLEEVE_END, tag: "blazer", cutMargin: 1.2 })).join("");
-  const cut = torsoWithoutRaisedSleeves(sk, raisedSigns, raisedCutKnots, (dd) => halfWidth(dd));
-  return `<clipPath id="adult-blazer-torso"><polygon points="${cut}" /></clipPath><g clip-path="url(#adult-blazer-torso)">${torso}</g>${sleeves}`;
+  // the raised side's panel is cut along its own outline (`panel`), so the torso needs no clip
+  return torso + sleeves;
 }
 
 /** One sleeve as a fill (the outer edge down to the cuff, the cuff's end, the inner edge back up) and its two edges and the cuff's end as open lines, so no line is drawn across the top where it is clipped. */

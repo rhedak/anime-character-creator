@@ -54,8 +54,8 @@ export function adultFrontLocks(sk: Skeleton, p: CharacterParams): string {
   const white = (k: number): string => `fill="#ffffff" stroke="#ffffff" stroke-width="${fmt2(k)}" stroke-linejoin="round"`;
   const worn =
     adultBodyRef(white(ink)) +
-    blazerCover(sk, p, white(ink), "adult-front-locks-blazer-cut") +
-    shirtCover(sk, p, white(ink), "adult-front-locks-shirt-cut") +
+    blazerCover(sk, p, white(ink)) +
+    shirtCover(sk, p, white(ink)) +
     adultPosedArmCover(sk, p, sleeve + ink / 2, ink / 2, "#ffffff");
   return `<mask id="adult-front-locks-ink">${worn}</mask>${locks}`;
 }

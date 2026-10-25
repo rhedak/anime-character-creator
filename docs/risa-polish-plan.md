@@ -201,6 +201,15 @@ registered by the irises, region by region (`out/risa_adult/uniform-{blazer,shir
   toward the bust (0.38 H at 0.75 H), the bust's own outer edge (`adultBreastPoints`, its outermost crossing with each row) 0.012 H outside it, and the vertical down to the armpit's
   end. Where the bust bulges out the seam follows it (it widens with a larger `bust`), and it hands over between the lines without a corner. A first try that joined the bust's edge to
   the lines end to end left a kink at 0.68 H and a hook at 0.88 H, which the envelope removes.
+* **The garments under a raised arm** (owner, 2026-10-25: "the parts of the blazer that were hidden below the arms are just badly drawn polygons, without an outline"). A raised arm took its
+  sleeve with it by clipping the whole blazer, and the shirt under it, along a polygon: the armhole's knots (0.60 to 0.56 H out from the centre line, well outside the ribs at 0.43 to 0.46)
+  and then straight chords down the torso's side every 0.15 H. That left a wedge of the sleeve under the arm, its edge a clip with no ink, and the shirt's wedge showed past the blazer as white
+  slivers. Now a raised side of the blazer (`panel`) and of the shirt (`outline`) is its own outline, one inked path: down the shoulder's outer edge to where the posed arm begins
+  (`RAISED_SHOULDER_D`, 0.4 H), curving in to the torso's breadth from `RAISED_SIDE_FROM` (0.65 H) and down it to the hem. The breadth is one table both garments read (`torsoBreadth`:
+  the chest beside the bust, then the torso's side; the blazer's `halfWidth` is it plus its eases, as before). No clip is left, `torsoWithoutRaisedSleeves` is gone, and the lock outline's
+  covers (`blazerCover`, `shirtCover`) use the same outlines. A first try left the shoulder at 0.34 H and slanted in to the chest by 0.5 H, which put a peak above a hanging upper arm's
+  sleeve (a wave); following the shoulder to the arm's top puts the turn under the sleeve's root. The hanging pose is byte-identical (`ref-out/` unchanged); `adult-raised-garments.test.ts`
+  pins that a raised pose has no clip of either garment, that its ids are unique, and that a raised side's panel no longer carries the sleeve while the hanging side's is unchanged.
 * **The shirt** follows the narrower ribcage and waist; its tucked hem meets the skirt's waistband as before.
 * **The skirt** is narrower and higher, and now sits between the hands much as in `01` and `02` (the hands reach its sides); its traced hem and folds are unchanged in shape.
 * **The cuffs, the socks and the loafers** are as before: the cuffs show below the blazer's sleeves, and below the knee the legs are Franzi's (decision 3), so the socks' tops

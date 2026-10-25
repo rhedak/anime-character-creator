@@ -13,7 +13,7 @@ import { ARM_INNER, ARM_OUTER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./b
 import { ARM_OVER_HOOKS, DEFAULT_TAPER, adultNeck, RIB_KNOTS, adultBustLine, at, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
 import { RIBBON_BACK, RIBBON_KNOT, RIBBON_LOOP, RIBBON_SLIT, RIBBON_TAIL, SHIRT_BUTTONS, SHIRT_COLLAR, SHIRT_HEM, SHIRT_NECK, SHIRT_PLACKET, SHIRT_STAND, SHIRT_STAND_BUTTON } from "./body-adult-shirt-data.ts";
-import { adultArmPoses, raisedSides } from "./body-adult-pose.ts";
+import { RAISED_SHOULDER_D, adultArmPoses, raisedSides } from "./body-adult-pose.ts";
 import { adultPosedSleeve } from "./body-adult-pose-arm.ts";
 import { shade } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
@@ -22,6 +22,13 @@ import { spacedDepths } from "./body-adult-build.ts";
 import type { Skeleton } from "./skeleton.ts";
 
 const SIDE: Knots = [...TORSO_SIDE, ...LEG_OUTER.filter(([d]) => d <= FOOT_D_CUT)];
+/** The torso's breadth under the arm, [d, v] in head heights: the chest beside the bust down to 1.0 H, where it meets the torso's side. */
+const CHEST: Knots = [[0.5, 0.43], [0.81, 0.467], [1.0, 0.41]];
+/**
+ * The torso's half-width a garment is cut to at depth `d` before its ease: the chest (`CHEST`) above 1.0 H, the torso's side (`SIDE`) from 1.1 H, eased between. A raised arm's side of the shirt
+ * and of the blazer runs down it, from the shoulder's cap to the hem.
+ */
+export const torsoBreadth = (d: number): number => (d < 1.0 ? at(CHEST, d) : at(SIDE, Math.max(d, 1.1)) + (d < 1.1 ? (1.1 - d) * 0.3 : 0));
 
 /** How much roomier the shirt is than the body it covers, in head heights: over the shoulder, along the sleeve's outer edge, along its inner edge, and along the torso's side. */
 const EASE_FREE = { shoulder: 0.02, outer: 0.035, inner: 0.025, torso: 0.02 } as const;
@@ -84,42 +91,63 @@ function geometry(sk: Skeleton, EASE: Ease) {
   };
   // the shirt's neckline is the collar's inner edge, the opening the neck shows through, from the viewer's right top, down to the V at the stand, and up the left
   const neckline = SHIRT_NECK.map(([v, d]) => P(1, v, d));
-  return { P, outer, inner, hem, hemD, hemDR, torso, neckline, cx, y, w };
+  return { P, outer, inner, outerKnots, hem, hemD, hemDR, torso, neckline, cx, y, w };
 }
 
 /**
- * The shirt's body as a shape in `attrs`, cut as the drawing cuts it where an arm is raised (the clip under `id`): for a mask of what the shirt covers (the front locks' outline,
+ * The shirt's body as a shape in `attrs`, a raised side along its own outline as the drawing draws it: for a mask of what the shirt covers (the front locks' outline,
  * body-adult-front-locks.ts). "" when it is not worn.
  */
-export function shirtCover(sk: Skeleton, p: CharacterParams, attrs: string, id: string): string {
+export function shirtCover(sk: Skeleton, p: CharacterParams, attrs: string): string {
   if (!wearsShirt(p)) return "";
   const E = underBlazer(p) ? EASE_UNDER : EASE_FREE;
-  const body = `<path d="${outline(sk, E)}" ${attrs} />`;
-  const raisedSigns = adultArmPoses(p).map((r) => r.sign);
-  if (raisedSigns.length === 0) return body;
-  return `<clipPath id="${id}"><polygon points="${torsoWithoutRaisedSleeves(sk, raisedSigns, (s) => armholeKnots(s, E), (dd) => at(SIDE, dd) + E.torso)}" /></clipPath><g clip-path="url(#${id})">${body}</g>`;
+  return `<path d="${outline(sk, E, adultArmPoses(p).map((r) => r.sign))}" ${attrs} />`;
 }
 
-/** The shirt's outline: a single closed path. */
-function outline(sk: Skeleton, E: Ease): string {
+/**
+ * A raised arm's side of a garment: it follows the shoulder's outer edge down to where the posed arm's top begins (`RAISED_SHOULDER_D`, 0.4 H below the chin), and the torso's breadth from
+ * `RAISED_SIDE_FROM` down, curving in between. The turn lies under the posed sleeve's root while the upper arm hangs (a wave); under an arm raised high it reads as the shoulder rounding into the
+ * side. (Leaving the shoulder at 0.34 H and slanting in to the chest by 0.5 H put a peak above a hanging upper arm's sleeve.)
+ */
+export const RAISED_SIDE_FROM = 0.65;
+
+/**
+ * The shirt's outline: a single closed path. On a `raised` side the sleeve has gone with the arm, so that side is the torso's own: down the shoulder to where the posed arm begins, curving in to
+ * the torso's breadth (`RAISED_SIDE_FROM`) and down it (`torsoBreadth`, with the ease) to the hem, one inked line. (A clip of the whole outline along the armhole left a wedge of the
+ * sleeve under the arm, cut along straight chords with no ink, which showed past the blazer: the owner, 2026-10-25.)
+ */
+function outline(sk: Skeleton, E: Ease, raised: readonly number[] = []): string {
   const g = geometry(sk, E);
   const L = -1;
   const R = 1;
   const f = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
   const down = (pts: Pt[]): string => `L ${f(pts[0] as Pt)} ${smooth(pts)}`;
   const up = (pts: Pt[]): string => down([...pts].reverse());
-  const outerL = g.outer(L);
-  const outerR = g.outer(R);
-  const innerL = g.inner(L); // from the armpit down to the cuff
-  const innerR = g.inner(R);
+  // a raised side from the neck down to the armpit's depth: the shoulder to the cap, then the torso's breadth
+  const raisedSide = (s: number): Pt[] => {
+    const shoulder = g.outerKnots().filter(([d]) => d < RAISED_SHOULDER_D - 1e-9).map(([d, v]) => g.P(s, v, d));
+    const chest: Pt[] = [];
+    for (let i = 0; RAISED_SIDE_FROM + 0.05 * i < ARMPIT - 1e-9; i++) chest.push(g.P(s, torsoBreadth(RAISED_SIDE_FROM + 0.05 * i) + E.torso, RAISED_SIDE_FROM + 0.05 * i));
+    return [...shoulder, g.P(s, at(SHOULDER_OUTER, RAISED_SHOULDER_D) + E.shoulder, RAISED_SHOULDER_D), ...chest];
+  };
   const tl = g.torso(L, g.hemD);
   const tr = g.torso(R, g.hemDR);
-  let d = `M ${f(g.neckline[g.neckline.length - 1] as Pt)} ${down(outerL)} `;
-  d += `L ${f(innerL[innerL.length - 1] as Pt)} ${up(innerL)} `; // the cuff's end, then up the inner edge to the armpit
-  d += `${down(tl)} `;
+  let d = `M ${f(g.neckline[g.neckline.length - 1] as Pt)} `;
+  if (raised.includes(L)) d += `${down([...raisedSide(L), ...tl])} `;
+  else {
+    const innerL = g.inner(L); // from the armpit down to the cuff
+    d += `${down(g.outer(L))} L ${f(innerL[innerL.length - 1] as Pt)} ${up(innerL)} `; // the cuff's end, then up the inner edge to the armpit
+    d += `${down(tl)} `;
+  }
   d += g.hem.map((q) => `L ${f(q)} `).join("");
-  d += `${up(tr)} `;
-  d += `${down(innerR)} L ${f(outerR[outerR.length - 1] as Pt)} ${up(outerR)} ${g.neckline.map((q) => `L ${f(q)} `).join("")}Z`;
+  if (raised.includes(R)) d += `${up([...raisedSide(R), ...tr])} `;
+  else {
+    const innerR = g.inner(R);
+    const outerR = g.outer(R);
+    d += `${up(tr)} `;
+    d += `${down(innerR)} L ${f(outerR[outerR.length - 1] as Pt)} ${up(outerR)} `;
+  }
+  d += `${g.neckline.map((q) => `L ${f(q)} `).join("")}Z`;
   return d;
 }
 
@@ -137,8 +165,6 @@ function sleeve(sk: Skeleton, s: number, E: Ease): string {
  * chest (`RIB_KNOTS`, the same line the skin draws, 0.43 to 0.46 H out from the centre line), from the sleeve's inner edge at the armpit up to the shoulder's top.
  */
 const armholeKnots = (_s: number, E: Ease): [number, number][] => [[0.55, 0.3], [0.5, 0.4], ...(RIB_KNOTS as readonly Pt[]).map(([v, d]): [number, number] => [v, d]), [0.42, 1.0], [at(ARM_INNER, ARMPIT) - E.inner, ARMPIT]];
-/** The armhole's ink on a raised side, where the torso is cut (the sleeve that covered the cut has gone with the arm). */
-const armholeInk = (sk: Skeleton, s: number, line: string, E: Ease): string => armhole(sk, s, line, E);
 function armhole(sk: Skeleton, s: number, line: string, E: Ease): string {
   const g = geometry(sk, E);
   const knots = armholeKnots(s, E);
@@ -187,33 +213,6 @@ export function adultRibbon(sk: Skeleton, p: CharacterParams): string {
 /** The ribbon's back bands lie under the collar and the rest over it, so the whole bow goes before the collar here and the collar's wings are drawn over its bands. */
 const adultRibbonBehindCollar = (sk: Skeleton, p: CharacterParams): string => adultRibbon(sk, p);
 
-/**
- * The part of a garment's torso that stays when an arm is raised: everything but the sleeve on the raised sides, cut along the armhole (the arm's root, from the shoulder's top down the body's crease to the armpit)
- * and down the torso's side. A side whose arm hangs is left whole. `armholeKnots(side)` are the armhole's knots [v, d]; `sideV(d)` the torso side's v at depth d. A polygon, for a clip path.
- */
-/** How far down the shoulder's cap stays with the torso when the sleeve leaves with a raised arm, in head heights below the chin (the arm's top is at 0.4). */
-const CAP_D = 0.5;
-/** Where the cap's lower edge leaves the shoulder's outline: it runs from there in to the armhole at `CAP_D`, a short slant (the sleeve head's seam, inked) instead of a flat ledge. */
-const CAP_TOP = 0.34;
-
-export function torsoWithoutRaisedSleeves(sk: Skeleton, raised: readonly number[], armholeKnots: (side: number) => readonly (readonly [number, number])[], sideV: (d: number) => number): string {
-  const g = geometry(sk, EASE_FREE);
-  const L = -1;
-  const R = 1;
-  const top = -0.6;
-  const bottom = 2.4;
-  const sideDs: number[] = [];
-  for (let d = ARMPIT; d <= bottom + 1e-9; d += 0.15) sideDs.push(d);
-  const down = (s: number): Pt[] => {
-    if (!raised.includes(s)) return [g.P(s, 3, top), g.P(s, 3, bottom)];
-    // The shoulder's cap (everything outside the armhole down to CAP_D) stays with the torso, so the cloth runs over the shoulder to the arm's root; below it the cut follows the armhole.
-    const k = armholeKnots(s).filter(([, d]) => d > CAP_D);
-    return [g.P(s, 1.0, top), g.P(s, 1.0, CAP_TOP), g.P(s, (k[0] as readonly [number, number])[0], CAP_D), ...k.map(([v, d]) => g.P(s, v, d)), ...sideDs.map((d) => g.P(s, sideV(d), d))];
-  };
-  const left = down(L);
-  const right = down(R).reverse();
-  return [...left, ...right].map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ");
-}
 
 export function adultShirt(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.tunic_color === null) return "";
@@ -224,7 +223,9 @@ export function adultShirt(sk: Skeleton, p: CharacterParams): string {
   const line = `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.67)}" stroke-linecap="round" stroke-linejoin="round"`;
   // The details inside the cloth (the button band, the buttons, the cuffs) are thin pale lines in the reference, not ink: a darker tone of the cloth at a light weight, as the blouse's bust lines are.
   const soft = `fill="none" stroke="${shade(cloth, 0.62, 1.0)}" stroke-width="${fmt2(ink * 0.5)}" stroke-linecap="round" stroke-linejoin="round"`;
-  const d = outline(sk, E);
+  const raised = adultArmPoses(p);
+  const raisedSigns = raised.map((r) => r.sign);
+  const d = outline(sk, E, raisedSigns);
   const poly = (pts: readonly Pt[], close = false): string => `M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${pts.slice(1).map((q) => `L ${fmt1(q[0])} ${fmt1(q[1])} `).join("")}${close ? "Z" : ""}`;
   const map = (pts: readonly Pt[]): Pt[] => pts.map(([v, dd]) => g.P(1, v, dd));
   const clip = `<clipPath id="adult-shirt-clip"><path d="${d}" /></clipPath>`;
@@ -237,8 +238,6 @@ export function adultShirt(sk: Skeleton, p: CharacterParams): string {
   // under a build the buttons keep their spacing (spacedDepths): the warp alone would close up the ones in the rows it shortens
   const buttonDs = spacedDepths(sk.adult_build, SHIRT_BUTTONS.map(([, dd]) => dd));
   const buttons = SHIRT_BUTTONS.map(([v, , r], i) => button(v, buttonDs[i] as number, r)).join("");
-  const raised = adultArmPoses(p);
-  const raisedSigns = raised.map((r) => r.sign);
   const cuffs = [-1, 1].filter((s) => !raisedSigns.includes(s)).map((s) => cuffLine(sk, s, soft, E)).join("");
   const armholes = [-1, 1].filter((s) => !raisedSigns.includes(s)).map((s) => armhole(sk, s, line, E)).join(""); // a raised side's armhole is the torso's cut edge and is not inked
   // The breasts' shapes as a soft outline over the cloth: the contour the skin and the top draw, in a darker tone of the cloth at a light weight, under the other lines.
@@ -259,19 +258,13 @@ export function adultShirt(sk: Skeleton, p: CharacterParams): string {
   const neckOver = `<clipPath id="adult-shirt-neck-opening"><polygon points="${opening.map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ")}" /></clipPath><g clip-path="url(#adult-shirt-neck-opening)">${adultNeck(sk, p)}</g>`;
   const bodyShape =
     `<path d="${d}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />` + `${clip}<g clip-path="url(#adult-shirt-clip)">${bust}${bandMask}${placket}${cuffs}${armholes}</g>`;
-  // A raised arm takes its sleeve with it: the body is cut along the armhole and the sleeve is the posed arm's own silhouette grown by the sleeve's ease, drawn after, in the arm's turned frame.
+  // A raised arm takes its sleeve with it: the body's outline runs down the torso on that side and the sleeve is the posed arm's own silhouette grown by the sleeve's ease, drawn after, in the arm's turned frame.
   const sleeveEase = shirtSleeveEase(sk, p);
   const sleeves = raised
     .map((r) => adultPosedSleeve(sk, r, { cloth, ease: sleeveEase, endD: CUFF_END, tag: "shirt", cutMargin: 3, extra: () => cuffLine(sk, r.sign, soft, E) }))
     .join("");
-  const knotsOf = (s: number): readonly (readonly [number, number])[] => armholeKnots(s, E);
-  const body =
-    raised.length === 0
-      ? bodyShape
-      : `<clipPath id="adult-shirt-torso"><polygon points="${torsoWithoutRaisedSleeves(sk, raisedSigns, knotsOf, (dd) => at(SIDE, dd) + E.torso)}" /></clipPath><g clip-path="url(#adult-shirt-torso)">${bodyShape}</g>` +
-        // the sleeve head's seam: the slanted edge the cap is cut along, inked, inside the shirt's outline
-        `<g clip-path="url(#adult-shirt-clip)">${raised.map((r) => `<path d="M ${fmt1(g.P(r.sign, 1.0, CAP_TOP)[0])} ${fmt1(g.P(r.sign, 1.0, CAP_TOP)[1])} L ${fmt1(g.P(r.sign, (armholeKnots(r.sign, E).find(([, d]) => d > CAP_D) as [number, number])[0], CAP_D)[0])} ${fmt1(g.y(CAP_D))}" ${line} />`).join("")}</g>` +
-        sleeves;
+  // a raised side's outline is the torso's own (`outline`), so the body needs no clip; the raised sleeve is drawn after it
+  const body = bodyShape + sleeves;
   return (
     body +
     buttons +
