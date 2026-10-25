@@ -263,6 +263,22 @@ arm passes in front). The bikini drawing gets the same locks where `00` shows th
 Thinner lines in a dark tone of what they bound, for Risa: the outline, the hair's silhouette and strands. Her cut already carries its own face stroke (0.45), so per-cut line
 settings are the pattern. Flat or soft is an experiment (decision 4): try both and pick by eye.
 
+**Measured and tried, 2026-10-25 (not yet a setting).** `harness/risa_adult/line_measure.py` reads the line work of `01` against our uniform render on the bikini grid: the reference's lines
+are about 2 px everywhere (median, the hair and face, the torso, the legs), ours 2 px in the face, 4 on the torso and 6 on the legs and the outline, and we draw 2.2 to 4.3 times the line pixels;
+the reference's lines are near-black on the uniform (10, 5, 15) and the legs (6, 3, 2) but dark red on the hair (40, 8, 6), ours neutral black (13, 13, 13) everywhere.
+`harness/risa_adult/line_variants.ts` draws the preset five ways as a text pass over the finished SVG (as `softStrokeWidths` is), for the owner to pick by eye: a, flat as it is; b, soft as
+it is (strokes 0.66, the fringe's lines tinted, the hair silhouette's outline still black because the adult hair is drawn outside `_hair_lines`); c, flat with strokes 0.6 and the hair's
+outline in its strand tone; d, flat 0.45 tinted; e, soft 0.7 tinted. Strips: `out/risa_adult/lines-{head,torso,full,1x}.png`. Seen: c and d read closest to the reference at full size, and
+all five stay legible at the native 400 x 500. Not reached by the pass: the hair's strand lines are filled tapered shapes, not strokes, so they keep their weight in every variant and
+are much of why the hair reads busy; thinning them is the cut's `strandWeight`.
+
+**Done 2026-10-25: the owner picked c** (flat, lines at 0.6, the hair's outline in its strand tone). It is a field, `line_style` (after `highlight_strength`, null), naming a style of
+`LINE_STYLES` (`ts/src/character.ts`); `fine` is c. `renderStages` scales every stroke by the style's `scale` in the same step as the soft finish's (they compose: soft and fine is 0.66 x 0.6),
+`adultHairInk` (`body-adult-parts.ts`) draws the hair silhouette's and the front locks' outlines in the cut's strand tone when the style asks, and the hair's tapered strands (the hair's,
+the fringe's and the front locks') take the scale too (`lineScale`), which the text pass of the experiment could not reach: the hair's interior reads lighter and finer, closer to the
+reference's fine strands (`out/risa_adult/lines-fine-vs-c-*.png`). The fringe's thin edge lines stay as they were. `RISA` sets `line_style: "fine"`; every other character's drawing is
+byte-identical. The field's fixture update is `harness/ts_port/golden-updates-line-style/README.md`; `ts/test/line-style.test.ts` pins the rules.
+
 ### Stage 6: the hair under the soft finish
 
 Clumps for `long_straight_fringed` (its `locks` list is empty), and a sheen band across the crown, inside the hair's silhouette, scaled by `highlight_strength`. Blind pairs.

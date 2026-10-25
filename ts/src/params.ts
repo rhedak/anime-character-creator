@@ -897,6 +897,11 @@ export interface CharacterParams {
    * finish ignores it.
    */
   readonly highlight_strength: number;
+  /**
+   * A named line style (`LINE_STYLES`, character.ts): every stroke's width scaled, the hair's strand lines with it, and the hair's outline in the hair's strand tone. null, the default, is
+   * the house lines. It moves no shape. Not offered in the web tool. `docs/risa-polish-plan.md`, stage 5.
+   */
+  readonly line_style: string | null;
 }
 
 export const CHARACTERPARAMS_FIELDS: readonly FieldSpec[] = [
@@ -932,9 +937,10 @@ export const CHARACTERPARAMS_FIELDS: readonly FieldSpec[] = [
   { name: "shaded", type: "bool", nullable: false, default: true },
   { name: "finish", type: "str", nullable: false, default: "flat" },
   { name: "highlight_strength", type: "float", nullable: false, default: 1 },
+  { name: "line_style", type: "str", nullable: true, default: null },
 ];
 
 export const DEFAULT_OUTFIT: Outfit = { tunic_color: "#4f7a52", boot_color: "#5b4632", undersleeve_color: null, belt_color: null, belt_keeper_pair: false, belt_reach: 1, belt_cut: null, apron_color: null, skirt_color: "#4f7a52", skirt_cut: null, underskirt_color: null, trouser_color: null, pouch_color: null, skirt_length: null, skirt_length_chibi: null, tunic_tucked: false, neckline_round: false, neckline_trim: true, neckline_stand: true, neckline_notch: null, sleeve_long: false, sleeve_under_cap: true, sleeve_cut: null, collar_color: null, collar_cut: null, collar_mock: false, placket_color: null, chest_pocket_color: null, strap_color: null, bodice_color: null, boot_shaft: 0, boot_cut: null, knee_sock_color: null, ribbon_color: null, underwear_color: "#e8e4dc", underwear_top: false, robe_color: null, sleeve_drop: 0, belt_scale: 1, hakama_color: null, hakama_length: null, hakama_length_chibi: null, headscarf_color: null, goggle_color: null, blindfold_color: null, mask_color: null, wristband_color: null, wristband_text: null, wristband_side: 1, shoulder_bars_color: null, shoulder_bars: 3, shoulder_bars_side: 1, hat_color: null, hat_band_color: null, hair_clip_color: null, hair_clip: "bar", staff_color: null, staff_crystal_color: null, katana_color: null, katana_fittings_color: null, katana_length: 1, coat_color: null, coat_cut: null, coat_sleeves: false, coat_length: 0.55, hip_pocket_color: null, coat_button_color: null, crystal_color_1: null, crystal_color_2: null, crystal_color_3: null, crystal_color_4: null, crystal_tongs: false };
 export const DEFAULT_FACESTYLE: FaceStyle = { eye_size: 1, eye_width: 0.88, eye_openness: 1, eye_lower_lid: 1, eye_tilt: 0.1, eye_gap: null, eye_corner: 0.35, iris_size: 0.72, iris_inset: 0, iris_aspect: 1, lid_shadow: 0, lash: 1, brow_tilt: 0, brow_weight: 1, brow_length: 1, mouth_curve: 1, mouth_width: 1, mouth_drop: 0, nose_dot: false, brows_over_hair: false, mouth_open: 0, gaze: 0, blush: 1, glasses: false, chin_shadow: false, eyes_closed: false, scar_side: 0 };
 export const DEFAULT_EXPRESSION: Expression = { brow_tilt: null, brow_weight: null, eye_openness: null, eye_lower_lid: null, mouth_curve: null, mouth_width: null, mouth_open: null };
-export const DEFAULT_CHARACTERPARAMS: CharacterParams = { skin_tone: "#f2c9a1", hair_color: "#e8b84b", hair_tip_color: null, hair_length: 0.45, hairstyle: "long_blunt", eye_color: "#4a9c6d", hair_tail: 0, hair_knot: false, beard_color: null, beard_length: 0.15, outfit: DEFAULT_OUTFIT, face: DEFAULT_FACESTYLE, body: "tall_chibi_long_torso", body_build: null, height: 1, hand_style: "mitten", grip_style: "mitten", face_age: 0, familiar_color: null, familiar_eye_color: null, familiar_smile: false, frame: 0, bust: 0, chest: 0, waist_shift: 0, right_arm_out: 0, left_arm_out: 0, right_elbow: 0, left_elbow: 0, shaded: true, finish: "flat", highlight_strength: 1 };
+export const DEFAULT_CHARACTERPARAMS: CharacterParams = { skin_tone: "#f2c9a1", hair_color: "#e8b84b", hair_tip_color: null, hair_length: 0.45, hairstyle: "long_blunt", eye_color: "#4a9c6d", hair_tail: 0, hair_knot: false, beard_color: null, beard_length: 0.15, outfit: DEFAULT_OUTFIT, face: DEFAULT_FACESTYLE, body: "tall_chibi_long_torso", body_build: null, height: 1, hand_style: "mitten", grip_style: "mitten", face_age: 0, familiar_color: null, familiar_eye_color: null, familiar_smile: false, frame: 0, bust: 0, chest: 0, waist_shift: 0, right_arm_out: 0, left_arm_out: 0, right_elbow: 0, left_elbow: 0, shaded: true, finish: "flat", highlight_strength: 1, line_style: null };

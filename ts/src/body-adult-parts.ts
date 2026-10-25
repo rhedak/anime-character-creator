@@ -7,7 +7,7 @@
 // The arms are part of the one outline for now: a garment that needs the arm in front of it (a sleeve over the
 // upper arm is drawn over the body anyway) will split them off at stage 6.
 
-import { OUTLINE, curve, outlineW, soft, strokeW } from "./character.ts";
+import { OUTLINE, curve, lineScale, lineStyleOf, outlineW, soft, strokeW } from "./character.ts";
 import { SOFT_LOCK_STRENGTH_SCALE, hairClip, softLocks } from "./hair.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
@@ -659,18 +659,25 @@ export function adultHairBehind(sk: Skeleton, p: CharacterParams): string {
   return clip + adultHairShape(sk, p);
 }
 
+/** The ink of the hair's outline: the black outline, or under a line style that asks for it (`LINE_STYLES`) the hair cut's strand tone, as the reference art draws its hair. */
+export function adultHairInk(p: CharacterParams): string {
+  if (lineStyleOf(p)?.hairTone !== true) return OUTLINE;
+  const cut = adultCutOf(p);
+  return shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]);
+}
+
 /** The hair silhouette with its outline and the strand lines over it, clipped to the silhouette (the shared body of the two draws). */
 function adultHairShape(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
   const sw = fmt2(outlineW(strokeW(sk)));
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   const cut = adultCutOf(p);
-  const hair = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
+  const hair = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${adultHairInk(p)}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
   // the soft finish's clumps over the fill, in the hair's tones, clipped to the silhouette, under the strands
   const clumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE, "adult-hair-clip") : "";
-  const strands = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
+  const strands = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
   // the lines that run down to the face's edge: blunt at the end (the share of the length over which it tapers is a twentieth), the face drawn over what passes the edge
-  const edgeStrands = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
+  const edgeStrands = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
   return hair + clumps + `<g clip-path="url(#adult-hair-clip)">${strands}${edgeStrands}</g>`;
 }
 
@@ -709,8 +716,8 @@ export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
     const tone = shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]);
     // The fringe's hair is a shape of its own over the skin, so it covers the strand lines drawn behind the face: the lines are drawn again over it, clipped to it, and the
     // lines that run on past its edge as thin dark lines (the locks' tips) are drawn whole, over the skin.
-    const inside = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight), tone)).join("");
-    const edge = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight), tone, undefined, 0.05)).join("");
+    const inside = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), tone)).join("");
+    const edge = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight * lineScale(p)), tone, undefined, 0.05)).join("");
     locks =
       `<clipPath id="adult-fringe-clip">${fringe.hair.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>` +
       fringe.hair.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" />`).join("") +

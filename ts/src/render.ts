@@ -13,7 +13,7 @@ import { ADULT_POSE_PARTS } from "./body-adult-pose-arm.ts";
 import { ADULT_LOCK_PARTS } from "./body-adult-front-locks.ts";
 import { ADULT_PARTS, withLoweredHead } from "./body-adult-parts.ts";
 import { skeletonFor } from "./body.ts";
-import { documentWrap, namespaceIds, soft, softStrokeWidths } from "./character.ts";
+import { documentWrap, lineStyleOf, namespaceIds, soft, softStrokeWidths, strokeWidthsScaled } from "./character.ts";
 import { characterParams, validateFinish } from "./model.ts";
 import type { CharacterParams } from "./params.ts";
 import { PARTS as arms } from "./parts-arms.ts";
@@ -159,6 +159,9 @@ export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, s
   let text: string | null = joined;
   record("body", text);
   if (text !== null && soft(p)) text = softStrokeWidths(text);
+  // a line style's own scale, after the soft finish's (they compose); with none the text is untouched
+  const lines = lineStyleOf(p);
+  if (text !== null && lines !== null) text = strokeWidthsScaled(text, lines.scale);
   record("body_soft", text);
   const prefix = opts.id_prefix ?? "";
   if (text !== null && truthy(prefix)) text = namespaceIds(text, prefix);

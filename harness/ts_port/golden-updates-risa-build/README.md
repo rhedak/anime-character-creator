@@ -13,3 +13,6 @@ in the way the tests read them, not derived from the old ones by a rule.
 
 `upd_fixtures.ts` is a copy of `../golden-updates-risa-adult/upd_fixtures.ts` (kept there as its record) that keeps `pages.json`'s last newline. Eight tests were red after the preset
 switch and before the update (her render, her preset entry, her three pages, and the two web-bridge tests that read them), and the whole suite is green after it.
+
+`upd_fixtures.ts` is run again, with `./refresh-ref-out.sh`, for each later change of her drawing in the campaign (stages 2 to 5 of the plan: the arm fix, the uniform's refit, the front locks,
+and the `fine` line style, `line_style: "fine"` in her preset); each time only her entry and her three pages move.

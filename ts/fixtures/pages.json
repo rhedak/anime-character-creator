@@ -14,8 +14,8 @@
    "kind": "cover",
    "args": [],
    "local_faces": false,
-   "sha256": "ad206446b1ad922c142ddcf3710429528525bb6d462d1b81dbfe0b9574abd8c6",
-   "bytes": 34662
+   "sha256": "5a2ca3ec1feec65573b694d852d0d053f863c28cd1ba30322dc0c95d14a86b29",
+   "bytes": 34686
   },
   {
    "kind": "cover",
@@ -39,8 +39,8 @@
     "--no-metadata"
    ],
    "local_faces": false,
-   "sha256": "9bedd2bdbe49e3318a4fdcd562708052fc5869ca265e62c23cb5945696669c61",
-   "bytes": 392289
+   "sha256": "ae257b5ee671d5dbf136c549a47a36678a58a55ca3c33480c08f0da5cb1b75f1",
+   "bytes": 392291
   },
   {
    "kind": "cover",
@@ -125,8 +125,8 @@
    "kind": "sheet",
    "args": [],
    "local_faces": false,
-   "sha256": "f8152be5907471840e2bf229e07519bf1ce65461eafa4451a635a43880e037b5",
-   "bytes": 448716
+   "sha256": "35348da227b6742992bebb2fde969663b631b1aa95849f0fb9c9f67ec93cb018",
+   "bytes": 449052
   },
   {
    "kind": "sheet",
@@ -182,8 +182,8 @@
     "--no-metadata"
    ],
    "local_faces": false,
-   "sha256": "0567a8c93d683cc6c628a057d689914ca091231f9a005b52a59e0cd0764a48e0",
-   "bytes": 390142
+   "sha256": "cf89d001ff98fb8639fce0454a5de4686c3fbf4342db2d2576cb3e524f56d645",
+   "bytes": 390144
   },
   {
    "kind": "sheet",
@@ -229,8 +229,8 @@
     "3"
    ],
    "local_faces": false,
-   "sha256": "79c606545fa53ea222fe21691a21260c9d4324f6a0e14af7a81b8169a0546f6a",
-   "bytes": 592865
+   "sha256": "30c534f6a0f32408f1993fae10e85189b28a735a0af79dfa3cfcfd1a075f8d15",
+   "bytes": 593038
   },
   {
    "kind": "sheet",
@@ -252,8 +252,8 @@
     "satoshi"
    ],
    "local_faces": false,
-   "sha256": "a113ef6f17269842cb62d6f0a5250cfa3c1470d1eaaebd54661edad3625bebdc",
-   "bytes": 35560
+   "sha256": "8340efff6c6c3bc965a1f2061f41a9640f2cb4bc8b339c1813b2a1987c63affa",
+   "bytes": 35584
   }
  ]
 }

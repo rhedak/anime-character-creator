@@ -5,9 +5,9 @@
 
 import { shade } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
-import { fmt0, fmt1, fmt2, pyCos, pyFloat, pyMin, pyPow, pySin, radians, truthy } from "./pynum.ts";
+import { PyError, fmt0, fmt1, fmt2, pyCos, pyFloat, pyMin, pyPow, pySin, radians, truthy } from "./pynum.ts";
 import { pySub } from "./pyre.ts";
-import { pyStr } from "./pyvalue.ts";
+import { pyStr, pyValueRepr } from "./pyvalue.ts";
 import { replace, type Skeleton } from "./skeleton.ts";
 import type { Chain, Point, Segment } from "./tables.ts";
 import { HAT_UNDERSIDE } from "./tables.ts";
@@ -33,12 +33,39 @@ export const outlineW = (sw: number, k = 1.0): number => sw * k * OUTLINE_SCALE;
 /** The drawn weight of an interior line at `k` of the weight `sw`. */
 export const interiorW = (sw: number, k = 1.0): number => sw * k * INTERIOR_SCALE;
 
-/** Every line's `stroke-width` in `svg` scaled by `SOFT_LINE_SCALE`. */
-export function softStrokeWidths(svg: string): string {
-  return svg.replace(/<[a-zA-Z][^>]*>/g, (tag) =>
-    tag.replace(/stroke-width="([0-9.]+)"/g, (_m, w: string) => `stroke-width="${fmt2(pyFloat(w) * SOFT_LINE_SCALE)}"`),
-  );
+/** Every line's `stroke-width` in `svg` scaled by `k`. */
+export function strokeWidthsScaled(svg: string, k: number): string {
+  return svg.replace(/<[a-zA-Z][^>]*>/g, (tag) => tag.replace(/stroke-width="([0-9.]+)"/g, (_m, w: string) => `stroke-width="${fmt2(pyFloat(w) * k)}"`));
 }
+
+/** Every line's `stroke-width` in `svg` scaled by `SOFT_LINE_SCALE`. */
+export const softStrokeWidths = (svg: string): string => strokeWidthsScaled(svg, SOFT_LINE_SCALE);
+
+/**
+ * A character's line work (`line_style`): every stroke's width scaled by `scale` and the hair's tapered strand lines with it, and with `hairTone` the hair's outline drawn in the hair cut's
+ * strand tone instead of the black outline. The reference art's lines are about a third of ours and dark red on the hair (docs/risa-polish-plan.md, stage 5); `fine` is the variant the
+ * owner picked of those tried (`harness/risa_adult/line_variants.ts`, c). It composes with the soft finish's own scale.
+ */
+export interface LineStyle {
+  readonly scale: number;
+  readonly hairTone: boolean;
+}
+export const LINE_STYLES: Readonly<Record<string, LineStyle>> = {
+  fine: { scale: 0.6, hairTone: true },
+};
+
+/** `p`'s line style, or null for the house lines. An unknown name is a KeyError, as an unknown body type is. */
+export function lineStyleOf(p: CharacterParams): LineStyle | null {
+  // a character recorded before the field existed has none: the house lines
+  const name = p.line_style ?? null;
+  if (name === null) return null;
+  const style = LINE_STYLES[name];
+  if (style === undefined) throw new PyError("KeyError", pyValueRepr(name));
+  return style;
+}
+
+/** How much `p`'s line style thins the lines: 1 for the house lines. */
+export const lineScale = (p: CharacterParams): number => lineStyleOf(p)?.scale ?? 1;
 
 /** Every id defined in `body`, and every reference to one, under `prefix`. */
 export function namespaceIds(body: string, prefixValue: unknown): string {

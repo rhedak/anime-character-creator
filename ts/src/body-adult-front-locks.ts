@@ -5,10 +5,10 @@
 // the way the arm is raised, so it does not cross them. (A mask that took the posed forearm and hand out of them was tried and dropped: cairosvg reads a mask by its alpha and a browser by its
 // luminance, so a mask that hides with black shapes on white hid them in the companion's browser and in no PNG.)
 
-import { OUTLINE, outlineW, strokeW } from "./character.ts";
+import { lineScale, outlineW, strokeW } from "./character.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { adultCutOf } from "./body-adult-cuts.ts";
-import { adultBodyRef, onHead, place, smooth, taperedStrand, type Pt } from "./body-adult-parts.ts";
+import { adultBodyRef, adultHairInk, onHead, place, smooth, taperedStrand, type Pt } from "./body-adult-parts.ts";
 import { adultPosedArmCover } from "./body-adult-pose-arm.ts";
 import { blazerCover, blazerSleeveEase, wearsBlazer } from "./body-adult-blazer.ts";
 import { shirtCover, shirtSleeveEase, wearsShirt } from "./body-adult-shirt.ts";
@@ -41,11 +41,11 @@ export function adultFrontLocks(sk: Skeleton, p: CharacterParams): string {
     .map((lock) => {
       const q = lock.outline.map(at);
       const path = `M ${f(q[0] as Pt)} ${smooth(q)}`;
-      const strands = lock.strands.map((s) => taperedStrand(h, strand(s.map(at)), outlineW(strokeW(sk), cut.strandWeight), tone)).join("");
+      const strands = lock.strands.map((s) => taperedStrand(h, strand(s.map(at)), outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), tone)).join("");
       return (
         `<path d="${path}Z" fill="${hair}" stroke="none" />` +
         strands +
-        `<g mask="url(#adult-front-locks-ink)"><path d="${path}" fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" stroke-linecap="round" /></g>`
+        `<g mask="url(#adult-front-locks-ink)"><path d="${path}" fill="none" stroke="${adultHairInk(p)}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" stroke-linecap="round" /></g>`
       );
     })
     .join("");
