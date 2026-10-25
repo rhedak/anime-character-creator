@@ -242,6 +242,11 @@ arm passes in front). The bikini drawing gets the same locks where `00` shows th
   posed arms with their sleeves (`adultPosedArmCover`, grown by the outermost sleeve's ease, `blazerSleeveEase`, `shirtSleeveEase`), each with its own ink. Seen and fixed on the way:
   inked everywhere, the outline drew two heavy lines up through the hair to the jaw; clipped to the body's outline alone (owner, 2026-10-25), it stopped short of the blazer's
   shoulder (which stands off the body by its ease) and of a raised arm's sleeve.
+* **The locks' own outlines** (owner, 2026-10-25, after the raised-arm fix of stage 3: "with arms raised the outline of the front locks disappears"). Masked to the body and the clothes,
+  a lock lost its line wherever nothing was worn behind it: under a raised arm the sleeve has gone and the viewer's left lock lay partly over the long hair behind the torso (47 of its 61
+  outline points inked, against 55 hanging). Now each lock has its own outline everywhere below the shoulders (`OWN_INK_FROM`, 0.35 H below the chin: a white band in the mask), whatever
+  lies behind it, and only its top, where it comes out of the hair beside the neck, is masked to the body and the clothes; 55 of 61 again in both poses, the rest the open top. The hanging
+  pose is pixel-identical (only the SVG's mask text changed).
 * **cairosvg's masks** (found on the way, tested in isolation): cairosvg reads a mask by its **alpha**, a browser by its luminance, and it ignores a mask given `maskUnits="userSpaceOnUse"`
   with an explicit region. A mask of white shapes on nothing, in its default units, reads alike in both; a black backdrop makes cairosvg let everything through. So the outline's mask is
   white shapes only, and the locks have **no mask for posed arms**: one that hid the posed forearm and hand with black shapes on white would hide them in the companion's browser and in

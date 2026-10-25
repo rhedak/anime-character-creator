@@ -18,6 +18,9 @@ import { fmt1, fmt2 } from "./pynum.ts";
 import type { Skeleton } from "./skeleton.ts";
 import type { Chain } from "./tables.ts";
 
+/** Where a lock's own outline starts whatever lies behind it, in head heights below the chin: below the shoulders' tops, clear of the hair beside the neck. */
+const OWN_INK_FROM = 0.35;
+
 /** The front locks of `p`'s cut: each one filled in the hair's colour, its strand lines over it and its outline inked down one edge, round the tip and up the other (the top is the hair beside the neck). */
 export function adultFrontLocks(sk: Skeleton, p: CharacterParams): string {
   const cut = adultCutOf(p);
@@ -46,13 +49,17 @@ export function adultFrontLocks(sk: Skeleton, p: CharacterParams): string {
       );
     })
     .join("");
-  // The outline is inked only where the lock lies over the body or something worn on it, out to the edge of its ink: the body's outline, the blazer's panels, the shirt's body and the posed
-  // arms with their sleeves, each with its own ink. Above them the lock lies on the hair beside the neck, in the same colour, and runs into it unlined. (Clipped to the body alone, the ink
-  // stopped short of the blazer's shoulder, which stands off the body by its ease, and of a raised arm's sleeve.) The mask is white shapes on nothing, in its default units, which cairosvg and
-  // a browser read alike; a black backdrop, or a region in user space, makes cairosvg ignore it.
+  // Each lock has its own outline down both sides and round the tip, everywhere below the shoulders (`OWN_INK_FROM`), whatever lies behind it: the cloth, the body, or the long hair where a
+  // raised arm's sleeve was. Only at the top, where it comes out of the hair beside the neck, is it inked just where it lies over the body or something worn on it, out to the edge of that ink
+  // (the body's outline, the blazer's panels, the shirt's body and the posed arms with their sleeves, each with its own ink), so the line starts at the top of the clothes and the lock runs
+  // into the hair above them unlined. (Inked over the body and the clothes alone, a lock lost its line where a raised arm's sleeve had been and it lay on the hair behind the torso; clipped to
+  // the body alone, the line stopped short of the blazer's shoulder.) The mask is white shapes on nothing, in its default units, which cairosvg and a browser read alike; a black backdrop, or a
+  // region in user space, makes cairosvg ignore it.
   const sleeve = wearsBlazer(p) ? blazerSleeveEase(sk) : wearsShirt(p) ? shirtSleeveEase(sk, p) : 0;
   const white = (k: number): string => `fill="#ffffff" stroke="#ffffff" stroke-width="${fmt2(k)}" stroke-linejoin="round"`;
+  const below = `<rect x="${fmt1(-sk.canvas_w)}" y="${fmt1(y(OWN_INK_FROM))}" width="${fmt1(3 * sk.canvas_w)}" height="${fmt1(2 * sk.canvas_h)}" fill="#ffffff" />`;
   const worn =
+    below +
     adultBodyRef(white(ink)) +
     blazerCover(sk, p, white(ink)) +
     shirtCover(sk, p, white(ink)) +

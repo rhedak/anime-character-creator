@@ -24,6 +24,7 @@ test("a posed arm draws the locks as a hanging one does, its sleeve in the outli
   const mask = (waving.match(/<mask id="adult-front-locks-ink">(.*?)<\/mask>/s) ?? [])[1] as string;
   assert.ok(mask.includes("-fill"), "the posed arm is in the outline's mask");
   assert.ok(!/fill="#000000"/.test(mask), "white shapes on nothing: cairosvg reads a mask by its alpha");
+  assert.ok(/<rect [^>]*fill="#ffffff" \/>/.test(mask), "below the shoulders a lock has its own outline whatever lies behind it");
   assert.deepEqual(dupes(waving), []);
   assert.deepEqual(dupes(draw(replace(RISA, { right_arm_out: 130, right_elbow: 40, left_arm_out: 35, left_elbow: 100 }))), []);
 });

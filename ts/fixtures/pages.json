@@ -39,8 +39,8 @@
     "--no-metadata"
    ],
    "local_faces": false,
-   "sha256": "3d9d541b217f12180fd24e20443f1ba0ec2d1836a5b803f239cd15c75e203ce7",
-   "bytes": 392214
+   "sha256": "9bedd2bdbe49e3318a4fdcd562708052fc5869ca265e62c23cb5945696669c61",
+   "bytes": 392289
   },
   {
    "kind": "cover",
@@ -182,8 +182,8 @@
     "--no-metadata"
    ],
    "local_faces": false,
-   "sha256": "81bf332f0cff9551ed370f34a5a6c2f8c80f6e61ab5cebcd2736f2526f69157e",
-   "bytes": 390067
+   "sha256": "0567a8c93d683cc6c628a057d689914ca091231f9a005b52a59e0cd0764a48e0",
+   "bytes": 390142
   },
   {
    "kind": "sheet",
@@ -229,8 +229,8 @@
     "3"
    ],
    "local_faces": false,
-   "sha256": "61263d4eb1c33c02881483f5c5ff5551e1e72b1c8a9bff64031cf31565363f68",
-   "bytes": 592790
+   "sha256": "79c606545fa53ea222fe21691a21260c9d4324f6a0e14af7a81b8169a0546f6a",
+   "bytes": 592865
   },
   {
    "kind": "sheet",
