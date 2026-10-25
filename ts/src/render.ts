@@ -10,9 +10,10 @@ import "./body-adult-hair.ts";
 import { ADULT_BODY_TYPES } from "./body-adult.ts";
 import { ADULT_GARMENT_PARTS } from "./body-adult-garments.ts";
 import { ADULT_POSE_PARTS } from "./body-adult-pose-arm.ts";
+import { ADULT_LOCK_PARTS } from "./body-adult-front-locks.ts";
 import { ADULT_PARTS, withLoweredHead } from "./body-adult-parts.ts";
 import { skeletonFor } from "./body.ts";
-import { documentWrap, namespaceIds, soft, softStrokeWidths } from "./character.ts";
+import { documentWrap, lineStyleOf, namespaceIds, soft, softStrokeWidths, strokeWidthsScaled } from "./character.ts";
 import { characterParams, validateFinish } from "./model.ts";
 import type { CharacterParams } from "./params.ts";
 import { PARTS as arms } from "./parts-arms.ts";
@@ -54,7 +55,7 @@ export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, s
   validateFinish(typed);
   const p = plainParams(typed);
   // An adult body draws its own torso, legs and underwear; the head, hair, face and garments are the shared parts.
-  const parts: PartTable = shared === ALL_PARTS && Object.hasOwn(ADULT_BODY_TYPES, p.body) ? { ...shared, ...withLoweredHead(shared), ...ADULT_PARTS, ...ADULT_GARMENT_PARTS, ...ADULT_POSE_PARTS } : shared;
+  const parts: PartTable = shared === ALL_PARTS && Object.hasOwn(ADULT_BODY_TYPES, p.body) ? { ...shared, ...withLoweredHead(shared), ...ADULT_PARTS, ...ADULT_GARMENT_PARTS, ...ADULT_POSE_PARTS, ...ADULT_LOCK_PARTS } : shared;
   const sk = opts.sk ?? skeletonFor(p);
   const missing = new Set<string>();
   const stages = new Map<string, string | null>();
@@ -121,6 +122,9 @@ export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, s
     [16, (() => { const j = join([...chest, ...underArms], ""); return j === null ? null : part("_bust_over_arms", j); })()],
     [17, part("_traced_coat_and_belt", true)],
     [18, handsAfterCoat === null ? null : handsAfterCoat ? part("_arms", true) : ""],
+    // the front locks of a cut that has them (body-adult-front-locks.ts): over the garments and the arms, under the collar and the head; only the adult table has the part,
+    // so every other body draws nothing here
+    [39, parts["_front_locks"] === undefined ? "" : part("_front_locks")],
     [19, part("_shoulder_bars")],
     [20, when(!truthy(p.outfit.collar_mock), "_collar")],
     [21, part("_ribbon")],
@@ -155,6 +159,9 @@ export function renderStages(typed: CharacterParams, opts: RenderOptions = {}, s
   let text: string | null = joined;
   record("body", text);
   if (text !== null && soft(p)) text = softStrokeWidths(text);
+  // a line style's own scale, after the soft finish's (they compose); with none the text is untouched
+  const lines = lineStyleOf(p);
+  if (text !== null && lines !== null) text = strokeWidthsScaled(text, lines.scale);
   record("body_soft", text);
   const prefix = opts.id_prefix ?? "";
   if (text !== null && truthy(prefix)) text = namespaceIds(text, prefix);

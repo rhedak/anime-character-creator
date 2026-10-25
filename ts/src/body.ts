@@ -2,6 +2,7 @@
 // hat_hair_margin, _limb_taper_at) that builds a Skeleton for a CharacterParams.
 
 import { ADULT_BODY_TYPES } from "./body-adult.ts";
+import { ADULT_BUILDS } from "./body-adult-build.ts";
 import type { CharacterParams } from "./params.ts";
 import { plainParams } from "./plain.ts";
 import { PyError, pyMax, pyMin, truthy } from "./pynum.ts";
@@ -110,6 +111,13 @@ export function skeletonFor(typed: CharacterParams): Skeleton {
   if (truthy(p.waist_shift)) {
     const shift = p.waist_shift * sk.head_r;
     sk = replace(sk, { waist_y: sk.waist_y + shift, hip_y: sk.hip_y + shift });
+  }
+  // A build of the adult woman's body (body-adult-build.ts): the skeleton carries it to `place`, which warps the outline by it. Every other body ignores it, and a skeleton
+  // without one has no such key at all, so it is the same object the recorded calls hold.
+  if (p.body_build !== null && p.body in ADULT_BODY_TYPES) {
+    const build = ADULT_BUILDS[p.body_build];
+    if (build === undefined) throw new PyError("KeyError", pyValueRepr(p.body_build));
+    sk = replace(sk, { adult_build: build });
   }
   return sk;
 }

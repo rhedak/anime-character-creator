@@ -22,8 +22,12 @@ const AUTHORED = Object.keys(HAIRSTYLES)
 // Per soft document, in bytes. A guard against runaway output, not a design limit (the Python's own note: raise it on
 // purpose, with the frame-time check re-run, not to silence a failure).
 const BYTE_BUDGET = 150_000;
-/** The adult woman's drawing is a 46 KB body outline, traced hands and feet and traced hair, and weighs 184 KB (docs/adult-body-status.md); her own limit is 400 KB (ts/test/adult-body.test.ts). */
-const ADULT_BYTE_BUDGET = 400_000;
+/**
+ * An adult woman's soft drawing: a 46 KB body outline, traced hands and feet and traced hair (Franzi's is 184 KB, docs/adult-body-status.md). Raised from 400 KB to 440 KB on 2026-10-25 for Risa's
+ * soft clumps (docs/risa-polish-plan.md, stage 6: her soft drawing is about 414 KB, her flat one 389 KB); the owner expects it to rise as detail is added. Her flat drawings keep their own limit
+ * of 400 KB (ts/test/adult-body.test.ts).
+ */
+const ADULT_BYTE_BUDGET = 440_000;
 const bytes = (s: string): number => Buffer.byteLength(s, "utf8");
 const FRONT_GROUP = '<g clip-path="url(#hair-front)">';
 

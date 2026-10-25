@@ -8,32 +8,29 @@
 // sleeves are drawn again over the skirt, in front of the shirt's, as the arms are.
 
 import { OUTLINE, outlineW, strokeW } from "./character.ts";
+import { celOn, celTone } from "./body-adult-cel.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ARM_INNER, ARM_OUTER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
-import { ARM_OVER_HOOKS, at, place, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
+import { ARM_OVER_HOOKS, adultBreastPoints, at, place, smooth, type EdgePoint, type Knots, type Pt } from "./body-adult-parts.ts";
 import {
   BLAZER_BUTTONHOLE,
   BLAZER_BUTTON_DEPTHS,
   BLAZER_BUTTON_R,
-  BLAZER_COLLAR,
   BLAZER_DART,
   BLAZER_FLAP,
   BLAZER_FLAP_LINE,
   BLAZER_FRONT,
   BLAZER_HEM,
-  BLAZER_LAPEL_FOLD,
-  BLAZER_LAPEL_TOP,
-  BLAZER_NOTCH,
   BLAZER_V_EDGE,
-  BLAZER_WELT,
 } from "./body-adult-blazer-data.ts";
 import { FOOT_D_CUT } from "./body-adult-foot-data.ts";
-import { adultArmPoses, raisedSides } from "./body-adult-pose.ts";
+import { RAISED_SHOULDER_D, adultArmPoses, raisedSides } from "./body-adult-pose.ts";
 import { adultPosedSleeve } from "./body-adult-pose-arm.ts";
-import { BLAZER_SLEEVE_END, shirtSleevesOver, torsoWithoutRaisedSleeves, wearsShirt } from "./body-adult-shirt.ts";
+import { BLAZER_SLEEVE_END, RAISED_SIDE_FROM, shirtSleevesOver, torsoBreadth, wearsShirt } from "./body-adult-shirt.ts";
 import { shade, tint } from "./colorutil.ts";
 import type { CharacterParams } from "./params.ts";
 import { fmt1, fmt2 } from "./pynum.ts";
+import { spacedDepths } from "./body-adult-build.ts";
 import type { Skeleton } from "./skeleton.ts";
 
 const SIDE: Knots = [...TORSO_SIDE, ...LEG_OUTER.filter(([d]) => d <= FOOT_D_CUT)];
@@ -57,18 +54,19 @@ const ease = (t: number): number => {
   return u * u * (3 - 2 * u);
 };
 
+/** How far a posed arm's blazer sleeve stands off the arm, in canvas units (the posed sleeve is the arm's own silhouette grown by this). */
+export const blazerSleeveEase = (sk: Skeleton): number => ((EASE.outer + EASE.inner) / 2) * 2 * sk.head_r;
+
 export const wearsBlazer = (p: CharacterParams): boolean => p.outfit.coat_color !== null && p.outfit.coat_cut === "blazer";
 
 /** The blazer's half-width at a depth, in head heights: the chest's, nipped at the waist, flaring toward the hem. */
 function halfWidth(d: number): number {
-  const chest: Knots = [[0.5, 0.43], [0.81, 0.467], [1.0, 0.41]];
-  const base = d < 1.0 ? at(chest, d) : at(SIDE, Math.max(d, 1.1)) + (d < 1.1 ? (1.1 - d) * 0.3 : 0);
-  return base + EASE.torso + 0.03 * ease((d - 1.3) / 0.65);
+  return torsoBreadth(d) + EASE.torso + 0.03 * ease((d - 1.3) / 0.65);
 }
 
 function geometry(sk: Skeleton) {
   const { cx, y, w } = place(sk);
-  const P = (s: number, v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+  const P = (s: number, v: number, d: number): Pt => [cx + s * w(d, v), y(d, v)];
   const tableFrom = (tab: Knots, from: number, to: number): [number, number][] => tab.filter(([d]) => d >= from - 1e-9 && d <= to + 1e-9) as [number, number][];
   const outerKnots = (): [number, number][] => [
     [0.12, 0.26],
@@ -80,7 +78,7 @@ function geometry(sk: Skeleton) {
   const innerKnots = (): [number, number][] => [...tableFrom(ARM_INNER, ARMPIT, SLEEVE_END), [SLEEVE_END, at(ARM_INNER, SLEEVE_END)]].map(([d, v]): [number, number] => [d, v - EASE.inner]);
   const outer = (s: number): Pt[] => outerKnots().map(([d, v]) => P(s, v, d));
   const inner = (s: number): Pt[] => innerKnots().map(([d, v]) => P(s, v, d));
-  return { P, outer, inner, cx, y, w };
+  return { P, outer, inner, outerKnots, cx, y, w };
 }
 
 /**
@@ -89,14 +87,48 @@ function geometry(sk: Skeleton) {
  */
 const V_TOP: Pt = [0.172, 0.11];
 const vEdgePts: readonly Pt[] = [V_TOP, ...BLAZER_V_EDGE.slice(1)];
-const collarPts: readonly Pt[] = [V_TOP, ...BLAZER_COLLAR.slice(1)];
+
+/**
+ * The collar and the lapel, the viewer's right, in head heights from the centre line. Read off `01-school-uniform` registered by the irises (a 3x gridded zoom with the navy's range
+ * stretched), not the flat blazer of `05` the rest of the blazer is traced from: laid flat, Grok drew the lapels about three times as wide as worn (at 0.5 H below the chin the flat
+ * blazer's lapel ran from 0.11 to 0.39 H, the worn one's from 0.07 to 0.15), its collar out to 0.43 H, nearly the shoulder, and that read as an oversized jacket (the owner,
+ * 2026-10-24). Worn, the notch sits close to the neck and the lapel is long and narrow, its tip low. The reads are scaled by 1.06 across and 1.03 down, the uniform image's drift
+ * against the bikini image this body matches (docs/risa-polish-plan.md, decision 1), and the fold ends on the V's point.
+ */
+const COLLAR: readonly Pt[] = [V_TOP, [0.215, 0.19], [0.235, 0.285]];
+const NOTCH: readonly Pt[] = [[0.235, 0.285], [0.19, 0.305]];
+const LAPEL_TOP: readonly Pt[] = [[0.19, 0.305], [0.245, 0.395], [0.3, 0.485]];
+/**
+ * The breast welt pocket, the viewer's right only, in head heights from the centre line: read off `01` as the lapel is (0.22 to 0.37 H across, 0.55 to 0.59 H down, scaled the same). The
+ * flat blazer's, a fraction of the half-width, reached past the armhole seam once the seam came in beside the bust (2026-10-24).
+ */
+const WELT: readonly Pt[] = [[0.235, 0.567], [0.395, 0.561], [0.398, 0.611], [0.235, 0.617]];
+const LAPEL_FOLD: readonly Pt[] = [[0.3, 0.485], [0.225, 0.585], [0.15, 0.684], [0.076, 0.782], [0.0022, 0.8791]];
 
 /** One front panel's closed outline: the V's top, over the shoulder, down the sleeve, up its inner edge, down the torso's side, along the hem, up the front edge and the V's edge. */
-function panel(sk: Skeleton, s: number): string {
+function panel(sk: Skeleton, s: number, raised = false): string {
   const g = geometry(sk);
   const f = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
   const run = (pts: Pt[]): string => (pts.length === 0 ? "" : `L ${f(pts[0] as Pt)} ${smooth(pts)}`);
   const top = g.P(s, V_TOP[0], V_TOP[1]);
+  if (raised) {
+    // A raised arm takes the sleeve with it, so this side's outline is the torso's own: down the shoulder to where the posed arm begins, curving in to the torso's breadth
+    // (`RAISED_SIDE_FROM`, body-adult-shirt.ts) and down it (`halfWidth`: the chest, then the torso's side, with the blazer's ease) to the hem, one inked line. A clip of the whole panel along the
+    // armhole left a wedge of the sleeve under the arm, cut along straight chords with no ink (the owner, 2026-10-25).
+    const shoulder = g.outerKnots().filter(([d]) => d < RAISED_SHOULDER_D - 1e-9).map(([d, v]) => g.P(s, v, d));
+    const cap = g.P(s, at(SHOULDER_OUTER, RAISED_SHOULDER_D) + EASE.shoulder, RAISED_SHOULDER_D);
+    const down: Pt[] = [];
+    for (let i = 0; RAISED_SIDE_FROM + 0.05 * i < HEM_D - 0.1; i++) down.push(g.P(s, halfWidth(RAISED_SIDE_FROM + 0.05 * i), RAISED_SIDE_FROM + 0.05 * i));
+    const hem = BLAZER_HEM.map(([nx, d]): Pt => g.P(s, nx * halfWidth(d), d));
+    const front = BLAZER_FRONT.map(([v, d]): Pt => g.P(s, Math.max(0, v - (BLAZER_FRONT[0] as Pt)[0]), d));
+    const vEdge = vEdgePts.map(([v, d]): Pt => g.P(s, v, d));
+    return (
+      `M ${f(top)} ${run([...shoulder, cap, ...down])} L ${f(hem[hem.length - 1] as Pt)} ` +
+      `${run([...hem].reverse())} ` +
+      `${run([...front].reverse())} ` +
+      `${run([...vEdge].reverse())} Z`
+    );
+  }
   const outer = g.outer(s);
   const inner = g.inner(s);
   // the torso's side starts where the sleeve's inner edge ends (the armpit) and eases out to the blazer's half-width, so there is no hook where the two meet
@@ -125,18 +157,99 @@ function line(sk: Skeleton, s: number, pts: readonly Pt[], style: string, wide =
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
 }
 
-function polygon(sk: Skeleton, s: number, pts: readonly Pt[], style: string): string {
+function polygon(sk: Skeleton, s: number, pts: readonly Pt[], style: string, wide = true): string {
   const g = geometry(sk);
-  const q = pts.map(([v, d]): Pt => g.P(s, v * halfWidth(d), d));
+  const q = pts.map(([v, d]): Pt => g.P(s, wide ? v * halfWidth(d) : v, d));
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])} `).join("")}Z" ${style} />`;
 }
 
-/** The sleeve's seam: a smooth curve from the shoulder's end down to the armpit, a little inside the sleeve's outer edge and ending on its inner edge. (The body's own underarm crease, which the shirt follows, is wavy; on the blazer it read as bubbles.) */
+/** How far outside the bust's outer edge the sleeve's seam runs, in head heights; how soft the seam's hand-over between the lines it follows is (`smoothMax`); where it leaves the shoulder. */
+const SEAM_GAP = 0.012;
+const SEAM_SOFT = 0.01;
+const SEAM_SHOULDER: Pt = [0.562, 0.3];
+/** The line the seam comes down on from the shoulder, [v, d] at its two ends in head heights (from the centre line, below the chin), heading in toward the bust's side. */
+const SEAM_DOWN: readonly [Pt, Pt] = [SEAM_SHOULDER, [0.38, 0.75]];
+
+/** A maximum that turns no corner: within a few `k` of each other the values blend (a log-sum-exp), apart it is the largest. */
+function smoothMax(vals: readonly number[], k: number): number {
+  const m = Math.max(...vals);
+  return m + k * Math.log(vals.reduce((t, v) => t + Math.exp((v - m) / k), 0));
+}
+
+/**
+ * The sleeve's seam: where the front panel ends and the sleeve begins, from the shoulder's end down to the armpit, where it meets the sleeve's inner edge. (The body's own underarm crease, which the
+ * shirt follows, is wavy; on the blazer it read as bubbles.) It is inked, at the lapel lines' weight: in a dark tone of the navy it did not read, and the front panel seemed to run on over the arm (the
+ * owner, 2026-10-24). In `01` it wraps the bust's side, so it is the smooth outer envelope (`smoothMax`) of three lines, row by row: the line down from the shoulder's end toward the bust (`SEAM_DOWN`),
+ * the bust's own outer edge (the contour the skin and the top draw, `adultBreastPoints`) a `SEAM_GAP` outside it, and the vertical down to the armpit's end. Where the bust bulges out the seam follows
+ * it, whatever the bust; elsewhere it follows the lines, and it hands over between them without a corner. A line through fixed knots, straight down the bust's side and in to the armpit, bowed out under
+ * the bust; the bust's edge joined to the lines end to end left a kink above and a hook below (the owner, 2026-10-24). The sleeve is then about 0.18 H wide at the bust, as in `01`.
+ */
 function armhole(sk: Skeleton, s: number, style: string): string {
   const g = geometry(sk);
-  const knots: [number, number][] = [[0.3, 0.6], [0.6, 0.56], [0.9, 0.52], [1.1, at(ARM_INNER, ARMPIT) - EASE.inner]];
-  const q = knots.map(([d, v]) => g.P(s, v, d));
+  const { cx, y } = place(sk);
+  const unit = 2 * sk.head_r;
+  // the bust's outer edge at a row: the outermost crossing of its contour with the row, in head heights from the centre line
+  const contour = (adultBreastPoints(sk, 12)[s > 0 ? 0 : 1] as EdgePoint[]).map((e) => e.pos);
+  const bustAt = (row: number): number | null => {
+    let best: number | null = null;
+    for (let i = 0; i + 1 < contour.length; i++) {
+      const a = contour[i] as Pt;
+      const b = contour[i + 1] as Pt;
+      if (a[1] === b[1] || (a[1] - row) * (b[1] - row) > 0) continue;
+      const out = (s * (a[0] + ((row - a[1]) / (b[1] - a[1])) * (b[0] - a[0]) - cx)) / unit;
+      if (best === null || out > best) best = out;
+    }
+    return best;
+  };
+  const end = g.P(s, at(ARM_INNER, ARMPIT) - EASE.inner, 1.1);
+  const endV = (s * (end[0] - cx)) / unit;
+  const [[v0, d0], [v1, d1]] = SEAM_DOWN;
+  const q: Pt[] = [];
+  for (let i = 0; d0 + 0.02 * i <= 0.94 + 1e-9; i++) {
+    const d = d0 + 0.02 * i;
+    const row = y(d);
+    const bust = bustAt(row);
+    const lines = [v0 + ((d - d0) / (d1 - d0)) * (v1 - v0), endV, ...(bust === null ? [] : [bust + SEAM_GAP])];
+    q.push([cx + s * smoothMax(lines, SEAM_SOFT) * unit, row]);
+  }
+  q.push(end);
   return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${smooth(q)}" ${style} />`;
+}
+
+/**
+ * The soft finish's cel shadows on the blazer, as the reference shades it: a band down each panel's outer side, from the bust to the hem and widening toward it (the side turns away), and a
+ * strip beside each lapel's fold on the panel, where the lapel stands off it. Clipped to the panels.
+ */
+function blazerCel(sk: Skeleton, raisedSigns: readonly number[], cloth: string): string {
+  const g = geometry(sk);
+  const fill = celTone(cloth, "blazer");
+  const poly = (q: readonly Pt[]): string => `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])}`).join(" ")} Z" fill="${fill}" />`;
+  const shapes = [-1, 1].map((s) => {
+    const ds = Array.from({ length: 13 }, (_, i) => SIDE_BAND_FROM + ((HEM_D - SIDE_BAND_FROM) * i) / 12);
+    const outer = ds.map((d): Pt => g.P(s, halfWidth(d) + 0.03, d));
+    const inner = ds.map((d): Pt => g.P(s, halfWidth(d) - SIDE_BAND[0] - (SIDE_BAND[1] - SIDE_BAND[0]) * ease((d - SIDE_BAND_FROM) / (HEM_D - SIDE_BAND_FROM)), d));
+    const fold = LAPEL_FOLD.map(([v, d]): Pt => g.P(s, v, d));
+    const off = LAPEL_FOLD.map(([v, d]): Pt => g.P(s, v + LAPEL_STRIP, d));
+    return poly([...outer, ...inner.reverse()]) + poly([...fold, ...off.reverse()]);
+  });
+  const clip = `<clipPath id="adult-blazer-cel">${[-1, 1].map((s) => `<path d="${panel(sk, s, raisedSigns.includes(s))}" />`).join("")}</clipPath>`;
+  return `${clip}<g clip-path="url(#adult-blazer-cel)">${shapes.join("")}</g>`;
+}
+
+/** The soft finish's band down the blazer's sides: where it starts (head heights below the chin) and how wide it is there and at the hem. */
+const SIDE_BAND_FROM = 0.8;
+const SIDE_BAND: readonly [number, number] = [0.025, 0.075];
+/** How wide the strip beside the lapel's fold is, in head heights. */
+const LAPEL_STRIP = 0.014;
+
+/**
+ * The blazer's front panels as shapes in `attrs`, a raised side's along its own outline as the drawing draws it: for a mask of what the blazer covers (the front locks' outline,
+ * body-adult-front-locks.ts). "" when it is not worn.
+ */
+export function blazerCover(sk: Skeleton, p: CharacterParams, attrs: string): string {
+  if (!wearsBlazer(p)) return "";
+  const raisedSigns = adultArmPoses(p).map((r) => r.sign);
+  return [-1, 1].map((s) => `<path d="${panel(sk, s, raisedSigns.includes(s))}" ${attrs} />`).join("");
 }
 
 export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
@@ -148,18 +261,19 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
   const seam = `fill="none" stroke="${shade(cloth, 0.45, 1.0)}" stroke-width="${fmt2(ink * 0.5)}" stroke-linecap="round" stroke-linejoin="round"`;
   const L = -1;
   const R = 1;
-  const panels = [L, R].map((s) => `<path d="${panel(sk, s)}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />`).join("");
   // the lapel: the collar's outer edge, the notch, the lapel's top edge and its fold, each side
-  const lapel = [L, R].map((s) => line(sk, s, collarPts, fine) + line(sk, s, BLAZER_NOTCH, fine) + line(sk, s, BLAZER_LAPEL_TOP, fine) + line(sk, s, BLAZER_LAPEL_FOLD, fine)).join("");
+  const lapel = [L, R].map((s) => line(sk, s, COLLAR, fine) + line(sk, s, NOTCH, fine) + line(sk, s, LAPEL_TOP, fine) + line(sk, s, LAPEL_FOLD, fine)).join("");
   const raised = adultArmPoses(p);
   const raisedSigns = raised.map((r) => r.sign);
+  const panels = [L, R].map((s) => `<path d="${panel(sk, s, raisedSigns.includes(s))}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />`).join("");
   const details =
-    [L, R].map((s) => polygon(sk, s, BLAZER_FLAP, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`) + line(sk, s, BLAZER_FLAP_LINE, seam, true) + line(sk, s, BLAZER_DART, seam, true) + (raisedSigns.includes(s) ? "" : armhole(sk, s, seam))).join("") +
-    polygon(sk, R, BLAZER_WELT, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`);
+    [L, R].map((s) => polygon(sk, s, BLAZER_FLAP, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`) + line(sk, s, BLAZER_FLAP_LINE, seam, true) + line(sk, s, BLAZER_DART, seam, true) + (raisedSigns.includes(s) ? "" : armhole(sk, s, fine))).join("") +
+    polygon(sk, R, WELT, `fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink * 0.55)}" stroke-linejoin="round"`, false);
   // the buttons: gold, a ring in a dark tone of it and a pale highlight, each with its buttonhole's slit to the left
   const gold = p.outfit.coat_button_color === null ? "#ba975e" : colorStr(p.outfit.coat_button_color);
   const r = BLAZER_BUTTON_R * 2 * sk.head_r;
-  const buttons = BLAZER_BUTTON_DEPTHS.map((d) => {
+  // under a build the buttons keep their spacing (spacedDepths): the warp alone would close up the top two, which lie in the rows it shortens
+  const buttons = spacedDepths(sk.adult_build, BLAZER_BUTTON_DEPTHS).map((d) => {
     const c = g.P(1, BUTTON_X, d);
     const a = g.P(1, BUTTON_X - BLAZER_BUTTON_R - BLAZER_BUTTONHOLE, d);
     const b = g.P(1, BUTTON_X - BLAZER_BUTTON_R, d);
@@ -170,21 +284,22 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
     );
   }).join("");
   // The pockets and the dart lines go under the lapel's lines (the fold runs over the welt where they meet), the buttons over everything.
-  const torso = panels + details + lapel + buttons;
+  // the soft finish's cel shadows on the panels (body-adult-cel.ts), under the pockets, the darts and the lapel's lines
+  const cel = celOn(p) ? blazerCel(sk, raisedSigns, cloth) : "";
+  const torso = panels + cel + details + lapel + buttons;
   if (raised.length === 0) return torso;
   // A raised arm takes its sleeve with it: the torso is cut along the armhole (the shoulder's cap stays), and the sleeve is the posed arm's own silhouette grown by the blazer's ease, drawn after in the arm's
   // turned frame, ending above the shirt's cuff so that shows. The shirt's own sleeve is drawn before, under it.
-  const sleeveEase = ((EASE.outer + EASE.inner) / 2) * 2 * sk.head_r;
+  const sleeveEase = blazerSleeveEase(sk);
   const sleeves = raised.map((r) => adultPosedSleeve(sk, r, { cloth, ease: sleeveEase, endD: SLEEVE_END, tag: "blazer", cutMargin: 1.2 })).join("");
-  const knots = (): [number, number][] => [[0.62, 0.45], [0.6, 0.6], [0.56, 0.9], [at(ARM_INNER, ARMPIT) - EASE.inner, ARMPIT]].map(([v, d]) => [v as number, d as number] as [number, number]);
-  const cut = torsoWithoutRaisedSleeves(sk, raisedSigns, knots, (dd) => halfWidth(dd));
-  return `<clipPath id="adult-blazer-torso"><polygon points="${cut}" /></clipPath><g clip-path="url(#adult-blazer-torso)">${torso}</g>${sleeves}`;
+  // the raised side's panel is cut along its own outline (`panel`), so the torso needs no clip
+  return torso + sleeves;
 }
 
 /** One sleeve as a fill (the outer edge down to the cuff, the cuff's end, the inner edge back up) and its two edges and the cuff's end as open lines, so no line is drawn across the top where it is clipped. */
 function sleeve(sk: Skeleton, s: number): { fill: string; edges: string } {
   const g = geometry(sk);
-  const o = g.outer(s).filter((q) => q[1] >= g.y(ARMPIT - 0.05));
+  const o = g.outer(s).filter((q) => q[1] >= g.y(ARMPIT - 0.05, 1.0));
   const i = g.inner(s);
   const f = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
   const edges = `M ${f(o[0] as Pt)} ${smooth(o)} L ${f(i[i.length - 1] as Pt)} ${smooth([...i].reverse())}`;
@@ -199,7 +314,7 @@ function blazerSleevesOver(sk: Skeleton, p: CharacterParams): string | null {
   const g = geometry(sk);
   const ink = outlineW(strokeW(sk));
   const cloth = colorStr(p.outfit.coat_color as string);
-  const top = g.y(ARMPIT + 0.05);
+  const top = g.y(ARMPIT + 0.05, 1.0); // the sleeve's row, which moves with the arm under a build
   const clip = `<clipPath id="adult-blazer-sleeves-over"><rect x="0" y="${fmt1(top)}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
   const pieces = hanging
     .map((s) => {

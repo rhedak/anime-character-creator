@@ -116,10 +116,23 @@ consumers are kept in `local/`.
   beside painted art. It is off by default, never used by the presets, the
   covers, the sheets or `ref-out/` (`ts/test/rules-finish.test.ts` pins
   that), offered in the web tool as a "Finish" choice that starts on flat, and
-  it moves no shape. `"flat"` stays the house style and every rule above still
+  it moves no shape. **One preset is the exception (the owner, 2026-10-25):**
+  Risa is drawn soft, so her `ref-out/` renders, the cover and sheets that
+  include her, and her starting point in the web tool are soft; the test pins
+  every other preset flat (`SOFT_PRESETS` in `rules-finish.test.ts`). `"flat"` stays the house style and every rule above still
   holds for it. Gradients only, no blur: cairosvg has none. Anything further in
   the soft finish needs the owner's say, judged by blind pairs, and its record
   is `docs/soft-hair-plan.md` and `docs/soft-hair-status.md`.
+  **Grown 2026-10-25 (the owner, blind pairs):** on the adult woman the soft finish
+  may also draw **cel shadows**, the one shading plane allowed: hard-edged shapes in
+  one darker tone of what they lie on (`ts/src/body-adult-cel.ts`), most of them
+  cast shadows (the jaw on the neck, a top on the ribs, the skirt on the thighs, the
+  blazer's hem on the skirt), the rest bands along an edge (the torso's sides, the
+  inner thighs, the blazer's sides and lapels, beside the skirt's pleats). They are
+  drawn only for a cut that asks for them (`AdultHeadCut.celShading`: Risa's), under
+  the lines, so no line or shape moves, and never in the flat finish. Still no
+  gradients across a garment and no blur. The record is
+  `docs/risa-polish-plan.md`, stage 8.
 
 ## Structure
 
@@ -175,7 +188,8 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
   A new field gets a neutral default in `params.ts` and, if the web tool should offer it, an entry in `catalogue*.ts`.
   `ts/README.md`, "How a part is added", has the steps.
 - After changing shape geometry, actually render it (`node ts/bin/render.ts --out out/tmp --preset satoko`, then a PNG
-  with `tools/.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png`) and view it before calling it done, coordinates
+  with `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib tools/.venv/bin/python harness/svg2png.py out/tmp.svg out/tmp.png`,
+  the variable because dlopen on macOS does not look in Homebrew's prefix for cairo) and view it before calling it done, coordinates
   that look right in the math are routinely wrong visually; this is an iterate-by-looking project.
 - The `gap-analysis` skill is retired with the realistic build it measured (moved to `harness/gap_analysis_skill/` as a
   record on 2026-09-26; its standing result is `docs/gap-analysis.md`). Chibi work and new characters are judged by eye
@@ -191,7 +205,7 @@ and scipy, no package of ours; `uv sync --project tools` once). A script that im
   part, option or character should default to nothing (a `null` field, a part that returns `""`), so every existing
   document stays byte-identical. New realism work stays behind `finish = "soft"` (flat is the house style and does
   not move), and is judged by blind pairs as `docs/soft-hair-plan.md` describes. The soft finish's consumers
-  (the presets, the covers, the sheets, `ref-out/`) are pinned flat by `ts/test/rules-*.test.ts`.
+  (the presets, the covers, the sheets, `ref-out/`) are pinned flat by `ts/test/rules-*.test.ts`, except Risa, who is drawn soft.
 - Test color parametrization by rendering at least one palette very different from the defaults, confirms `shade()`
   derivations still look right outside the default hue range, not just coincidentally right for blonde/green.
 - Branches and releases: `main` is released code and `dev` is where work happens. Commit to `dev`, and merge into

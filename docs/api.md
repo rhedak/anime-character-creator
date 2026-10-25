@@ -1,7 +1,7 @@
 # API reference
 
 What the TypeScript package exposes, what each value means, and the shape of a typical call. The package is
-`ts/src/` (version 0.6.0, the source of truth since the port; `ts/README.md` is the map). The frozen Python
+`ts/src/` (version 0.7.0, the source of truth since the port; `ts/README.md` is the map). The frozen Python
 package (deleted from the tree on 2026-10-19; the tag `python-final` keeps it) had the same surface under snake_case names, given in parentheses below. For how the drawing
 itself is put together, see [architecture.md](architecture.md); for how to run the command lines, see the README.
 
@@ -152,6 +152,7 @@ The three tables below are unchanged by the port: the same fields, the same name
 | `outfit` | `Outfit()` | The garments, below. |
 | `face` | `FaceStyle()` | The expression, below. |
 | `body` | `"tall_chibi_long_torso"` | The body profile, from `BODY_TYPES`: `tall_chibi` (Katherina's, measured), the long torso, or `tall_slender` (Risa's, about 4.4 heads, with a narrow neck and arm and its own wrist anchors). |
+| `body_build` | `None` | The adult woman's build only (every other body ignores it): a name from `ADULT_BUILDS` (`body-adult-build.ts`), a warp of her traced outline that everything on the body follows. `"slender"` (Risa's) has a shorter torso, a narrower ribcage, hips and thighs and thinner arms, fitted to `ref/risa-adult/00-bikini.png`. None is the traced body. Not offered in the web tool. See `docs/risa-polish-plan.md`, stage 2. |
 | `frame` | `0.0` | Shoulder against hip, -1 to 1. Ignored when a skeleton is passed. |
 | `bust` | `0.0` | How much bust the figure carries, 0 to 1; 0 draws the figure as it was before the bust existed. Ignored when a skeleton is passed: build it with `buildSkeleton` (`bust`). See `docs/bust-plan.md`. |
 | `height` | `1.0` | How tall the figure stands against its head, 0.8 to 1.3 in the web tool: below the shoulder line the figure is this many times as long, two thirds of the difference in the legs. See `docs/tall-chibi-plan.md`, R4b. |
@@ -160,6 +161,7 @@ The three tables below are unchanged by the port: the same fields, the same name
 | `shaded` | `True` | `False` drops every shadow shape, leaving flat silhouettes. |
 | `finish` | `"flat"` | `"flat"` or `"soft"`, see "The soft finish" above. |
 | `highlight_strength` | `1.0` | How strong the soft finish's hair clumps are, 0 to 2. Soft only. |
+| `line_style` | `None` | A named line style from `LINE_STYLES` (`character.ts`): every stroke's width scaled, the hair's strand lines with it, and the hair's outline in the hair's strand tone. `"fine"` (Risa's) scales to 0.6 and tints the outline; it composes with the soft finish. None is the house lines. It moves no shape. Not offered in the web tool. See `docs/risa-polish-plan.md`, stage 5. |
 | `right_arm_out`, `left_arm_out` | `0.0` | Swings that whole arm out from the body about the shoulder, in degrees, positive away from the body. `right_arm_out` is the character's own right arm, which is the viewer's left. Past 90 degrees the arm rises above the shoulder: about 115 to 140 reads as hands raised. On the chibi the elbow does not bend. |
 | `right_elbow`, `left_elbow` | `0.0` | The adult woman's raised arms only (the chibi ignores them): how far the forearm folds at the elbow, in degrees, further in the direction the arm was raised, 0 to 155 (90 is square, 155 folds it back along the upper arm with a 20 degree crease; more is clamped). With `right_arm_out` 6 and `right_elbow` 148 to 155 the hand is beside the head, a wave; with 16 and 148 and `grip_style` "fist" the fists are at the shoulders, a cheer. A bent arm is drawn on its own even when it hangs, held out at least six degrees. Named from the viewer's side like `right_arm_out`. |
 | `hand_style` | `"mitten"` | The relaxed hand, one of `HAND_STYLES`: `mitten` (the default), `notched`, `stroked`, `curled`, `traced`. Every preset wears the mitten. See `docs/hands-status.md`. |

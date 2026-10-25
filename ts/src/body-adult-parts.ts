@@ -7,10 +7,12 @@
 // The arms are part of the one outline for now: a garment that needs the arm in front of it (a sleeve over the
 // upper arm is drawn over the body anyway) will split them off at stage 6.
 
-import { OUTLINE, curve, outlineW, soft, strokeW } from "./character.ts";
+import { OUTLINE, curve, lineScale, lineStyleOf, outlineW, soft, strokeW } from "./character.ts";
 import { SOFT_LOCK_STRENGTH_SCALE, hairClip, softLocks } from "./hair.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
+import { CEL_CAST, castShadow, celOn, celTone } from "./body-adult-cel.ts";
+import { warpDepth, warpHalf } from "./body-adult-build.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
 import { ADULT_TOP } from "./body-adult-top-data.ts";
@@ -64,7 +66,11 @@ export function at(tab: Knots, d: number): number {
 }
 
 export interface Place {
-  y: (d: number) => number;
+  /**
+   * The row of depth `d` (H). `v`, the point's knot half-width, matters only under a build (body-adult-build.ts), where the arm closes up by its own amount: a point on or
+   * beside the arm passes it, so it moves with the arm. Without it a point moves with the torso; without a build `v` changes nothing.
+   */
+  y: (d: number, v?: number) => number;
   /** Half-width in pixels of a knot value `v` (H) at depth `d`, following the profile's widths. */
   w: (d: number, v: number) => number;
   cx: number;
@@ -79,17 +85,80 @@ export function place(sk: Skeleton): Place {
   const rl = ratio(sk.leg_half_w, ADULT_REF.leg_half_w);
   const ds = [0.0, 0.28, 1.3, 2.2, 2.4, 3.3, 5.4];
   const rr = [rs, rs, rw, rh, rh, rl, rl];
-  return {
-    cx: sk.head_cx,
-    y: (d) => piecewise(d, REF_DEPTHS, ys),
-    w: (d, v) => v * 2 * sk.head_r * piecewise(d, ds, rr),
-  };
+  const y = (d: number): number => piecewise(d, REF_DEPTHS, ys);
+  const w = (d: number, v: number): number => v * 2 * sk.head_r * piecewise(d, ds, rr);
+  const b = sk.adult_build;
+  // A build warps the knot before it is placed (body-adult-build.ts); without one the knot is placed as traced, by the same two functions, so the drawing is unchanged.
+  if (b === undefined) return { cx: sk.head_cx, y, w };
+  return { cx: sk.head_cx, y: (d, v) => y(warpDepth(b, d, v)), w: (d, v) => w(warpDepth(b, d, v), warpHalf(b, d, v)) };
 }
 
 export type Pt = readonly [number, number];
 
 /** Where the gap between the legs starts, in head heights below the chin: under the briefs' gusset (which ends at 2.262), so its top edge is hidden by it and the gusset's lower edge is the only line across the slot. */
 const GAP_TOP = 2.2;
+
+/**
+ * The bikini top's outer edge on the viewer's right side ([v, d] head heights, v outward), bust-warped by `bs`: from the cup's lowest outer point down round the step in to the band's outer
+ * end, as the top's own quadratics (`ADULT_TOP_ROUNDED`, the corner rounded), so a body edge laid on it is the same curve. Read off the traced chain: its points from the band's outer end up the cup's side, while they
+ * are below `TOP_EDGE_FROM`.
+ */
+const TOP_EDGE_FROM = 0.82;
+
+/**
+ * The bikini top's outline (`ADULT_TOP`) with the step at each lower outer corner rounded: the traced cup's side steps in to a narrower band there (from the cup's lowest outer point down to the
+ * band's outer end, 0.04 H in over 0.1 H down), which on Franzi's body the arm hides and on Risa's, whose gap now runs along the top's edge, showed as a stair the reference does not have (its
+ * cup's side curves down into the band). On each side the segments from the cup's point to the band's end become one quadratic, its control at the cup point's width and the band end's depth,
+ * so it leaves the cup's side going straight down and meets the band's bottom level: a rounded outer corner. The ends are found by rule: the band's end is the outer point (|x| over 0.38) lowest
+ * on the side, the cup's point the widest outer point between 0.86 and 0.96 H. Used for a warped bust only (`adultBandPath`, `topOuterEdge`): at the traced bust the traced top is drawn as it is.
+ */
+const ADULT_TOP_ROUNDED: Chain = (() => {
+  const [start, segs] = ADULT_TOP;
+  const pts: Pt[] = [start, ...segs.map(([, e]) => e)];
+  const ends = (sign: number): [number, number] => {
+    const outer = pts.map((q, i) => [q, i] as const).filter(([q]) => sign * q[0] > 0.38);
+    const band = outer.reduce((b, c) => (c[0][1] > b[0][1] ? c : b))[1];
+    const cup = outer.filter(([q]) => q[1] > 0.86 && q[1] < 0.96).reduce((b, c) => (sign * c[0][0] > sign * b[0][0] ? c : b))[1];
+    return [Math.min(band, cup), Math.max(band, cup)];
+  };
+  const runs = [ends(-1), ends(1)];
+  const out: [Pt, Pt][] = [];
+  for (let k = 0; k < segs.length; k++) {
+    const run = runs.find(([i0, i1]) => k >= i0 && k < i1);
+    if (run === undefined) {
+      out.push(segs[k] as [Pt, Pt]);
+      continue;
+    }
+    if (k !== run[0]) continue; // the rest of the run is replaced by the one curve
+    const [a, b] = [pts[run[0]] as Pt, pts[run[1]] as Pt];
+    // the cup's point is the one higher up; the control is at its width and the band end's depth
+    const [cup, band] = a[1] < b[1] ? [a, b] : [b, a];
+    out.push([[cup[0], band[1]], b]);
+  }
+  return [start, out];
+})();
+
+export function topOuterEdge(bs: number): { from: Pt; segs: [Pt, Pt][] } {
+  const [start, segs] = ADULT_TOP_ROUNDED;
+  const warp = (q: Pt): Pt => {
+    const r = bustWarp(q, bs);
+    return [-r[0], r[1]];
+  };
+  // the chain starts at the band's outer end (viewer's left, x negative) and runs up the cup's side: take its segments while their end stays below TOP_EDGE_FROM
+  const up: [Pt, Pt][] = [];
+  let p0 = warp(start);
+  const band = p0;
+  for (const [c, e] of segs) {
+    const we = warp(e);
+    if (we[1] < TOP_EDGE_FROM) break;
+    up.push([warp(c), we]);
+    p0 = we;
+  }
+  // reversed to run down: from the cup's lowest outer point to the band's end
+  const ends = [band, ...up.map(([, e]) => e)];
+  const down: [Pt, Pt][] = up.map(([c], i) => [c, ends[i] as Pt] as [Pt, Pt]).reverse();
+  return { from: p0, segs: down };
+}
 
 /** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
 const GAP_TIP: Pt = [0.4, 0.955];
@@ -154,29 +223,48 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
   const armOuterAbove = ARM_OUTER.filter(([dd]) => dd <= HAND_D_CUT + 1e-6);
   const inner = (tab: Knots): boolean => tab === ARM_INNER || tab === LEG_INNER || tab === legInnerAbove || tab === armInnerAbove;
   const side = (sign: number, tab: Knots): Pt[] =>
-    tab.map(([d, v]) => [cx + sign * (w(d, v) + (inner(tab) ? hs : -hs)), y(d)]);
+    tab.map(([d, v]) => [cx + sign * (w(d, v) + (inner(tab) ? hs : -hs)), y(d, v)]);
   const rev = <T,>(a: readonly T[]): T[] => [...a].reverse();
   // A side without its arm: the shoulder stops at the shoulder's tip, where the raised arm's cap begins (`RAISED_SHOULDER_D`), and the outline goes in to the armpit and down the ribs to the gap's tip.
   const shoulderAbove: Knots = [...SHOULDER_OUTER.filter(([dd]) => dd < RAISED_SHOULDER_D), [RAISED_SHOULDER_D, at(SHOULDER_OUTER, RAISED_SHOULDER_D)]];
   const shoulderNext = (sign: number): Pt => side(sign, [SHOULDER_OUTER.find(([dd]) => dd > RAISED_SHOULDER_D + 1e-6) as readonly [number, number]])[0] as Pt;
   const out = (sign: number): Pt[] => [
     [cx + sign * sk.neck_half_w, y(0.12)],
-    [cx + sign * (w(0.2, 0.2) - hs), y(0.2)],
-    [cx + sign * (w(0.25, 0.4) - hs), y(0.25)],
+    [cx + sign * (w(0.2, 0.2) - hs), y(0.2, 0.2)],
+    [cx + sign * (w(0.25, 0.4) - hs), y(0.25, 0.4)],
     ...(without.includes(sign) ? side(sign, shoulderAbove) : [...side(sign, SHOULDER_OUTER), ...side(sign, armOuterAbove)]),
   ];
-  const ribs = (sign: number): Pt[] => RIB_KNOTS.map(([v, dd]): Pt => [cx + sign * (w(dd, v) - hs), y(dd)]);
-  const tip = (sign: number): Pt => [cx + sign * w(GAP_TIP[1], GAP_TIP[0]), y(GAP_TIP[1])];
+  const ribs = (sign: number): Pt[] => RIB_KNOTS.map(([v, dd]): Pt => [cx + sign * (w(dd, v) - hs), y(dd, v)]);
+  // The gap's tip is where the cup's lower outer corner meets the arm, so it moves up and down with the bust (`bustWarp`'s depth: a smaller bust's lower edge rises), and the caps that open
+  // the gap below it with it. Only its depth: the arm does not move in with the bust, and drawn in with it the tip and the torso's cap dented the torso's side. At the traced bust (Franzi's)
+  // nothing moves. With Risa's smaller bust the tip stayed at the traced depth, 0.05 H below her cup's corner, and the gap opened 0.06 to 0.1 H below it where her reference's opens 0.03 H below.
+  const bs = adultBustScale(sk.bust);
+  const gd = (d: number): number => bustWarp([0, d], bs)[1];
+  const tip = (sign: number): Pt => [cx + sign * w(gd(GAP_TIP[1]), GAP_TIP[0]), y(gd(GAP_TIP[1]), GAP_TIP[0])];
+  // With the bust warped (a smaller or larger one than the traced), the gap's inner side is the top's own outer edge: from the cup's lowest outer point, round the step in to the band and down to
+  // the band's outer end, the same quadratics the top is drawn with (`adultBandPath`), and the torso's side from there. The body's outline then lies on the top's edge, so the top, which is
+  // clipped to the body, is not notched where the gap meets it, and the gap follows the cup's shape as the reference's does (its hair shows right beside the cup's lower outer curve). At the
+  // traced bust the traced tip fits the traced top, and nothing changes.
+  const topEdge = bs === 1 ? null : topOuterEdge(bs);
+  const topPt = (sign: number, q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1], q[0])];
+  /** The edge down one side: from the cup's lowest outer point to the band's outer end, as quadratics from the current point (which is the first). */
+  const topDown = (sign: number): string => (topEdge === null ? "" : topEdge.segs.map(([c, e]) => quad(topPt(sign, c), topPt(sign, e))).join(""));
+  /** The same edge up the other way: from the band's outer end to the cup's lowest outer point. */
+  const topUp = (sign: number): string => {
+    if (topEdge === null) return "";
+    const ends = [topEdge.from, ...topEdge.segs.map(([, e]) => e)];
+    return topEdge.segs.map(([c], i) => quad(topPt(sign, c), topPt(sign, ends[i] as Pt))).reverse().join("");
+  };
   // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
-  const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0)];
-  const capTor = (sign: number): Pt => [cx + sign * (w(1.0, 0.395) - hs * 0.4), y(1.0)];
+  const capArm = (sign: number): Pt => [cx + sign * (w(gd(1.0), 0.425) + hs * 0.4), y(gd(1.0), 0.425)];
+  const capTor = (sign: number): Pt => [cx + sign * (w(gd(1.0), 0.395) - hs * 0.4), y(gd(1.0), 0.395)];
   // The legs end at `FOOT_D_CUT`; from there the traced foot (body-adult-foot-data.ts) takes over, round the toes and back to the inner edge.
   const legLine = (sign: number): Pt[] => [...side(sign, TORSO_SIDE), ...side(sign, legOuterAbove)];
   const L = -1;
   const R = 1;
   // A traced chain (the foot, the hand), in the knots' own coordinates [v, d] (head heights): the left side walks outer edge to inner edge, the
   // right one the other way.
-  const chainPt = (sign: number, q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+  const chainPt = (sign: number, q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1], q[0])];
   const walk = (sign: number, [start, segs]: Chain): string => {
     if (sign < 0) return segs.map(([c, e]) => quad(chainPt(sign, c), chainPt(sign, e))).join("");
     const ends: Pt[] = [start, ...segs.map(([, e]) => e)];
@@ -197,7 +285,8 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
   } else {
     d += hand(L);
     d += smooth(rev(side(L, armInnerAbove)));
-    d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+    if (topEdge === null) d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+    else d += quad(capArm(L), topPt(L, topEdge.from)) + topDown(L) + quad(capTor(L), leg[0] as Pt);
   }
   d += smooth(leg);
   d += foot(L);
@@ -218,7 +307,8 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
     d += quad(capTor(R), tip(R));
     d += smooth([tip(R), ...rev(ribs(R)), shoulder[shoulder.length - 1] as Pt]);
   } else {
-    d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
+    if (topEdge === null) d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
+    else d += quad(capTor(R), topPt(R, topEdge.segs[topEdge.segs.length - 1]![1])) + topUp(R) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
     d += smooth(side(R, armInnerAbove));
     d += hand(R);
   }
@@ -240,7 +330,34 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // the sides it lay just beyond the top's own outer edge and drew a second line beside it (the owner's double outline).
   const { cx, w } = place(sk);
   const mid = `<clipPath id="adult-bust-mid"><rect x="${fmt1(cx - w(0.6, 0.33))}" y="0" width="${fmt1(2 * w(0.6, 0.33))}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
-  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk, DEFAULT_TAPER, shade(p.skin_tone, 0.78, 1.6), 0.8)}</g>` + `${adultBodyClip("adult-body-clip")}<g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
+  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk, DEFAULT_TAPER, shade(p.skin_tone, 0.78, 1.6), 0.8)}</g>` + `${adultBodyClip("adult-body-clip")}<g clip-path="url(#adult-body-clip)">${celOn(p) ? adultSkinCel(sk, p) : ""}${adultBand(sk, p)}</g>`;
+}
+
+/** A band of `width` head heights at its widest along a body edge `tab` from `d0` to `d1`, on its inner side (`toward` -1, toward the centre line) or its outer, tapering to nothing at both ends. */
+function edgeBand(sk: Skeleton, tab: Knots, d0: number, d1: number, width: number, toward: number, fill: string): string {
+  const { cx, y, w } = place(sk);
+  return [-1, 1]
+    .map((s) => {
+      const ds = Array.from({ length: 13 }, (_, i) => d0 + ((d1 - d0) * i) / 12);
+      const edge = ds.map((d): Pt => [cx + s * w(d, at(tab, d) - toward * 0.01), y(d, at(tab, d))]);
+      const inside = ds.map((d, i): Pt => {
+        const v = at(tab, d) + toward * width * Math.sin((Math.PI * i) / 12);
+        return [cx + s * w(d, v), y(d, v)];
+      });
+      const q = [...edge, ...inside.reverse()];
+      return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])}`).join(" ")} Z" fill="${fill}" />`;
+    })
+    .join("");
+}
+
+/**
+ * The soft finish's cel shadows on the bare skin (body-adult-cel.ts), drawn in the body's clip under the bikini top: the top's cast shadow on the ribs below it, a band down each side of the
+ * torso where the arm hangs beside it, and a band down each inner thigh, as the reference shades them.
+ */
+function adultSkinCel(sk: Skeleton, p: CharacterParams): string {
+  const fill = celTone(colorStr(p.skin_tone), "skin");
+  const top = p.outfit.underwear_top ? castShadow(adultBandPath(sk), CEL_CAST.top * 2 * sk.head_r, fill) : "";
+  return top + edgeBand(sk, TORSO_SIDE, 1.0, 2.15, 0.022, -1, fill) + edgeBand(sk, LEG_INNER, 2.2, 3.0, 0.03, 1, fill);
 }
 
 /**
@@ -258,7 +375,7 @@ export function adultSkin(sk: Skeleton, p: CharacterParams): string {
   const crease = [1, -1]
     .filter((sign) => !raised.includes(sign))
     .map((sign) => {
-      const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
+      const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d, v)];
       // The arm's inner edge from the top of the armpit down: along the bust's outer side (widest about 0.455 H out at 0.8 H),
       // then in to the gap's tip (GAP_TIP). Read off ref 04 (the contour at 5x, row by row).
       // The line stops where it meets the bikini top's edge, which carries on from there: below that point the two ran 0.015 H apart (the top's
@@ -289,9 +406,11 @@ function handPieces(sk: Skeleton) {
   };
   const dAt = (d0: number, d1: number): number[] => [d0, ...V_IN.map(([d]) => d).filter((d) => d > d0 && d < d1), d1];
   const poly = (pts: readonly Pt[]): string => `<polygon points="${pts.map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ")}" />`;
-  const px = (sign: number, d: number, v: number): Pt => [cx + sign * w(d, v), y(d)];
-  const rect = (x0: number, y0: number, x1: number, y1: number): string => `<rect x="${fmt1(x0)}" y="${fmt1(y0)}" width="${fmt1(x1 - x0)}" height="${fmt1(y1 - y0)}" />`;
   const OUT = 1.0;
+  // Every corner of a zone sits on the hand's rows (`OUT`'s): under a build the arm closes up by its own amount (body-adult-build.ts), and the zones, the band between the hands and
+  // the rows above and below them must tile without a seam, which a corner on the torso's rows (the inner side, between hand and thigh) would open.
+  const px = (sign: number, d: number, v: number): Pt => [cx + sign * w(d, v), y(d, OUT)];
+  const rect = (x0: number, y0: number, x1: number, y1: number): string => `<rect x="${fmt1(x0)}" y="${fmt1(y0)}" width="${fmt1(x1 - x0)}" height="${fmt1(y1 - y0)}" />`;
   // one hand's piece between depths d0 and d1: outer side straight, inner side along vIn
   const piece = (sign: number, d0: number, d1: number): string => {
     const ds = dAt(d0, d1);
@@ -315,8 +434,9 @@ export function adultBodyStroke(sk: Skeleton, only: "all" | "hands" = "all", idP
   const { cx, y, w } = place(sk);
   const full = outlineW(strokeW(sk));
   const stroke = (width: number, clip: string): string => adultBodyRef(`fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(width)}" stroke-linejoin="round" clip-path="url(#${clip})"`);
-  const top = y(HAND_D_CUT);
-  const bottom = y(2.9);
+  // the hand's rows, which move with the arm under a build (the hand's own `OUT`, 1.0, is beyond it)
+  const top = y(HAND_D_CUT, 1.0);
+  const bottom = y(2.9, 1.0);
   const big = sk.canvas_w;
   const bigH = sk.canvas_h;
   const { piece, poly, px, vIn, dAt, rect, OUT } = handPieces(sk);
@@ -390,7 +510,7 @@ export function adultBreastPoints(sk: Skeleton, per = 10): EdgePoint[][] {
     const scale = adultBustScale(sk.bust);
     const add = (q0: Pt): void => {
       const q = bustWarp(q0, scale);
-      out.push({ pos: [cx + sign * w(q[1], -q[0]), y(q[1])], x: -q[0], d: q[1] });
+      out.push({ pos: [cx + sign * w(q[1], -q[0]), y(q[1], -q[0])], x: -q[0], d: q[1] });
     };
     add(p0);
     for (const [c, e] of segs) {
@@ -469,7 +589,7 @@ export function adultBreastOutlines(sk: Skeleton): string {
       const scale = adultBustScale(sk.bust);
       const map = (q0: Pt): Pt => {
         const q = bustWarp(q0, scale);
-        return [cx + sign * w(q[1], -q[0]), y(q[1])];
+        return [cx + sign * w(q[1], -q[0]), y(q[1], -q[0])];
       };
       const s0 = map(start);
       const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
@@ -531,11 +651,12 @@ export function adultBand(sk: Skeleton, p: CharacterParams): string {
 /** The bikini top's outline path (body-adult-top-data.ts). */
 function adultBandPath(sk: Skeleton): string {
   const { cx, y, w } = place(sk);
-  const [start, segs] = ADULT_TOP;
   const scale = adultBustScale(sk.bust);
+  // a warped bust's top has its lower outer corners rounded (`ADULT_TOP_ROUNDED`); the traced one is drawn as it was
+  const [start, segs] = scale === 1 ? ADULT_TOP : ADULT_TOP_ROUNDED;
   const map = (q0: Pt): Pt => {
     const q = bustWarp(q0, scale);
-    return [cx + w(q[1], q[0]), y(q[1])];
+    return [cx + w(q[1], q[0]), y(q[1], q[0])];
   };
   const s0 = map(start);
   return `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
@@ -650,18 +771,25 @@ export function adultHairBehind(sk: Skeleton, p: CharacterParams): string {
   return clip + adultHairShape(sk, p);
 }
 
+/** The ink of the hair's outline: the black outline, or under a line style that asks for it (`LINE_STYLES`) the hair cut's strand tone, as the reference art draws its hair. */
+export function adultHairInk(p: CharacterParams): string {
+  if (lineStyleOf(p)?.hairTone !== true) return OUTLINE;
+  const cut = adultCutOf(p);
+  return shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]);
+}
+
 /** The hair silhouette with its outline and the strand lines over it, clipped to the silhouette (the shared body of the two draws). */
 function adultHairShape(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
   const sw = fmt2(outlineW(strokeW(sk)));
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   const cut = adultCutOf(p);
-  const hair = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
+  const hair = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${adultHairInk(p)}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
   // the soft finish's clumps over the fill, in the hair's tones, clipped to the silhouette, under the strands
-  const clumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE, "adult-hair-clip") : "";
-  const strands = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
+  const clumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE * cut.lockGain, "adult-hair-clip") : "";
+  const strands = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
   // the lines that run down to the face's edge: blunt at the end (the share of the length over which it tapers is a twentieth), the face drawn over what passes the edge
-  const edgeStrands = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
+  const edgeStrands = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
   return hair + clumps + `<g clip-path="url(#adult-hair-clip)">${strands}${edgeStrands}</g>`;
 }
 
@@ -689,6 +817,9 @@ export function adultHairClip(sk: Skeleton, p: CharacterParams): string {
   return hairClip(onHead(sk), p, adultCutOf(p).clip);
 }
 
+/** How low a fringe reaches, in head radii below the head's centre (Risa's ends at 0.20): a clump wholly below it is not drawn again over the fringe. */
+const FRINGE_LOCK_BELOW = 0.25;
+
 /** What is drawn over the face: the fringe where a cut has one of its own, the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */
 export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
@@ -700,11 +831,13 @@ export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
     const tone = shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]);
     // The fringe's hair is a shape of its own over the skin, so it covers the strand lines drawn behind the face: the lines are drawn again over it, clipped to it, and the
     // lines that run on past its edge as thin dark lines (the locks' tips) are drawn whole, over the skin.
-    const inside = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight), tone)).join("");
-    const edge = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight), tone, undefined, 0.05)).join("");
+    const inside = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), tone)).join("");
+    const edge = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight * lineScale(p)), tone, undefined, 0.05)).join("");
     locks =
       `<clipPath id="adult-fringe-clip">${fringe.hair.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>` +
       fringe.hair.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" />`).join("") +
+      // the soft finish's clumps where they lie on the fringe (the crown's sheen dips onto it), clipped to it: only those that reach its rows, so the rest are not written twice
+      (soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks.filter(([, pts]) => pts.some(([, y]) => y < FRINGE_LOCK_BELOW)), p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE * cut.lockGain, "adult-fringe-clip") : "") +
       `<g clip-path="url(#adult-fringe-clip)">${inside}</g>` +
       edge +
       fringe.lines.map((c, i) => taperedStrand(h, c, 0, OUTLINE, fringe.widths[i])).join("");
@@ -877,7 +1010,7 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
   const parts: string[] = [];
   const raised = raisedSides(p);
   for (const sign of [-1, 1].filter((s) => !raised.includes(s))) {
-    const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+    const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1], q[0])];
     const inPx = ([start, segs]: Chain): Chain => [px(start), segs.map(([c, e]) => [px(c), px(e)] as [Pt, Pt])];
     const closed = (ch: Chain, attrs: string): string => {
       const [start, segs] = inPx(ch);
@@ -905,7 +1038,7 @@ function adultHandsDetail(sk: Skeleton, p: CharacterParams): string {
     parts.push(`<g clip-path="url(#adult-hand-body)">${fills}</g>`);
     // the thumb over the finger outlines, from `HAND_THUMB_FROM` down (the rows of its tip): skin, with a thin outline of its own
     const thumbClip = `adult-thumb-rows-${sign < 0 ? "l" : "r"}`;
-    parts.push(`<clipPath id="${thumbClip}"><rect x="0" y="${fmt1(y(HAND_THUMB_FROM))}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h)}" /></clipPath>`);
+    parts.push(`<clipPath id="${thumbClip}"><rect x="0" y="${fmt1(y(HAND_THUMB_FROM, 1.0))}" width="${fmt1(sk.canvas_w)}" height="${fmt1(sk.canvas_h)}" /></clipPath>`);
     parts.push(`<g clip-path="url(#${thumbClip})">` + HAND_THUMB.map((c) => closed(c, `fill="${colorStr(p.skin_tone)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.4))}" stroke-linejoin="round"`)).join("") + "</g>");
     parts.push(...HAND_NAILS.map((c) => closed(c, `fill="${tint(p.skin_tone, 0.28)}" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.3))}" stroke-linejoin="round"`)));
     HAND_LINES.forEach((c, i) => parts.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (HAND_LINE_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
@@ -931,10 +1064,10 @@ export function adultDetail(sk: Skeleton, p: CharacterParams): string {
   const nailsHere: string[] = [];
   let footClip = "";
   for (const sign of [-1, 1]) {
-    const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
+    const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d, v)];
     // Foot, traced from the close-up (harness/franzi_feet/): the dividers between toes, thin at the base and heavy toward the notch, and the
     // five toenails, each a closed ring with a slightly lighter fill. The chains are in the knots' [v, d] coordinates, mapped like the legs.
-    const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1])];
+    const px = (q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1], q[0])];
     const inPx = ([start, segs]: Chain): Chain => [px(start), segs.map(([c, e]) => [px(c), px(e)] as [Pt, Pt])];
     const pixelFrame = { head_cx: 0, head_cy: 0, head_r: 1 } as Skeleton; // taperedStrand reads a chain in head radii; this frame makes it read pixels
     if (p.outfit.boot_color === null) FOOT_DIVIDERS.forEach((c, i) => out.push(taperedStrand(pixelFrame, inPx(c), 0, OUTLINE, (FOOT_DIVIDER_WIDTHS[i] as readonly number[]).map((v) => v * sk.head_r))));
@@ -984,8 +1117,8 @@ function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
   const from = p.outfit.robe_color !== null && Number(p.outfit.sleeve_drop) > 0 ? 0.9 + 1.8 * Math.min(1, Number(p.outfit.sleeve_drop)) : 0;
   const tab = ARM_INNER.filter(([d]) => d <= HAND_D_CUT + 0.02 && d >= from);
   const strip = (sign: number): string => {
-    const inner = tab.map(([d, v]) => `${fmt1(cx + sign * (w(d, v) - hs * 1.5))},${fmt1(y(d))}`);
-    const outer = [...tab].reverse().map(([d]) => `${fmt1(cx + sign * w(d, 1.0))},${fmt1(y(d))}`);
+    const inner = tab.map(([d, v]) => `${fmt1(cx + sign * (w(d, v) - hs * 1.5))},${fmt1(y(d, v))}`);
+    const outer = [...tab].reverse().map(([d]) => `${fmt1(cx + sign * w(d, 1.0))},${fmt1(y(d, 1.0))}`);
     return `<polygon points="${[...inner, ...outer].join(" ")}" />`;
   };
   const id = "adult-arm-strip";
@@ -1003,7 +1136,8 @@ function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
  * The neck: skin from inside the head down to where the body outline begins, with a line down each side that runs into
  * that outline, so there is no break between the jaw and the shoulder slope (the chibi's neck stops short of it).
  */
-export function adultNeck(sk: Skeleton, p: CharacterParams): string {
+/** The neck. `idSuffix` keeps its ids unique where it is drawn a second time (the shirt redraws it inside its collar's opening). */
+export function adultNeck(sk: Skeleton, p: CharacterParams, idSuffix = ""): string {
   const { cx, y } = place(sk);
   const hs = outlineW(strokeW(sk)) / 2;
   const top = sk.head_cy + sk.head_r * 0.8;
@@ -1011,7 +1145,15 @@ export function adultNeck(sk: Skeleton, p: CharacterParams): string {
   const nw = sk.neck_half_w;
   const sw = fmt2(outlineW(strokeW(sk)));
   const side = (x: number): string => `<path d="M ${fmt1(x)} ${fmt1(top)} L ${fmt1(x)} ${fmt1(bottom)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`;
-  return `<rect x="${fmt1(cx - nw)}" y="${fmt1(top)}" width="${fmt1(2 * nw)}" height="${fmt1(bottom - top + 3 * hs)}" fill="${colorStr(p.skin_tone)}" />` + side(cx - nw) + side(cx + nw);
+  const rect = `x="${fmt1(cx - nw)}" y="${fmt1(top)}" width="${fmt1(2 * nw)}" height="${fmt1(bottom - top + 3 * hs)}"`;
+  // the soft finish's shadow under the jaw: the face's skin moved down and clipped to the neck, so only the crescent below the jaw shows (the face is drawn over the rest)
+  const h = onHead(sk);
+  const jaw = celOn(p)
+    ? `<clipPath id="adult-neck-cel${idSuffix}"><rect ${rect} /></clipPath><g clip-path="url(#adult-neck-cel${idSuffix})">` +
+      adultCutOf(p).face.map(([s0, segs]) => castShadow(curve(h.head_cx, h.head_cy, h.head_r, s0, segs), CEL_CAST.jaw * 2 * sk.head_r, celTone(colorStr(p.skin_tone), "skin"))).join("") +
+      `</g>`
+    : "";
+  return `<rect ${rect} fill="${colorStr(p.skin_tone)}" />` + jaw + side(cx - nw) + side(cx + nw);
 }
 
 /**

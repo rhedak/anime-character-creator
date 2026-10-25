@@ -13,12 +13,13 @@ import { armAxis, armTurn, armTurnBack } from "./body-adult-pose-arm.ts";
 import { ADULT_BODICE, BODICE_BUTTONS, BODICE_BUTTON_R } from "./body-adult-bodice-data.ts";
 import { ADULT_BOW } from "./body-adult-bow-data.ts";
 import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
-import { adultBlazer, wearsBlazer } from "./body-adult-blazer.ts";
+import { adultBlazer, blazerCover, wearsBlazer } from "./body-adult-blazer.ts";
+import { CEL_CAST, castShadow, celOn, celTone } from "./body-adult-cel.ts";
 import { adultRibbon, adultShirt, wearsShirt } from "./body-adult-shirt.ts";
 import { LOAFER_ASPECT, LOAFER_OUTLINE, LOAFER_SEAM, LOAFER_SLOT, LOAFER_SOLE_EDGE, LOAFER_STRAP_BOT, LOAFER_STRAP_TOP } from "./body-adult-loafer-data.ts";
 import { ADULT_PLEATED_BAND, ADULT_PLEATED_FOLDS, ADULT_PLEATED_SKIRT } from "./body-adult-skirt-pleated-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
-import { DEFAULT_TAPER, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
+import { DEFAULT_TAPER, adultBodyClip, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
 import { shade, tint } from "./colorutil.ts";
 import { strap } from "./garments.ts";
 import type { CharacterParams } from "./params.ts";
@@ -145,13 +146,13 @@ export function adultBlouse(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.tunic_color === null) return "";
   if (wearsShirt(p)) return adultShirt(sk, p);
   const { cx, y, w } = place(sk);
-  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1])];
+  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1], q[0])];
   const [start, segs] = ADULT_BLOUSE;
   const s0 = map(start);
   const d = `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
   const lineAttrs = `fill="none" stroke="${OUTLINE}" stroke-width="${fmt2(outlineW(strokeW(sk)) * 0.67)}" stroke-linecap="round" stroke-linejoin="round"`;
   // A left-hand polyline [v, d] on the viewer's left (sign -1) and the right (sign 1).
-  const side = (line: readonly (readonly [number, number])[], sign: number): Pt[] => line.map(([v, dd]) => [cx + sign * w(dd, v), y(dd)] as Pt);
+  const side = (line: readonly (readonly [number, number])[], sign: number): Pt[] => line.map(([v, dd]) => [cx + sign * w(dd, v), y(dd, v)] as Pt);
   const open = (pts: Pt[]): string => `<path d="M ${fmt1((pts[0] as Pt)[0])} ${fmt1((pts[0] as Pt)[1])} ${smooth(pts)}" ${lineAttrs} />`;
   const both = (line: readonly (readonly [number, number])[]): string => open(side(line, -1)) + open(side(line, 1));
   // The binding runs from one strap's top, along the neckline, round the point and up the other strap: one curve.
@@ -184,8 +185,8 @@ export function adultBlouse(sk: Skeleton, p: CharacterParams): string {
   const region = (sign: number): Pt[] =>
     ([[0.42, -0.1], ...ADULT_BLOUSE_LINES.seam, [0.41, SLEEVE_END]] as [number, number][])
       .map(([v, dd]): [number, number] => (dd >= bodiceSide[0]![0] ? [Math.min(v, bodiceEdge(Math.min(dd, bodiceSide[bodiceSide.length - 1]![0]))), dd] : [v, dd]))
-      .map(([v, dd]): Pt => [cx + sign * w(dd, v), y(dd)]);
-  const far = (sign: number, dd: number): Pt => [cx + sign * w(dd, 1.6), y(dd)];
+      .map(([v, dd]): Pt => [cx + sign * w(dd, v), y(dd, v)]);
+  const far = (sign: number, dd: number): Pt => [cx + sign * w(dd, 1.6), y(dd, 1.6)];
   const points = (pts: Pt[]): string => pts.map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ");
   const raisedSigns = raised.map((r) => r.sign);
   // the body piece is everything but the sleeves: below the sleeve's end the whole width, so the hem's flare, which reaches farther out than the seam, stays with the body
@@ -228,17 +229,17 @@ export function adultBlouse(sk: Skeleton, p: CharacterParams): string {
     return at(sm.map(([v, d0]) => [d0, v] as const), dd);
   };
   const inner = contour.filter(([, dd]) => dd >= CAP_D).map(([v, dd]): [number, number] => [Math.min(2 * armAxis(dd) - v, seamV(dd)), dd]);
-  const innerEdge = (sign: number): Pt[] => inner.map(([v, dd]): Pt => [cx + sign * w(dd, v), y(dd)]);
+  const innerEdge = (sign: number): Pt[] => inner.map(([v, dd]): Pt => [cx + sign * w(dd, v), y(dd, v)]);
   // the sleeve's inner edge goes on up the seam above `CAP_D`, to `SLEEVE_TOP`, so its outline reaches the body
   const seamTop = ADULT_BLOUSE_LINES.seam.filter(([, dd]) => dd < CAP_D) as unknown as [number, number][];
   const upSeam: [number, number][] = [[seamV(SLEEVE_TOP), SLEEVE_TOP], ...seamTop.filter(([, dd]) => dd > SLEEVE_TOP)];
-  const innerFull = (sign: number): Pt[] => [...upSeam.map(([v, dd]): Pt => [cx + sign * w(dd, v), y(dd)]), ...innerEdge(sign)];
+  const innerFull = (sign: number): Pt[] => [...upSeam.map(([v, dd]): Pt => [cx + sign * w(dd, v), y(dd, v)]), ...innerEdge(sign)];
   const seamEnd = ADULT_BLOUSE_LINES.seam.filter(([, dd]) => dd > (inner[inner.length - 1] as [number, number])[1]) as unknown as [number, number][];
   const sleeves = raised
     .map((r) => {
       const tag = r.sign < 0 ? "l" : "r";
       const outer = [far(r.sign, SLEEVE_END), far(r.sign, -0.1)];
-      const m = (q: [number, number]): Pt => [cx + r.sign * w(q[1], q[0]), y(q[1])];
+      const m = (q: [number, number]): Pt => [cx + r.sign * w(q[1], q[0]), y(q[1], q[0])];
       const sleeveRegion = [...innerFull(r.sign), ...seamEnd.map(m), m([0.41, SLEEVE_END])];
       // the cap (the cloth above the sleeve proper, over the shoulder) swings with the arm and can end up beyond the body; it is drawn only where it lies over the body's silhouette
       const capRegion = [m([0.42, -0.1]), ...seamTop.filter(([, dd]) => dd < SLEEVE_TOP).map(m), m([seamV(SLEEVE_TOP), SLEEVE_TOP]), far(r.sign, SLEEVE_TOP), far(r.sign, -0.1)];
@@ -270,7 +271,7 @@ export function adultBlouse(sk: Skeleton, p: CharacterParams): string {
 /** A closed traced chain in [x, d] about the garment's centre line, as a path mapped onto the skeleton. */
 function chainPath(sk: Skeleton, [start, segs]: Chain): string {
   const { cx, y, w } = place(sk);
-  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1])];
+  const map = (q: Pt): Pt => [cx + w(q[1], q[0]), y(q[1], q[0])];
   const s0 = map(start);
   return `M ${fmt1(s0[0])} ${fmt1(s0[1])} ` + segs.map(([c, e]) => quad(map(c), map(e))).join("") + "Z";
 }
@@ -282,7 +283,7 @@ function chainPath(sk: Skeleton, [start, segs]: Chain): string {
  */
 export function adultSkirt(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.skirt_color === null) return "";
-  if (p.outfit.skirt_cut === "pleated") return adultPleatedSkirt(sk, colorStr(p.outfit.skirt_color));
+  if (p.outfit.skirt_cut === "pleated") return adultPleatedSkirt(sk, colorStr(p.outfit.skirt_color), p);
   return `<path d="${chainPath(sk, ADULT_SKIRT)}" ${inkAttrs(sk, colorStr(p.outfit.skirt_color))} />`;
 }
 
@@ -291,7 +292,7 @@ export function adultSkirt(sk: Skeleton, p: CharacterParams): string {
  * one flat colour, the pleats as thin fold lines in a dark tone of it from the waistband's lower edge to the hem, and that edge as one continuous line across (its top shifted down by the band's depth) (the darker strip beside each fold in the reference is left out). Its top is
  * hidden under whatever is worn over it.
  */
-function adultPleatedSkirt(sk: Skeleton, color: string): string {
+function adultPleatedSkirt(sk: Skeleton, color: string, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
   // The skirt is traced on Risa's reference, whose hips are narrower than this body's (the briefs 339 px wide against 355 in our render), so the traced edge can fall inside the body's own
   // side and leave skin and the briefs' wing showing beside it. Wherever it does, the whole skirt is widened there: a point moves out by the shortfall of the edge at its depth, in
@@ -303,7 +304,7 @@ function adultPleatedSkirt(sk: Skeleton, color: string): string {
     const shortfall = edge === null ? 0 : Math.max(0, w(q[1], at(SIDE, q[1])) + inkHalf - Math.abs(w(q[1], edge)));
     const over = 1 - ease((q[1] - 2.0) / 0.3);
     const near = edge === null ? 0 : Math.min(1, Math.abs(q[0]) / edge);
-    return [cx + w(q[1], q[0]) + Math.sign(q[0]) * over * shortfall * near, y(q[1])];
+    return [cx + w(q[1], q[0]) + Math.sign(q[0]) * over * shortfall * near, y(q[1], q[0])];
   };
   const [start, segs] = ADULT_PLEATED_SKIRT;
   const s0 = map(start);
@@ -312,8 +313,29 @@ function adultPleatedSkirt(sk: Skeleton, color: string): string {
     const p0 = map(a);
     return `<path d="M ${fmt1(p0[0])} ${fmt1(p0[1])} ${rest.map(([c, e]) => quad(map(c), map(e))).join("")}" fill="none" stroke="${shade(color, 0.42, 1.0)}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.5))}" stroke-linecap="round" />`;
   };
-  return `<path d="${outline}" ${inkAttrs(sk, color)} />${[...ADULT_PLEATED_FOLDS, ADULT_PLEATED_BAND].map(open).join("")}`;
+  const lines = [...ADULT_PLEATED_FOLDS, ADULT_PLEATED_BAND].map(open).join("");
+  if (!celOn(p)) return `<path d="${outline}" ${inkAttrs(sk, color)} />${lines}`;
+  // The soft finish's cel shadows (body-adult-cel.ts): the skirt's own shadow cast down onto the thighs (clipped to the body, drawn before the skirt), and on the skirt, under its fold lines, a
+  // strip beside each pleat (on the side away from the light, the viewer's right) and the blazer's hem cast down onto its top.
+  const unit = 2 * sk.head_r;
+  const thighs = `${adultBodyClip("adult-skirt-cast")}<g clip-path="url(#adult-skirt-cast)">${castShadow(outline, CEL_CAST.skirt * unit, celTone(colorStr(p.skin_tone), "skin"))}</g>`;
+  const fill = celTone(color, "skirt");
+  const strips = ADULT_PLEATED_FOLDS.map(([a, rest]) => {
+    const line = [map(a), ...rest.map(([, e]) => map(e))];
+    const q = [...line, ...[...line].reverse().map(([x, yy]): Pt => [x + PLEAT_STRIP * unit, yy])];
+    return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])}`).join(" ")} Z" fill="${fill}" />`;
+  }).join("");
+  const blazer = wearsBlazer(p) ? blazerCover(sk, p, `fill="${fill}"`).replace(/<path /g, `<path transform="translate(0 ${fmt2(CEL_CAST.blazer * unit)})" `) : "";
+  return (
+    thighs +
+    `<path d="${outline}" ${inkAttrs(sk, color)} />` +
+    `<clipPath id="adult-skirt-cel"><path d="${outline}" /></clipPath><g clip-path="url(#adult-skirt-cel)">${strips}${blazer}</g>` +
+    lines
+  );
 }
+
+/** How wide the soft finish's strip beside each pleat is, in head heights. */
+const PLEAT_STRIP = 0.022;
 
 /** The traced skirt's half-width in head heights at a depth on one side (-1 the viewer's left; the traced skirt is not centred on the body, as the reference's is not): the widest point of its outline within 0.012 H of it (the outline flares by 0.4 H of width per H of depth, so a wider window reads the edge as wider than it is there), null where the outline has none. */
 let pleatedEdge: readonly (readonly [number, number])[] | null = null;
@@ -352,7 +374,7 @@ export function adultApron(sk: Skeleton, p: CharacterParams): string {
   // sash), sagging toward the middle.
   const side: [number, number][] = [[0.368, 1.276], [0.365, 1.3], [0.378, 1.345]];
   const lower: [number, number][] = [[0.378, 1.345], [0.318, 1.372], [0.233, 1.403], [0.148, 1.418], [0.05, 1.423], [0, 1.424]];
-  const P = (sign: number, [v, dd]: [number, number]): Pt => [cx + sign * w(dd, v), y(dd)];
+  const P = (sign: number, [v, dd]: [number, number]): Pt => [cx + sign * w(dd, v), y(dd, v)];
   const topL = P(-1, side[0] as [number, number]);
   const topR = P(1, side[0] as [number, number]);
   const sashPath =
@@ -364,7 +386,7 @@ export function adultApron(sk: Skeleton, p: CharacterParams): string {
     "Z";
   // The bow: two tails, two loops and the knot over them, in the apron's own colour, told apart by their outlines (the shapes are body-adult-bow-data.ts's, read off ref 00).
   const fill = colorStr(p.outfit.apron_color);
-  const mapPt = (q: readonly [number, number]): Pt => [cx + w(q[1], q[0]), y(q[1])];
+  const mapPt = (q: readonly [number, number]): Pt => [cx + w(q[1], q[0]), y(q[1], q[0])];
   const bow = Object.values(ADULT_BOW)
     .map((runs) => {
       const first = mapPt(runs[0]![0]!);
@@ -391,7 +413,7 @@ export function adultBodiceCloth(sk: Skeleton, color: string, hem: number | null
   // filled out: bodice colour from the bust's widest point down to the cut, bounded by a gentle curve, which is inked, over the bodice's own outline.
   const fillOut = filled
     .map((sign) => {
-      const P = ([v, dd]: readonly [number, number]): Pt => [cx + sign * w(dd, v), y(dd)];
+      const P = ([v, dd]: readonly [number, number]): Pt => [cx + sign * w(dd, v), y(dd, v)];
       const edge = BODICE_FILL.map(P);
       const inner = [P([0.3, BODICE_FILL[BODICE_FILL.length - 1]![1]]), P([0.3, BODICE_FILL[0]![1]])];
       const head = (q: Pt): string => `${fmt1(q[0])} ${fmt1(q[1])}`;
@@ -592,7 +614,7 @@ function shoeFoot(sk: Skeleton, sign: number): Pt[] {
   const unit = 2 * sk.head_r;
   const off = ink / 2 + 0.014 * unit;
   const sole = 0.012 * unit;
-  const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
+  const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d, v)];
   const chain = smoothed(densify(hullInOrder(sampleChain(FOOT_OUTLINE, 5).map(([v, d]) => P(v, d))), 3), 4);
   return chain.map((q, i) => {
     const a = chain[Math.max(0, i - 1)] as Pt;
@@ -673,7 +695,7 @@ export function adultBoots(sk: Skeleton, p: CharacterParams): string {
   const off = hs + 0.014 * unit; // off the skin's ink edge
   const sole = 0.012 * unit; // thicker under the toes and the heel
   const boot = (sign: number): string => {
-    const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d)];
+    const P = (v: number, d: number): Pt => [cx + sign * w(d, v), y(d, v)];
     const ds = depths(top, FOOT_D_CUT, 0.1);
     const outer = loafer ? [] : ds.map((d) => P(at(LEG_OUTER, d) + mLeg, d));
     const inner = loafer ? [] : ds.map((d) => P(Math.max(0.02, at(LEG_IN, d) - mLeg), d)).reverse();
@@ -828,7 +850,7 @@ export function adultCoat(sk: Skeleton, p: CharacterParams): string {
   const seam = [[0.424, 0.26] as const, ...ADULT_BLOUSE_LINES.seam.filter(([, d]) => d > 0.3 && d <= 1.096)];
   const flare = (d: number): number => 0.014 + 0.06 * ease((d - 1.3) / Math.max(0.5, hem - 1.3));
   const panel = (s: number): string => {
-    const P = (v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+    const P = (v: number, d: number): Pt => [cx + s * w(d, v), y(d, v)];
     const dsSide: number[] = [];
     for (let d = 1.15; d < hem - 1e-9; d += 0.06) dsSide.push(d);
     dsSide.push(hem);
@@ -874,7 +896,7 @@ export function adultRobe(sk: Skeleton, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
   const ink = outlineW(strokeW(sk));
   const color = colorStr(p.outfit.robe_color);
-  const P = (s: number) => (v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+  const P = (s: number) => (v: number, d: number): Pt => [cx + s * w(d, v), y(d, v)];
   const seam = ADULT_BLOUSE_LINES.seam.filter(([, d]) => d > 0.3 && d <= 1.096);
   const sideDs: number[] = [];
   for (let d = 1.15; d < ROBE.hem - 1e-9; d += 0.06) sideDs.push(d);
@@ -886,7 +908,7 @@ export function adultRobe(sk: Skeleton, p: CharacterParams): string {
   // the torso panel, clockwise from the left shoulder: along the shoulders, down the right side, across the hem, up the left side, and the V
   const rightSide = [pr(0.424, 0.26), ...seam.map(([v, d]) => pr(v, d)), ...sideDs.map((d) => pr(sideV(d), d))];
   const leftSide = [...sideDs.map((d) => pl(sideV(d), d)).reverse(), ...seam.map(([v, d]) => pl(v, d)).reverse(), pl(0.424, 0.26)];
-  const tip: Pt = [cx + w(ROBE.tip, ROBE.tipV), y(ROBE.tip)];
+  const tip: Pt = [cx + w(ROBE.tip, ROBE.tipV), y(ROBE.tip, ROBE.tipV)];
   const collarR = pr(0.16, 0.17);
   const collarL = pl(0.16, 0.17);
   const hemR = rightSide[rightSide.length - 1] as Pt;
@@ -961,7 +983,7 @@ export function adultHakama(sk: Skeleton, p: CharacterParams): string {
   const edge = (d: number): number => Math.max(at(SIDE, d) + 0.025, at(grid.map((g, i) => [g, vs[i] as number] as const), d));
   const ds: number[] = [];
   for (let d = top; d < hem - 0.08; d += 0.08) ds.push(d);
-  const P = (s: number) => (v: number, d: number): Pt => [cx + s * w(d, v), y(d)];
+  const P = (s: number) => (v: number, d: number): Pt => [cx + s * w(d, v), y(d, v)];
   const right = ds.map((d) => P(1)(edge(d), d));
   const left = ds.map((d) => P(-1)(edge(d), d)).reverse();
   const r = 0.07 * 2 * sk.head_r;
@@ -983,7 +1005,7 @@ export function adultHakama(sk: Skeleton, p: CharacterParams): string {
     ? [-3, -2, -1, 0, 1, 2, 3]
         .map((i) => {
           const f = i / 3.5;
-          const a: Pt = [cx + w(top, vTop) * f, y(top)];
+          const a: Pt = [cx + w(top, vTop) * f, y(top, vTop)];
           const bPt: Pt = [cx + w(hem - 0.1, edge(hem - 0.1)) * f, y(hem - 0.1)];
           return `<line x1="${fmt1(a[0])}" y1="${fmt1(a[1])}" x2="${fmt1(bPt[0])}" y2="${fmt1(bPt[1])}" stroke="${shade(color, 0.8, 1.08)}" stroke-width="${fmt2(outlineW(strokeW(sk)) * 0.4)}" opacity="0.75" />`;
         })

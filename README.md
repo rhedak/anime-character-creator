@@ -1,50 +1,42 @@
 # Anime Character Creator
 
-A 2D anime-style character creator that **draws characters
-programmatically** from parametric vector shapes (SVG), rather than
-compositing pre-made art. A small skeleton of proportion anchors
-(head size, shoulder width, hip width, etc.) drives every shape,
-hair, face, clothes, limbs, so style stays consistent by construction
-instead of by curating matching assets. No AI image generation is
-involved when a character is drawn (but see
-[How this was made](#how-this-was-made): the code is AI-written, and the
-designs began from AI-generated references).
+Anime-style characters, **drawn entirely in code**. Every hair lock, eye, fold and button is a parametric vector
+shape (SVG) placed against a small skeleton of proportion anchors, so a whole cast stays on-model by construction
+instead of by curating matching art. Nothing is pasted in and no image generator runs when a character is drawn.
 
-Animation is out of scope. Backgrounds and text overlays are a
-possible later addition (they'd slot in as extra SVG layers).
+**[Try the web tool](https://rhedak.github.io/anime-character-creator/)**: pick a character, change colours, hair, face
+and clothes, choose a finish, and download the SVG or PNG. It runs in your browser, with no server.
 
-**The drawing code is TypeScript** (`ts/src/`, version 0.6.0). It draws the same bytes the Python
-package drew, proved on a corpus of 7,662 characters (see "The TypeScript port" in `STATUS.md`),
-and it is what the web tool, the SVG command line and the committed `ref-out/` art come from. The
-Python package is gone from the tree (2026-10-19); the tag `python-final` has it, as the reference the port was
-measured against. Work on the
-drawing happens in `ts/`: see `ts/README.md`.
+<img src="docs/img/risa-polish.png" width="760" alt="Risa as released in 0.6.0, and now in the flat and the soft finish">
+
+## What's new
+
+**0.7.0** polishes **Risa** on the adult body, stage by stage, against her
+reference art (the record is [docs/risa-polish-plan.md](docs/risa-polish-plan.md)). Each step was measured against
+the reference before it was judged by eye, and every other character draws exactly as before.
+
+- **Her own proportions.** A new `body_build` setting reshapes the adult body without redrawing it: a shorter torso,
+  a narrower ribcage, hips and thighs, slimmer arms. Everything worn on the body follows, raised and bent arms included.
+  A silhouette gate checks the result against the reference.
+- **A uniform that fits.** The blazer was refitted to the slimmer body: narrow lapels, an armhole seam that wraps the
+  bust, evenly spaced buttons, and clean outlines when an arm is raised.
+- **Hair in front of the shoulders.** Long locks now fall over the shoulders and the chest, as in her reference.
+- **Finer line work.** A new `line_style` setting: lines at 0.6 of the house weight, the hair outlined in a dark red
+  instead of black, and finer strands.
+- **Her own eyes.** Traced from the reference: an almond shape with a winged lid, a three-tone iris and highlights lit
+  from one side. Blinks, gaze and expressions still work.
+- **The soft finish, grown.** Light and shade in the hair (a sheen across the crown, shadows behind the neck) and
+  hard-edged cel shadows on skin and cloth. Risa is now drawn in the soft finish by default; everyone else stays flat.
+
+Before that, 0.6.0 moved Risa onto the adult body, and 0.5.x gave the adult figure **poses and expressions**: arms that
+raise and bend at the elbow, sleeves that follow them, and moods, blinks and a gaze, which a companion app uses for
+waving, cheering and emoting.
 
 ## Status
 
-Fourteen named characters, plus guests. They are all the tall chibi, the one
-figure since 2026-09-26, when the realistic build and the old compressed chibi
-were retired; a `height` from 0.8 to 1.3 stretches it for a shorter or a
-taller character. Risa and Franzi are the exceptions: they are adult women, drawn on
-the adult woman's body (about 6.4 heads tall, `docs/adult-body-plan.md`, `docs/risa-adult-plan.md`).
-
-Every preset is **twenty-one or older**. The age of majority differs by
-country, and twenty-one is the highest of the common ones, so that is the
-floor: `ADULT_FACE_AGE` (`ts/src/model.ts`; `character.py` in the frozen Python),
-which the tests, the web tool's age slider and the bare-body harness all read. `face_age` is a drawing setting, not
-a number of years, so it is the floor that keeps a figure an adult, not a label.
-
-**A rule for anything that uses this repository: never render a character
-under twenty-one nude.** This tool draws the body bare only in a harness view
-for proportion work, and only for faces at or above that floor
-(`harness/bare/`). A consumer that draws a younger face of its own (the library
-renders any `face_age`) must keep the figure clothed.
-
-All are **first drafts**: each carries the colouring, frame and garments
-its design calls for, judged at the size a character is actually seen on a
-sheet rather than at full height. What is deliberately left off is listed
-per cluster in `docs/character-roster-plan.md`, and the two least finished
-are Krista and Chiyo, whose references lean hardest on a head accessory.
+**21 characters.** Nineteen are the tall chibi, the house figure, whose `height` (0.8 to 1.3) stretches it for a
+shorter or a taller character. **Risa** and **Franzi** are drawn on the adult woman's body, about 6.4 heads tall
+and traced from reference images.
 
 | Satoko | Satoshi | Kyoko | Tomohiro |
 | --- | --- | --- | --- |
@@ -62,297 +54,120 @@ are Krista and Chiyo, whose references lean hardest on a head accessory.
 | --- | --- | --- | --- |
 | <img src="ref-out/on-white/tenno.png" width="140" alt="Tenno"> | <img src="ref-out/on-white/viktor.png" width="140" alt="Viktor"> | <img src="ref-out/on-white/katherina.png" width="140" alt="Katherina"> | <img src="ref-out/on-white/gero.png" width="140" alt="Gero"> |
 
-| Linnea | Dritan | Lindita | Risa |
-| --- | --- | --- | --- |
-| <img src="ref-out/on-white/linnea.png" width="140" alt="Linnea"> | <img src="ref-out/on-white/dritan.png" width="140" alt="Dritan"> | <img src="ref-out/on-white/lindita.png" width="140" alt="Lindita"> | <img src="ref-out/on-white/risa.png" width="140" alt="Risa"> |
+| Linnea | Dritan | Lindita | Risa | Franzi |
+| --- | --- | --- | --- | --- |
+| <img src="ref-out/on-white/linnea.png" width="140" alt="Linnea"> | <img src="ref-out/on-white/dritan.png" width="140" alt="Dritan"> | <img src="ref-out/on-white/lindita.png" width="140" alt="Lindita"> | <img src="ref-out/on-white/risa.png" width="140" alt="Risa"> | <img src="ref-out/on-white/franzi.png" width="140" alt="Franzi"> |
 
-| Franzi |
-| --- |
-| <img src="ref-out/on-white/franzi.png" width="140" alt="Franzi"> |
+The tall chibis are first drafts, judged at the size a character is seen on a sheet; what each is still waiting on is
+in [docs/character-roster-plan.md](docs/character-roster-plan.md). Franzi is shown in her dirndl; a blouse and shorts,
+or her underwear alone, are options on the same controls. Kyoko and Tomohiro are Satoko and Satoshi before the dye and
+the burn: one preset each and three changed fields, so the resemblance holds by construction.
 
-Franzi is the first character on the adult woman's body (`adult_female`, about 6.4 heads tall, a figure traced from reference
-images rather than the tall chibi), drawn here in her dirndl (blouse, bodice, skirt and apron); the blouse and shorts, or her
-underwear alone, are options on the same controls (`docs/franzi-outfits-plan.md`).
+`ref-out/` holds every character as transparent `.png` and `.svg`, ready to drop onto a scene (the table above uses the
+`on-white/` copies, so the outline shows against a dark page). It also has a book cover (`cover.svg`) and two cast
+sheets (`sheet.svg`, `sheet_satoshi.svg`), drawn by the same code.
 
-There are two finishes. **Flat** is the house style, the default, and what every preset, cover and
-sheet uses: flat colour, hard edges, one black line. **Soft** is an opt-in for a figure that has to
-sit beside painted art: gradients in the iris and blush, tinted lines, and tone clumps in the hair on
-five of the cuts. `highlight_strength` (0 to 2, default 1) sets how strong those are. See "The soft
-finish" in `docs/api.md`; the web tool has a Finish choice and a strength slider.
+**Two finishes.** **Flat** is the house style: flat colour, hard edges, one clean line. **Soft** is for a figure that sits
+beside painted art: a graded iris and blush, tinted lines, light and shade in the hair, and on the adult figure cel
+shadows. `highlight_strength` (0 to 2) sets how strong the hair's shading is. See "The soft finish" in
+[docs/api.md](docs/api.md).
 
-All of them live in `ref-out/` as both `.png` and `.svg`. **They are
-transparent**, so a render drops onto a scene as it is.
+**Every character is an adult, twenty-one or older**, the highest common age of majority, enforced by `ADULT_FACE_AGE`
+(`ts/src/model.ts`) in the tests and the web tool. **A rule for anything that uses this repository: never render a
+character under twenty-one nude.** The tool draws a bare body only in a harness view for proportion work, at or above
+that floor, and a consumer that draws a younger face must keep the figure clothed.
 
-Under the clothes there is a body. The tunic and the boots are optional
-like every other garment, and with the tunic off a figure shows its body in
-a plain base layer (underwear that is always worn), with bare feet when the
-boots come off too. That is what lets new garments be layered over a real
-torso and skin tones be judged on more than a face and two hands; the web
-tool offers the toggles and a row of skin tone swatches. See
-`docs/bare-body-plan.md`.
-
-They are also only two people. Kyoko is Satoko before the dye and the
-burn, and Tomohiro is Satoshi the same way, so each pair is one preset
-and a `replace()` of three fields rather than two sets of numbers that
-happen to agree. That is deliberate: the resemblance is the point, and a
-copied face keeps it only until somebody tunes an eye. See
-`docs/character-roster-plan.md`.
-
-The table is the tall chibi, the only figure since 2026-09-26: the
-realistic build, which never worked as well, was retired with its
-`ref-out/real/` renders (`docs/tall-chibi-plan.md`).
-
-`ref-out/cover.svg` is there too: a book cover composed around one of
-them by `ts/bin/cover.ts`, which is the same drawing code with a backdrop, mist
-and a title stacked over it. That one is opaque, being a page rather than
-a figure. Render it with `node ts/bin/cover.ts --out out/cover`.
-
-`ref-out/sheet.svg` is the whole cast on one page, from `ts/bin/sheet.ts`. That
-is where a cast gets judged rather than a character: whether these people
-look like they come from one world is a question about the set. Render it
-with `node ts/bin/sheet.ts --out out/sheet`.
-
-`ref-out/sheet_satoshi.svg` is the same page with the other of the two
-reference rosters: Satoshi's persona rather than Satoko's, so Tomohiro
-stays and Satoko and Kyoko drop. Ten of the twelve are the same
-characters as `sheet.svg`; `ROSTERS["satoshi"]` in `ts/src/presets.ts` is the one place
-that says which two swap. Render it with `node ts/bin/sheet.ts --roster satoshi --out out/sheet_satoshi`.
-
-`ts/bin/sheet.ts` also takes `--members name1,name2,...`, an arbitrary subset
-overriding `--roster`, a hook for a consumer that generates one character
-sheet per chapter, restricted to whoever that chapter names. This repo stays the generic drawing tool; the consumer owns the chapter-scanning and
-publication-specific detail.
-
-The tables above link `ref-out/on-white/`, which is the same characters
-drawn on a white background. That exists for this page and nothing else:
-the outline is `#0d0d0d` and a dark theme here is about `#0d1117`, so a
-transparent figure on it loses its whole outer contour, which is the
-hard-edged look the project is for. Reach for the transparent ones for
-anything real.
-
-Both sets are the current state of the named characters, so they have to
-be refreshed whenever a shape changes, otherwise these tables show art
-the code no longer produces:
+## Quick start
 
 ```bash
-./refresh-ref-out.sh          # re-render every named character, report what moved
-./refresh-ref-out.sh --check  # compare only, write nothing, exit 1 if stale
+cd ts && npm ci && cd ..                                        # once: typescript, for the checks and the web build
+node ts/bin/render.ts --out out/risa --preset risa              # writes out/risa.svg
+node ts/bin/render.ts --out out/satoko --preset satoko --finish soft --highlight-strength 0.7
+node ts/bin/render.ts --list                                    # the names --preset takes
 ```
 
-It renders every character in `PRESETS` and both pages, so adding a character means adding it to
-`ts/src/presets.ts` and nothing else. The characters' SVG comes from the TypeScript (`ts/bin/render.ts`), each
-PNG is made from that SVG by cairosvg in Python (`harness/svg2png.py`, from the small project in `tools/`: `uv sync --project tools`
-once, and cairo), and the cover and the two sheets are `ts/bin/cover.ts` and `ts/bin/sheet.ts`. `./refresh-catalogue.sh` and `./refresh-bases.sh`
-do the same for `ref-out/catalogue.json` and `ref-out/bases/`, and `./refresh-ref-out.sh --pixels` compares
-decoded PNG pixels when a change moves the SVG's text and no visible pixel.
-Everything else generated goes to `out/`, which is not checked in.
+Node 22.18 or newer runs the TypeScript directly; the drawing has no runtime dependencies. `--background` fills the
+transparent canvas with any SVG paint, and every render carries a link that reproduces the exact character in its
+`<metadata>` (`--no-metadata` leaves it out).
 
-Current shape set: head (a circle at chibi scale, narrowing to a jaw as
-the build gets taller), face (eyes, brows, mouth, blush, scar, spectacles),
-a beard, five hairstyles that optionally divide into locks and change to a
-second tone over their lower half, and a layered outfit of tunic,
-undersleeves, belt, apron, skirt, underskirt, trousers and boots, plus
-uniform trim (standing collar, button placket, chest pockets, cross-body
-strap, tall boot shaft), an open coat at any length, and robe pieces
-(crossed front, hanging sleeve, obi), plus arms, legs and feet. All flat
-cel-shaded. A garment is worn when its color is set, so characters differ
-by which layers they have rather than by bespoke code.
-
-Named characters live in `ts/src/presets.ts`, so a character is a checked-in
-artifact that gets re-rendered as the shape code improves.
-
-Not yet built: no pose variety, no picker UI, and no hair that leaves the
-skull silhouette and comes back, which is what a ponytail and a topknot
-both need. See `STATUS.md` for what is still weak and
-`docs/character-roster-plan.md` for what each character is still waiting
-on.
-
-## Setup
+For a PNG, rasterise the SVG with cairosvg:
 
 ```bash
-cd ts && npm ci    # typescript and @types/node, for the typecheck and the web build
+uv sync --project tools        # once; and `brew install cairo` on macOS
+export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib   # macOS: lets cairosvg find Homebrew's cairo
+tools/.venv/bin/python harness/svg2png.py out/risa.svg out/risa.png
 ```
 
-Node 22.18 or newer runs the `.ts` files directly, with no build step, and the drawing has no runtime
-dependencies: an SVG document is text. `npm ci` is only for the checks and for compiling the web tool.
-
-PNG export, the cover and the sheets are the frozen Python (`cairosvg` needs the system `cairo` library):
-
-```bash
-uv sync            # venv, dependencies, dev tools, and the frozen package (editable)
-brew install cairo # for PNG export
-```
-
-## Usage
-
-The SVG command line is TypeScript:
-
-```bash
-node ts/bin/render.ts --out out/satoko --preset satoko        # writes out/satoko.svg
-node ts/bin/render.ts --out out/risa-soft --preset risa --finish soft --highlight-strength 0.7
-node ts/bin/render.ts --out out/white --preset satoshi --background white --no-metadata
-node ts/bin/render.ts --list                                  # the names --preset takes
-```
-
-`--preset` takes any character in `PRESETS` or either neutral base (`female`, `male`). `--finish soft`
-draws the soft finish and `--highlight-strength` (0 to 2, default 1, soft only) sets how strong the hair
-clumps are. `--background` is any SVG paint; the default is transparent. `--id-prefix` namespaces every id
-in the drawing, for a page that holds several figures. Every render embeds a link that reproduces the exact
-character in an SVG `<metadata>` block by default (`--no-metadata` for a plain, minimal file); the file is
-byte for byte the one the Python CLI wrote for the same arguments. It has no colour, garment or face
-flags: take a preset and use the library below, or the web tool, for a variant. `node ts/bin/catalogue.ts`
-writes the web tool's catalogue JSON.
-
-For a PNG, rasterise the SVG with the same call the Python CLI makes:
-
-```bash
-tools/.venv/bin/python harness/svg2png.py out/satoko.svg out/satoko.png    # scale 2, as the CLI did
-```
-
-As a library, from TypeScript (Node 22.18 or newer; there is no index file, so import from the module that
-has the name, see `docs/api.md`):
+As a library, a variant is a preset with some fields replaced (see [docs/api.md](docs/api.md) for every field):
 
 ```ts
 import { writeFileSync } from "node:fs";
 import { replace } from "./ts/src/model.ts";
 import { PRESETS } from "./ts/src/presets.ts";
 import { renderCharacter } from "./ts/src/render.ts";
-import { buildSkeletonWith } from "./ts/src/skeleton.ts";
 
-const satoko = PRESETS["satoko"]!;
-writeFileSync("out/satoko-mid.svg", renderCharacter(satoko, buildSkeletonWith({ heads: 4.0 })));
-
-// a variant of a named character
-const grumpier = replace(satoko, { face: replace(satoko.face, { brow_tilt: 0.6 }) });
+const risa = PRESETS["risa"]!;
+// a wave, and a wider smile (mouth_curve 1 is the stock smile)
+const waving = replace(risa, { right_arm_out: 6, right_elbow: 150, face: replace(risa.face, { mouth_curve: 1.2 }) });
+writeFileSync("out/risa-wave.svg", renderCharacter(waving));
 ```
 
-### The web tool
-
-`web/` is a plain page that draws in the visitor's browser with the TypeScript compiled to ES modules, no
-server and no Python. To run it locally:
-
-```bash
-cd ts && npm ci && cd ..    # once, for tsc
-./web-stage.sh --serve      # same as: node web-stage.mjs --serve; open http://127.0.0.1:8000/
-```
-
-`web-stage.mjs` compiles `ts/src` with `tsc` (`ts/tsconfig.web.json`) and copies the page and `ref-out/` beside
-it into `out/web-stage/`, the layout the GitHub Pages workflow deploys. Set `TSC` to use another tsc binary.
-
-### Variants
-
-The Python's full command line, with a flag for every colour, garment and face knob, `--expression` and `--flat`, went with
-the Python (the tag `python-final` has it). In TypeScript a variant is built with `replace` and drawn with `renderCharacter`, as in
-the library example above. The knobs it had are fields of `CharacterParams`, `Outfit` and `FaceStyle` (`ts/src/params.ts`): the
-garment colours (`tunic_color`, `skirt_color`, `apron_color`, `trouser_color`, `boot_color` and the rest, a layer is worn when it
-has a colour), `hairstyle` and `hair_length`, and the face (`eye_size`, `eye_width`, `eye_openness`, `eye_tilt`, `brow_tilt`,
-`brow_weight`, `mouth_curve`, `mouth_width`, `blush`, `scar_side`, each neutral at its default). A named mood (`hollow`, `stern`,
-`grim`, `sorrow`, `resolute`) laid over a character's resting face is `Expression` in `ts/src/model.ts`; it changes what the face
-is doing and leaves what it is alone. `node ts/bin/render.ts --finish soft --highlight-strength 0.7` draws the soft finish.
-
-Every render embeds a link that reproduces the exact character in an SVG `<metadata>` block by default, so a file that leaves
-this repo stays reconstructable (the cover and the sheets carry one link per member). Pass `--no-metadata` to skip it and get a
-plain, minimal file. The PNG `tEXt` chunk the Python CLI also wrote is not written by `harness/svg2png.py`. (This is a
-command-line default: `renderCharacter()` defaults to *off* as a library, which is what keeps `ref-out/` byte-for-byte
-comparable; see `ts/src/attribution.ts`.)
-
-**The background is transparent**, so a render drops onto a scene as it
-is. Pass `--background white` (or any SVG paint) if you want it filled.
+To run the web tool locally: `node web-stage.mjs --serve` and open http://127.0.0.1:8000/.
 
 ## How it works
 
-The drawing package is `ts/src/`. Longer notes on the machinery are in
-[docs/architecture.md](docs/architecture.md), the public surface is written up in [docs/api.md](docs/api.md),
-and how to work in the TypeScript (layout, commands, the oracle, adding a part) is in [ts/README.md](ts/README.md).
-The names below are the TypeScript files, with the frozen Python module (deleted in the next release) in parentheses.
+Every shape is positioned from a **skeleton**: the head's centre and radius and the depths of the neck, shoulders,
+waist, hips, knees and feet. A character is a set of parameters (`CharacterParams`: colours, a hairstyle, an `Outfit`
+of garments, a `FaceStyle`), and a garment is worn when it has a colour, so characters differ by which layers they
+have rather than by bespoke code. Each body part is a small function returning an SVG fragment; `renderCharacter()`
+stacks them in order into one document.
 
-- `skeleton.ts` (`skeleton.py`): the `Skeleton` interface: head center/radius, the
-  neck/shoulder/waist/hip/hem/limb widths, and the y-coordinates (neck,
-  shoulder, waist, hip, hem, knee, ankle, foot) every shape positions
-  itself against. Every character's comes from `skeletonFor(p)` (`body.ts`): its body profile
-  (`BODY_TYPES`, measured tall-chibi proportions) laid over the chibi
-  build, stretched by `height` when that is not 1.0.
-  `hair_margin` is the headroom above the skull, in head radii, so hair
-  has somewhere to go at a build where the head fills a third of the
-  frame.
-- `colorutil.ts` (`colorutil.py`): `shade()` derives a darker/more-saturated
-  "shadow" tone from a base color, so palettes for cel-shading are
-  computed, not hand-picked per shape.
-- `render.ts`, `character.ts`, `hair.ts`, `face.ts`, `garments.ts`, `props.ts` and the rest (`character.py`):
-  build each body part as an SVG shape (paths,
-  circles, capsule-strokes) positioned from the skeleton, then stack
-  them in z-order into one `<svg>` document. `CharacterParams` (`params.ts`) holds the
-  colors, an `Outfit` of garments, and a `FaceStyle` of expression knobs
-  (eye aperture shape, brow tilt/weight, mouth curve/width, blush, cheek
-  scar); `renderCharacter()` is the entry point. The eye is an almond
-  built from four quadratics, so one set of knobs spans a tall round
-  chibi eye and a narrow lidded adult one. `HAIRSTYLES` (`core-head.ts`) maps a name to
-  the four outlines a haircut needs, plus an optional set of strands
-  dividing the mass into locks, which is how a second cut gets added
-  without touching the parts that draw hair.
-- `pynum.ts` and its neighbours: the kernel, every Python behaviour JavaScript lacks (number
-  formatting, `round`, `sum`, `hypot`, slices, `json.dumps`), which is what keeps the output byte-identical.
-- `presets.ts` (`presets.py`): named characters as `CharacterParams` values,
-  `SATOKO` and `SATOSHI` among twenty. Reachable from the CLI via `--preset`. The two
-  share a palette through module constants, since they are meant to read
-  as related.
-- `bin/render.ts`, `bin/catalogue.ts`, `bin/cover.ts` and `bin/sheet.ts`: the command lines.
+The adult figure is traced from reference images and mapped onto the skeleton through one function, so a build such as
+Risa's `slender` warps the body and everything worn on it at once. Shading tones are derived from a base colour
+(`shade()`), never hand-picked per shape.
+
+More in [docs/architecture.md](docs/architecture.md) (the machinery), [docs/api.md](docs/api.md) (the public surface)
+and [ts/README.md](ts/README.md) (working in the code, adding a part).
 
 ## Development
 
 ```bash
 cd ts && npm ci          # once
 npm run typecheck        # tsc, strict
-npm test                 # the TypeScript tests (node:test, several hundred)
-npm run build:web        # compile the package and stage the web tool into ../out/web-stage
-cd .. && uv sync --project tools     # once, for the PNGs (and cairo on the system)
-./refresh-ref-out.sh --check && ./refresh-catalogue.sh --check && ./refresh-bases.sh --check
+npm test                 # about a thousand tests (node:test)
+cd .. && ./refresh-ref-out.sh --check && ./refresh-catalogue.sh --check && ./refresh-bases.sh --check
 ```
 
-The TypeScript tests compare the drawing with what the Python drew before it was frozen (a corpus of 7,662
-characters recorded from it, the committed `ref-out/`; nothing runs the Python), and hold
-the rules the Python suite held (ids unique, the silhouette's ceiling, flat stays flat, validation).
-They are a guard against a change that moves a byte, not a judge of whether a shape looks right: that
-is decided by eye, against the design intent.
+The drawing began as a Python package and was ported to TypeScript, proved byte-identical on a corpus of 7,662
+characters (the tag `python-final` keeps the Python). The tests hold that output: a change that moves a byte of a
+character's drawing fails them on purpose, so every visible change is a deliberate one, refreshed with
+`./refresh-ref-out.sh`. Whether a shape looks right is decided by eye, against the design intent.
 
-`CLAUDE.md` holds the rules a change to this repo has to respect, and
-`STATUS.md` is the running state: what is done, what is weak, what is
-next.
+`main` is released code and `dev` is where work happens. [CLAUDE.md](CLAUDE.md) holds the rules a change has to respect,
+and [STATUS.md](STATUS.md) the running state.
 
 ## How this was made
 
-**This project was built with AI coding agents**, directed by its owner: mostly
-**Claude Code** (Anthropic), with some work done with **Cursor** (using Grok models)
-and **opencode** (using the free "Big Pickle" model). AI-written code can be
-wrong; the repository has a test suite, but treat it as you would any software
-you have not read line by line.
+**This project was built with AI coding agents**, directed by its owner: mostly **Claude Code** (Anthropic), with some
+work done with **Cursor** (using Grok models) and **opencode** (using the free "Big Pickle" model). AI-written code can
+be wrong; the repository has a test suite, but treat it as you would any software you have not read line by line.
 
-- **The drawing** is ordinary code: no image generator runs when a character is
-  drawn. But the characters' designs began from AI-generated reference images
-  (some made with Grok, kept in `ref/`), which set the style and the first
-  roster, and several characters, Katherina and Risa among them, were traced
-  from such references.
+- **The drawing** is ordinary code: no image generator runs when a character is drawn. But the characters' designs
+  began from AI-generated reference images (some made with Grok, kept in `ref/`), which set the style and the first
+  roster, and several characters, Katherina, Franzi and Risa among them, were traced from such references.
 - **The documentation** was written by Claude Code.
-- **Commits** here carry no co-author trailer (this repository's own rule), so
-  the history does not show which were AI-written: assume most of the code was.
-- The companion app that uses this
-  was built the same way and says so in its own README.
+- **Commits** here carry no co-author trailer (this repository's own rule), so the history does not show which were
+  AI-written: assume most of the code was.
+- The companion app that uses this was built the same way and says so in its own README.
 
 ## Design principles
 
-- **No pre-drawn art, no scraping.** Every pixel comes from shapes
-  this code defines. This sidesteps licensing entirely and is what
-  keeps every character on-model.
-- **Skeleton-relative, not hardcoded coordinates.** Every shape is a
-  function of `head_r` and the anchor y-values, not fixed pixels, so
-  adjusting proportions (e.g. moving away from chibi later) doesn't
-  require touching every shape.
-- **Flat color, hard-edged (no gradients), and no shading plane across
-  a garment.** Matches the target cel-shaded anime look and is cheap to
-  render. A second tone is for small elements, a pouch flap, a boot
-  cuff, the turn under a hem, where it reads as thickness; a tunic,
-  skirt or trouser leg stays one flat color and gets its form from the
-  outline and the line work.
-- **Iterate on shape, not variety, first.** Get one hairstyle/outfit
-  looking right before adding a second, a shape template with wrong
-  proportions is wrong for every character generated from it.
+- **No pre-drawn art, no scraping.** Every pixel comes from shapes this code defines, which sidesteps licensing and keeps
+  every character on-model.
+- **Skeleton-relative, not hardcoded coordinates.** Every shape is a function of the skeleton's anchors, so proportions
+  change globally without touching each shape.
+- **Flat colour and hard edges by default.** The house style is cel-shaded: a garment stays one flat colour and gets its
+  form from the outline and the line work. Shading planes exist only in the opt-in soft finish, as hard-edged cel
+  shadows in one darker tone.
+- **Measure, then judge by eye.** Reference images are guides, not targets: a measurement says what is off, and the pick
+  is made by looking.

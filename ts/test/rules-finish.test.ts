@@ -12,9 +12,12 @@ import { renderCharacter } from "../src/render.ts";
 import { PRESET_NAMES, assertRaises, soft } from "./rules-util.ts";
 import { fromstring } from "./svg-scan.ts";
 
+// Risa is the one exception, drawn in the soft finish by the owner's say (2026-10-25, docs/risa-polish-plan.md); every other preset, the bases and the default stay flat.
+const SOFT_PRESETS = ["risa"];
+
 test("test_nothing_that_is_drawn_by_default_is_soft", () => {
   assert.equal(characterParams().finish, "flat");
-  assert.ok(Object.values(PRESETS).every((p) => p.finish === "flat"));
+  for (const [name, p] of Object.entries(PRESETS)) assert.equal(p.finish, SOFT_PRESETS.includes(name) ? "soft" : "flat", name);
   assert.ok(Object.values(NEUTRAL_BASES).every((p) => p.finish === "flat"));
   assert.ok(Object.keys(PRESETS).length >= 20 && Object.keys(NEUTRAL_BASES).length === 2, "the registries are not empty");
 });
