@@ -335,6 +335,26 @@ Hard-edged shadow shapes, one tone each, under `finish = "soft"` only: on the sk
 folds and lapels, the strip beside each pleat, of which the skirt's trace found three of ten). The owner allows the soft finish to grow this way (decision 5), once stages 1 to 7
 are done; it is judged by blind pairs, and `CLAUDE.md`'s rule for the soft finish is updated with it.
 
+**Done 2026-10-25, kept by the owner.** `harness/risa_adult/shadow_map.py` marks where the reference shades her, per material (its Grok layers, darker than the material's median):
+on the skin a large shadow on the neck under the jaw, a band under the bikini top, thin bands down the torso's sides and the inner thighs, and in the uniform a band on the thighs under the
+skirt's hem; on the blazer a band down each panel's outer side widening toward the hem, and a strip beside each lapel's fold; on the skirt a strip beside every pleat and a band along its top
+under the blazer's hem.
+
+* **`ts/src/body-adult-cel.ts`**: one tone per material (`shade()` of what they lie on: skin 0.86 with a little more saturation, the navy 0.62, the skirt 0.80) and `castShadow`, a shape moved down
+  and filled, for the caller to clip to what it falls on. Most of the reference's shadows are cast ones, so they are the casting shape moved down: the face's skin onto the neck (clipped to it,
+  under the face, so only the crescent below the jaw shows), the bikini top onto the ribs, the skirt onto the thighs (clipped to the body, under the skirt), the blazer's panels onto the skirt
+  (clipped to the skirt). The rest are bands: `edgeBand` (`body-adult-parts.ts`) along the torso's side and each inner thigh, tapering to nothing at both ends; on the blazer a band inside each
+  panel's side from 0.8 H to the hem, 0.025 to 0.075 H wide, and a 0.014 H strip outside each lapel's fold, clipped to the panels (`blazerCel`); on the skirt a 0.022 H strip on the far side of
+  each fold line, clipped to the skirt. Everything is under the lines (the pockets, the darts, the folds), so no line moves.
+* **Only for a cut that asks** (`celShading` on `AdultHeadCut`, Risa's true, `celOn`): applied to every adult figure in the soft finish, it moved Franzi's soft drawing, which two tests pin
+  (`adult-face-baseline` and the soft cost test); the campaign's rule is that only Risa changes.
+* The neck is drawn twice in the uniform (the shirt redraws it inside its collar's opening), so its clip took an id suffix (`adultNeck(sk, p, "-over")`).
+* Every flat drawing and Franzi's soft one are byte-identical; Risa's soft drawing is 438 KB (the budget 440 KB). `ts/test/adult-cel.test.ts` pins the opt-in, the flat and Franzi's soft drawings
+  without shadows, and unique ids.
+* **Blind pairs** (`harness/risa_adult/cel_pairs.ts`): the soft finish with and without the shadows, in the uniform, the bikini and a wave, each pair in a random order, the key in
+  `out/risa_adult/cel-pairs/key.json`, not opened before the owner judged. **Verdict:** the owner preferred A in all three pairs, and A had the shadows in all three (the owner noted the shadows
+  were visible, so the pairs were not blind in effect: a preference, not a blind test). `CLAUDE.md`'s rule for the soft finish now allows the cel shadows on a cut that asks for them.
+
 ### Stage 9 (optional): hands and knees
 
 Relaxed fingers and a shaped knee and calf. Lower priority than the rest; the hands are traced data shared with Franzi, so a Risa-only change is a second hand set.

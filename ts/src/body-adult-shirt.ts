@@ -255,7 +255,7 @@ export function adultShirt(sk: Skeleton, p: CharacterParams): string {
   const nl = g.neckline.map((q): Pt => [q[0], q[1] - ink * 0.55]); // up by half the collar's stroke, so the clip stops at the stroke's inner edge and does not cut across it
   const top = g.y(-0.6);
   const opening = [...nl, [(nl[nl.length - 1] as Pt)[0], top], [(nl[0] as Pt)[0], top]] as Pt[];
-  const neckOver = `<clipPath id="adult-shirt-neck-opening"><polygon points="${opening.map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ")}" /></clipPath><g clip-path="url(#adult-shirt-neck-opening)">${adultNeck(sk, p)}</g>`;
+  const neckOver = `<clipPath id="adult-shirt-neck-opening"><polygon points="${opening.map((q) => `${fmt1(q[0])},${fmt1(q[1])}`).join(" ")}" /></clipPath><g clip-path="url(#adult-shirt-neck-opening)">${adultNeck(sk, p, "-over")}</g>`;
   const bodyShape =
     `<path d="${d}" fill="${cloth}" stroke="${OUTLINE}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" />` + `${clip}<g clip-path="url(#adult-shirt-clip)">${bust}${bandMask}${placket}${cuffs}${armholes}</g>`;
   // A raised arm takes its sleeve with it: the body's outline runs down the torso on that side and the sleeve is the posed arm's own silhouette grown by the sleeve's ease, drawn after, in the arm's turned frame.

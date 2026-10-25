@@ -8,6 +8,7 @@
 // sleeves are drawn again over the skirt, in front of the shirt's, as the arms are.
 
 import { OUTLINE, outlineW, strokeW } from "./character.ts";
+import { celOn, celTone } from "./body-adult-cel.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ARM_INNER, ARM_OUTER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ARM_OVER_HOOKS, adultBreastPoints, at, place, smooth, type EdgePoint, type Knots, type Pt } from "./body-adult-parts.ts";
@@ -216,6 +217,32 @@ function armhole(sk: Skeleton, s: number, style: string): string {
 }
 
 /**
+ * The soft finish's cel shadows on the blazer, as the reference shades it: a band down each panel's outer side, from the bust to the hem and widening toward it (the side turns away), and a
+ * strip beside each lapel's fold on the panel, where the lapel stands off it. Clipped to the panels.
+ */
+function blazerCel(sk: Skeleton, raisedSigns: readonly number[], cloth: string): string {
+  const g = geometry(sk);
+  const fill = celTone(cloth, "blazer");
+  const poly = (q: readonly Pt[]): string => `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])}`).join(" ")} Z" fill="${fill}" />`;
+  const shapes = [-1, 1].map((s) => {
+    const ds = Array.from({ length: 13 }, (_, i) => SIDE_BAND_FROM + ((HEM_D - SIDE_BAND_FROM) * i) / 12);
+    const outer = ds.map((d): Pt => g.P(s, halfWidth(d) + 0.03, d));
+    const inner = ds.map((d): Pt => g.P(s, halfWidth(d) - SIDE_BAND[0] - (SIDE_BAND[1] - SIDE_BAND[0]) * ease((d - SIDE_BAND_FROM) / (HEM_D - SIDE_BAND_FROM)), d));
+    const fold = LAPEL_FOLD.map(([v, d]): Pt => g.P(s, v, d));
+    const off = LAPEL_FOLD.map(([v, d]): Pt => g.P(s, v + LAPEL_STRIP, d));
+    return poly([...outer, ...inner.reverse()]) + poly([...fold, ...off.reverse()]);
+  });
+  const clip = `<clipPath id="adult-blazer-cel">${[-1, 1].map((s) => `<path d="${panel(sk, s, raisedSigns.includes(s))}" />`).join("")}</clipPath>`;
+  return `${clip}<g clip-path="url(#adult-blazer-cel)">${shapes.join("")}</g>`;
+}
+
+/** The soft finish's band down the blazer's sides: where it starts (head heights below the chin) and how wide it is there and at the hem. */
+const SIDE_BAND_FROM = 0.8;
+const SIDE_BAND: readonly [number, number] = [0.025, 0.075];
+/** How wide the strip beside the lapel's fold is, in head heights. */
+const LAPEL_STRIP = 0.014;
+
+/**
  * The blazer's front panels as shapes in `attrs`, a raised side's along its own outline as the drawing draws it: for a mask of what the blazer covers (the front locks' outline,
  * body-adult-front-locks.ts). "" when it is not worn.
  */
@@ -257,7 +284,9 @@ export function adultBlazer(sk: Skeleton, p: CharacterParams): string {
     );
   }).join("");
   // The pockets and the dart lines go under the lapel's lines (the fold runs over the welt where they meet), the buttons over everything.
-  const torso = panels + details + lapel + buttons;
+  // the soft finish's cel shadows on the panels (body-adult-cel.ts), under the pockets, the darts and the lapel's lines
+  const cel = celOn(p) ? blazerCel(sk, raisedSigns, cloth) : "";
+  const torso = panels + cel + details + lapel + buttons;
   if (raised.length === 0) return torso;
   // A raised arm takes its sleeve with it: the torso is cut along the armhole (the shoulder's cap stays), and the sleeve is the posed arm's own silhouette grown by the blazer's ease, drawn after in the arm's
   // turned frame, ending above the shirt's cuff so that shows. The shirt's own sleeve is drawn before, under it.

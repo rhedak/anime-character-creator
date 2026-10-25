@@ -120,6 +120,16 @@ consumers are kept in `local/`.
   holds for it. Gradients only, no blur: cairosvg has none. Anything further in
   the soft finish needs the owner's say, judged by blind pairs, and its record
   is `docs/soft-hair-plan.md` and `docs/soft-hair-status.md`.
+  **Grown 2026-10-25 (the owner, blind pairs):** on the adult woman the soft finish
+  may also draw **cel shadows**, the one shading plane allowed: hard-edged shapes in
+  one darker tone of what they lie on (`ts/src/body-adult-cel.ts`), most of them
+  cast shadows (the jaw on the neck, a top on the ribs, the skirt on the thighs, the
+  blazer's hem on the skirt), the rest bands along an edge (the torso's sides, the
+  inner thighs, the blazer's sides and lapels, beside the skirt's pleats). They are
+  drawn only for a cut that asks for them (`AdultHeadCut.celShading`: Risa's), under
+  the lines, so no line or shape moves, and never in the flat finish. Still no
+  gradients across a garment and no blur. The record is
+  `docs/risa-polish-plan.md`, stage 8.
 
 ## Structure
 

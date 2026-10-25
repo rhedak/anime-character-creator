@@ -11,6 +11,7 @@ import { OUTLINE, curve, lineScale, lineStyleOf, outlineW, soft, strokeW } from 
 import { SOFT_LOCK_STRENGTH_SCALE, hairClip, softLocks } from "./hair.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
+import { CEL_CAST, castShadow, celOn, celTone } from "./body-adult-cel.ts";
 import { warpDepth, warpHalf } from "./body-adult-build.ts";
 import { ARM_INNER, ARM_OUTER, LEG_INNER, LEG_OUTER, SHOULDER_OUTER, TORSO_SIDE } from "./body-adult-data.ts";
 import { ADULT_BREAST } from "./body-adult-bust-data.ts";
@@ -246,7 +247,34 @@ export function adultTorso(sk: Skeleton, p: CharacterParams): string {
   // the sides it lay just beyond the top's own outer edge and drew a second line beside it (the owner's double outline).
   const { cx, w } = place(sk);
   const mid = `<clipPath id="adult-bust-mid"><rect x="${fmt1(cx - w(0.6, 0.33))}" y="0" width="${fmt1(2 * w(0.6, 0.33))}" height="${fmt1(sk.canvas_h)}" /></clipPath>`;
-  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk, DEFAULT_TAPER, shade(p.skin_tone, 0.78, 1.6), 0.8)}</g>` + `${adultBodyClip("adult-body-clip")}<g clip-path="url(#adult-body-clip)">${adultBand(sk, p)}</g>`;
+  return adultSkin(sk, p) + mid + `<g clip-path="url(#adult-bust-mid)">${adultBustLine(sk, DEFAULT_TAPER, shade(p.skin_tone, 0.78, 1.6), 0.8)}</g>` + `${adultBodyClip("adult-body-clip")}<g clip-path="url(#adult-body-clip)">${celOn(p) ? adultSkinCel(sk, p) : ""}${adultBand(sk, p)}</g>`;
+}
+
+/** A band of `width` head heights at its widest along a body edge `tab` from `d0` to `d1`, on its inner side (`toward` -1, toward the centre line) or its outer, tapering to nothing at both ends. */
+function edgeBand(sk: Skeleton, tab: Knots, d0: number, d1: number, width: number, toward: number, fill: string): string {
+  const { cx, y, w } = place(sk);
+  return [-1, 1]
+    .map((s) => {
+      const ds = Array.from({ length: 13 }, (_, i) => d0 + ((d1 - d0) * i) / 12);
+      const edge = ds.map((d): Pt => [cx + s * w(d, at(tab, d) - toward * 0.01), y(d, at(tab, d))]);
+      const inside = ds.map((d, i): Pt => {
+        const v = at(tab, d) + toward * width * Math.sin((Math.PI * i) / 12);
+        return [cx + s * w(d, v), y(d, v)];
+      });
+      const q = [...edge, ...inside.reverse()];
+      return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])}`).join(" ")} Z" fill="${fill}" />`;
+    })
+    .join("");
+}
+
+/**
+ * The soft finish's cel shadows on the bare skin (body-adult-cel.ts), drawn in the body's clip under the bikini top: the top's cast shadow on the ribs below it, a band down each side of the
+ * torso where the arm hangs beside it, and a band down each inner thigh, as the reference shades them.
+ */
+function adultSkinCel(sk: Skeleton, p: CharacterParams): string {
+  const fill = celTone(colorStr(p.skin_tone), "skin");
+  const top = p.outfit.underwear_top ? castShadow(adultBandPath(sk), CEL_CAST.top * 2 * sk.head_r, fill) : "";
+  return top + edgeBand(sk, TORSO_SIDE, 1.0, 2.15, 0.022, -1, fill) + edgeBand(sk, LEG_INNER, 2.2, 3.0, 0.03, 1, fill);
 }
 
 /**
@@ -1024,7 +1052,8 @@ function adultArmsOver(sk: Skeleton, p: CharacterParams): string {
  * The neck: skin from inside the head down to where the body outline begins, with a line down each side that runs into
  * that outline, so there is no break between the jaw and the shoulder slope (the chibi's neck stops short of it).
  */
-export function adultNeck(sk: Skeleton, p: CharacterParams): string {
+/** The neck. `idSuffix` keeps its ids unique where it is drawn a second time (the shirt redraws it inside its collar's opening). */
+export function adultNeck(sk: Skeleton, p: CharacterParams, idSuffix = ""): string {
   const { cx, y } = place(sk);
   const hs = outlineW(strokeW(sk)) / 2;
   const top = sk.head_cy + sk.head_r * 0.8;
@@ -1032,7 +1061,15 @@ export function adultNeck(sk: Skeleton, p: CharacterParams): string {
   const nw = sk.neck_half_w;
   const sw = fmt2(outlineW(strokeW(sk)));
   const side = (x: number): string => `<path d="M ${fmt1(x)} ${fmt1(top)} L ${fmt1(x)} ${fmt1(bottom)}" fill="none" stroke="${OUTLINE}" stroke-width="${sw}" stroke-linecap="round" />`;
-  return `<rect x="${fmt1(cx - nw)}" y="${fmt1(top)}" width="${fmt1(2 * nw)}" height="${fmt1(bottom - top + 3 * hs)}" fill="${colorStr(p.skin_tone)}" />` + side(cx - nw) + side(cx + nw);
+  const rect = `x="${fmt1(cx - nw)}" y="${fmt1(top)}" width="${fmt1(2 * nw)}" height="${fmt1(bottom - top + 3 * hs)}"`;
+  // the soft finish's shadow under the jaw: the face's skin moved down and clipped to the neck, so only the crescent below the jaw shows (the face is drawn over the rest)
+  const h = onHead(sk);
+  const jaw = celOn(p)
+    ? `<clipPath id="adult-neck-cel${idSuffix}"><rect ${rect} /></clipPath><g clip-path="url(#adult-neck-cel${idSuffix})">` +
+      adultCutOf(p).face.map(([s0, segs]) => castShadow(curve(h.head_cx, h.head_cy, h.head_r, s0, segs), CEL_CAST.jaw * 2 * sk.head_r, celTone(colorStr(p.skin_tone), "skin"))).join("") +
+      `</g>`
+    : "";
+  return `<rect ${rect} fill="${colorStr(p.skin_tone)}" />` + jaw + side(cx - nw) + side(cx + nw);
 }
 
 /**

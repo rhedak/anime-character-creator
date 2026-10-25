@@ -13,12 +13,13 @@ import { armAxis, armTurn, armTurnBack } from "./body-adult-pose-arm.ts";
 import { ADULT_BODICE, BODICE_BUTTONS, BODICE_BUTTON_R } from "./body-adult-bodice-data.ts";
 import { ADULT_BOW } from "./body-adult-bow-data.ts";
 import { ADULT_APRON, ADULT_SKIRT } from "./body-adult-skirt-data.ts";
-import { adultBlazer, wearsBlazer } from "./body-adult-blazer.ts";
+import { adultBlazer, blazerCover, wearsBlazer } from "./body-adult-blazer.ts";
+import { CEL_CAST, castShadow, celOn, celTone } from "./body-adult-cel.ts";
 import { adultRibbon, adultShirt, wearsShirt } from "./body-adult-shirt.ts";
 import { LOAFER_ASPECT, LOAFER_OUTLINE, LOAFER_SEAM, LOAFER_SLOT, LOAFER_SOLE_EDGE, LOAFER_STRAP_BOT, LOAFER_STRAP_TOP } from "./body-adult-loafer-data.ts";
 import { ADULT_PLEATED_BAND, ADULT_PLEATED_FOLDS, ADULT_PLEATED_SKIRT } from "./body-adult-skirt-pleated-data.ts";
 import { FOOT_D_CUT, FOOT_OUTLINE } from "./body-adult-foot-data.ts";
-import { DEFAULT_TAPER, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
+import { DEFAULT_TAPER, adultBodyClip, adultBriefs, adultBustLine, at, inkAttrs, place, quad, smooth, type Knots, type Pt } from "./body-adult-parts.ts";
 import { shade, tint } from "./colorutil.ts";
 import { strap } from "./garments.ts";
 import type { CharacterParams } from "./params.ts";
@@ -282,7 +283,7 @@ function chainPath(sk: Skeleton, [start, segs]: Chain): string {
  */
 export function adultSkirt(sk: Skeleton, p: CharacterParams): string {
   if (p.outfit.skirt_color === null) return "";
-  if (p.outfit.skirt_cut === "pleated") return adultPleatedSkirt(sk, colorStr(p.outfit.skirt_color));
+  if (p.outfit.skirt_cut === "pleated") return adultPleatedSkirt(sk, colorStr(p.outfit.skirt_color), p);
   return `<path d="${chainPath(sk, ADULT_SKIRT)}" ${inkAttrs(sk, colorStr(p.outfit.skirt_color))} />`;
 }
 
@@ -291,7 +292,7 @@ export function adultSkirt(sk: Skeleton, p: CharacterParams): string {
  * one flat colour, the pleats as thin fold lines in a dark tone of it from the waistband's lower edge to the hem, and that edge as one continuous line across (its top shifted down by the band's depth) (the darker strip beside each fold in the reference is left out). Its top is
  * hidden under whatever is worn over it.
  */
-function adultPleatedSkirt(sk: Skeleton, color: string): string {
+function adultPleatedSkirt(sk: Skeleton, color: string, p: CharacterParams): string {
   const { cx, y, w } = place(sk);
   // The skirt is traced on Risa's reference, whose hips are narrower than this body's (the briefs 339 px wide against 355 in our render), so the traced edge can fall inside the body's own
   // side and leave skin and the briefs' wing showing beside it. Wherever it does, the whole skirt is widened there: a point moves out by the shortfall of the edge at its depth, in
@@ -312,8 +313,29 @@ function adultPleatedSkirt(sk: Skeleton, color: string): string {
     const p0 = map(a);
     return `<path d="M ${fmt1(p0[0])} ${fmt1(p0[1])} ${rest.map(([c, e]) => quad(map(c), map(e))).join("")}" fill="none" stroke="${shade(color, 0.42, 1.0)}" stroke-width="${fmt2(outlineW(strokeW(sk), 0.5))}" stroke-linecap="round" />`;
   };
-  return `<path d="${outline}" ${inkAttrs(sk, color)} />${[...ADULT_PLEATED_FOLDS, ADULT_PLEATED_BAND].map(open).join("")}`;
+  const lines = [...ADULT_PLEATED_FOLDS, ADULT_PLEATED_BAND].map(open).join("");
+  if (!celOn(p)) return `<path d="${outline}" ${inkAttrs(sk, color)} />${lines}`;
+  // The soft finish's cel shadows (body-adult-cel.ts): the skirt's own shadow cast down onto the thighs (clipped to the body, drawn before the skirt), and on the skirt, under its fold lines, a
+  // strip beside each pleat (on the side away from the light, the viewer's right) and the blazer's hem cast down onto its top.
+  const unit = 2 * sk.head_r;
+  const thighs = `${adultBodyClip("adult-skirt-cast")}<g clip-path="url(#adult-skirt-cast)">${castShadow(outline, CEL_CAST.skirt * unit, celTone(colorStr(p.skin_tone), "skin"))}</g>`;
+  const fill = celTone(color, "skirt");
+  const strips = ADULT_PLEATED_FOLDS.map(([a, rest]) => {
+    const line = [map(a), ...rest.map(([, e]) => map(e))];
+    const q = [...line, ...[...line].reverse().map(([x, yy]): Pt => [x + PLEAT_STRIP * unit, yy])];
+    return `<path d="M ${fmt1((q[0] as Pt)[0])} ${fmt1((q[0] as Pt)[1])} ${q.slice(1).map((r) => `L ${fmt1(r[0])} ${fmt1(r[1])}`).join(" ")} Z" fill="${fill}" />`;
+  }).join("");
+  const blazer = wearsBlazer(p) ? blazerCover(sk, p, `fill="${fill}"`).replace(/<path /g, `<path transform="translate(0 ${fmt2(CEL_CAST.blazer * unit)})" `) : "";
+  return (
+    thighs +
+    `<path d="${outline}" ${inkAttrs(sk, color)} />` +
+    `<clipPath id="adult-skirt-cel"><path d="${outline}" /></clipPath><g clip-path="url(#adult-skirt-cel)">${strips}${blazer}</g>` +
+    lines
+  );
 }
+
+/** How wide the soft finish's strip beside each pleat is, in head heights. */
+const PLEAT_STRIP = 0.022;
 
 /** The traced skirt's half-width in head heights at a depth on one side (-1 the viewer's left; the traced skirt is not centred on the body, as the reference's is not): the widest point of its outline within 0.012 H of it (the outline flares by 0.4 H of width per H of depth, so a wider window reads the edge as wider than it is there), null where the outline has none. */
 let pleatedEdge: readonly (readonly [number, number])[] | null = null;

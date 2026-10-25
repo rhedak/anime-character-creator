@@ -66,6 +66,8 @@ export interface AdultHeadCut {
   readonly locks: readonly Lock[];
   /** How strongly the soft finish draws this cut's clumps, a multiple of the shared strength (`SOFT_LOCK_STRENGTH_SCALE`): Franzi's 1, as they were judged; Risa's reference lights her hair harder. */
   readonly lockGain: number;
+  /** Whether the soft finish draws the cel shadows on this character's skin and clothes (body-adult-cel.ts): Risa's, as her reference shades her; Franzi's soft drawing is pinned as it was. */
+  readonly celShading: boolean;
   /**
    * Locks of hair that fall in front of the shoulders onto the body and whatever is worn on it (`adultFrontLocks`, body-adult-front-locks.ts), in the body's knot space so they follow its build;
    * none draws none (Franzi's ponytail is behind her).
@@ -136,6 +138,7 @@ const SWEPT_PONYTAIL: AdultHeadCut = {
   earR: { skin: ADULT_SKIN_EAR_R, concha: ADULT_EAR_CONCHA_R, folds: ADULT_EAR_FOLDS_R, foldWidths: ADULT_EAR_FOLD_WIDTHS_R },
   locks: SWEPT_PONYTAIL_LOCKS,
   lockGain: 1,
+  celShading: false,
   frontLocks: [],
 };
 
@@ -207,6 +210,7 @@ const LONG_STRAIGHT_FRINGED: AdultHeadCut = {
   locks: LONG_STRAIGHT_FRINGED_LOCKS,
   // the owner's pick of 1.6, 3 and 5 (2026-10-25, harness/risa_adult/soft_gain.ts): the sheen and the front locks' light read, the shadows stay moderate
   lockGain: 3,
+  celShading: true,
   frontLocks: RISA_FRONT_LOCKS,
 };
 
