@@ -5,7 +5,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ADULT_BUILDS, type AdultBuild, spacedDepths, warpDepth, warpHalf } from "../src/body-adult-build.ts";
 import { BLAZER_BUTTON_DEPTHS } from "../src/body-adult-blazer-data.ts";
-import { place } from "../src/body-adult-parts.ts";
+import { adultBustScale, place, topOuterEdge } from "../src/body-adult-parts.ts";
+import { fmt1 } from "../src/pynum.ts";
 import { skeletonFor } from "../src/body.ts";
 import { characterParams, replace } from "../src/model.ts";
 import { PyError } from "../src/pynum.ts";
@@ -85,4 +86,22 @@ test("a row of buttons keeps its spacing under a build: the warped gaps in the t
   // the warp alone would bunch them: the top gap well under the lower one, against the traced near-equal gaps
   const raw = ds.map((d) => warpDepth(b, d));
   assert.ok((raw[1] as number) - (raw[0] as number) < 0.8 * ((raw[2] as number) - (raw[1] as number)));
+});
+
+test("the gap between arm and torso follows the bikini top's outer edge when the bust is warped (Risa's), and keeps the traced tip at the traced bust (Franzi's)", () => {
+  const outline = (p: typeof RISA): string => (renderCharacter(p, null, null, false).match(/<path id="adult-body-outline" d="([^"]+)"/) ?? [])[1] as string;
+  const at = (p: typeof RISA, sign: number, [v, d]: readonly [number, number]): string => {
+    const { cx, y, w } = place(skeletonFor(p));
+    return `${fmt1(cx + sign * w(d, v))} ${fmt1(y(d, v))}`;
+  };
+  // Risa: both sides pass through the cup's lowest outer point and the band's outer end
+  const edge = topOuterEdge(adultBustScale(RISA.bust));
+  const band = edge.segs[edge.segs.length - 1]![1];
+  for (const sign of [-1, 1]) {
+    assert.ok(outline(RISA).includes(at(RISA, sign, edge.from)), `the cup's point, side ${sign}`);
+    assert.ok(outline(RISA).includes(at(RISA, sign, band)), `the band's end, side ${sign}`);
+  }
+  assert.ok(edge.from[1] < band[1], "the edge runs down from the cup to the band");
+  // Franzi: the traced tip, as it was
+  assert.ok(outline(FRANZI).includes(at(FRANZI, -1, [0.4, 0.955])));
 });

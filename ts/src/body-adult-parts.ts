@@ -98,6 +98,68 @@ export type Pt = readonly [number, number];
 /** Where the gap between the legs starts, in head heights below the chin: under the briefs' gusset (which ends at 2.262), so its top edge is hidden by it and the gusset's lower edge is the only line across the slot. */
 const GAP_TOP = 2.2;
 
+/**
+ * The bikini top's outer edge on the viewer's right side ([v, d] head heights, v outward), bust-warped by `bs`: from the cup's lowest outer point down round the step in to the band's outer
+ * end, as the top's own quadratics (`ADULT_TOP_ROUNDED`, the corner rounded), so a body edge laid on it is the same curve. Read off the traced chain: its points from the band's outer end up the cup's side, while they
+ * are below `TOP_EDGE_FROM`.
+ */
+const TOP_EDGE_FROM = 0.82;
+
+/**
+ * The bikini top's outline (`ADULT_TOP`) with the step at each lower outer corner rounded: the traced cup's side steps in to a narrower band there (from the cup's lowest outer point down to the
+ * band's outer end, 0.04 H in over 0.1 H down), which on Franzi's body the arm hides and on Risa's, whose gap now runs along the top's edge, showed as a stair the reference does not have (its
+ * cup's side curves down into the band). On each side the segments from the cup's point to the band's end become one quadratic, its control at the cup point's width and the band end's depth,
+ * so it leaves the cup's side going straight down and meets the band's bottom level: a rounded outer corner. The ends are found by rule: the band's end is the outer point (|x| over 0.38) lowest
+ * on the side, the cup's point the widest outer point between 0.86 and 0.96 H. Used for a warped bust only (`adultBandPath`, `topOuterEdge`): at the traced bust the traced top is drawn as it is.
+ */
+const ADULT_TOP_ROUNDED: Chain = (() => {
+  const [start, segs] = ADULT_TOP;
+  const pts: Pt[] = [start, ...segs.map(([, e]) => e)];
+  const ends = (sign: number): [number, number] => {
+    const outer = pts.map((q, i) => [q, i] as const).filter(([q]) => sign * q[0] > 0.38);
+    const band = outer.reduce((b, c) => (c[0][1] > b[0][1] ? c : b))[1];
+    const cup = outer.filter(([q]) => q[1] > 0.86 && q[1] < 0.96).reduce((b, c) => (sign * c[0][0] > sign * b[0][0] ? c : b))[1];
+    return [Math.min(band, cup), Math.max(band, cup)];
+  };
+  const runs = [ends(-1), ends(1)];
+  const out: [Pt, Pt][] = [];
+  for (let k = 0; k < segs.length; k++) {
+    const run = runs.find(([i0, i1]) => k >= i0 && k < i1);
+    if (run === undefined) {
+      out.push(segs[k] as [Pt, Pt]);
+      continue;
+    }
+    if (k !== run[0]) continue; // the rest of the run is replaced by the one curve
+    const [a, b] = [pts[run[0]] as Pt, pts[run[1]] as Pt];
+    // the cup's point is the one higher up; the control is at its width and the band end's depth
+    const [cup, band] = a[1] < b[1] ? [a, b] : [b, a];
+    out.push([[cup[0], band[1]], b]);
+  }
+  return [start, out];
+})();
+
+export function topOuterEdge(bs: number): { from: Pt; segs: [Pt, Pt][] } {
+  const [start, segs] = ADULT_TOP_ROUNDED;
+  const warp = (q: Pt): Pt => {
+    const r = bustWarp(q, bs);
+    return [-r[0], r[1]];
+  };
+  // the chain starts at the band's outer end (viewer's left, x negative) and runs up the cup's side: take its segments while their end stays below TOP_EDGE_FROM
+  const up: [Pt, Pt][] = [];
+  let p0 = warp(start);
+  const band = p0;
+  for (const [c, e] of segs) {
+    const we = warp(e);
+    if (we[1] < TOP_EDGE_FROM) break;
+    up.push([warp(c), we]);
+    p0 = we;
+  }
+  // reversed to run down: from the cup's lowest outer point to the band's end
+  const ends = [band, ...up.map(([, e]) => e)];
+  const down: [Pt, Pt][] = up.map(([c], i) => [c, ends[i] as Pt] as [Pt, Pt]).reverse();
+  return { from: p0, segs: down };
+}
+
 /** The tip of the gap between arm and torso, [x, d] in head heights: where the cup's lower outer corner meets the arm (ref 04). */
 const GAP_TIP: Pt = [0.4, 0.955];
 
@@ -173,10 +235,29 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
     ...(without.includes(sign) ? side(sign, shoulderAbove) : [...side(sign, SHOULDER_OUTER), ...side(sign, armOuterAbove)]),
   ];
   const ribs = (sign: number): Pt[] => RIB_KNOTS.map(([v, dd]): Pt => [cx + sign * (w(dd, v) - hs), y(dd, v)]);
-  const tip = (sign: number): Pt => [cx + sign * w(GAP_TIP[1], GAP_TIP[0]), y(GAP_TIP[1], GAP_TIP[0])];
+  // The gap's tip is where the cup's lower outer corner meets the arm, so it moves up and down with the bust (`bustWarp`'s depth: a smaller bust's lower edge rises), and the caps that open
+  // the gap below it with it. Only its depth: the arm does not move in with the bust, and drawn in with it the tip and the torso's cap dented the torso's side. At the traced bust (Franzi's)
+  // nothing moves. With Risa's smaller bust the tip stayed at the traced depth, 0.05 H below her cup's corner, and the gap opened 0.06 to 0.1 H below it where her reference's opens 0.03 H below.
+  const bs = adultBustScale(sk.bust);
+  const gd = (d: number): number => bustWarp([0, d], bs)[1];
+  const tip = (sign: number): Pt => [cx + sign * w(gd(GAP_TIP[1]), GAP_TIP[0]), y(gd(GAP_TIP[1]), GAP_TIP[0])];
+  // With the bust warped (a smaller or larger one than the traced), the gap's inner side is the top's own outer edge: from the cup's lowest outer point, round the step in to the band and down to
+  // the band's outer end, the same quadratics the top is drawn with (`adultBandPath`), and the torso's side from there. The body's outline then lies on the top's edge, so the top, which is
+  // clipped to the body, is not notched where the gap meets it, and the gap follows the cup's shape as the reference's does (its hair shows right beside the cup's lower outer curve). At the
+  // traced bust the traced tip fits the traced top, and nothing changes.
+  const topEdge = bs === 1 ? null : topOuterEdge(bs);
+  const topPt = (sign: number, q: Pt): Pt => [cx + sign * w(q[1], q[0]), y(q[1], q[0])];
+  /** The edge down one side: from the cup's lowest outer point to the band's outer end, as quadratics from the current point (which is the first). */
+  const topDown = (sign: number): string => (topEdge === null ? "" : topEdge.segs.map(([c, e]) => quad(topPt(sign, c), topPt(sign, e))).join(""));
+  /** The same edge up the other way: from the band's outer end to the cup's lowest outer point. */
+  const topUp = (sign: number): string => {
+    if (topEdge === null) return "";
+    const ends = [topEdge.from, ...topEdge.segs.map(([, e]) => e)];
+    return topEdge.segs.map(([c], i) => quad(topPt(sign, c), topPt(sign, ends[i] as Pt))).reverse().join("");
+  };
   // The cap on the gap: two short quadratics through the tip, a point, so the gap opens from where the arm line ends.
-  const capArm = (sign: number): Pt => [cx + sign * (w(1.0, 0.425) + hs * 0.4), y(1.0, 0.425)];
-  const capTor = (sign: number): Pt => [cx + sign * (w(1.0, 0.395) - hs * 0.4), y(1.0, 0.395)];
+  const capArm = (sign: number): Pt => [cx + sign * (w(gd(1.0), 0.425) + hs * 0.4), y(gd(1.0), 0.425)];
+  const capTor = (sign: number): Pt => [cx + sign * (w(gd(1.0), 0.395) - hs * 0.4), y(gd(1.0), 0.395)];
   // The legs end at `FOOT_D_CUT`; from there the traced foot (body-adult-foot-data.ts) takes over, round the toes and back to the inner edge.
   const legLine = (sign: number): Pt[] => [...side(sign, TORSO_SIDE), ...side(sign, legOuterAbove)];
   const L = -1;
@@ -204,7 +285,8 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
   } else {
     d += hand(L);
     d += smooth(rev(side(L, armInnerAbove)));
-    d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+    if (topEdge === null) d += quad(capArm(L), tip(L)) + quad(capTor(L), leg[0] as Pt);
+    else d += quad(capArm(L), topPt(L, topEdge.from)) + topDown(L) + quad(capTor(L), leg[0] as Pt);
   }
   d += smooth(leg);
   d += foot(L);
@@ -225,7 +307,8 @@ export function adultBodyPath(sk: Skeleton, without: readonly number[] = [], han
     d += quad(capTor(R), tip(R));
     d += smooth([tip(R), ...rev(ribs(R)), shoulder[shoulder.length - 1] as Pt]);
   } else {
-    d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
+    if (topEdge === null) d += quad(capTor(R), tip(R)) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
+    else d += quad(capTor(R), topPt(R, topEdge.segs[topEdge.segs.length - 1]![1])) + topUp(R) + quad(capArm(R), side(R, ARM_INNER)[0] as Pt);
     d += smooth(side(R, armInnerAbove));
     d += hand(R);
   }
@@ -568,8 +651,9 @@ export function adultBand(sk: Skeleton, p: CharacterParams): string {
 /** The bikini top's outline path (body-adult-top-data.ts). */
 function adultBandPath(sk: Skeleton): string {
   const { cx, y, w } = place(sk);
-  const [start, segs] = ADULT_TOP;
   const scale = adultBustScale(sk.bust);
+  // a warped bust's top has its lower outer corners rounded (`ADULT_TOP_ROUNDED`); the traced one is drawn as it was
+  const [start, segs] = scale === 1 ? ADULT_TOP : ADULT_TOP_ROUNDED;
   const map = (q0: Pt): Pt => {
     const q = bustWarp(q0, scale);
     return [cx + w(q[1], q[0]), y(q[1], q[0])];

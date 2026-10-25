@@ -359,6 +359,29 @@ under the blazer's hem.
 
 Relaxed fingers and a shaped knee and calf. Lower priority than the rest; the hands are traced data shared with Franzi, so a Risa-only change is a second hand set.
 
+**Skipped** (the owner, 2026-10-25).
+
+### After stage 8: the armpit gap (2026-10-25)
+
+The owner: the gap between the arm and the torso started too low and looked disjoint from the bikini top. Measured on the bikini (`harness/risa_adult/target.png` and our body's outline, the
+top's lowest outer point; ours shifted onto the reference's body centre): the reference's gap opens 10 and 13 px below the top's lower outer corner and 6 and 10 px outside it; ours opened
+22 and 38 px below it (0.06 to 0.1 H) and 2 px outside. The cause: the gap's tip (`GAP_TIP`, `body-adult-parts.ts`) is where Franzi's cup's lower outer corner meets the arm, a fixed point,
+while Risa's smaller bust (`bust` -0.18, `bustWarp`) raises her cup's lower edge by 0.045 H. The tip and the two short caps that open the gap below it now move with the bust's depth
+(`bustWarp`'s depth only: drawn in toward the centre line as well, the tip and the torso's cap dented the torso's side, since the arm does not move in with the bust). At the traced bust
+nothing moves, so Franzi is byte-identical. Now ours opens 9 and 10 px below the corner and 12 and 13 px outside it, and the two sides alike (`out/risa_adult/armpit-gap.png`). Only her bare
+drawing shows it (the uniform covers the armpit; `ref-out/risa.png` is unchanged, its SVG not); the gate passes (worst width +4.7%, the torso at 1.0 H, where the gap now opens).
+
+**Then the gap along the top (owner, same day: "the gap needs to follow the shape of the bust / bikini top or else the bikini top does not connect seamlessly to the skin").** With the
+gap opening higher, it cut into the top's lower outer corner (the top is clipped to the body's outline), leaving a notch, and its inner side did not run on from the top's edge. In the
+reference the gap's hair shows right beside the cup's lower outer curve: its inner side is the top's own outer edge. (The first measurement missed that: the target counts the hair in front
+of the body there as unknown.) Now, when the bust is warped, a hanging arm's side of the body outline runs from the arm's cap to the cup's lowest outer point and then along the top's own
+quadratics (`topOuterEdge`, read off `ADULT_TOP` bust-warped: from the cup's side round the step in to the band's outer end) to the band's end, and down the torso from there. The body's
+outline lies on the top's edge, so the top is no longer notched; a raised arm's side keeps its path, and at the traced bust (Franzi) nothing changes. `adult-build.test.ts` pins that Risa's
+outline passes through the cup's point and the band's end on both sides, and Franzi's through the traced tip. Then (owner) the step in the top's own outline, where the traced cup's side steps in
+to the narrower band, is rounded for a warped bust: `ADULT_TOP_ROUNDED` replaces, on each side, the segments from the cup's lowest outer point to the band's outer end with one quadratic whose
+control is at the cup point's width and the band end's depth (it leaves the cup's side going straight down and meets the band's bottom level). The top and the gap's edge both read it, so
+they stay one line. Franzi's traced top is drawn as it was.
+
 ## Open questions for the owner
 
 None at present: the four the first draft listed are decisions 2 to 5 above.
