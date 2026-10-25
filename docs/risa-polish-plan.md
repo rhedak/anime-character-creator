@@ -283,6 +283,24 @@ byte-identical. The field's fixture update is `harness/ts_port/golden-updates-li
 
 Clumps for `long_straight_fringed` (its `locks` list is empty), and a sheen band across the crown, inside the hair's silhouette, scaled by `highlight_strength`. Blind pairs.
 
+**Done 2026-10-25.** The tones of `00`'s hair, read on a grid at the cut's calibration (the hair's luminance smoothed, above 1.28 or below 0.72 of its median): **lit**, a sheen across the crown along
+y -0.40 to -0.60 head radii (left, centre and right, dipping at the middle onto the fringe's top), the front locks over the shoulders, the fringe's tips; **shadow**, the hair behind the neck
+inside each curtain (y 0.4 to 1.4) and the falls behind the body (y 2.1 to 4.1, outer and inner).
+
+* **The clumps** (`LONG_STRAIGHT_FRINGED_LOCKS`, `body-adult-cuts.ts`): three lit clumps along the sheen's measured centre line, a shadow behind the neck each side, and a shadow down the outer and the
+  inner fall each side. The neck's shadows are centred on the face's own edge and then the neck's, so the face covers their inner half and a band shows along it; centred out on the curtain
+  first, each showed whole, as a dark oval beside the face.
+* **Over the fringe:** the fringe is drawn over the face as its own shape, so it hid the sheen where it dips onto it. `adultHairFront` draws again, clipped to the fringe, the clumps that reach its
+  rows (above 0.25 head radii: the three lit ones), not the whole set, which would write the rest twice.
+* **The front locks** are in the body's frame, which the head's clumps cannot reach, so `adultFrontLocks` draws a lit clump of its own down each lock's middle (the two strands' midline, 0.6 of
+  the lock's width), clipped to the lock.
+* **Strength:** the soft finish's lit tones rise only a little on dark red (by design: a tint toward white read as frosting in the 2026-10-16 blind pairs), so the sheen was hard to see. A cut now
+  carries `lockGain`, a multiple of the shared strength: Franzi's 1 (her soft drawing is unchanged), Risa's **3**, the owner's pick of 1.6, 3 and 5 (`harness/risa_adult/soft_gain.ts`,
+  `out/risa_adult/soft-gain-{head,bikini}.png`): the sheen and the front locks' light read, the shadows stay moderate (at 5 the band beside the face and the lobes beside the waist got heavy).
+* **Size:** her soft drawing is about 414 KB (flat 389 KB). The owner raised the adult soft budget from 400 KB to 440 KB (`rules-soft-locks.test.ts`), and expects such raises as detail is added.
+* Every flat render is byte-identical (`ref-out/` unchanged: the presets are flat). `ts/test/adult-soft-hair.test.ts` pins that the flat finish draws no clumps, that the soft one draws them behind,
+  over the fringe (only those that reach it) and down each front lock with unique ids, and Franzi's gain of 1.
+
 ### Stage 7: the eyes
 
 Per-eye lids, wings and lashes traced as the brows were (`harness/risa_adult/brows.py`), the inner corner's flick, and the iris's lower half in a second tone (flat) or graded

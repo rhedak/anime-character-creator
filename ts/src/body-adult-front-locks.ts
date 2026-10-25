@@ -5,9 +5,10 @@
 // the way the arm is raised, so it does not cross them. (A mask that took the posed forearm and hand out of them was tried and dropped: cairosvg reads a mask by its alpha and a browser by its
 // luminance, so a mask that hides with black shapes on white hid them in the companion's browser and in no PNG.)
 
-import { lineScale, outlineW, strokeW } from "./character.ts";
+import { lineScale, outlineW, soft, strokeW } from "./character.ts";
+import { SOFT_LOCK_STRENGTH_SCALE, softLocks } from "./hair.ts";
 import { colorStr } from "./body-parts-legs.ts";
-import { adultCutOf } from "./body-adult-cuts.ts";
+import { adultCutOf, type FrontLock } from "./body-adult-cuts.ts";
 import { adultBodyRef, adultHairInk, onHead, place, smooth, taperedStrand, type Pt } from "./body-adult-parts.ts";
 import { adultPosedArmCover } from "./body-adult-pose-arm.ts";
 import { blazerCover, blazerSleeveEase, wearsBlazer } from "./body-adult-blazer.ts";
@@ -37,13 +38,32 @@ export function adultFrontLocks(sk: Skeleton, p: CharacterParams): string {
     const r = pts.map((q): Pt => [(q[0] - h.head_cx) / h.head_r, (q[1] - h.head_cy) / h.head_r]);
     return [r[0] as Pt, r.slice(1).map((e, i) => [[((r[i] as Pt)[0] + e[0]) / 2, ((r[i] as Pt)[1] + e[1]) / 2], e] as const)];
   };
+  // Under the soft finish, a lit clump down each lock's middle (the two strands' midline), as the reference lights the hair that lies in front, clipped to the lock: the clumps of the hair
+  // behind are in the head's frame and cannot reach these, which follow the body.
+  const gain = p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE * cut.lockGain;
+  const litClump = (lock: FrontLock, i: number): string => {
+    if (!soft(p) || p.highlight_strength <= 0 || lock.strands.length < 2) return "";
+    const [a, b] = [lock.strands[0] as FrontLock["strands"][number], lock.strands[1] as FrontLock["strands"][number]];
+    const n = Math.min(a.length, b.length);
+    const mid = Array.from({ length: n }, (_, k): Pt => {
+      const [pa, pb] = [at(a[k] as readonly [number, number]), at(b[k] as readonly [number, number])];
+      return [((pa[0] + pb[0]) / 2 - h.head_cx) / h.head_r, ((pa[1] + pb[1]) / 2 - h.head_cy) / h.head_r];
+    });
+    // as wide as the lock at its middle, in head radii
+    const q = lock.outline.map(at);
+    const m = Math.floor(q.length / 4);
+    const width = (0.6 * Math.hypot((q[m] as Pt)[0] - (q[q.length - 1 - m] as Pt)[0], (q[m] as Pt)[1] - (q[q.length - 1 - m] as Pt)[1])) / h.head_r;
+    const id = `adult-front-lock-${i}`;
+    return `<clipPath id="${id}"><path d="M ${f(q[0] as Pt)} ${smooth(q)}Z" /></clipPath>` + softLocks(h, hair, [["lit", mid, width, 0.95]], gain, id);
+  };
   const locks = cut.frontLocks
-    .map((lock) => {
+    .map((lock, i) => {
       const q = lock.outline.map(at);
       const path = `M ${f(q[0] as Pt)} ${smooth(q)}`;
       const strands = lock.strands.map((s) => taperedStrand(h, strand(s.map(at)), outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), tone)).join("");
       return (
         `<path d="${path}Z" fill="${hair}" stroke="none" />` +
+        litClump(lock, i) +
         strands +
         `<g mask="url(#adult-front-locks-ink)"><path d="${path}" fill="none" stroke="${adultHairInk(p)}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" stroke-linecap="round" /></g>`
       );

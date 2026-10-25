@@ -674,7 +674,7 @@ function adultHairShape(sk: Skeleton, p: CharacterParams): string {
   const cut = adultCutOf(p);
   const hair = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${adultHairInk(p)}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
   // the soft finish's clumps over the fill, in the hair's tones, clipped to the silhouette, under the strands
-  const clumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE, "adult-hair-clip") : "";
+  const clumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE * cut.lockGain, "adult-hair-clip") : "";
   const strands = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
   // the lines that run down to the face's edge: blunt at the end (the share of the length over which it tapers is a twentieth), the face drawn over what passes the edge
   const edgeStrands = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
@@ -705,6 +705,9 @@ export function adultHairClip(sk: Skeleton, p: CharacterParams): string {
   return hairClip(onHead(sk), p, adultCutOf(p).clip);
 }
 
+/** How low a fringe reaches, in head radii below the head's centre (Risa's ends at 0.20): a clump wholly below it is not drawn again over the fringe. */
+const FRINGE_LOCK_BELOW = 0.25;
+
 /** What is drawn over the face: the fringe where a cut has one of its own, the brows and the eyes. (The hair is behind it now, in `adultHairBack`.) */
 export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
   const h = onHead(sk);
@@ -721,6 +724,8 @@ export function adultHairFront(sk: Skeleton, p: CharacterParams): string {
     locks =
       `<clipPath id="adult-fringe-clip">${fringe.hair.map((c) => `<path d="${d(c)}" />`).join("")}</clipPath>` +
       fringe.hair.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" />`).join("") +
+      // the soft finish's clumps where they lie on the fringe (the crown's sheen dips onto it), clipped to it: only those that reach its rows, so the rest are not written twice
+      (soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks.filter(([, pts]) => pts.some(([, y]) => y < FRINGE_LOCK_BELOW)), p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE * cut.lockGain, "adult-fringe-clip") : "") +
       `<g clip-path="url(#adult-fringe-clip)">${inside}</g>` +
       edge +
       fringe.lines.map((c, i) => taperedStrand(h, c, 0, OUTLINE, fringe.widths[i])).join("");

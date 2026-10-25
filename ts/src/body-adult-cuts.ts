@@ -61,6 +61,8 @@ export interface AdultHeadCut {
   readonly earR: AdultEar;
   /** The soft finish's clumps, in head radii about the head's centre; none draws none. */
   readonly locks: readonly Lock[];
+  /** How strongly the soft finish draws this cut's clumps, a multiple of the shared strength (`SOFT_LOCK_STRENGTH_SCALE`): Franzi's 1, as they were judged; Risa's reference lights her hair harder. */
+  readonly lockGain: number;
   /**
    * Locks of hair that fall in front of the shoulders onto the body and whatever is worn on it (`adultFrontLocks`, body-adult-front-locks.ts), in the body's knot space so they follow its build;
    * none draws none (Franzi's ponytail is behind her).
@@ -111,6 +113,7 @@ const SWEPT_PONYTAIL: AdultHeadCut = {
   earL: { skin: ADULT_SKIN_EAR_L, concha: ADULT_EAR_CONCHA_L, folds: ADULT_EAR_FOLDS_L, foldWidths: ADULT_EAR_FOLD_WIDTHS_L },
   earR: { skin: ADULT_SKIN_EAR_R, concha: ADULT_EAR_CONCHA_R, folds: ADULT_EAR_FOLDS_R, foldWidths: ADULT_EAR_FOLD_WIDTHS_R },
   locks: SWEPT_PONYTAIL_LOCKS,
+  lockGain: 1,
   frontLocks: [],
 };
 
@@ -118,6 +121,25 @@ const NO_EAR: AdultEar = { skin: [], concha: [], folds: [], foldWidths: [] };
 
 // Risa's face made straight and symmetric (body-adult-cut-level.ts). Her reference has the head tilted and turned a little (her right eye 12 px above the left, the chin right of the eyes'
 // midline), so the eyes are put level about one midline, the left brow is mirrored for the right, the jaw is made symmetric and the nose and mouth are on the midline.
+/**
+ * The soft finish's clumps on Risa's hair, in head radii about the head's centre, read off the tones of ref/risa-adult/00-bikini.png on a grid at the cut's calibration (the hair's luminance,
+ * smoothed, above 1.28 or below 0.72 of its median; docs/risa-polish-plan.md, stage 6): the sheen across the crown as three lit clumps along its measured centre line (it dips to y -0.40 at the
+ * middle, where it lies on the fringe, which draws the same clumps clipped to itself), the shadow behind the neck inside each curtain, and the shadow down the outer and the inner falls
+ * behind the body. The front locks' lit clumps are their own (`adultFrontLocks`).
+ */
+const LONG_STRAIGHT_FRINGED_LOCKS: readonly Lock[] = [
+  ["lit", [[-0.76, -0.43], [-0.62, -0.55], [-0.48, -0.55], [-0.34, -0.45]], 0.15, 0.95],
+  ["lit", [[-0.34, -0.43], [-0.14, -0.4], [0.04, -0.4], [0.24, -0.38]], 0.08, 0.95],
+  ["lit", [[0.24, -0.41], [0.4, -0.49], [0.56, -0.6], [0.7, -0.6], [0.8, -0.55]], 0.15, 0.95],
+  // behind the neck: centred on the face's own edge and then the neck's, so they cover its inner half and a band shows along the face (centred out on the curtain, each showed whole, as an oval)
+  ["shadow", [[-0.48, 0.3], [-0.43, 0.5], [-0.35, 0.7], [-0.22, 0.9], [-0.2, 1.1], [-0.24, 1.35]], 0.26, 0.95],
+  ["shadow", [[0.62, 0.3], [0.57, 0.5], [0.49, 0.7], [0.36, 0.9], [0.34, 1.1], [0.38, 1.35]], 0.26, 0.95],
+  ["shadow", [[-1.18, 2.1], [-1.1, 2.5], [-1.08, 2.9], [-1.0, 3.3], [-0.98, 3.7], [-1.05, 4.0]], 0.14, 0.95],
+  ["shadow", [[-0.64, 2.85], [-0.6, 3.25], [-0.66, 3.65], [-0.74, 3.95]], 0.1, 0.95],
+  ["shadow", [[1.34, 2.3], [1.37, 2.7], [1.3, 3.1], [1.22, 3.5], [1.25, 3.9]], 0.14, 0.95],
+  ["shadow", [[0.82, 2.85], [0.8, 3.25], [0.88, 3.65], [0.96, 3.95]], 0.1, 0.95],
+];
+
 const RISA_MID = 672.2;
 const RISA_EYE_Y = 313.5;
 const RISA_EYE_HALF = 55.2;
@@ -158,7 +180,9 @@ const LONG_STRAIGHT_FRINGED: AdultHeadCut = {
   strips: [],
   earL: NO_EAR,
   earR: NO_EAR,
-  locks: [],
+  locks: LONG_STRAIGHT_FRINGED_LOCKS,
+  // the owner's pick of 1.6, 3 and 5 (2026-10-25, harness/risa_adult/soft_gain.ts): the sheen and the front locks' light read, the shadows stay moderate
+  lockGain: 3,
   frontLocks: RISA_FRONT_LOCKS,
 };
 
