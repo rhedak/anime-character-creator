@@ -11,6 +11,9 @@ and clothes, choose a finish, and download the SVG or PNG. It runs in your brows
 
 ## What's new
 
+**0.7.2** draws `hair_tip_color` on the adult woman: the lower part of Risa's and Franzi's hair takes a second colour (from a height each cut sets;
+Risa's front locks their lower 40 percent), with its own soft-finish clumps. It is off unless a character sets a tip colour, and the web tool's tip control now shows for her.
+
 **0.7.1** gives Risa an open mouth that reads as a laugh: a flat upper lip, a full round lower one, a lighter
 inside with teeth and a tongue, set closer to the nose. Only her cut draws it; every other character's open mouth is as before.
 
