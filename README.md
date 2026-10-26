@@ -11,6 +11,9 @@ and clothes, choose a finish, and download the SVG or PNG. It runs in your brows
 
 ## What's new
 
+**0.7.1** gives Risa an open mouth that reads as a laugh: a flat upper lip, a full round lower one, a lighter
+inside with teeth and a tongue, set closer to the nose. Only her cut draws it; every other character's open mouth is as before.
+
 **0.7.0** polishes **Risa** on the adult body, stage by stage, against her
 reference art (the record is [docs/risa-polish-plan.md](docs/risa-polish-plan.md)). Each step was measured against
 the reference before it was judged by eye, and every other character draws exactly as before.
