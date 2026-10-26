@@ -1,7 +1,7 @@
 # API reference
 
 What the TypeScript package exposes, what each value means, and the shape of a typical call. The package is
-`ts/src/` (version 0.7.1, the source of truth since the port; `ts/README.md` is the map). The frozen Python
+`ts/src/` (version 0.7.2, the source of truth since the port; `ts/README.md` is the map). The frozen Python
 package (deleted from the tree on 2026-10-19; the tag `python-final` keeps it) had the same surface under snake_case names, given in parentheses below. For how the drawing
 itself is put together, see [architecture.md](architecture.md); for how to run the command lines, see the README.
 

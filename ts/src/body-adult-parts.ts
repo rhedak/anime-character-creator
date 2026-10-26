@@ -8,7 +8,7 @@
 // upper arm is drawn over the body anyway) will split them off at stage 6.
 
 import { OUTLINE, curve, lineScale, lineStyleOf, outlineW, soft, strokeW } from "./character.ts";
-import { SOFT_LOCK_STRENGTH_SCALE, hairClip, softLocks } from "./hair.ts";
+import { HAIR_TIP_CLIP_ID, SOFT_LOCK_STRENGTH_SCALE, hairClip, hairTipTone, softLocks } from "./hair.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { ADULT_REF } from "./body-adult.ts";
 import { CEL_CAST, castShadow, celOn, celTone } from "./body-adult-cel.ts";
@@ -784,9 +784,21 @@ function adultHairShape(sk: Skeleton, p: CharacterParams): string {
   const sw = fmt2(outlineW(strokeW(sk)));
   const d = ([start, segs]: Chain): string => curve(h.head_cx, h.head_cy, h.head_r, start, segs);
   const cut = adultCutOf(p);
+  const tips = hairTipTone(p);
   const hair = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" stroke="${adultHairInk(p)}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
   // the soft finish's clumps over the fill, in the hair's tones, clipped to the silhouette, under the strands
   const clumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(p.hair_color), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE * cut.lockGain, "adult-hair-clip") : "";
+  if (tips !== null) {
+    // A two-tone head of hair (`hair_tip_color`): the fill, the clumps in the hair's tones, the tip region repainted in the tip colour with its own clumps, then the outline over it all, so the
+    // repaint cannot cover the inner half of the stroke (the shared hair's order, `softLockLayers`). Off by default; the tip region is the cut's `tip_edge` (`tipBand`, body-adult-hair.ts).
+    const fills = cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(p.hair_color)}" />`).join("");
+    const repaint = `<g clip-path="url(#adult-hair-clip)">${cut.silhouette.map((c) => `<path d="${d(c)}" fill="${colorStr(tips)}" clip-path="url(#${HAIR_TIP_CLIP_ID})" />`).join("")}</g>`;
+    const tipClumps = soft(p) && p.highlight_strength > 0 && cut.locks.length > 0 ? softLocks(h, colorStr(tips), cut.locks, p.highlight_strength * SOFT_LOCK_STRENGTH_SCALE * cut.lockGain, "adult-hair-clip", true) : "";
+    const outline = cut.silhouette.map((c) => `<path d="${d(c)}" fill="none" stroke="${adultHairInk(p)}" stroke-width="${sw}" stroke-linejoin="round" />`).join("");
+    const strokes = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
+    const edge = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
+    return fills + clumps + repaint + tipClumps + outline + `<g clip-path="url(#adult-hair-clip)">${strokes}${edge}</g>`;
+  }
   const strands = cut.strands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]))).join("");
   // the lines that run down to the face's edge: blunt at the end (the share of the length over which it tapers is a twentieth), the face drawn over what passes the edge
   const edgeStrands = cut.edgeStrands.map((c) => taperedStrand(h, c, outlineW(strokeW(sk), cut.edgeStrandWeight * lineScale(p)), shade(p.hair_color, cut.strandTone[0], cut.strandTone[1]), undefined, 0.05)).join("");
