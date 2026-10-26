@@ -516,7 +516,6 @@ export const BODY_IGNORES: Readonly<Record<string, readonly string[]>> = {
     "eye_width",
     "face_age",
     "hair_length",
-    "hair_tip_color",
     "hakama_length_chibi",
     "hand_style",
     "hip_pocket_color",

@@ -6,7 +6,7 @@
 // luminance, so a mask that hides with black shapes on white hid them in the companion's browser and in no PNG.)
 
 import { lineScale, outlineW, soft, strokeW } from "./character.ts";
-import { SOFT_LOCK_STRENGTH_SCALE, softLocks } from "./hair.ts";
+import { SOFT_LOCK_STRENGTH_SCALE, hairTipTone, softLocks } from "./hair.ts";
 import { colorStr } from "./body-parts-legs.ts";
 import { adultCutOf, type FrontLock } from "./body-adult-cuts.ts";
 import { adultBodyRef, adultHairInk, onHead, place, smooth, taperedStrand, type Pt } from "./body-adult-parts.ts";
@@ -21,6 +21,9 @@ import type { Chain } from "./tables.ts";
 
 /** Where a lock's own outline starts whatever lies behind it, in head heights below the chin: below the shoulders' tops, clear of the hair beside the neck. */
 const OWN_INK_FROM = 0.35;
+
+/** The share of a front lock, from its tip up, painted in the tip colour of a two-tone head of hair (the back hair's boundary is its cut's `tip_edge`). */
+const FRONT_LOCK_TIP_SHARE = 0.4;
 
 /** The front locks of `p`'s cut: each one filled in the hair's colour, its strand lines over it and its outline inked down one edge, round the tip and up the other (the top is the hair beside the neck). */
 export function adultFrontLocks(sk: Skeleton, p: CharacterParams): string {
@@ -61,9 +64,20 @@ export function adultFrontLocks(sk: Skeleton, p: CharacterParams): string {
       const q = lock.outline.map(at);
       const path = `M ${f(q[0] as Pt)} ${smooth(q)}`;
       const strands = lock.strands.map((s) => taperedStrand(h, strand(s.map(at)), outlineW(strokeW(sk), cut.strandWeight * lineScale(p)), tone)).join("");
+      // A two-tone head of hair: the lower share of the lock's own height in the tip colour (each lock its own boundary, as the shared hair does), over its fill and its clump.
+      const tips = hairTipTone(p);
+      const ys = q.map((pt) => pt[1]);
+      const [top, bottom] = [Math.min(...ys), Math.max(...ys)];
+      const tipId = `adult-front-lock-tip-${i}`;
+      const repaint =
+        tips === null
+          ? ""
+          : `<clipPath id="${tipId}"><rect x="${fmt1(-sk.canvas_w)}" y="${fmt1(top + (1 - FRONT_LOCK_TIP_SHARE) * (bottom - top))}" width="${fmt1(3 * sk.canvas_w)}" height="${fmt1(2 * sk.canvas_h)}" /></clipPath>` +
+            `<path d="${path}Z" fill="${colorStr(tips)}" stroke="none" clip-path="url(#${tipId})" />`;
       return (
         `<path d="${path}Z" fill="${hair}" stroke="none" />` +
         litClump(lock, i) +
+        repaint +
         strands +
         `<g mask="url(#adult-front-locks-ink)"><path d="${path}" fill="none" stroke="${adultHairInk(p)}" stroke-width="${fmt2(ink)}" stroke-linejoin="round" stroke-linecap="round" /></g>`
       );
