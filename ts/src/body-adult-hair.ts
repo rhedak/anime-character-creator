@@ -31,7 +31,7 @@ const swept = makeHairstyle(
   () => ADULT_HAIR_DOME,
   () => nothing,
   (): Chain[] => [[domeStart, domeSegments.slice(0, 0)]],
-  () => tipBand(0.95),
+  () => tipBand(0.5),
   { tip_range: [0.25, 0.7] },
 );
 
