@@ -917,6 +917,15 @@ const SYMMETRIC_MOUTH_WIDTHS: readonly number[] = (() => {
 })();
 /** The open mouth's greatest drop below the line, in widths of the mouth, at `mouth_open` 1 (the chibi's is 1.0, which on this narrow mouth read as a gape). */
 const ADULT_MOUTH_DEPTH = 0.5;
+/** A `dMouth` cut's laugh: the share of the traced sag its upper lip keeps, the drop below it in widths at `mouth_open` 1, how round the lower lip is (the exponent of the sine, lower is fuller), the lift toward the nose in reference px, and the fill and tongue (flat). */
+const D_MOUTH_UPPER_CURVE = 0.15;
+const D_MOUTH_DEPTH = 0.5;
+const D_MOUTH_ROUND = 0.5;
+const D_MOUTH_LIFT = 9;
+const D_MOUTH_INSIDE = "#b5484a";
+const D_MOUTH_TONGUE = "#e08a86";
+const D_MOUTH_TEETH = "#f7f0ee";
+const D_MOUTH_TEETH_DEPTH = 0.22;
 
 /**
  * The mouth line as `mouth_curve` and `mouth_width` ask (their defaults, 1, are the traced line, returned as it is so that her default drawing stays byte for byte what it was):
@@ -981,17 +990,36 @@ export function adultFace(sk: Skeleton, p: CharacterParams): string {
   // the mouth: one continuous line. The reference draws it as two strokes with a small gap at the low point (x about 665), which the owner called a flaw of the reference, so the
   // two are joined there along the curve (the low point is flat for a few px) with the line a little thinner across the join; thickest toward the outer ends, thin at both tips.
   // `mouth_curve`, `mouth_width` and `mouth_open` move it (adultMouthPoints); at their defaults the points are the traced ones, untouched.
-  const upper = adultMouthPoints(p.face, adultCutOf(p).symmetricMouth).map((q): Pt => [q[0] + at.mouth[0], q[1] + at.mouth[1]]);
   const open = p.face.mouth_open;
+  const dMouth = open > 0 && adultCutOf(p).dMouth;
+  // The laugh (a cut's `dMouth`): the upper lip is the traced line flattened to `D_MOUTH_UPPER_CURVE` of its sag whatever `mouth_curve` asks (the smile is carried by the full lower lip, the
+  // reference's D), and the whole mouth sits `D_MOUTH_LIFT` reference px nearer the nose, where an opened mouth rides in the reference.
+  const shape = dMouth ? { ...p.face, mouth_curve: D_MOUTH_UPPER_CURVE } : p.face;
+  const lift = dMouth ? D_MOUTH_LIFT : 0;
+  const upper = adultMouthPoints(shape, adultCutOf(p).symmetricMouth).map((q): Pt => [q[0] + at.mouth[0], q[1] + at.mouth[1] - lift]);
   if (open > 0) {
     // Open: the traced line is the upper lip and a second curve below it closes the shape, filled with the one flat dark red the chibi's open mouth uses, no teeth or tongue.
+    // A `dMouth` cut fills it with the lighter `D_MOUTH_INSIDE` and draws a tongue (a tint of the fill, clipped to the mouth) in its lower part.
     const first = upper[0] as Pt;
     const last = upper[upper.length - 1] as Pt;
     const across = last[0] - first[0];
-    const drop = across * ADULT_MOUTH_DEPTH * mouthDepthShare(open);
-    const lower = upper.map(([x, y]): Pt => [x, y + drop * Math.max(0, Math.sin((Math.PI * (x - first[0])) / across)) ** 0.65]);
+    const drop = across * (dMouth ? D_MOUTH_DEPTH : ADULT_MOUTH_DEPTH) * mouthDepthShare(open);
+    const lower = upper.map(([x, y]): Pt => [x, y + drop * Math.max(0, Math.sin((Math.PI * (x - first[0])) / across)) ** (dMouth ? D_MOUTH_ROUND : 0.65)]);
     const px = (q: Pt): string => `${fmt1(ref(q)[0])} ${fmt1(ref(q)[1])}`;
-    parts.push(`<path d="M ${px(upper[0] as Pt)} ${upper.slice(1).map((q) => `L ${px(q)} `).join("")}${[...lower].reverse().map((q) => `L ${px(q)} `).join("")}Z" fill="${MOUTH_INSIDE}" />`);
+    const shapeD = `M ${px(upper[0] as Pt)} ${upper.slice(1).map((q) => `L ${px(q)} `).join("")}${[...lower].reverse().map((q) => `L ${px(q)} `).join("")}Z`;
+    parts.push(`<path d="${shapeD}" fill="${dMouth ? D_MOUTH_INSIDE : MOUTH_INSIDE}" />`);
+    if (dMouth) {
+      const mid = (first[0] + last[0]) / 2;
+      const base = (upper[Math.floor(upper.length / 2)] as Pt)[1];
+      const tongue = (dx: number, dy: number): Pt => [mid + dx * across, base + dy * drop];
+      const t0 = tongue(-0.3, 0.8);
+      const t1 = tongue(0.3, 0.8);
+      const top = tongue(0, 0.3);
+      // the teeth: the band of the mouth just under the upper lip, a flat off-white, as the reference shows them
+      const band = upper.map(([x, y]): Pt => [x, y + drop * D_MOUTH_TEETH_DEPTH]);
+      const teethD = `M ${px(upper[0] as Pt)} ${upper.slice(1).map((q) => `L ${px(q)} `).join("")}${[...band].reverse().map((q) => `L ${px(q)} `).join("")}Z`;
+      parts.push(`<clipPath id="adult-mouth-clip"><path d="${shapeD}" /></clipPath><g clip-path="url(#adult-mouth-clip)"><path d="M ${px(t0)} Q ${px(top)} ${px(t1)} L ${px(tongue(0.3, 1.6))} L ${px(tongue(-0.3, 1.6))} Z" fill="${D_MOUTH_TONGUE}" /><path d="${teethD}" fill="${D_MOUTH_TEETH}" /></g>`);
+    }
     parts.push(stroke(lower, lower.map((_, i) => (i === 0 || i === lower.length - 1 ? 0.6 : 1.3))));
   }
   parts.push(stroke(upper, adultCutOf(p).symmetricMouth ? SYMMETRIC_MOUTH_WIDTHS : MOUTH_WIDTHS));

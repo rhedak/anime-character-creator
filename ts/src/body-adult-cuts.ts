@@ -57,6 +57,8 @@ export interface AdultHeadCut {
   readonly featuresAt: { readonly nose: readonly [number, number]; readonly mouth: readonly [number, number] };
   /** Whether the mouth is made symmetric (the traced line's right half rises further than its left, a smirk on a straight face): the left half is mirrored for the right. */
   readonly symmetricMouth: boolean;
+  /** Whether an open mouth is drawn as the reference's laugh, a D: a nearly flat upper lip and a full, round lower one, lifted toward the nose, rather than the traced smile line with a lip hung below it (which reads as a gape). */
+  readonly dMouth: boolean;
   readonly brows: { readonly lines: readonly Chain[]; readonly widths: readonly (readonly number[])[]; readonly tone: readonly [number, number] } | null;
   /** Small skin regions beside the face, drawn over the hair after the body. */
   readonly strips: readonly Chain[];
@@ -139,6 +141,7 @@ const SWEPT_PONYTAIL: AdultHeadCut = {
   locks: SWEPT_PONYTAIL_LOCKS,
   lockGain: 1,
   celShading: false,
+  dMouth: false,
   frontLocks: [],
 };
 
@@ -211,6 +214,7 @@ const LONG_STRAIGHT_FRINGED: AdultHeadCut = {
   // the owner's pick of 1.6, 3 and 5 (2026-10-25, harness/risa_adult/soft_gain.ts): the sheen and the front locks' light read, the shadows stay moderate
   lockGain: 3,
   celShading: true,
+  dMouth: true,
   frontLocks: RISA_FRONT_LOCKS,
 };
 
