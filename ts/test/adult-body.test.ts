@@ -520,3 +520,15 @@ test("Franzi's face is straight too: the eyes level, the mouth symmetric, her ja
     assert.ok(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2 - mid) < 0.5, `row ${y}`);
   }
 });
+
+test("hair_tip_color on the adult woman repaints the lower hair of each cut in the tip colour, and unset changes nothing", () => {
+  for (const name of ["risa", "franzi"]) {
+    const base = PRESETS[name] as ReturnType<typeof characterParams>;
+    const plain = renderCharacter(base);
+    const tipped = renderCharacter(replace(base, { hair_tip_color: "#ff88cc" }));
+    assert.equal(paths(plain, "#ff88cc"), 0, `${name}: no tip colour without hair_tip_color`);
+    assert.ok(paths(tipped, "#ff88cc") >= 1, `${name}: the tip colour is painted`);
+    assert.match(tipped, /clip-path="url\(#hair-tips\)"/);
+    assert.equal(renderCharacter(replace(base, { hair_tip_color: null })), plain, `${name}: unset is the drawing it was`);
+  }
+});
