@@ -25,7 +25,7 @@ if (!existsSync(tsc)) throw new Error(`no tsc at ${tsc}: run "npm install" in ts
 mkdirSync(stage, { recursive: true });
 execFileSync(tsc, ["-p", join(root, "ts", "tsconfig.web.json")], { stdio: "inherit" });
 for (const f of readdirSync(join(root, "web"))) {
-  if (/\.(html|css|js)$/.test(f)) cpSync(join(root, "web", f), join(stage, f));
+  if (/\.(html|css|js|jpg)$/.test(f)) cpSync(join(root, "web", f), join(stage, f));
 }
 cpSync(join(root, "ref-out"), join(stage, "ref-out"), { recursive: true });
 console.log("staged at", stage);
